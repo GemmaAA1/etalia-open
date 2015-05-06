@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block title %}Library{% endblock %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3 jumbotron">
+            <h2><a href="{% url 'view_journals' %}">Journals</a></h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3 jumbotron">
+            <h2><a href="{% url 'view_papers' %}">Papers</a></h2>
+        </div>
+    </div>
+{% endblock %}
