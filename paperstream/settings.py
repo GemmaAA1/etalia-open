@@ -37,6 +37,18 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'library',
+    'consumers',
+    'feeds',
+    'functional_tests',
+    'nlprocess',
+    'base',
+    # 'accounts',
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth.socialaccount',
+    # 'accounts.providers.mendeley',
+    # 'accounts.providers.zotero',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -68,6 +80,25 @@ TEMPLATES = [
     },
 ]
 
+# # # Allauth
+# SITE_ID = 1
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# ACCOUNT_SIGNUP_FORM_CLASS = 'accounts.forms.CustomSignupForm'
+# ACCOUNT_LOGOUT_ON_GET = True
+# ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
+# ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL='/'
+# ACCOUNT_USER_DISPLAY='accounts.utils.user_display'
+# ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = True
+# ACCOUNT_PASSWORD_MIN_LENGTH = 6
+# SOCIALACCOUNT_AUTO_SIGNUP = False
+# SOCIALACCOUNT_FORMS = {}
+
+
 WSGI_APPLICATION = 'paperstream.wsgi.application'
 
 
@@ -76,8 +107,12 @@ WSGI_APPLICATION = 'paperstream.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'paperstream',
+        'USER': 'nicolaspannetier',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': ''
     }
 }
 
@@ -100,3 +135,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '../static')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'paperstream', 'static'),
+)
