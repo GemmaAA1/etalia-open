@@ -2,18 +2,19 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import jsonfield.fields
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('library', '0006_auto_20150505_2345'),
+        ('library', '0001_initial'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='paper',
-            name='journal',
-            field=models.ForeignKey(null=True, to='library.Journal'),
+            name='identifiers',
+            field=jsonfield.fields.JSONField(db_index=True, unique=True),
         ),
     ]

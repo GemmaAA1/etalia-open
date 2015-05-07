@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block css %}<link href="{% static 'css/library.css' %}" rel="stylesheet">{% endblock %}
+
+{% block title %}Journal{% endblock %}
+
+{% block content %}
+    <div class="library">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <p>Title: {{ journal.title }}</p>
+                    <p>{% if journal.issn %}
+                            ISSN: {{ journal.issn }} E-ISSN: {{ journal.e_issn }}
+                        {% else %}
+                            EXT ID: {{ journal.issn }}
+                        {% endif %}
+                    </p>
+                    <p>Publisher: {{ journal.publisher }}</p>
+                    <p>Period: {{ journal.period }}</p>
+                    <p>Papers: {{ journal.counts_paper }}</p>
+                </div>
+                <div class="col-lg-1"></div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <table id="papers_table_id" class="table table-hover">
+                        <tr>
+                            <td><h5>Authors</h5></td>
+                            <td><h5>Title</h5></td>
+                            <td><h5>Date</h5></td>
+                        </tr>
+                        {% for paper in paper_list %}
+                            <tr onclick="document.location = '{% url 'view_paper' paper.id %}'">
+                                <td>{{ paper.first_author_disp }}</td>
+                                <td id="paper_title">{{ paper.short_title }}</td>
+                                <td>{{ paper.date_disp }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+
+                   <!-- Pagination bar -->
+                    {% if is_paginated %}
+                        <ul class="pager">
+                            {% if page_obj.has_previous %}
+                                <li><a href="{% url 'view_journal' page_obj.previous_page_number %}">Previous</a></li>
+                            {% endif %}
+                            <span class="page-current">
+                          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                          </span>
+                            {% if page_obj.has_next %}
+                                <li><a href="{% url 'view_journal' page_obj.next_page_number %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    {% endif %}
+
+                </div>
+                <div class="col-lg-1"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

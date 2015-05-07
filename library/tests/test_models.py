@@ -4,101 +4,86 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength
 
-# Create your tests here.
-
 
 class PaperModelTest(TestCase):
+
+    def test_create_paper_empty(self):
+        Paper.objects.create()
+
     def test_get_absolute_url(self):
-        paper = Paper.objects.create(doi='xxx')
+        paper = Paper.objects.create()
         self.assertEqual(paper.get_absolute_url(),
-                         '/library/papers/{0}'.format(paper.id, ))
+                         '/library/paper/{0}/'.format(paper.pk, ))
 
     def test_paper_ordering(self):
-        paper1 = Paper.objects.create(doi='xxx',
-                                      date=timezone.now().date())
-        paper2 = Paper.objects.create(doi='yyy',
-                                      date=(timezone.now() -
-                                            timezone.timedelta(days=2)).date())
-        self.assertEqual(
-            list(Paper.objects.all()),
-            [paper1, paper2])
+        p1 = Paper.objects.create(date=timezone.now().date())
+        p2 = Paper.objects.create(date=(timezone.now() -
+                                        timezone.timedelta(days=2)).date())
+        self.assertEqual(list(Paper.objects.all()), [p1, p2])
 
-    def test_empty_doi_and_empty_ext_id_are_invalid(self):
-        paper = Paper.objects.create(doi='')
+    def test_paper_can_have_multiple_ids(self):
+        Paper.objects.create(id_doi='xxx', id_arx='yyy')
+
+    def test_duplicate_identifiers_are_invalid(self):
+        Paper.objects.create(id_doi='xxx')
         with self.assertRaises(ValidationError):
-            paper.ext_id = ''
-            paper.full_clean()
+            Paper(id_doi='xxx').full_clean()
+            Paper(id_doi='xxx', id_arx='yyy').full_clean()
 
-    def test_duplicate_doi_are_invalid(self):
-        Paper.objects.create(doi='xxx')
-        with self.assertRaises(ValidationError):
-            paper = Paper(doi='xxx')
-            paper.full_clean()
-
-    def test_duplicate_ext_id_are_invalid(self):
-        Paper.objects.create(ext_id='xxx')
-        with self.assertRaises(ValidationError):
-            paper = Paper(ext_id='xxx')
-            paper.full_clean()
-
-    def test_paper_cannot_have_multiple_id(self):
-        paper = Paper.objects.create(doi='xxx')
-        with self.assertRaises(ValidationError):
-            paper.ext_id = 'yyy'
-            paper.full_clean()
-
-    def test_paper_default_title_is_empty(self):
-        paper = Paper.objects.create(doi='xxx')
-        self.assertEqual(paper.title, '')
+    def test_prints(self):
+        paper = Paper.objects.create(title='On the road again')
+        # should not raise
+        paper.__str__()
 
 
 class JournalModelTest(TestCase):
+
+    def test_canNOT_save_journal_with_invalid_identifier(self):
+        with self.assertRaises(ValidationError):
+            Journal.objects.create(id_key='', id_val='1053-8119')
+        with self.assertRaises(ValidationError):
+            Journal.objects.create(id_key='ISSN', id_val='')
+        with self.assertRaises(ValidationError):
+            Journal.objects.create(id_key='', id_val='')
+
     def test_get_absolute_url(self):
-        journal = Journal.objects.create(issn='1053-8119')
+        journal = Journal.objects.create(id_key='ISSN', id_val='1053-8119')
         self.assertEqual(journal.get_absolute_url(),
-                         '/library/journals/{0}'.format(journal.id, ))
+                         '/library/journal/{0}/'.format(journal.id, ))
 
-    def test_empty_issn_and_empty_ext_id_are_invalid(self):
-        journal = Journal.objects.create(issn='')
+    def test_empty_ids_are_invalid(self):
         with self.assertRaises(ValidationError):
-            journal.ext_id = ''
-            journal.full_clean()
+            Journal.objects.create(id_key='').full_clean()
+        with self.assertRaises(ValidationError):
+            Journal.objects.create(id_val='').full_clean()
 
-    def test_duplicate_issn_are_invalid(self):
-        Journal.objects.create(issn='1053-8119')
+    def test_duplicate_ids_are_invalid(self):
+        Journal.objects.create(id_key='ISSN', id_val='1053-8119')
         with self.assertRaises(ValidationError):
-            journal = Journal(issn='1053-8119')
-            journal.full_clean()
-
-    def test_duplicate_ext_id_are_invalid(self):
-        Journal.objects.create(ext_id='xxx')
-        with self.assertRaises(ValidationError):
-            journal = Journal(ext_id='xxx')
-            journal.full_clean()
-
-    def test_journal_cannot_have_multiple_id(self):
-        journal = Journal.objects.create(issn='1053-8119')
-        with self.assertRaises(ValidationError):
-            journal.ext_id = 'yyy'
+            journal = Journal(id_key='ISSN', id_val='1053-8119')
             journal.full_clean()
 
     def test_journal_issn_must_be_valid(self):
-        journal = Journal(issn='0000-0001')
+        journal = Journal(id_key='ISSN', id_val='0000-0001')
         with self.assertRaises(InvalidChecksum):
             journal.full_clean()
-        journal = Journal.objects.create(issn='0000-001')
+        journal = Journal(id_key='ISSN', id_val='0000-001')
         with self.assertRaises(InvalidLength):
             journal.full_clean()
-        journal = Journal.objects.create(issn='X000-0001')
+        journal = Journal(id_key='ISSN', id_val='X000-0001')
         with self.assertRaises(InvalidFormat):
             journal.full_clean()
 
     def test_journals_ordered_by_title(self):
-        j1 = Journal.objects.create(issn='0000-0001', title='A good journal')
-        j2 = Journal.objects.create(issn='0000-0021', title='Curated journal')
-        j3 = Journal.objects.create(issn='1053-8119', title='Bad journal')
+        j1 = Journal.objects.create(id_key='ISSN', id_val='1476-4687',
+                                    title='A good journal')
+        j2 = Journal.objects.create(id_key='ISSN', id_val='0000-0019',
+                                    title='Curated journal')
+        j3 = Journal.objects.create(id_key='ISSN', id_val='1053-8119',
+                                    title='Bad journal')
         js = Journal.objects.all()
         self.assertEqual(list(js), [j1, j3, j2])
+
 
 class AuthorModelTest(TestCase):
 
@@ -122,7 +107,7 @@ class PaperAuthorTest(TestCase):
         c1 = Author.objects.create(first_name='Bernard')
         c2 = Author.objects.create(first_name='Paul')
         c3 = Author.objects.create(first_name='Louis')
-        p1 = Paper.objects.create(doi='xxx')
+        p1 = Paper.objects.create()
         AuthorPosition.objects.create(author=c1, paper=p1, position=1)
         AuthorPosition.objects.create(author=c2, paper=p1, position=2)
         AuthorPosition.objects.create(author=c3, paper=p1, position=2)
@@ -135,27 +120,26 @@ class PaperAuthorTest(TestCase):
 class JournalPaperTest(TestCase):
 
     def test_paper_can_be_added_to_journal(self):
-        journal = Journal.objects.create(issn='0000-0000')
-        paper = Paper.objects.create(doi='xxx', journal=journal)
+        journal = Journal.objects.create(id_key='ISSN', id_val='0000-0019')
+        Paper.objects.create(journal=journal)
 
     def test_counts_number_papers_in_journal(self):
-        journal = Journal.objects.create(issn='0000-0000')
-        Paper.objects.create(doi='xxx', journal=journal)
-        Paper.objects.create(doi='yyy', journal=journal)
-        Paper.objects.create(doi='zzz', journal=journal)
-        journal.counts_paper()
+        journal = Journal.objects.create(id_key='ISSN', id_val='0000-0019')
+        Paper.objects.create(journal=journal, id_doi='xxx')
+        Paper.objects.create(journal=journal, id_doi='yyy')
+        Paper.objects.create(journal=journal, id_doi='zzz')
 
-        journal = Journal.objects.get(issn='0000-0000')
+        journal.counts_paper()
+        journal = Journal.objects.get(id_key='ISSN', id_val='0000-0019')
         self.assertEqual(journal.paper_set.count(), 3)
         self.assertEqual(journal.lib_size, 3)
 
-    def test_ordering_of_papers_in_journal(self):
-        journal = Journal.objects.create(issn='0000-0000')
-        p1 = Paper.objects.create(doi='xxx', journal=journal,
+    def test_ordering_of_papers_in_journal_by_date(self):
+        journal = Journal.objects.create(id_key='ISSN', id_val='0000-0019')
+        p1 = Paper.objects.create(id_doi='xxx', journal=journal,
                                   date=timezone.datetime(2015, 1, 1))
-        p2 = Paper.objects.create(doi='yyy', journal=journal,
+        p2 = Paper.objects.create(id_doi='yyy', journal=journal,
                                   date=timezone.datetime(2015, 1, 2))
-        p3 = Paper.objects.create(doi='zzz', journal=journal,
+        p3 = Paper.objects.create(id_doi='zzz', journal=journal,
                                   date=timezone.datetime(2015, 1, 3))
-
         self.assertEqual(list(journal.paper_set.all()), [p3, p2, p1])
