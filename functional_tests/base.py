@@ -40,12 +40,12 @@ class FunctionalTest(StaticLiveServerTestCase):
         # Create a bench of journals
         nb_journals = 10
         journals = []
-        while len(journals) < nb_journals:
-            n = random.randint(0, 1e7-1)
+        for n in range(nb_journals):
+            digit7 = random.randint(0, 1e7-1)
             journals.append(Journal.objects.create(
                 title='Journal title #{0:02d}'.format(n),
-                issn='{0:07d}{1}'.format(n, issn.calc_check_digit(
-                    '{0:07d}'.format(n))))
+                issn='{0:07d}{1}'.format(digit7, issn.calc_check_digit(
+                    '{0:07d}'.format(digit7))))
             )
 
         # Create a bench of authors
@@ -75,12 +75,6 @@ class FunctionalTest(StaticLiveServerTestCase):
                     paper=paper,
                     author=authors[random.randint(0, nb_authors - 1)],
                     position=a)
-
-    def check_for_row_in_list_table(self, row_text):
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn(row_text, [row.text for row in rows])
-
 
 
 

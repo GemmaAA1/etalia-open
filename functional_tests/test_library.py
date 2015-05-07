@@ -17,17 +17,18 @@ class LibraryTest(FunctionalTest):
         # journals, papers, creators
 
         # Then he clicks on journal
-        self.browser.find_element_by_link_text('Journal').click()
+        self.browser.find_element_by_link_text('Journals').click()
 
         # X is redirected to library/journals/
         self.assertEqual(self.browser.current_url,
                          self.server_url+'/library/journals/')
 
-        # Where a list of journals in db is displayed. First one is titled
-        # "Journal title #01"
+        # Where a table of journals in db is displayed.
+        # The first row show first journal
+
 
         # X clicks on the first Journal
-        # self.browser.find_element_by_link_text('Journal title #01').click()
+        self.browser.find_element_by('Journal title #01').click()
 
         # X is redirected to /library/journals/<pk>/papers/
         # pk = Journal.objects.get(title='Journal title #01').id
