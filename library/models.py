@@ -5,6 +5,7 @@ from stdnum import issn as issn_checker
 from jsonfield import JSONField
 import collections
 
+
 class Publisher(models.Model):
     """Publisher group
     """
@@ -21,13 +22,13 @@ class Journal(models.Model):
     """Periodicals
     """
     # Identifiers
-    ID_TYPE = (('ISSN', 'ISSN'),
-               ('ARX', 'Arxiv'),
-               ('OTH', 'Other'))
-    id_key = models.CharField(max_length=200, choices=ID_TYPE, default='OTH',
-                              db_index=True, null=False, blank=False)
-    id_val = models.CharField(max_length=240, db_index=True, null=False,
-                              blank=False)
+    # TODO: define custom field for this ids
+    id_issn = models.CharField(max_length=9, null=True, blank=True, unique=True,
+                               db_index=True)
+    id_arx = models.CharField(max_length=32, null=True, blank=True, unique=True,
+                               db_index=True)
+    id_oth = models.CharField(max_length=32, null=True, blank=True, unique=True,
+                               db_index=True)
 
     # periodical title
     title = models.CharField(max_length=200, blank=True, default='')
@@ -68,8 +69,20 @@ class Journal(models.Model):
     is_valid = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('id_key', 'id_val')
         ordering = ['title']
+
+    def clean(self, *args, **kwargs):
+        self.clean_id_issn()
+        super(Journal, self).clean()
+
+    def save(self, *args, **kwargs):
+        self.clean_id_issn()
+        super(Journal, self).save(*args, **kwargs)
+
+    # to force django to store None for empty string
+    def clean_id_issn(self):
+        if self.id_issn:
+            issn_checker.validate(self.id_issn)
 
     def __str__(self):
         if self.short_title:
@@ -79,21 +92,6 @@ class Journal(models.Model):
                 return self.title[:30]+'...'
             else:
                 return self.title[:30]
-
-    def clean_identifier(self):
-        # key and val must be defined
-        if not self.id_val or not self.id_key:
-            raise ValidationError('Journal must have correct identifiers')
-        # issn must be valid
-        if self.id_key == 'ISSN':
-            issn_checker.validate(self.id_val)
-
-    def clean(self):
-        self.clean_identifier()
-
-    def save(self, *args, **kwargs):
-        self.clean_identifier()
-        super(Journal, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('view_journal', args=[self.id])
@@ -133,10 +131,14 @@ class Paper(models.Model):
     """
 
     # identifiers
-    id_doi = models.CharField(max_length=32, null=True, blank=True, unique=True)
-    id_arx = models.CharField(max_length=32, null=True, blank=True, unique=True)
-    id_pmi = models.CharField(max_length=32, null=True, blank=True, unique=True)
-    id_oth = models.CharField(max_length=32, null=True, blank=True, unique=True)
+    id_doi = models.CharField(max_length=32, null=True, blank=True,
+                              db_index=True)
+    id_arx = models.CharField(max_length=32, null=True, blank=True,
+                              db_index=True)
+    id_pmi = models.CharField(max_length=32, null=True, blank=True,
+                              db_index=True)
+    id_oth = models.CharField(max_length=32, null=True, blank=True,
+                              db_index=True)
 
     # article title
     title = models.CharField(max_length=500, blank=True, default='')
@@ -170,18 +172,27 @@ class Paper(models.Model):
     class Meta:
         ordering = ['-date']
 
-    # to force django to store None for empty string
-    def clean_id_doi(self):
-        return self.cleaned_data['id_doi'] or None
+    def validate_unique_ids(self):
+        if self.id_doi and \
+                self._default_manager.filter(id_doi=self.id_doi).exists():
+            raise ValidationError('id_doi already exists')
+        if self.id_arx and \
+                self._default_manager.filter(id_arx=self.id_arx).exists():
+            raise ValidationError('id_arx already exists')
+        if self.id_pmi and \
+                self._default_manager.filter(id_pmi=self.id_pmi).exists():
+            raise ValidationError('id_pmi already exists')
+        if self.id_oth and \
+                self._default_manager.filter(id_oth=self.id_oth).exists():
+            raise ValidationError('id_oth already exists')
 
-    def clean_id_arx(self):
-        return self.cleaned_data['id_arx'] or None
+    def validate_unique(self, exclude=None):
+        self.validate_unique_ids()
+        super(Paper, self).validate_unique(exclude=exclude)
 
-    def clean_id_pmi(self):
-        return self.cleaned_data['id_pmi'] or None
-
-    def clean_id_oth(self):
-        return self.cleaned_data['id_oth'] or None
+    def save(self, *args, **kwargs):
+        self.validate_unique_ids()
+        super(Paper, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.short_title
@@ -211,8 +222,8 @@ class Paper(models.Model):
         first_author = self.authors.first()
         if first_author:
             return '{0}. {1} et al.'.format(
-                first_author.first_name[0].capitalize(),
-                first_author.last_name.capitalize())
+                first_author.last_name.capitalize(),
+                first_author.first_name[0].capitalize())
         else:
             return 'Unknown authors'
 
@@ -233,24 +244,6 @@ class Paper(models.Model):
 
     def get_absolute_url(self):
         return reverse('view_paper', args=[self.id])
-
-
-# class PaperIdentifiers(models.Model):
-#
-#     paper = models.ForeignKey(Paper, related_name='identifiers')
-#
-#     # Identifiers
-#     ID_TYPE = (('DOI', 'DOI'),
-#                ('ARX', 'Arxiv'),
-#                ('PMID', 'PubMed'),
-#                ('OTH', 'Other'))
-#     id_key = models.CharField(max_length=200, choices=ID_TYPE,
-#                               default='OTH', db_index=True, null=False)
-#
-#     id_val = models.CharField(max_length=240, db_index=True, null=False)
-#
-#     class Meta:
-#         unique_together = (('id_key', 'id_val'), ('paper', 'id_key'))
 
 
 class AuthorPosition(models.Model):

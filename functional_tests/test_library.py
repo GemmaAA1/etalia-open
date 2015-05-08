@@ -1,4 +1,6 @@
+import time
 from .base import FunctionalTest
+from django.conf import settings
 from library.models import Journal, Paper
 
 class LibraryTest(FunctionalTest):
@@ -6,7 +8,10 @@ class LibraryTest(FunctionalTest):
     def test_browse_library_anonymous(self):
 
         # Paper stream is already loaded with some papers and journals
-        self.create_pre_load_library_with_journals_and_papers()
+        self.create_pre_load_library_with_journals_and_papers(
+            settings.ITEMS_PER_PAGE * 2,
+            50,
+            settings.ITEMS_PER_PAGE * 10)
 
         # Anonymous X wants to check what the library has in stock.
         # He goes to the root library URL
@@ -23,18 +28,21 @@ class LibraryTest(FunctionalTest):
         self.assertEqual(self.browser.current_url,
                          self.server_url+'/library/journals/')
 
-        # Where a table of journals in db is displayed.
-        # The first row show first journal
+        # X checks next page
+        self.browser.find_element_by_link_text('Next').click()
 
+        # X comes back to previous page
+        self.browser.find_element_by_link_text('Previous').click()
 
         # X clicks on the first Journal
-        self.browser.find_element_by('Journal title #01').click()
+        self.browser.find_element_by_id('journal1').click()
 
-        # X is redirected to /library/journals/<pk>/papers/
-        # pk = Journal.objects.get(title='Journal title #01').id
-        # self.assertEqual(self.browser.current_url,
-        #                  '{0}/library/journals/{1}/papers'.format(
-        #                      self.server_url, pk))
+        # X is redirected to /library/journals/<pk>/
+        pk = Journal.objects.get(title='Journal title #01').id
+        self.assertEqual(self.browser.current_url,
+                         '{0}/library/journal/{1}/'.format(
+                             self.server_url, pk))
+        time.sleep(5)
 
         # The page displays a list of paper for this journal
         # p = Paper.objects.filter(journal__pk=pk).first()

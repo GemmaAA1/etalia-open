@@ -28,28 +28,27 @@ class FunctionalTest(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def create_pre_load_library_with_journals_and_papers(self):
+    def create_pre_load_library_with_journals_and_papers(self, *args):
         # if self.against_staging:
         #     pre_load_library_on_server(self.server_host)
         # else:
         #     pre_load_library()
-        self.pre_load_library()
+        self.pre_load_library(*args)
 
-    def pre_load_library(self):
+    def pre_load_library(self, nb_journals=10, nb_authors=50, nb_papers=30):
 
         # Create a bench of journals
-        nb_journals = 10
         journals = []
         for n in range(nb_journals):
             digit7 = random.randint(0, 1e7-1)
             journals.append(Journal.objects.create(
-                title='Journal title #{0:02d}'.format(n),
-                issn='{0:07d}{1}'.format(digit7, issn.calc_check_digit(
+                title='Journal title #{0:02d}'.format(n+1),
+                id_key='ISSN',
+                id_val='{0:07d}{1}'.format(digit7, issn.calc_check_digit(
                     '{0:07d}'.format(digit7))))
             )
 
         # Create a bench of authors
-        nb_authors = 50
         authors = []
         while len(authors) < nb_authors:
             authors.append(Author.objects.create(
@@ -58,7 +57,6 @@ class FunctionalTest(StaticLiveServerTestCase):
             )
 
         # Create a bench of papers with random authors
-        nb_papers = 30
         papers = []
         n = 0
         while n < nb_papers:
@@ -66,7 +64,7 @@ class FunctionalTest(StaticLiveServerTestCase):
             # build paper
             paper = Paper.objects.create(
                 title='Title for paper #{0:02d}'.format(n),
-                doi='doi.{0:03d}'.format(n),
+                id_doi='doi.{0:03d}'.format(n),
                 journal=journals[random.randint(0, nb_journals - 1)])
             # add authors
             nb_authors_paper = random.randint(0, 5)

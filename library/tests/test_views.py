@@ -22,9 +22,9 @@ class JournalsView(TestCase):
         self.assertTemplateUsed(response, 'journals.html')
 
     def test_view_passes_journals_list_to_template(self):
-        Journal.objects.create(id_key='ISSN', id_val=gen_issn(),
+        Journal.objects.create(id_issn=gen_issn(),
                                title='On the Stack')
-        Journal.objects.create(id_key='ISSN', id_val=gen_issn(),
+        Journal.objects.create(id_issn=gen_issn(),
                                title='In the Stack')
         journal_list = list(Journal.objects.all())
         response = self.client.get('/library/journals/')
@@ -34,13 +34,19 @@ class JournalsView(TestCase):
 class JournalView(TestCase):
 
     def test_journal_page_render_journals_template(self):
-        journal = Journal.objects.create(id_key='ISSN', id_val=gen_issn(),
+        journal = Journal.objects.create(id_issn=gen_issn(),
                                          title='On the Stack')
         response = self.client.get('/library/journal/{0}/'.format(journal.pk))
         self.assertTemplateUsed(response, 'journal.html')
 
+    def test_passes_journal_info_to_template(self):
+        journal = Journal.objects.create(id_issn=gen_issn(),
+                                         title='On the Stack')
+        response = self.client.get('/library/journal/{0}/'.format(journal.pk))
+        self.assertEqual(response.context['journal'], journal)
+
     def test_passes_journal_info_and_paper_list_to_template(self):
-        journal = Journal.objects.create(id_key='issn', id_val=gen_issn(),
+        journal = Journal.objects.create(id_issn=gen_issn(),
                                          title='On the Stack')
         paper1 = Paper.objects.create(id_doi='xxx', journal=journal,
                                       title='A short story',
@@ -58,4 +64,3 @@ class JournalView(TestCase):
         paper_list = list(Paper.objects.all())
 
         self.assertEqual(list(response.context['paper_list']), paper_list)
-        self.assertEqual(response.context['journal'], journal)

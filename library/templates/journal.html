@@ -13,8 +13,8 @@
                 <div class="col-lg-1"></div>
                 <div class="col-lg-10">
                     <p>Title: {{ journal.title }}</p>
-                    <p>{% if journal.issn %}
-                            ISSN: {{ journal.issn }} E-ISSN: {{ journal.e_issn }}
+                    <p>{% if journal.id_key %}
+                            {{ journal.id_key }} E-ISSN: {{ journal.e_issn }}
                         {% else %}
                             EXT ID: {{ journal.issn }}
                         {% endif %}
