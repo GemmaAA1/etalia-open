@@ -24,13 +24,13 @@ class Journal(TimeStampedModel):
     """
     # Identifiers
     # TODO: define custom field for this ids
-    id_issn = models.CharField(max_length=9, null=False, blank=True, default='',
+    id_issn = models.CharField(max_length=9, blank=True, default='',
                                db_index=True)
-    id_eissn = models.CharField(max_length=9, null=False, blank=True, default='',
+    id_eissn = models.CharField(max_length=9, blank=True, default='',
                                 db_index=True)
-    id_arx = models.CharField(max_length=32, null=False, blank=True, default='',
+    id_arx = models.CharField(max_length=32, blank=True, default='',
                                 db_index=True)
-    id_oth = models.CharField(max_length=32, null=False, blank=True, default='',
+    id_oth = models.CharField(max_length=32, blank=True, default='',
                                 db_index=True)
 
     # periodical title
@@ -41,7 +41,7 @@ class Journal(TimeStampedModel):
     # publisher group
     publisher = models.ForeignKey(Publisher, null=True, default='', blank=True)
     # url
-    url = models.URLField(blank=True, null=True, default='')
+    url = models.URLField(blank=True, default='')
     # Scope
     scope = models.TextField(blank=True, max_length=1000, default='')
 
@@ -127,7 +127,7 @@ class Author(TimeStampedModel):
     # last name
     last_name = models.CharField(max_length=100, blank=True, default='')
     # email
-    email = models.EmailField(max_length=254, blank=True, null=True, default='')
+    email = models.EmailField(max_length=254, blank=True, default='')
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
@@ -146,17 +146,17 @@ class Paper(TimeStampedModel):
     """
 
     # identifiers (uniqueness defined thereafter)
-    id_doi = models.CharField(max_length=32, null=False, blank=True, default='',
+    id_doi = models.CharField(max_length=32, blank=True, default='',
                               db_index=True)
-    id_arx = models.CharField(max_length=32, null=False, blank=True, default='',
+    id_arx = models.CharField(max_length=32, blank=True, default='',
                               db_index=True)
-    id_pmi = models.CharField(max_length=32, null=False, blank=True, default='',
+    id_pmi = models.CharField(max_length=32, blank=True, default='',
                               db_index=True)
-    id_oth = models.CharField(max_length=32, null=False, blank=True, default='',
+    id_oth = models.CharField(max_length=32, blank=True, default='',
                               db_index=True)
 
     # article title
-    title = models.CharField(max_length=500, blank=True, default='')
+    title = models.CharField(max_length=500, blank=True, default='', db_index=True)
     # authors
     authors = models.ManyToManyField(Author, through='AuthorPosition')
     # abstract
@@ -170,9 +170,9 @@ class Paper(TimeStampedModel):
     # page
     page = models.CharField(max_length=200, blank=True, default='')
     # date published
-    date = models.DateField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True, db_index=True)
     # url where seen
-    url = models.URLField(blank=True, null=True, default='')
+    url = models.URLField(blank=True, default='')
 
     # Booleans
     # article in press
@@ -266,9 +266,9 @@ class Paper(TimeStampedModel):
 class AuthorPosition(TimeStampedModel):
     """Intermediate table for ranking authors in papers
     """
-    author = models.ForeignKey(Author, null=False)
-    paper = models.ForeignKey(Paper, null=False)
-    position = models.IntegerField(null=True, blank=True)
+    author = models.ForeignKey(Author)
+    paper = models.ForeignKey(Paper)
+    position = models.IntegerField(default=1)
 
     def __str__(self):
         return '[{0}] {1}'.format(self.position, self.author.last_name)

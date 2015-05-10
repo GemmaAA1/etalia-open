@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import jsonfield.fields
 
 
 class Migration(migrations.Migration):
@@ -14,16 +13,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Author',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
-                ('first_name', models.CharField(max_length=100, blank=True, default='')),
-                ('last_name', models.CharField(max_length=100, blank=True, default='')),
-                ('email', models.EmailField(null=True, max_length=254, blank=True, default='')),
+                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('first_name', models.CharField(default='', max_length=100, blank=True)),
+                ('last_name', models.CharField(default='', max_length=100, blank=True)),
+                ('email', models.EmailField(default='', max_length=254, blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
             name='AuthorPosition',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
                 ('position', models.IntegerField(null=True, blank=True)),
                 ('author', models.ForeignKey(to='library.Author')),
             ],
@@ -34,18 +37,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Journal',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
-                ('id_key', models.CharField(max_length=200, choices=[('ISSN', 'ISSN'), ('ARX', 'Arxiv'), ('OTH', 'Other')], default='OTH', db_index=True)),
-                ('id_val', models.CharField(max_length=240, db_index=True)),
-                ('title', models.CharField(max_length=200, blank=True, default='')),
-                ('short_title', models.CharField(max_length=100, blank=True, default='')),
-                ('issn', models.CharField(max_length=10, blank=True, default='')),
-                ('e_issn', models.CharField(max_length=10, blank=True, default='')),
-                ('ext_id', models.CharField(max_length=30, blank=True, default='')),
-                ('url', models.URLField(null=True, blank=True, default='')),
-                ('scope', models.TextField(max_length=1000, blank=True, default='')),
-                ('language', models.CharField(max_length=200, blank=True, default='')),
-                ('period', models.CharField(max_length=200, choices=[('ANN', 'Annual'), ('SEM', 'Semi-annual'), ('TRI', 'Tri-annual'), ('QUA', 'Quarterly'), ('MON', 'Monthly'), ('BIM', 'Bi-monthly'), ('IRR', 'Irregular')], default='IRR')),
+                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('id_issn', models.CharField(default='', db_index=True, max_length=9, blank=True)),
+                ('id_eissn', models.CharField(default='', db_index=True, max_length=9, blank=True)),
+                ('id_arx', models.CharField(default='', db_index=True, max_length=32, blank=True)),
+                ('id_oth', models.CharField(default='', db_index=True, max_length=32, blank=True)),
+                ('title', models.CharField(default='', max_length=200, blank=True)),
+                ('short_title', models.CharField(default='', max_length=100, blank=True)),
+                ('url', models.URLField(default='', blank=True, null=True)),
+                ('scope', models.TextField(default='', max_length=1000, blank=True)),
+                ('language', models.CharField(default='', max_length=200, blank=True)),
+                ('period', models.CharField(default='IRR', choices=[('ANN', 'Annual'), ('SEM', 'Semi-annual'), ('TRI', 'Tri-annual'), ('QUA', 'Quarterly'), ('MON', 'Monthly'), ('BIM', 'Bi-monthly'), ('IRR', 'Irregular')], max_length=200)),
                 ('lib_size', models.IntegerField(default=0)),
                 ('is_valid', models.BooleanField(default=False)),
             ],
@@ -54,29 +58,26 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='NewPaper',
-            fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
-                ('lib_size', models.IntegerField(default=0)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Paper',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
-                ('identifiers', jsonfield.fields.JSONField(default='o')),
-                ('title', models.CharField(max_length=500, blank=True, default='')),
-                ('abstract', models.TextField(blank=True, default='')),
-                ('volume', models.CharField(max_length=200, blank=True, default='')),
-                ('issue', models.CharField(max_length=200, blank=True, default='')),
-                ('page', models.CharField(max_length=200, blank=True, default='')),
+                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('id_doi', models.CharField(default='', db_index=True, max_length=32, blank=True)),
+                ('id_arx', models.CharField(default='', db_index=True, max_length=32, blank=True)),
+                ('id_pmi', models.CharField(default='', db_index=True, max_length=32, blank=True)),
+                ('id_oth', models.CharField(default='', db_index=True, max_length=32, blank=True)),
+                ('title', models.CharField(default='', max_length=500, blank=True)),
+                ('abstract', models.TextField(default='', blank=True)),
+                ('volume', models.CharField(default='', max_length=200, blank=True)),
+                ('issue', models.CharField(default='', max_length=200, blank=True)),
+                ('page', models.CharField(default='', max_length=200, blank=True)),
                 ('date', models.DateField(null=True, blank=True)),
-                ('url', models.URLField(null=True, blank=True, default='')),
-                ('date_added', models.DateTimeField(auto_now_add=True)),
+                ('url', models.URLField(default='', blank=True, null=True)),
                 ('is_aip', models.BooleanField(default=False)),
                 ('is_pre_print', models.BooleanField(default=False)),
                 ('is_valid', models.BooleanField(default=False)),
-                ('authors', models.ManyToManyField(through='library.AuthorPosition', to='library.Author')),
+                ('authors', models.ManyToManyField(to='library.Author', through='library.AuthorPosition')),
                 ('journal', models.ForeignKey(to='library.Journal', null=True, blank=True)),
             ],
             options={
@@ -86,15 +87,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Publisher',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=200)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('name', models.CharField(max_length=200, unique=True)),
                 ('url', models.URLField()),
             ],
-        ),
-        migrations.AddField(
-            model_name='newpaper',
-            name='paper',
-            field=models.OneToOneField(to='library.Paper'),
+            options={
+                'abstract': False,
+            },
         ),
         migrations.AddField(
             model_name='journal',
@@ -109,9 +110,5 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='author',
             unique_together=set([('first_name', 'last_name')]),
-        ),
-        migrations.AlterUniqueTogether(
-            name='journal',
-            unique_together=set([('id_key', 'id_val')]),
         ),
     ]
