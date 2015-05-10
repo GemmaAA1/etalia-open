@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from stdnum import issn as issn_checker
 from django.db.models import Q
-from jsonfield import JSONField
+from
 import collections
 
 
@@ -277,19 +277,3 @@ class AuthorPosition(models.Model):
 
     class Meta:
         ordering = ['position']
-
-
-class NewPaper(models.Model):
-    """New papers
-    """
-    paper = models.OneToOneField(Paper)
-
-    lib_size = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.paper.short_title
-
-    def counts_papers(self):
-        self.lib_size = self.paper.all()
-        self.save()
-        return self.lib_size
