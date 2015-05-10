@@ -1,1 +1,9 @@
 python manage.py shell --settings=twoscoops.settings.local
+
+check for a MultipleObjectsReturned
+
+Use select_related() and exclude() on query to retrieve and update
+
+
+(Use @permission_required() and other decorator to access library and protect other stuff)
+Actually use mixin for this from django-brace

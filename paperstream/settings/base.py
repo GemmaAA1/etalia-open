@@ -62,6 +62,23 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'paperstream.urls'
 
+
+# Database
+# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'paperstream',
+        'USER': 'nicolaspannetier',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '',
+        'ATOMIC_REQUESTS': True,
+    }
+}
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -100,19 +117,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'paperstream.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'paperstream',
-        'USER': 'nicolaspannetier',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': ''
-    }
-}
 
 
 # Internationalization

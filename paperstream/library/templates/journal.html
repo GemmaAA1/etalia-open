@@ -13,15 +13,10 @@
                 <div class="col-lg-1"></div>
                 <div class="col-lg-10">
                     <p>Title: {{ journal.title }}</p>
-                    <p>{% if journal.id_key %}
-                            {{ journal.id_key }} E-ISSN: {{ journal.e_issn }}
-                        {% else %}
-                            EXT ID: {{ journal.issn }}
-                        {% endif %}
-                    </p>
+                    <p>Identifier{{ counts_ids|pluralize }}: {{ journal.ids_disp }}</p>
                     <p>Publisher: {{ journal.publisher }}</p>
                     <p>Period: {{ journal.period }}</p>
-                    <p>Papers: {{ journal.counts_paper }}</p>
+                    <p>Paper{{ counts_papers|pluralize }}: {{ journal.counts_papers }}</p>
                 </div>
                 <div class="col-lg-1"></div>
             </div>
@@ -38,7 +33,7 @@
                             <td><h5>Date</h5></td>
                         </tr>
                         {% for paper in paper_list %}
-                            <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'view_paper' paper.id %}'">
+                            <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'library:paper' paper.pk %}'">
                                 <td>{{ paper.first_author_disp }}</td>
                                 <td id="paper_title">{{ paper.short_title }}</td>
                                 <td>{{ paper.date_disp }}</td>

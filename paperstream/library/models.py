@@ -1,10 +1,23 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
-from stdnum import issn as issn_checker
 from django.db.models import Q
 from base.models import TimeStampedModel
+from .validators import validate_id_issn, validate_id_eissn
 import collections
+
+
+class NullableCharField(models.CharField):
+    description = "CharField that stores NULL but returns ''"
+    __metaclass__ = models.SubfieldBase
+
+    def to_python(self, value):
+        if isinstance(value, models.EmailField):
+            return value
+        return value or ''
+
+    def get_prep_value(self, value):
+        return value or None
 
 
 class Publisher(TimeStampedModel):
@@ -24,19 +37,22 @@ class Journal(TimeStampedModel):
     """
     # Identifiers
     # TODO: define custom field for this ids
-    id_issn = models.CharField(max_length=9, blank=True, default='',
-                               db_index=True)
-    id_eissn = models.CharField(max_length=9, blank=True, default='',
-                                db_index=True)
-    id_arx = models.CharField(max_length=32, blank=True, default='',
-                                db_index=True)
-    id_oth = models.CharField(max_length=32, blank=True, default='',
-                                db_index=True)
+    # TODO: Test if db_index=True improve performance
+    id_issn = NullableCharField(max_length=9, blank=True, null=True,
+                                default=None, validators=[validate_id_issn],
+                                unique=True)
+    id_eissn = NullableCharField(max_length=9, blank=True, null=True,
+                                 default=None, validators=[validate_id_eissn],
+                                 unique=True)
+    id_arx = NullableCharField(max_length=32, blank=True, null=True,
+                               default=None, unique=True)
+    id_oth = NullableCharField(max_length=32, blank=True, null=True,
+                               default=None, unique=True)
 
     # periodical title
-    title = models.CharField(max_length=200, blank=True, default='')
+    title = models.CharField(max_length=200)
     # short title
-    short_title = models.CharField(max_length=100, blank=True, default='')
+    short_title = models.CharField(max_length=100, blank=True)
 
     # publisher group
     publisher = models.ForeignKey(Publisher, null=True, default='', blank=True)
@@ -68,38 +84,6 @@ class Journal(TimeStampedModel):
     class Meta:
         ordering = ['title']
 
-    def validate_unique_ids(self):
-        if self.id_issn and \
-                self._default_manager.filter(Q(id_issn=self.id_issn) &
-                        ~Q(pk=self.pk)).exists():
-            raise ValidationError('id_issn already exists')
-        if self.id_arx and \
-                self._default_manager.filter(Q(id_arx=self.id_arx) &
-                        ~Q(pk=self.pk)).exists():
-            raise ValidationError('id_arx already exists')
-        if self.id_oth and \
-                self._default_manager.filter(Q(id_oth=self.id_oth) &
-                        ~Q(pk=self.pk)):
-            raise ValidationError('id_oth already exists')
-
-    def validate_unique(self, exclude=None):
-        super(Journal, self).validate_unique(exclude=exclude)
-        self.validate_unique_ids()
-
-    # to force django to store None for empty string
-    def clean_id_issn(self):
-        if self.id_issn:
-            issn_checker.validate(self.id_issn)
-
-    def clean(self, *args, **kwargs):
-        self.clean_id_issn()
-        super(Journal, self).clean()
-
-    def save(self, *args, **kwargs):
-        self.validate_unique()
-        self.clean_id_issn()
-        super(Journal, self).save(*args, **kwargs)
-
     def __str__(self):
         if self.short_title:
             return self.short_title
@@ -110,11 +94,41 @@ class Journal(TimeStampedModel):
                 return self.title[:30]
 
     def get_absolute_url(self):
-        return reverse('view_journal', args=[self.id])
+        return reverse('library:journal', args=[self.id])
 
-    def counts_paper(self):
+    def counts_papers(self):
         self.lib_size = len(self.paper_set.all())
         return self.lib_size
+
+    def counts_ids(self):
+        count = 0
+        if self.id_issn:
+            count += 1
+        if self.id_i:
+            count += 1
+        if self.id_issn:
+            count += 1
+        if self.id_issn:
+            count += 1
+        return count
+
+    def ids_disp(self):
+        ids_build = []
+        if self.id_issn:
+            ids_build += 'ISSN: {0}'.format(self.id_issn)
+        if self.id_eissn:
+            if ids_build:
+                ids_build += ', '
+            ids_build += 'e-ISSN: {0}'.format(self.id_eissn)
+        if self.id_arx:
+            if ids_build:
+                ids_build += ', '
+            ids_build += 'Arxiv: {0}'.format(self.id_arx)
+        if self.id_oth:
+            if ids_build:
+                ids_build += ', '
+            ids_build += 'Other ID: {0}'.format(self.id_oth)
+        return ids_build
 
 
 class Author(TimeStampedModel):
@@ -122,10 +136,10 @@ class Author(TimeStampedModel):
     """
     # TODO: add affiliation of authors ?
 
+    # last name
+    last_name = models.CharField(max_length=100)
     # first name
     first_name = models.CharField(max_length=100, blank=True, default='')
-    # last name
-    last_name = models.CharField(max_length=100, blank=True, default='')
     # email
     email = models.EmailField(max_length=254, blank=True, default='')
 
@@ -135,34 +149,30 @@ class Author(TimeStampedModel):
     class Meta:
         unique_together = ('first_name', 'last_name')
 
-    def clean(self):
-        if not self.first_name and not self.last_name:
-            raise ValidationError('Either first_name or last_name must '
-                                  'be defined')
 
 
 class Paper(TimeStampedModel):
     """Scientific papers
     """
+    # TODO: Test if db_index=True improve performance
 
     # identifiers (uniqueness defined thereafter)
-    id_doi = models.CharField(max_length=32, blank=True, default='',
-                              db_index=True)
-    id_arx = models.CharField(max_length=32, blank=True, default='',
-                              db_index=True)
-    id_pmi = models.CharField(max_length=32, blank=True, default='',
-                              db_index=True)
-    id_oth = models.CharField(max_length=32, blank=True, default='',
-                              db_index=True)
-
+    id_doi = NullableCharField(max_length=32, blank=True, default='',
+                               null=True, unique=True)
+    id_arx = NullableCharField(max_length=32, blank=True, default='',
+                               null=True, unique=True)
+    id_pmi = NullableCharField(max_length=32, blank=True, default='',
+                               null=True, unique=True)
+    id_oth = NullableCharField(max_length=32, blank=True, default='',
+                               null=True, unique=True)
     # article title
-    title = models.CharField(max_length=500, blank=True, default='', db_index=True)
+    title = models.CharField(max_length=500)
     # authors
     authors = models.ManyToManyField(Author, through='AuthorPosition')
     # abstract
     abstract = models.TextField(blank=True, default='')
     # journal
-    journal = models.ForeignKey(Journal, null=True, blank=True, db_index=True)
+    journal = models.ForeignKey(Journal, null=True, blank=True)
     # volume
     volume = models.CharField(max_length=200, blank=True, default='')
     # issue
@@ -170,7 +180,7 @@ class Paper(TimeStampedModel):
     # page
     page = models.CharField(max_length=200, blank=True, default='')
     # date published
-    date = models.DateField(null=True, blank=True, db_index=True)
+    date = models.DateField(null=True, blank=True, )
     # url where seen
     url = models.URLField(blank=True, default='')
 
@@ -184,32 +194,6 @@ class Paper(TimeStampedModel):
 
     class Meta:
         ordering = ['-date']
-
-    def validate_unique_ids(self):
-        if self.id_doi and \
-                self._default_manager.filter(Q(id_doi=self.id_doi) &
-                        ~Q(pk=self.pk)).exists():
-            raise ValidationError('id_doi already exists')
-        if self.id_arx and \
-                self._default_manager.filter(Q(id_arx=self.id_arx) &
-                        ~Q(pk=self.pk)).exists():
-            raise ValidationError('id_arx already exists')
-        if self.id_pmi and \
-                self._default_manager.filter(Q(id_pmi=self.id_pmi) &
-                        ~Q(pk=self.pk)).exists():
-            raise ValidationError('id_pmi already exists')
-        if self.id_oth and \
-                self._default_manager.filter(Q(id_oth=self.id_oth) &
-                        ~Q(pk=self.pk)).exists():
-            raise ValidationError('id_oth already exists')
-
-    def validate_unique(self, exclude=None):
-        self.validate_unique_ids()
-        super(Paper, self).validate_unique(exclude=exclude)
-
-    def save(self, *args, **kwargs):
-        self.validate_unique()
-        super(Paper, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.short_title
@@ -260,7 +244,7 @@ class Paper(TimeStampedModel):
             return 'Unknown journal'
 
     def get_absolute_url(self):
-        return reverse('view_paper', args=[self.id])
+        return reverse('library:paper', args=[self.pk])
 
 
 class AuthorPosition(TimeStampedModel):

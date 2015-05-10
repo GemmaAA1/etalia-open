@@ -20,7 +20,7 @@
                             <td><h5>Pool size</h5></td>
                         </tr>
                         {% for journal in journal_list %}
-                            <tr id="journal{{ forloop.counter }}" onclick="document.location = '{% url 'view_journal' journal.id %}'">
+                            <tr id="journal{{ forloop.counter }}" onclick="document.location = '{% url 'library:journal' journal.pk %}'">
                                 <td id="journal_title">{{ journal.title }}</td>
                                 <td id="journal_issn">{% if journal.issn %} {{ journal.issn }} {% else %} {{ journal.ext_id }} {% endif %}</td>
                                 <td id="journal_lib_size">{{ journal.lib_size }}</td>

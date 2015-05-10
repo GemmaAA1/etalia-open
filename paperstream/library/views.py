@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from .models import Journal, Paper
 
 
 # Create your views here.
+def library(request):
+    return render(request, 'library.html')
 
 
 class JournalsListView(ListView):
@@ -13,7 +16,7 @@ class JournalsListView(ListView):
     template_name = 'journals.html'
     paginate_by = settings.ITEMS_PER_PAGE
 
-view_journals = JournalsListView.as_view()
+journals = JournalsListView.as_view()
 
 
 class JournalView(ListView):
@@ -28,18 +31,24 @@ class JournalView(ListView):
         return context
 
     def get_queryset(self):
-        papers = Paper.objects.filter(journal__id=self.kwargs['id'])
-        return papers
+        papers_in_jou = Paper.objects.filter(journal__id=self.kwargs['id'])
+        return papers_in_jou
 
-view_journal = JournalView.as_view()
+journal = JournalView.as_view()
 
-def view_library(request):
-    return render(request, 'library.html')
 
-def view_papers(request):
-    pass
+class PaperView(DetailView):
 
-def view_paper(request, paper_id):
-    # use get_object_or_404
-    paper = get_object_or_404(Paper, pk=paper_id)
-    pass
+    model = Paper
+    template_name = 'paper.html'
+
+paper = PaperView.as_view()
+
+
+class PapersListView(ListView):
+    model = Paper
+    template_name = 'papers.html'
+    paginate_by = settings.ITEMS_PER_PAGE
+
+papers = PapersListView.as_view()
+
