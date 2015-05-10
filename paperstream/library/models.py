@@ -3,11 +3,11 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from stdnum import issn as issn_checker
 from django.db.models import Q
-from
+from base.models import TimeStampedModel
 import collections
 
 
-class Publisher(models.Model):
+class Publisher(TimeStampedModel):
     """Publisher group
     """
     # Group name
@@ -19,7 +19,7 @@ class Publisher(models.Model):
         return self.name
 
 
-class Journal(models.Model):
+class Journal(TimeStampedModel):
     """Periodicals
     """
     # Identifiers
@@ -117,7 +117,7 @@ class Journal(models.Model):
         return self.lib_size
 
 
-class Author(models.Model):
+class Author(TimeStampedModel):
     """Creators (authors) of papers
     """
     # TODO: add affiliation of authors ?
@@ -141,7 +141,7 @@ class Author(models.Model):
                                   'be defined')
 
 
-class Paper(models.Model):
+class Paper(TimeStampedModel):
     """Scientific papers
     """
 
@@ -173,8 +173,6 @@ class Paper(models.Model):
     date = models.DateField(null=True, blank=True)
     # url where seen
     url = models.URLField(blank=True, null=True, default='')
-    # date added
-    date_added = models.DateTimeField(auto_now_add=True)
 
     # Booleans
     # article in press
@@ -265,7 +263,7 @@ class Paper(models.Model):
         return reverse('view_paper', args=[self.id])
 
 
-class AuthorPosition(models.Model):
+class AuthorPosition(TimeStampedModel):
     """Intermediate table for ranking authors in papers
     """
     author = models.ForeignKey(Author, null=False)
