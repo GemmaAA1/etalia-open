@@ -20,16 +20,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='journal',
-            name='id_eissn',
-            field=library.models.NullableCharField(null=True, validators=[library.validators.validate_id_eissn], unique=True, default=None, max_length=9, blank=True),
-        ),
-        migrations.AlterField(
-            model_name='journal',
-            name='id_issn',
-            field=library.models.NullableCharField(null=True, validators=[library.validators.validate_id_issn], unique=True, default=None, max_length=9, blank=True),
-        ),
-        migrations.AlterField(
-            model_name='journal',
             name='id_oth',
             field=library.models.NullableCharField(null=True, blank=True, unique=True, default=None, max_length=32),
         ),

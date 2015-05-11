@@ -8,18 +8,18 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 
-class LibraryView(TestCase):
+class LibraryViewTest(TestCase):
 
     def test_library_page_render_library_template(self):
         response = self.client.get('/library/')
-        self.assertTemplateUsed(response, 'library.html')
+        self.assertTemplateUsed(response, 'library/library.html')
 
 
-class JournalsView(TestCase):
+class JournalsViewTest(TestCase):
 
     def test_journals_page_render_journals_template(self):
         response = self.client.get('/library/journals/')
-        self.assertTemplateUsed(response, 'journals.html')
+        self.assertTemplateUsed(response, 'library/journals.html')
 
     def test_view_passes_journals_list_to_template(self):
         Journal.objects.create(id_issn=gen_issn(),
@@ -31,13 +31,13 @@ class JournalsView(TestCase):
         self.assertEqual(list(response.context['journal_list']), journal_list)
 
 
-class JournalView(TestCase):
+class JournalViewTest(TestCase):
 
-    def test_journal_page_render_journals_template(self):
+    def test_journal_page_render_journal_template(self):
         journal = Journal.objects.create(id_issn=gen_issn(),
                                          title='On the Stack')
         response = self.client.get('/library/journal/{0}/'.format(journal.pk))
-        self.assertTemplateUsed(response, 'journal.html')
+        self.assertTemplateUsed(response, 'library/journal.html')
 
     def test_passes_journal_info_to_template(self):
         journal = Journal.objects.create(id_issn=gen_issn(),

@@ -9,7 +9,8 @@ class PublisherModelTest(TestCase):
 
     def test_str_is_name(self):
         publisher = Publisher(name='Publisher #1')
-        self.assertEqual(print(publisher), 'Publisher #1')
+        self.assertEqual(publisher.__str__(), 'Publisher #1')
+
 
 class PaperModelTest(TestCase):
 
@@ -70,13 +71,11 @@ class PaperModelTest(TestCase):
     def test_display_ids(self):
         paper = Paper.objects.create(id_oth='xxx', id_arx='yyy',
                                      id_doi='0000-0019', id_pmi='pubmed id')
-        disp_str = paper.ids_disp()
+        disp_str = paper.ids_disp
         self.assertIn('Arxiv: yyy', disp_str)
         self.assertIn('Other ID: xxx', disp_str)
         self.assertIn('DOI: 0000-0019', disp_str)
         self.assertIn('PMID: pubmed id', disp_str)
-
-
 
 
 class JournalModelTest(TestCase):
@@ -147,22 +146,42 @@ class AuthorModelTest(TestCase):
         author = Author.objects.create(last_name='Bernard')
         self.assertEqual(author.first_name, '')
 
+    def test_str(self):
+        author = Author(first_name='Bernard', last_name='Paul')
+        self.assertEqual(author.__str__(), 'Bernard Paul')
+
+    def test_compact_disp(self):
+        author = Author(first_name='Bernard', last_name='Le Normand')
+        self.assertEqual(author.compact_disp, 'Le Normand B.')
+        author = Author(first_name='', last_name='Le Normand')
+        self.assertEqual(author.compact_disp, 'Le Normand')
+
+    def test_full_disp(self):
+        author = Author(first_name='Patrick', last_name='Hernandez')
+        self.assertEqual(author.full_disp, 'Patrick Hernandez')
+        author = Author(first_name='', last_name='Hernandez')
+        self.assertEqual(author.full_disp, 'Hernandez')
+
 
 class PaperAuthorTest(TestCase):
 
+    def setUp(self):
+        Author.objects.create(first_name='Bernard', last_name='Weiner')
+        Author.objects.create(first_name='', last_name='Christen')
+        Author.objects.create(first_name='Louis Andre', last_name='Van Brook')
+        Paper.objects.create(title='On the road again')
+
     def test_authors_ordering(self):
-        c1 = Author.objects.create(first_name='Bernard')
-        c2 = Author.objects.create(first_name='Paul')
-        c3 = Author.objects.create(first_name='Louis')
-        p1 = Paper.objects.create()
-        AuthorPosition.objects.create(author=c1, paper=p1, position=1)
-        AuthorPosition.objects.create(author=c2, paper=p1, position=2)
-        AuthorPosition.objects.create(author=c3, paper=p1, position=2)
+        authors = Author.objects.all()
+        paper = Paper.objects.first()
+        for i, author in enumerate(authors):
+            AuthorPosition.objects.create(author=author,
+                                          paper=paper,
+                                          position=i+1)
+        cs = [cp.author for cp in AuthorPosition.objects.filter(paper=paper)]
+        self.assertEqual(cs, list(authors))
 
-        cs = [cp.author for cp in AuthorPosition.objects.filter(paper=p1)]
-
-        self.assertEqual(cs, [c1, c2, c3])
-
+    #TODO: test display
 
 class JournalPaperTest(TestCase):
 

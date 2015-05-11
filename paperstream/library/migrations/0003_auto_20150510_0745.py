@@ -24,16 +24,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='journal',
-            name='id_eissn',
-            field=models.CharField(default='', blank=True, max_length=9, validators=[library.validators.validate_id_eissn]),
-        ),
-        migrations.AlterField(
-            model_name='journal',
-            name='id_issn',
-            field=models.CharField(default='', blank=True, max_length=9, validators=[library.validators.validate_id_issn]),
-        ),
-        migrations.AlterField(
-            model_name='journal',
             name='id_oth',
             field=models.CharField(default='', blank=True, max_length=32),
         ),

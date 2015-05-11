@@ -8,12 +8,16 @@ from .models import Journal, Paper
 
 # Create your views here.
 def library(request):
-    return render(request, 'library.html')
+
+    context = {'journal_count': Journal.objects.count(),
+               'paper_count': Paper.objects.count(),
+    }
+    return render(request, 'library/library.html', context)
 
 
 class JournalsListView(ListView):
     model = Journal
-    template_name = 'journals.html'
+    template_name = 'library/journals.html'
     paginate_by = settings.ITEMS_PER_PAGE
 
 journals = JournalsListView.as_view()
@@ -22,7 +26,7 @@ journals = JournalsListView.as_view()
 class JournalView(ListView):
     # Journal view display a list of papers from the journal
     model = Paper
-    template_name = 'journal.html'
+    template_name = 'library/journal.html'
     paginate_by = settings.ITEMS_PER_PAGE
 
     def get_context_data(self, **kwargs):

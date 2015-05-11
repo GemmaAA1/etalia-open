@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from core.models import TimeStampedModel, NullableCharField
-from .validators import validate_id_issn, validate_id_eissn
+from .validators import validate_issn, validate_author_names
 
 
 class Publisher(TimeStampedModel):
@@ -31,10 +31,10 @@ class Journal(TimeStampedModel):
 
     # TODO: Test if db_index=True improve performance
     id_issn = NullableCharField(max_length=9, blank=True, null=True,
-                                default=None, validators=[validate_id_issn],
+                                default=None, validators=[validate_issn],
                                 unique=True)
     id_eissn = NullableCharField(max_length=9, blank=True, null=True,
-                                 default=None, validators=[validate_id_eissn],
+                                 default=None, validators=[validate_issn],
                                  unique=True)
     id_arx = NullableCharField(max_length=32, blank=True, null=True,
                                default=None, unique=True)
@@ -65,7 +65,7 @@ class Journal(TimeStampedModel):
                       ('BIM', 'Bi-monthly'),
                       ('IRR', 'Irregular'))
     period = models.CharField(max_length=200, choices=PUBLISH_PERIOD,
-                              default='IRR')
+                              default='IRR', null=True, blank=True)
 
     # Number of Paper in journal
     lib_size = models.IntegerField(default=0)
@@ -100,6 +100,7 @@ class Journal(TimeStampedModel):
                 count += 1
         return count
 
+    @property
     def ids_disp(self):
         ids_str = ''
         # Loop through field starting with 'id_'
@@ -117,19 +118,38 @@ class Author(TimeStampedModel):
     """
     # TODO: add affiliation of authors ?
 
-    # last name
-    last_name = models.CharField(max_length=100)
-    # first name
+    # last name (capitalized)
+    last_name = models.CharField(max_length=100,
+                                 validators=[validate_author_names])
+    # first name (capitalize). first_name can store middle name
     first_name = models.CharField(max_length=100, blank=True, default='')
     # email
     email = models.EmailField(max_length=254, blank=True, default='')
 
-    def __str__(self):
-        return self.first_name + ' ' + self.last_name
-
     class Meta:
         unique_together = ('first_name', 'last_name')
 
+    def __str__(self):
+        if self.first_name:
+            return self.first_name + ' ' + self.last_name
+        else:
+            return self.last_name
+
+    @property
+    def compact_disp(self):
+        # get initials
+        if self.first_name:
+            initials = '.'.join([name[0] for name in self.first_name.split(' ')]) + '.'
+            return self.last_name + ' ' + initials
+        else:
+            return self.last_name
+
+    @property
+    def full_disp(self):
+        if self.first_name:
+            return self.first_name + ' ' + self.last_name
+        else:
+            return self.last_name
 
 
 class Paper(TimeStampedModel):
@@ -183,36 +203,52 @@ class Paper(TimeStampedModel):
     class Meta:
         ordering = ['-date']
 
-    def __str__(self):
-        return self.short_title
+    def get_absolute_url(self):
+        return reverse('library:paper', args=[self.pk])
 
     @property
     def short_title(self):
         return '{0}[...]'.format(self.title[:50])
 
     @property
-    def authors_disp(self):
-        cs = self.authors.all()
-        if cs:
-            # Init first guy
-            ini = ''.join([fn[0] for fn in cs[0].first_name.split(' ')])
-            authors_display = ' '.join((cs[0].last_name, ini+'.'))
-            for c in cs[1:]:
-                ini = ''.join([fn[0] for fn in c.first_name.split(' ')])
-                authors_display = \
-                    ', '.join((authors_display,
-                               ' '.join((c.last_name, ini+'.'))))
-            return authors_display
+    def compact_authors_disp(self):
+        authors = self.authors.all()
+        authors_str = ''
+        if authors:
+            for author in authors:
+                if authors_str:
+                    authors_str += ', '
+                authors_str += author.compact_disp
+            return authors_str
+        else:
+            return 'Unknown Authors'
+
+    @property
+    def full_authors_disp(self):
+        authors = self.authors.all()
+        authors_str = ''
+        if authors:
+            for author in authors:
+                if authors_str:
+                    authors_str += ', '
+                authors_str += author.full_disp
+            return authors_str
+        else:
+            return 'Unknown Authors'
+
+    @property
+    def full_first_author_disp(self):
+        first_author = self.authors.first()
+        if first_author:
+            return '{0} et al.'.format(first_author.full_disp)
         else:
             return 'Unknown authors'
 
     @property
-    def first_author_disp(self):
+    def compact_first_author_disp(self):
         first_author = self.authors.first()
         if first_author:
-            return '{0}. {1} et al.'.format(
-                first_author.last_name.capitalize(),
-                first_author.first_name[0].capitalize())
+            return '{0} et al.'.format(first_author.compact_disp)
         else:
             return 'Unknown authors'
 
@@ -226,22 +262,11 @@ class Paper(TimeStampedModel):
     @property
     def journal_title_disp(self):
         if self.journal:
-            return self.journal.short_title.capitalize() \
-                or self.journal.title.capitalize()
+            return self.journal.short_title or self.journal.title
         else:
             return 'Unknown journal'
 
-    def get_absolute_url(self):
-        return reverse('library:paper', args=[self.pk])
-
-    def counts_ids(self):
-        count = 0
-        # Loop through field starting with 'id_'
-        for key, value in self.__dict__.items():
-            if key.startswith('id_') and value:
-                count += 1
-        return count
-
+    @property
     def ids_disp(self):
         ids_str = ''
         # Loop through field starting with 'id_'
@@ -252,6 +277,17 @@ class Paper(TimeStampedModel):
                 ids_str += '{id}: {value}'.format(id=self.IDENTIFIERS[key],
                                                   value=value)
         return ids_str
+
+    def counts_ids(self):
+        count = 0
+        # Loop through field starting with 'id_'
+        for key, value in self.__dict__.items():
+            if key.startswith('id_') and value:
+                count += 1
+        return count
+
+    def __str__(self):
+        return self.short_title
 
 
 class AuthorPosition(TimeStampedModel):

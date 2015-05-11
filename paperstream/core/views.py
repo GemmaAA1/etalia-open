@@ -5,3 +5,4 @@ def home(request):
     # TODO: remove this and make url in template dynamic
     host = request.get_host()
     return render(request, 'landing.html', {'host': host})
+

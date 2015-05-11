@@ -16,7 +16,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand topnav" href="{% url 'home' %}"><strong>PaperStream.io</strong></a>
+            <a class="navbar-brand topnav" href="{% url 'core:home' %}"><strong>PaperStream.io</strong></a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         {% if user.is_authenticated %}
@@ -25,13 +25,13 @@
             <ul class="nav navbar-nav navbar-right">
 
                 {% if not user.is_lib_synced %}
-                {% include "home/spinner.html" %}
+                {% include "core/spinner.html" %}
                 <li id="lib-sync">
                     <a href="#">Syncing <span id="lib-sync-count">{{ user.lib_size }}</span> papers</a>
                 </li>
                 {% endif %}
                 {% if not user.is_feed_synced and user.is_lib_synced %}
-                {% include "home/spinner.html" %}
+                {% include "core/spinner.html" %}
                 <li id="feed-sync">
                     <a href="#"><em>Curating <span id="feed-sync-count">{{ user.feedhome.lib_size }}</span> papers</em></a>
                 </li>
@@ -70,10 +70,10 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <a href="{% url 'home' %}#about">About</a>
+                    <a href="{% url 'core:home' %}#about">About</a>
                 </li>
                 <li>
-                    <a href="{% url 'home' %}#contact">Contact</a>
+                    <a href="{% url 'core:home' %}#contact">Contact</a>
                 </li>
                 <li>
                     <a href="#">Login</a>

@@ -2,21 +2,30 @@
 
 {% load staticfiles %}
 
+{% block css %}
+    {{ block.super }}
+    <link href="{% static 'css/library.css' %}" rel="stylesheet">
+{% endblock css %}
+
 {% block title %}
     Library
 {% endblock title %}
 
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-6 col-md-offset-3 jumbotron">
-            <h4><a href="{% url 'view_journals' %}">Journals</a></h4>
+<div class="library">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3 jumbotron">
+                <h4><a href="{% url 'library:journals' %}">Journals</a> ({{ journal_count }})</h4>
+            </div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-md-6 col-md-offset-3 jumbotron">
-            <h4><a href="{% url 'view_papers' %}">Papers</a></h4>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3 jumbotron">
+                <h4><a href="{% url 'library:papers' %}">Papers</a>{{ paper_count }}</h4>
+            </div>
         </div>
     </div>
+</div>
 {% endblock content %}
