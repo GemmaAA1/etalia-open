@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     'feeds',
     'functional_tests',
     'nlprocess',
-    'base',
+    'core',
     # 'accounts',
     # 'allauth',
     # 'allauth.account',
@@ -60,7 +60,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'paperstream.urls'
+ROOT_URLCONF = 'config.urls'
 
 
 # Database
@@ -114,7 +114,7 @@ TEMPLATES = [
 # SOCIALACCOUNT_FORMS = {}
 
 
-WSGI_APPLICATION = 'paperstream.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 

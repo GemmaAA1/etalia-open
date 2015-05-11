@@ -6,7 +6,6 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from stdnum import issn
 from library.models import Paper, Journal, Author, AuthorPosition
-from library.forms import JournalForm, PaperForm, AuthorForm
 
 
 class FunctionalTest(StaticLiveServerTestCase):
@@ -38,22 +37,15 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def pre_load_library(self, nb_journals=10, nb_authors=50, nb_papers=30):
 
-
         # Create a bench of journals
-        journal_errors = []
+        journals = []
         for n in range(nb_journals):
             digit7 = random.randint(0, 1e7-1)
-            form = JournalForm(
-                {'title': 'Journal title #{0:02d}'.format(n+1),
-                 'id_issn': '{0:07d}{1}'.format(
-                    digit7,
-                    issn.calc_check_digit('{0:07d}'.format(digit7)))})
-            # Check to see if the row data is valid.
-            if form.is_valid():
-                form.save()
-            else:
-                journal_errors.append(form.errors)
-
+            journals.append(Journal.objects.create(
+                title='Journal title #{0:02d}'.format(n+1),
+                id_issn='{0:07d}{1}'.format(digit7, issn.calc_check_digit(
+                    '{0:07d}'.format(digit7))))
+            )
 
         # Create a bench of authors
         authors = []

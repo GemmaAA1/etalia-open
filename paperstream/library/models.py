@@ -2,22 +2,8 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from base.models import TimeStampedModel
+from core.models import TimeStampedModel, NullableCharField
 from .validators import validate_id_issn, validate_id_eissn
-import collections
-
-
-class NullableCharField(models.CharField):
-    description = "CharField that stores NULL but returns ''"
-    __metaclass__ = models.SubfieldBase
-
-    def to_python(self, value):
-        if isinstance(value, models.EmailField):
-            return value
-        return value or ''
-
-    def get_prep_value(self, value):
-        return value or None
 
 
 class Publisher(TimeStampedModel):
@@ -35,8 +21,14 @@ class Publisher(TimeStampedModel):
 class Journal(TimeStampedModel):
     """Periodicals
     """
-    # Identifiers
-    # TODO: define custom field for this ids
+
+    # Identifiers dict. Must contain definition of the id_field used.
+    # useful in e.g. ids_disp
+    IDENTIFIERS = {'id_issn': 'ISSN',
+                   'id_eissn': 'e-ISSN',
+                   'id_arx': 'Arxiv',
+                   'id_oth': 'Other ID'}
+
     # TODO: Test if db_index=True improve performance
     id_issn = NullableCharField(max_length=9, blank=True, null=True,
                                 default=None, validators=[validate_id_issn],
@@ -102,33 +94,22 @@ class Journal(TimeStampedModel):
 
     def counts_ids(self):
         count = 0
-        if self.id_issn:
-            count += 1
-        if self.id_i:
-            count += 1
-        if self.id_issn:
-            count += 1
-        if self.id_issn:
-            count += 1
+        # Loop through field starting with 'id_'
+        for key, value in self.__dict__.items():
+            if key.startswith('id_') and value:
+                count += 1
         return count
 
     def ids_disp(self):
-        ids_build = []
-        if self.id_issn:
-            ids_build += 'ISSN: {0}'.format(self.id_issn)
-        if self.id_eissn:
-            if ids_build:
-                ids_build += ', '
-            ids_build += 'e-ISSN: {0}'.format(self.id_eissn)
-        if self.id_arx:
-            if ids_build:
-                ids_build += ', '
-            ids_build += 'Arxiv: {0}'.format(self.id_arx)
-        if self.id_oth:
-            if ids_build:
-                ids_build += ', '
-            ids_build += 'Other ID: {0}'.format(self.id_oth)
-        return ids_build
+        ids_str = ''
+        # Loop through field starting with 'id_'
+        for key, value in self.__dict__.items():
+            if key.startswith('id_') and value:
+                if ids_str:
+                    ids_str += ', '
+                ids_str += '{id}: {value}'.format(id=self.IDENTIFIERS[key],
+                                                  value=value)
+        return ids_str
 
 
 class Author(TimeStampedModel):
@@ -155,6 +136,13 @@ class Paper(TimeStampedModel):
     """Scientific papers
     """
     # TODO: Test if db_index=True improve performance
+
+    # Identifiers dict. Must contain definition of the id_field used.
+    # useful in e.g. ids_disp
+    IDENTIFIERS = {'id_doi': 'DOI',
+                   'id_arx': 'Arxiv',
+                   'id_pmi': 'PMID',
+                   'id_oth': 'Other ID'}
 
     # identifiers (uniqueness defined thereafter)
     id_doi = NullableCharField(max_length=32, blank=True, default='',
@@ -245,6 +233,25 @@ class Paper(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse('library:paper', args=[self.pk])
+
+    def counts_ids(self):
+        count = 0
+        # Loop through field starting with 'id_'
+        for key, value in self.__dict__.items():
+            if key.startswith('id_') and value:
+                count += 1
+        return count
+
+    def ids_disp(self):
+        ids_str = ''
+        # Loop through field starting with 'id_'
+        for key, value in self.__dict__.items():
+            if key.startswith('id_') and value:
+                if ids_str:
+                    ids_str += ', '
+                ids_str += '{id}: {value}'.format(id=self.IDENTIFIERS[key],
+                                                  value=value)
+        return ids_str
 
 
 class AuthorPosition(TimeStampedModel):

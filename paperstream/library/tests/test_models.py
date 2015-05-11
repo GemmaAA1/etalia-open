@@ -1,9 +1,15 @@
 from django.test import TestCase
-from library.models import Paper, Journal, Author, AuthorPosition
+from library.models import Paper, Journal, Author, AuthorPosition, Publisher
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength
 
+
+class PublisherModelTest(TestCase):
+
+    def test_str_is_name(self):
+        publisher = Publisher(name='Publisher #1')
+        self.assertEqual(print(publisher), 'Publisher #1')
 
 class PaperModelTest(TestCase):
 
@@ -57,29 +63,44 @@ class PaperModelTest(TestCase):
         Paper.objects.create()
         Paper.objects.create()
 
-    def test_prints(self):
-        paper = Paper.objects.create(title='On the road again')
-        # should not raise
-        paper.__str__()
+    def test_counts_id_defined(self):
+        paper = Paper.objects.create(id_oth='xxx', id_arx='yyy')
+        self.assertEqual(paper.counts_ids(), 2)
+
+    def test_display_ids(self):
+        paper = Paper.objects.create(id_oth='xxx', id_arx='yyy',
+                                     id_doi='0000-0019', id_pmi='pubmed id')
+        disp_str = paper.ids_disp()
+        self.assertIn('Arxiv: yyy', disp_str)
+        self.assertIn('Other ID: xxx', disp_str)
+        self.assertIn('DOI: 0000-0019', disp_str)
+        self.assertIn('PMID: pubmed id', disp_str)
+
+
 
 
 class JournalModelTest(TestCase):
+
+    def setUp(self):
+        Journal.objects.get_or_create(title='Journal X', id_issn='1053-8119')
+        Journal.objects.get_or_create(title='Journal Z', id_issn='0000-0019')
+        Journal.objects.get_or_create(title='Journal Y', id_issn='1476-4687')
+
+    def test_get_absolute_url(self):
+        journal = Journal.objects.first()
+        self.assertEqual(journal.get_absolute_url(),
+                         '/library/journal/{0}/'.format(journal.pk, ))
 
     def test_title_cannot_be_blank(self):
         with self.assertRaises(ValidationError):
             journal = Journal(title='')
             journal.full_clean()
 
-    def test_can_save_journal_with_valid_issn(self):
-        journal = Journal(title='Journal X', id_issn='1053-8119')
-        journal.full_clean()
-
     def test_duplicate_id_is_invalid(self):
-        journal = Journal(title='Journal X', id_issn='1053-8119')
-        journal.save()
         with self.assertRaises(ValidationError):
-            journal = Journal(title='Journal Y', id_issn='1053-8119')
-            journal.full_clean()
+            journal = Journal.objects.first()
+            journal_same = Journal(title='Journal Y', id_issn=journal.id_issn)
+            journal_same.full_clean()
 
     def test_canNOT_save_journal_with_invalid_issn(self):
         journal = Journal(title='Journal X', id_issn='0000-0001')
@@ -92,22 +113,19 @@ class JournalModelTest(TestCase):
         with self.assertRaises(InvalidFormat):
             journal.full_clean()
 
-    def test_get_absolute_url(self):
-        journal = Journal(title='Journal X', id_issn='1053-8119')
-        journal.save()
-        self.assertEqual(journal.get_absolute_url(),
-                         '/library/journal/{0}/'.format(journal.pk, ))
-
     def test_journals_ordered_by_title(self):
-        j1 = Journal(title='Journal X', id_issn='1476-4687')
-        j1.save()
-        j2 = Journal(title='Journal Z', id_issn='0000-0019')
-        j2.save()
-        j3 = Journal(title='Journal Y', id_issn='1053-8119')
-        j3.save()
-        js = Journal.objects.all()
-        self.assertEqual(list(js), [j1, j3, j2])
+        titles = [journal.title for journal in Journal.objects.all()]
+        self.assertEqual(titles, ['Journal X',
+                                  'Journal Y',
+                                  'Journal Z'])
 
+    def test_period_is_in_PUBLISH_PERIOD(self):
+        journal = Journal.objects.first()
+        journal.period = journal.PUBLISH_PERIOD[0][0]
+        journal.full_clean()
+        with self.assertRaises(ValidationError):
+            journal.period = 'STUFF'
+            journal.full_clean()
 
 class AuthorModelTest(TestCase):
 
