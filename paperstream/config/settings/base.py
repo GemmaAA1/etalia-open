@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'core',
     'library',
+    'populate',
     # 'consumers',
     # 'feeds',
     # 'nlprocess',
@@ -88,6 +89,10 @@ DATABASES = {
         'PORT': '',
         'ATOMIC_REQUESTS': True,
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': os.path.join(ROOT_DIR, '../database/db.sqlite3'),
+    # }
 }
 
 # TEMPLATE CONFIGURATION
@@ -138,7 +143,7 @@ USE_TZ = True
 #  https://docs.djangoproject.com/en/1.8/howto/static-files/
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = ROOT_DIR.child('static')
+STATIC_ROOT = APPS_DIR.child('static')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'

@@ -12,7 +12,7 @@ class Publisher(TimeStampedModel):
     # Group name
     name = models.CharField(max_length=200, unique=True)
     # base url
-    url = models.URLField()
+    url = models.URLField(blank=True, default=True)
 
     def __str__(self):
         return self.name
@@ -47,7 +47,7 @@ class Journal(TimeStampedModel):
     short_title = models.CharField(max_length=100, blank=True)
 
     # publisher group
-    publisher = models.ForeignKey(Publisher, null=True, default='', blank=True)
+    publisher = models.ForeignKey(Publisher, null=True, default=None, blank=True)
     # url
     url = models.URLField(blank=True, default='')
     # Scope
@@ -63,15 +63,16 @@ class Journal(TimeStampedModel):
                       ('QUA', 'Quarterly'),
                       ('MON', 'Monthly'),
                       ('BIM', 'Bi-monthly'),
-                      ('IRR', 'Irregular'))
+                      ('IRR', 'Irregular'),
+                      ('', 'Unknown'))
     period = models.CharField(max_length=200, choices=PUBLISH_PERIOD,
-                              default='IRR', null=True, blank=True)
+                              default='', blank=True)
 
     # Number of Paper in journal
     lib_size = models.IntegerField(default=0)
 
     # is flag
-    is_valid = models.BooleanField(default=False)
+    is_trusted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['title']
@@ -197,8 +198,9 @@ class Paper(TimeStampedModel):
     is_aip = models.BooleanField(default=False)
     # pre-print
     is_pre_print = models.BooleanField(default=False)
-    # valid if all field have been verified or paper from 'official source'
-    is_valid = models.BooleanField(default=False)
+
+    # locked if all field have been verified or paper from 'trusted' source
+    is_trusted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-date']

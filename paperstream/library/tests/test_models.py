@@ -101,16 +101,7 @@ class JournalModelTest(TestCase):
             journal_same = Journal(title='Journal Y', id_issn=journal.id_issn)
             journal_same.full_clean()
 
-    def test_canNOT_save_journal_with_invalid_issn(self):
-        journal = Journal(title='Journal X', id_issn='0000-0001')
-        with self.assertRaises(InvalidChecksum):
-            journal.full_clean()
-        journal = Journal(title='Journal X', id_issn='0000-001')
-        with self.assertRaises(InvalidLength):
-            journal.full_clean()
-        journal = Journal(title='Journal X', id_issn='X000-0001')
-        with self.assertRaises(InvalidFormat):
-            journal.full_clean()
+
 
     def test_journals_ordered_by_title(self):
         titles = [journal.title for journal in Journal.objects.all()]

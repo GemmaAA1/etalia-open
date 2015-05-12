@@ -1,12 +1,27 @@
 from django.core.exceptions import ValidationError
 from stdnum import issn as issn_checker
-
+from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength
 
 def validate_issn(issn):
-    """ Raise an Exception if issn not valid
-
+    """ Raise an ValidationException if issn not valid
     """
-    issn_checker.validate(issn)
+    try:
+        issn_checker.validate(issn)
+    except InvalidChecksum:
+        raise ValidationError(
+            'ISSN invalid checksum: %(issn)s',
+            code='invalid',
+            params={'issn': issn})
+    except InvalidFormat:
+        raise ValidationError(
+            'ISSN invalid format: %(issn)s',
+            code='invalid',
+            params={'issn': issn})
+    except InvalidLength:
+        raise ValidationError(
+            'ISSN invalid length: %(issn)s',
+            code='invalid',
+            params={'issn': issn})
 
 
 def validate_author_names(name):
