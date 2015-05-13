@@ -38,3 +38,28 @@ class JournalFormTest(TestCase):
         publisher = Publisher.objects.create(name='Publisher #1')
         form = JournalForm(data={'title': '', 'publisher': publisher.name})
         self.assertFalse(form.is_valid())
+
+    def test_form_validation_invalid_issn(self):
+        form = JournalForm(data={'title': 'Test', 'id_issn': '0000-0001'})
+        self.assertFalse(form.is_valid())
+
+    def test_form_validation_invalid_eissn(self):
+        form = JournalForm(data={'title': 'Test', 'id_eissn': '0000-0001'})
+        self.assertFalse(form.is_valid())
+
+    def test_form_can_update_journal(self):
+        # first add a journal
+        data_init = {'title': 'Test', 'id_issn': '0000-0019', 'id_eissn': ''}
+        form = JournalForm(data_init)
+        self.assertTrue(form.is_valid())
+        journal = form.save()
+        self.assertEqual(journal.id_issn, '0000-0019')
+        # Then try updating
+        data_edit = {'title': 'Test', 'id_issn': '', 'id_eissn': '0918-9440'}
+        form = JournalForm(data_edit,
+                           instance=journal)
+        self.assertTrue(form.is_valid())
+        journal = form.save()
+        self.assertEqual(journal.id_eissn, '0918-9440')
+        self.assertEqual(journal.id_issn, '0000-0019')
+

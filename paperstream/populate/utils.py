@@ -2,9 +2,9 @@ import csv
 import sys
 import tempfile
 from progressbar import ProgressBar, Percentage, Bar, ETA
-from library.models import Publisher
+from library.models import Publisher, Journal
 from library.forms import JournalForm, PublisherForm
-
+from django.db.models import Q
 
 def preprocess_thomsonreuters_file(in_csv_file, print_to=None):
 
@@ -65,7 +65,8 @@ def preprocess_thomsonreuters_file(in_csv_file, print_to=None):
             # that needs to be fetched
             publisher = row['publisher'].lower()
 
-            publisher_match = [pub for pub in publishers if pub.name.lower() in publisher]
+            publisher_match = [pub for pub in publishers if pub.name.lower() in
+                               publisher]
             # if multiple match, reject
             if len(publisher_match) == 1:
                 publisher = publisher_match[0].name
@@ -121,10 +122,22 @@ def populate_journal(csv_file, print_to=None):
     with open(csv_file, 'r') as rows:
         # Generate a dict per row, with the first CSV row being the keys.
         for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
-            # Bind the row data to the JournalThomsonReutersForm.
-            form = JournalForm(row)
-            # try:
-                # Check to see if the row data is valid.
+
+            # Retrieve journal data if ids are found
+            try:
+                journal = Journal.objects.get(Q(id_issn=row['id_issn']) |
+                                    Q(id_eissn=row['id_eissn']) |
+                                    Q(id_oth=row['id_oth']) |
+                                    Q(id_arx=row['id_arx']))
+            except Journal.DoesNotExist:
+                journal = None
+
+            # Complete row field if empty
+            for field in JournalForm.Meta.fields:
+                if not row[field] and journal:
+                    row[field] = getattr(journal, field)
+
+            form = JournalForm(row, instance=journal)
             if form.is_valid():
                 journal = form.save()
                 # Save as trusted
@@ -133,8 +146,6 @@ def populate_journal(csv_file, print_to=None):
                 records_added += 1
             else:
                 errors.append(form.errors)
-            # except:
-            #     pass
 
             # update progress bar
             pbar.update(i)
@@ -164,13 +175,18 @@ def populate_publisher(csv_file, print_to=None):
 
     with open(csv_file, 'r') as rows:
         for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
+            try:
+                publisher = Publisher.objects.get(name=row['name'])
+            except Publisher.DoesNotExist:
+                publisher = None
 
-            form = PublisherForm(row)
-            if form.is_valid():
-                form.save()
-                records_added += 1
-            else:
-                errors.append(form.errors)
+            form = PublisherForm(row, instance=publisher)
+            if form.has_changed():
+                if form.is_valid():
+                    form.save()
+                    records_added += 1
+                else:
+                    errors.append(form.errors)
 
             # update progress bar
             pbar.update(i)

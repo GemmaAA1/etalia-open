@@ -39,14 +39,6 @@ class JournalForm(forms.ModelForm):
             title = title.title()
         return title
 
-    def clean_id_eissn(self):
-        eissn = self.cleaned_data['id_eissn']
-        validate_issn(eissn)
-
-    def clean_id_issn(self):
-        issn = self.cleaned_data['id_issn']
-        validate_issn(issn)
-        return issn
 
 class AuthorForm(forms.ModelForm):
 
@@ -65,8 +57,8 @@ class AuthorForm(forms.ModelForm):
         return self.cleaned_data['last_name'].title()
 
 
-# class PaperForm(forms.ModelForm):
-#
-#     class Meta:
-#         model = Paper
-#         fields = ()
+class PaperForm(forms.ModelForm):
+
+    class Meta:
+        model = Paper
+        fields = ()

@@ -22,24 +22,19 @@ class Journal(TimeStampedModel):
     """Periodicals
     """
 
-    # Identifiers dict. Must contain definition of the id_field used.
-    # useful in e.g. ids_disp
-    IDENTIFIERS = {'id_issn': 'ISSN',
-                   'id_eissn': 'e-ISSN',
-                   'id_arx': 'Arxiv',
-                   'id_oth': 'Other ID'}
-
     # TODO: Test if db_index=True improve performance
     id_issn = NullableCharField(max_length=9, blank=True, null=True,
                                 default=None, validators=[validate_issn],
-                                unique=True)
+                                unique=True, verbose_name='ISSN')
     id_eissn = NullableCharField(max_length=9, blank=True, null=True,
                                  default=None, validators=[validate_issn],
-                                 unique=True)
+                                 unique=True, verbose_name='e-ISSN')
     id_arx = NullableCharField(max_length=32, blank=True, null=True,
-                               default=None, unique=True)
+                               default=None, unique=True,
+                               verbose_name='Arxiv ID')
     id_oth = NullableCharField(max_length=32, blank=True, null=True,
-                               default=None, unique=True)
+                               default=None, unique=True,
+                               verbose_name='Other ID')
 
     # periodical title
     title = models.CharField(max_length=200)
@@ -96,21 +91,22 @@ class Journal(TimeStampedModel):
     def counts_ids(self):
         count = 0
         # Loop through field starting with 'id_'
-        for key, value in self.__dict__.items():
-            if key.startswith('id_') and value:
+        for field in self._meta.fields:
+            if field.name.startswith('id_') and getattr(self, field.name):
                 count += 1
         return count
 
     @property
-    def ids_disp(self):
+    def print_ids(self):
         ids_str = ''
         # Loop through field starting with 'id_'
-        for key, value in self.__dict__.items():
-            if key.startswith('id_') and value:
+        for field in self._meta.fields:
+            if field.name.startswith('id_') and getattr(self, field.name):
                 if ids_str:
                     ids_str += ', '
-                ids_str += '{id}: {value}'.format(id=self.IDENTIFIERS[key],
-                                                  value=value)
+                ids_str += '{id}: {value}'.format(
+                    id=field.verbose_name,
+                    value=getattr(self, field.name))
         return ids_str
 
 
@@ -137,7 +133,7 @@ class Author(TimeStampedModel):
             return self.last_name
 
     @property
-    def compact_disp(self):
+    def print_compact(self):
         # get initials
         if self.first_name:
             initials = '.'.join([name[0] for name in self.first_name.split(' ')]) + '.'
@@ -146,7 +142,7 @@ class Author(TimeStampedModel):
             return self.last_name
 
     @property
-    def full_disp(self):
+    def print_full(self):
         if self.first_name:
             return self.first_name + ' ' + self.last_name
         else:
@@ -157,23 +153,15 @@ class Paper(TimeStampedModel):
     """Scientific papers
     """
     # TODO: Test if db_index=True improve performance
-
-    # Identifiers dict. Must contain definition of the id_field used.
-    # useful in e.g. ids_disp
-    IDENTIFIERS = {'id_doi': 'DOI',
-                   'id_arx': 'Arxiv',
-                   'id_pmi': 'PMID',
-                   'id_oth': 'Other ID'}
-
     # identifiers (uniqueness defined thereafter)
     id_doi = NullableCharField(max_length=32, blank=True, default='',
-                               null=True, unique=True)
+                               null=True, unique=True, verbose_name='DOI')
     id_arx = NullableCharField(max_length=32, blank=True, default='',
-                               null=True, unique=True)
+                               null=True, unique=True, verbose_name='Arxiv')
     id_pmi = NullableCharField(max_length=32, blank=True, default='',
-                               null=True, unique=True)
+                               null=True, unique=True, verbose_name='PMID')
     id_oth = NullableCharField(max_length=32, blank=True, default='',
-                               null=True, unique=True)
+                               null=True, unique=True, verbose_name='Other ID')
     # article title
     title = models.CharField(max_length=500)
     # authors
@@ -213,7 +201,7 @@ class Paper(TimeStampedModel):
         return '{0}[...]'.format(self.title[:50])
 
     @property
-    def compact_authors_disp(self):
+    def print_compact_authors(self):
         authors = self.authors.all()
         authors_str = ''
         if authors:
@@ -226,7 +214,7 @@ class Paper(TimeStampedModel):
             return 'Unknown Authors'
 
     @property
-    def full_authors_disp(self):
+    def print_full_authors(self):
         authors = self.authors.all()
         authors_str = ''
         if authors:
@@ -239,7 +227,7 @@ class Paper(TimeStampedModel):
             return 'Unknown Authors'
 
     @property
-    def full_first_author_disp(self):
+    def print_full_first_author(self):
         first_author = self.authors.first()
         if first_author:
             return '{0} et al.'.format(first_author.full_disp)
@@ -247,7 +235,7 @@ class Paper(TimeStampedModel):
             return 'Unknown authors'
 
     @property
-    def compact_first_author_disp(self):
+    def print_compact_first_author(self):
         first_author = self.authors.first()
         if first_author:
             return '{0} et al.'.format(first_author.compact_disp)
@@ -255,36 +243,37 @@ class Paper(TimeStampedModel):
             return 'Unknown authors'
 
     @property
-    def date_disp(self):
+    def print_date(self):
         if self.date:
             return self.date.strftime('%e %b %Y')
         else:
             return 'Unknown date'
 
     @property
-    def journal_title_disp(self):
+    def print_journal_title(self):
         if self.journal:
             return self.journal.short_title or self.journal.title
         else:
             return 'Unknown journal'
 
     @property
-    def ids_disp(self):
+    def print_ids(self):
         ids_str = ''
         # Loop through field starting with 'id_'
-        for key, value in self.__dict__.items():
-            if key.startswith('id_') and value:
+        for field in self._meta.fields:
+            if field.name.startswith('id_') and getattr(self, field.name):
                 if ids_str:
                     ids_str += ', '
-                ids_str += '{id}: {value}'.format(id=self.IDENTIFIERS[key],
-                                                  value=value)
+                ids_str += '{id}: {value}'.format(
+                    id=field.verbose_name,
+                    value=getattr(self, field.name))
         return ids_str
 
     def counts_ids(self):
         count = 0
         # Loop through field starting with 'id_'
-        for key, value in self.__dict__.items():
-            if key.startswith('id_') and value:
+        for field in self._meta.fields:
+            if field.name.startswith('id_') and getattr(self, field.name):
                 count += 1
         return count
 
