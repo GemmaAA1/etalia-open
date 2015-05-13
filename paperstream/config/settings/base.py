@@ -48,7 +48,7 @@ LOCAL_APPS = (
     'core',
     'library',
     'populate',
-    # 'consumers',
+    'consumers',
     # 'feeds',
     # 'nlprocess',
     # 'users',
@@ -205,6 +205,12 @@ ACCOUNT_USER_DISPLAY='accounts.utils.user_display'
 
 # SLUGLIFIER
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
+
+
+# CONSUMER CONFIGURATION
+# ------------------------------------------------------------------------------
+
+PUBMED_EMAIL = 'nicolas.pannetier@gmail.com'
 
 
 # LOGGING CONFIGURATION
