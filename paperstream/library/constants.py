@@ -1,6 +1,6 @@
 # Define constants used in models
 
-
+# Used in Journal
 PUBLISH_PERIODS = (
     ('ANN', 'Annual'),
     ('SEM', 'Semi-annual'),
@@ -11,6 +11,7 @@ PUBLISH_PERIODS = (
     ('IRR', 'Irregular'),
     ('', 'Unknown'))
 
+# Used in Journal, Paper
 LANGUAGES = (
     ('ENG', 'English'),
     ('AFR', 'Afrikaans'),

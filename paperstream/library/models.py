@@ -49,7 +49,8 @@ class Journal(TimeStampedModel):
     scope = models.TextField(blank=True, max_length=1000, default='')
 
     # language
-    language = models.CharField(max_length=200, blank=True, default='')
+    language = models.CharField(max_length=200, choices=LANGUAGES,
+                                default='ENG', blank=True)
 
     # period
     period = models.CharField(max_length=200, choices=PUBLISH_PERIODS,
@@ -197,7 +198,7 @@ class Paper(TimeStampedModel):
     url = models.URLField(blank=True, default='')
     # language
     language = models.CharField(max_length=200, choices=LANGUAGES,
-                                default='', blank=True)
+                                default='ENG', blank=True)
 
     # Booleans
     # article in press
