@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from core.models import TimeStampedModel, NullableCharField
 from .validators import validate_issn, validate_author_names
-
+from .constants import LANGUAGES, PUBLISH_PERIODS
 
 class Publisher(TimeStampedModel):
     """Publisher group
@@ -52,15 +52,7 @@ class Journal(TimeStampedModel):
     language = models.CharField(max_length=200, blank=True, default='')
 
     # period
-    PUBLISH_PERIOD = (('ANN', 'Annual'),
-                      ('SEM', 'Semi-annual'),
-                      ('TRI', 'Tri-annual'),
-                      ('QUA', 'Quarterly'),
-                      ('MON', 'Monthly'),
-                      ('BIM', 'Bi-monthly'),
-                      ('IRR', 'Irregular'),
-                      ('', 'Unknown'))
-    period = models.CharField(max_length=200, choices=PUBLISH_PERIOD,
+    period = models.CharField(max_length=200, choices=PUBLISH_PERIODS,
                               default='', blank=True)
 
     # Number of Paper in journal
@@ -136,7 +128,8 @@ class Author(TimeStampedModel):
     def print_compact(self):
         # get initials
         if self.first_name:
-            initials = '.'.join([name[0] for name in self.first_name.split(' ')]) + '.'
+            initials = '.'.join([name[0] for name in
+                                 self.first_name.split(' ')]) + '.'
             return self.last_name + ' ' + initials
         else:
             return self.last_name
@@ -147,6 +140,11 @@ class Author(TimeStampedModel):
             return self.first_name + ' ' + self.last_name
         else:
             return self.last_name
+
+
+class CorpAuthor(TimeStampedModel):
+
+    name = models.CharField(max_length=128, blank=True, default='', unique=True)
 
 
 class Paper(TimeStampedModel):
@@ -160,15 +158,25 @@ class Paper(TimeStampedModel):
                                null=True, unique=True, verbose_name='Arxiv')
     id_pmi = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='PMID')
+    id_pii = NullableCharField(max_length=32, blank=True, default='',
+                               null=True, unique=True,
+                               verbose_name='Publisher ID')
     id_oth = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID')
-    # article title
+    # Title
     title = models.CharField(max_length=500)
+
+    # Authors
     # authors
-    authors = models.ManyToManyField(Author, through='AuthorPosition')
-    # abstract
+    authors = models.ManyToManyField(Author, through='AuthorPaper',
+                                     blank=True)
+    # corporate authorship
+    corp_author = models.ManyToManyField(CorpAuthor, through='CorpAuthorPaper',
+                                         blank=True)
+    # Abstract
     abstract = models.TextField(blank=True, default='')
-    # journal
+
+    # Journal
     journal = models.ForeignKey(Journal, null=True, blank=True)
     # volume
     volume = models.CharField(max_length=200, blank=True, default='')
@@ -176,10 +184,20 @@ class Paper(TimeStampedModel):
     issue = models.CharField(max_length=200, blank=True, default='')
     # page
     page = models.CharField(max_length=200, blank=True, default='')
-    # date published
-    date = models.DateField(null=True, blank=True, )
-    # url where seen
+
+    # Dates
+    # date electronically published
+    date_ep = models.DateField(null=True, blank=True, )
+    # date of publication in issue journal
+    date_p = models.DateField(null=True, blank=True, )
+    # date of paper last revised (e.g. arxiv, or publisher with e.g grant#)
+    date_lr = models.DateField(null=True, blank=True, )
+
+    # url where found
     url = models.URLField(blank=True, default='')
+    # language
+    language = models.CharField(max_length=200, choices=LANGUAGES,
+                                default='', blank=True)
 
     # Booleans
     # article in press
@@ -191,7 +209,7 @@ class Paper(TimeStampedModel):
     is_trusted = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-date_ep', 'date_p']
 
     def get_absolute_url(self):
         return reverse('library:paper', args=[self.pk])
@@ -281,7 +299,7 @@ class Paper(TimeStampedModel):
         return self.short_title
 
 
-class AuthorPosition(TimeStampedModel):
+class AuthorPaper(TimeStampedModel):
     """Intermediate table for ranking authors in papers
     """
     author = models.ForeignKey(Author)
@@ -293,3 +311,12 @@ class AuthorPosition(TimeStampedModel):
 
     class Meta:
         ordering = ['position']
+
+
+class CorpAuthorPaper(TimeStampedModel):
+
+    corp_author = models.ForeignKey(CorpAuthor)
+    paper = models.ForeignKey(Paper)
+
+    def __str__(self):
+        return '{0}'.format(self.corp_author.name)
