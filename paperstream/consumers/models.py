@@ -8,28 +8,35 @@ from model_utils import Choices, fields
 
 from library.models import Journal
 from core.models import TimeStampedModel
+from .constants import CONSUMER_TYPE
 
 
 class Consumer(TimeStampedModel):
 
-    # TODO: Migration failed when class defined as abstract. Why ??
+    # IDS
+    type = models.CharField(max_length=4, choices=CONSUMER_TYPE)
+
     # name
     name = models.CharField(max_length=200)
 
     # number of papers retrieved per call
     ret_max = models.IntegerField(default=25)
 
-    # number of past day to look through (for initialization)
+    # number of past day to look through during initialization
     day0 = models.IntegerField(default=60)
 
-    # # Journal associated with consumer
+    # Journal associated with consumer
     journals = models.ManyToManyField(Journal, through='ConsumerJournal')
 
+    # TODO: Migration failed when class defined as abstract. Why is that??
     # class Meta:
     #     abstract = True
 
 
 class PubmedConsumer(Consumer):
+
+    # Type
+    type = 'PBMD'
 
     # email
     email = settings.PUBMED_EMAIL
@@ -56,7 +63,6 @@ class PubmedConsumer(Consumer):
             issn = cj.journal.id_issn or cj.journal.id_eissn
 
         # Configure API
-
         # add email for contact
         Entrez.email = self.email
 
@@ -69,12 +75,13 @@ class PubmedConsumer(Consumer):
         # format date for API call
         start_date_q = start_date.strftime('%Y/%m/%d')
 
-        # build query (timerange + journal issn)
+        # build query (time range + journal issn)
         query = '(("{start_date}"[Date - Entrez] : "3000"[Date - Entrez])) AND ' \
                 '"{title}"[Journal]'.format(start_date=start_date_q,
                                           title=issn)
 
-        # Search items corresponding to query
+        # Call API
+        # search items corresponding to query
         id_list = []
         ret_start = 0
         while True:
@@ -94,8 +101,7 @@ class PubmedConsumer(Consumer):
 
             # update ret_start
             ret_start += self.ret_max
-
-        # Fetch items
+        # fetch items
         handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
                                retmode="text")
         # Parse items
@@ -103,10 +109,10 @@ class PubmedConsumer(Consumer):
 
 
 
-        # TODO: build data dico, pubmed2pap, inject in form bim !
-
-
 class ElsevierConsumer(Consumer):
+
+    # Type
+    type = 'ELSV'
 
     # API key
     api_key = settings.ELSEVIER_API_KEY
@@ -116,6 +122,9 @@ class ElsevierConsumer(Consumer):
 
 
 class ArxivConsumer(Consumer):
+
+    # Type
+    type = 'ARXI'
 
     URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
 

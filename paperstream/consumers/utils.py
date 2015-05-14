@@ -1,10 +1,24 @@
 import re
+import abc
+from library.models import Paper
+from library.forms import PaperForm
 
+class Consumer2Pap(object):
 
-
-def pubmed_to_pap(entry):
+    __metaclass__ = abc.ABCMeta
 
     item = {}
+
+
+
+
+
+def pubmed2pap(entry):
+
+    item = {}
+
+    # Type
+    entry.get('PT', '')
 
     # Identifiers
     # template for identifiers

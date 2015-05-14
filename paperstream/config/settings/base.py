@@ -80,19 +80,19 @@ MIDDLEWARE_CLASSES = (
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'paperstream',
-        'USER': 'nicolaspannetier',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
-        'ATOMIC_REQUESTS': True,
-    }
     # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': os.path.join(ROOT_DIR, '../database/db.sqlite3'),
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'paperstream',
+    #     'USER': 'nicolaspannetier',
+    #     'PASSWORD': '',
+    #     'HOST': 'localhost',
+    #     'PORT': '',
+    #     'ATOMIC_REQUESTS': True,
     # }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(ROOT_DIR, '../database/db.sqlite3'),
+    }
 }
 
 # TEMPLATE CONFIGURATION

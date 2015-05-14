@@ -4,7 +4,15 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from core.models import TimeStampedModel, NullableCharField
 from .validators import validate_issn, validate_author_names
-from .constants import LANGUAGES, PUBLISH_PERIODS
+from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE
+from .utils import langcode_to_langpap
+from consumers.constants import CONSUMER_TYPE
+from users.constants import PROVIDER_TYPE
+
+from langdetect import detect
+
+# Source from where Paper are created (tuple(set()) to make unique)
+SOURCE_TYPE = tuple(set(CONSUMER_TYPE + PROVIDER_TYPE))
 
 class Publisher(TimeStampedModel):
     """Publisher group
@@ -49,7 +57,7 @@ class Journal(TimeStampedModel):
     scope = models.TextField(blank=True, max_length=1000, default='')
 
     # language
-    language = models.CharField(max_length=200, choices=LANGUAGES,
+    language = models.CharField(max_length=3, choices=LANGUAGES,
                                 default='ENG', blank=True)
 
     # period
@@ -151,6 +159,11 @@ class CorpAuthor(TimeStampedModel):
 class Paper(TimeStampedModel):
     """Scientific papers
     """
+
+    # Type of paper
+    type = models.CharField(max_length=4, choices=PAPER_TYPE, blank=True,
+                            default='')
+
     # TODO: Test if db_index=True improve performance
     # identifiers (uniqueness defined thereafter)
     id_doi = NullableCharField(max_length=32, blank=True, default='',
@@ -161,7 +174,7 @@ class Paper(TimeStampedModel):
                                null=True, unique=True, verbose_name='PMID')
     id_pii = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True,
-                               verbose_name='Publisher ID')
+                               verbose_name='PII')
     id_oth = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID')
     # Title
@@ -186,6 +199,9 @@ class Paper(TimeStampedModel):
     # page
     page = models.CharField(max_length=200, blank=True, default='')
 
+    # Key Terms
+    terms = models.TextField(blank=True, default='')
+
     # Dates
     # date electronically published
     date_ep = models.DateField(null=True, blank=True, )
@@ -197,7 +213,7 @@ class Paper(TimeStampedModel):
     # url where found
     url = models.URLField(blank=True, default='')
     # language
-    language = models.CharField(max_length=200, choices=LANGUAGES,
+    language = models.CharField(max_length=3, choices=LANGUAGES,
                                 default='ENG', blank=True)
 
     # Booleans
@@ -205,6 +221,9 @@ class Paper(TimeStampedModel):
     is_aip = models.BooleanField(default=False)
     # pre-print
     is_pre_print = models.BooleanField(default=False)
+
+    # Source
+    source = models.CharField(max_length=4, choices=SOURCE_TYPE, blank=True)
 
     # locked if all field have been verified or paper from 'trusted' source
     is_trusted = models.BooleanField(default=False)
@@ -295,6 +314,13 @@ class Paper(TimeStampedModel):
             if field.name.startswith('id_') and getattr(self, field.name):
                 count += 1
         return count
+
+    @staticmethod
+    def detects_language(text):
+        """ Detect language
+        """
+        lang_code = detect(text)
+        return langcode_to_langpap(lang_code)
 
     def __str__(self):
         return self.short_title

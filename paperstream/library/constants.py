@@ -1,5 +1,16 @@
 # Define constants used in models
 
+PAPER_TYPE = (
+    ('JOUR', 'Journal Article'),
+    ('LETT', 'Letter'),
+    ('EDIT', 'Editorial'),
+    ('NEWS', 'News'),
+    ('PROC', 'Proceedings'),
+    ('REVI', 'Review'),
+    ('DRAF', 'Draft'),
+    ('', 'Unknown')
+)
+
 # Used in Journal
 PUBLISH_PERIODS = (
     ('ANN', 'Annual'),
@@ -11,7 +22,8 @@ PUBLISH_PERIODS = (
     ('IRR', 'Irregular'),
     ('', 'Unknown'))
 
-# Used in Journal, Paper
+# Language code used in Journal, Paper
+# NB: languages code are from pubmed
 LANGUAGES = (
     ('ENG', 'English'),
     ('AFR', 'Afrikaans'),
@@ -59,7 +71,6 @@ LANGUAGES = (
     ('PER', 'Persian, Iranian'),
     ('POL', 'Polish'),
     ('POR', 'Portuguese'),
-    ('PUS', 'Pushto'),
     ('RUM', 'Romanian, Rumanian, Moldovan'),
     ('RUS', 'Russian'),
     ('SAN', 'Sanskrit'),
@@ -74,5 +85,68 @@ LANGUAGES = (
     ('UND', 'Undetermined'),
     ('URD', 'Urdu'),
     ('VIE', 'Vietnamese'),
-    ('WEL', 'Welsh'),
-    ('', 'Unknown'))
+    ('WEL', 'Welsh')
+)
+
+# Language code 2 pap code from language detection
+LANGUAGES_DETECT = (
+    ('AF', 'AFR'),
+    ('SQ', 'ALB'),
+    ('AM', 'AMH'),
+    ('AR', 'ARA'),
+    ('HY', 'ARM'),
+    ('AZ', 'AZE'),
+    ('BN', 'BEN'),
+    ('BS', 'BOS'),
+    ('BG', 'BUL'),
+    ('CA', 'CAT'),
+    ('ZH', 'CHI'),
+    ('CS', 'CZE'),
+    ('DA', 'DAN'),
+    ('NL', 'DUT'),
+    ('EN', 'ENG'),
+    ('EO', 'EPO'),
+    ('ET', 'EST'),
+    ('FI', 'FIN'),
+    ('FR', 'FRE'),
+    ('KA', 'GEO'),
+    ('DE', 'GER'),
+    ('GD', 'GLA'),
+    ('EL', 'GRE'),
+    ('IW', 'HEB'),
+    ('HI', 'HIN'),
+    ('HR', 'HRV'),
+    ('HU', 'HUN'),
+    ('IS', 'ICE'),
+    ('ID', 'IND'),
+    ('IT', 'ITA'),
+    ('JA', 'JPN'),
+    ('RW', 'KIN'),
+    ('KO', 'KOR'),
+    ('LA', 'LAT'),
+    ('LV', 'LAV'),
+    ('LT', 'LIT'),
+    ('MK', 'MAC'),
+    ('ML', 'MAL'),
+    ('MI', 'MAO'),
+    ('MS', 'MAY'),
+    ('NO', 'NOR'),
+    ('FA', 'PER'),
+    ('PL', 'POL'),
+    ('PT', 'POR'),
+    ('RO', 'RUM'),
+    ('RU', 'RUS'),
+    ('HI', 'SAN'),
+    ('SK', 'SLO'),
+    ('SL', 'SLV'),
+    ('ES', 'SPA'),
+    ('SR', 'SRP'),
+    ('SV', 'SWE'),
+    ('TH', 'THA'),
+    ('TR', 'TUR'),
+    ('UK', 'UKR'),
+    ('UR', 'URD'),
+    ('VI', 'VIE'),
+    ('CY', 'WEL'),
+    (''  , 'UND'),
+)
