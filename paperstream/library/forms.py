@@ -183,8 +183,10 @@ class PaperForm(forms.ModelForm):
                 return ''
 
     def clean_id_doi(self):
+        # format
+        id_doi = self.cleaned_data['id_doi'].lower()
+
         # Check if doi valid requesting http://doi.org/<doi>
-        id_doi = self.cleaned_data['id_doi']
         if id_doi:
             url = 'http://doi.org/{doi}'.format(doi=id_doi)
             try:

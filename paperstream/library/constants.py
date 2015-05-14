@@ -11,6 +11,14 @@ PAPER_TYPE = (
     ('', 'Unknown')
 )
 
+PUBLISH_STATUS = (
+    ('ppublished', 'Paper Print'),
+    ('epublished', 'e-Print only'),
+    ('aheadofprint', 'e-Print ahead'),
+    ('preprint', 'pre-Print'),
+    ('', 'Unknown')
+)
+
 # Used in Journal
 PUBLISH_PERIODS = (
     ('ANN', 'Annual'),

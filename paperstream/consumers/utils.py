@@ -3,9 +3,10 @@ import abc
 from library.models import Paper
 from library.forms import PaperForm
 from .constants import PUBMED_PT
+from abc import ABCMeta, abstractmethod
 
 
-class Consumer2Pap(object):
+class Converter(metaclass=ABCMeta):
 
     __metaclass__ = abc.ABCMeta
 
@@ -32,16 +33,16 @@ class Consumer2Pap(object):
     }
 
     @abc.abstractmethod
-    def to_pap(self, entry):
+    def convert(self, entry):
         return NotImplementedError
 
 
-class Pubmed2Pap(Consumer2Pap):
+class PubmedConverter(Converter):
 
     TEMPLATE_IDS = {'id_doi': r'(.+)\s\[doi\]',
                     'id_pii': r'(.+)\s\[pii\]'}
 
-    def to_pap(self, entry):
+    def convert(self, entry):
 
         # Type
         try:
@@ -51,9 +52,7 @@ class Pubmed2Pap(Consumer2Pap):
             self.item['type'] = ''
 
         # Identifiers
-        # template for identifiers
-
-        # match
+        # match template
         for id_ in entry.get('AID', ''):
             for key, pattern in self.TEMPLATE_IDS.items():
                 match = re.match(pattern, id_)

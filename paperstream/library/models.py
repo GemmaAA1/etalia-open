@@ -4,10 +4,12 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from core.models import TimeStampedModel, NullableCharField
 from .validators import validate_issn, validate_author_names
-from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE
+from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
 from .utils import langcode_to_langpap
 from consumers.constants import CONSUMER_TYPE
 from users.constants import PROVIDER_TYPE
+from model_utils import Choices
+from model_utils.fields import MonitorField, StatusField
 
 from langdetect import detect
 
@@ -160,6 +162,11 @@ class Paper(TimeStampedModel):
     """Scientific papers
     """
 
+    # Published status
+    publish_status = models.CharField(choices=PUBLISH_STATUS, blank=True,
+                                      default='', max_length=20)
+    publish_status_changed = MonitorField(monitor='publish_status')
+
     # Type of paper
     type = models.CharField(max_length=4, choices=PAPER_TYPE, blank=True,
                             default='')
@@ -172,9 +179,9 @@ class Paper(TimeStampedModel):
                                null=True, unique=True, verbose_name='Arxiv')
     id_pmi = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='PMID')
+    # none unique because publisher dependent
     id_pii = NullableCharField(max_length=32, blank=True, default='',
-                               null=True, unique=True,
-                               verbose_name='PII')
+                               null=True, verbose_name='PII')
     id_oth = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID')
     # Title
@@ -216,15 +223,12 @@ class Paper(TimeStampedModel):
     language = models.CharField(max_length=3, choices=LANGUAGES,
                                 default='ENG', blank=True)
 
-    # Booleans
-    # article in press
-    is_aip = models.BooleanField(default=False)
-    # pre-print
-    is_pre_print = models.BooleanField(default=False)
-
     # Source
-    source = models.CharField(max_length=4, choices=SOURCE_TYPE, blank=True)
+    source = models.CharField(choices=SOURCE_TYPE, blank=True,
+                              default='', max_length=20)
+    source_changed = MonitorField(monitor='source')
 
+    # Boolean
     # locked if all field have been verified or paper from 'trusted' source
     is_trusted = models.BooleanField(default=False)
 
