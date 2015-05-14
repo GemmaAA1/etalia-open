@@ -27,8 +27,6 @@ def populate_journal(csv_file, print_to=None):
     with open(csv_file, 'r') as rows:
         # Generate a dict per row, with the first CSV row being the keys.
         for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
-
-            # Retrieve journal data if similar ids
             try:
                 journal = Journal.objects.get(Q(id_issn=row['id_issn']) |
                                     Q(id_eissn=row['id_eissn']) |
@@ -37,11 +35,8 @@ def populate_journal(csv_file, print_to=None):
             except Journal.DoesNotExist:
                 journal = None
 
-            # # Complete row field if empty
-            # for field in JournalForm.Meta.fields:
-            #     if not row[field] and journal:
-            #         row[field] = getattr(journal, field)
-
+            # JournalFormFillUp is used here because we got multiple source of
+            # journals that have complementary information
             form = JournalFormFillUp(row, instance=journal)
             if form.is_valid():
                 journal = form.save()

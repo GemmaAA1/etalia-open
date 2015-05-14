@@ -35,11 +35,13 @@ class Consumer(TimeStampedModel):
 
 class PubmedConsumer(Consumer):
 
-    # Type
-    type = 'PBMD'
-
     # email
     email = settings.PUBMED_EMAIL
+
+    @classmethod
+    def create(cls):
+        pubmed_consumer = cls(type='PUBM')
+        return pubmed_consumer
 
     def consumes_journal(self, pk):
         """Consumes Pubmed API for journal with primary key pk

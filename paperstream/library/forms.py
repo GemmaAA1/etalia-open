@@ -43,9 +43,14 @@ class JournalForm(forms.ModelForm):
 
 
 class JournalFormFillUp(JournalForm):
-    """Form has the following behavior:
-        - if new value is blank, it keeps the initial value
-        - if new value is full, it replaced initial value
+    """This form is use to add new data from API, not from view
+    (at least originally, e.g. in populate app)
+    The Form has the following behavior:
+        - if the form is not instantiated with a Journal instance, it behaves
+        as JournalForm
+        - if the form is instantiated with a Journal instance:
+            -- if new data value is blank, it keeps the initial value
+            -- if new data value is not blank, it replaced initial value
     """
 
     def __init__(self, *args, **kwargs):
@@ -178,7 +183,7 @@ class PaperForm(forms.ModelForm):
                 return ''
 
     def clean_id_doi(self):
-        # Check if doi valid calling doi.org
+        # Check if doi valid requesting http://doi.org/<doi>
         id_doi = self.cleaned_data['id_doi']
         if id_doi:
             url = 'http://doi.org/{doi}'.format(doi=id_doi)
