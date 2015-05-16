@@ -6,15 +6,12 @@ from core.models import TimeStampedModel, NullableCharField
 from .validators import validate_issn, validate_author_names
 from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
 from .utils import langcode_to_langpap
-from consumers.constants import CONSUMER_TYPE
-from users.constants import PROVIDER_TYPE
 from model_utils import Choices
 from model_utils.fields import MonitorField, StatusField
 
 from langdetect import detect
 
 # Source from where Paper are created (tuple(set()) to make unique)
-SOURCE_TYPE = tuple(set(CONSUMER_TYPE + PROVIDER_TYPE))
 
 class Publisher(TimeStampedModel):
     """Publisher group
@@ -47,9 +44,9 @@ class Journal(TimeStampedModel):
                                verbose_name='Other ID')
 
     # periodical title
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, default='')
     # short title
-    short_title = models.CharField(max_length=100, blank=True)
+    short_title = models.CharField(max_length=100, blank=True, default='')
 
     # publisher group
     publisher = models.ForeignKey(Publisher, null=True, default=None, blank=True)
@@ -87,11 +84,11 @@ class Journal(TimeStampedModel):
     def get_absolute_url(self):
         return reverse('library:journal', args=[self.id])
 
-    def counts_papers(self):
+    def count_papers(self):
         self.lib_size = len(self.paper_set.all())
         return self.lib_size
 
-    def counts_ids(self):
+    def count_ids(self):
         count = 0
         # Loop through field starting with 'id_'
         for field in self._meta.fields:
@@ -120,7 +117,8 @@ class Author(TimeStampedModel):
 
     # last name (capitalized)
     last_name = models.CharField(max_length=100,
-                                 validators=[validate_author_names])
+                                 validators=[validate_author_names],
+                                 default='')
     # first name (capitalize). first_name can store middle name
     first_name = models.CharField(max_length=100, blank=True, default='')
     # email
@@ -185,20 +183,20 @@ class Paper(TimeStampedModel):
     id_oth = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID')
     # Title
-    title = models.CharField(max_length=500)
+    title = models.CharField(max_length=500, default='')
 
     # Authors
     # authors
     authors = models.ManyToManyField(Author, through='AuthorPaper',
-                                     blank=True)
+                                     blank=True, default=None)
     # corporate authorship
     corp_author = models.ManyToManyField(CorpAuthor, through='CorpAuthorPaper',
-                                         blank=True)
+                                         blank=True, default=None)
     # Abstract
     abstract = models.TextField(blank=True, default='')
 
     # Journal
-    journal = models.ForeignKey(Journal, null=True, blank=True)
+    journal = models.ForeignKey(Journal, null=True, blank=True, default=None)
     # volume
     volume = models.CharField(max_length=200, blank=True, default='')
     # issue
@@ -207,15 +205,15 @@ class Paper(TimeStampedModel):
     page = models.CharField(max_length=200, blank=True, default='')
 
     # Key Terms
-    terms = models.TextField(blank=True, default='')
+    key_terms = models.TextField(blank=True, default='')
 
     # Dates
     # date electronically published
-    date_ep = models.DateField(null=True, blank=True, )
+    date_ep = models.DateField(null=True, blank=True, default=None)
     # date of publication in issue journal
-    date_p = models.DateField(null=True, blank=True, )
+    date_pp = models.DateField(null=True, blank=True, default=None)
     # date of paper last revised (e.g. arxiv, or publisher with e.g grant#)
-    date_lr = models.DateField(null=True, blank=True, )
+    date_lr = models.DateField(null=True, blank=True, default=None)
 
     # url where found
     url = models.URLField(blank=True, default='')
@@ -224,16 +222,12 @@ class Paper(TimeStampedModel):
                                 default='ENG', blank=True)
 
     # Source
-    source = models.CharField(choices=SOURCE_TYPE, blank=True,
-                              default='', max_length=20)
+    source = models.CharField(blank=True, default='', max_length=20)
     source_changed = MonitorField(monitor='source')
 
     # Boolean
     # locked if all field have been verified or paper from 'trusted' source
     is_trusted = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ['-date_ep', 'date_p']
 
     def get_absolute_url(self):
         return reverse('library:paper', args=[self.pk])
@@ -311,7 +305,7 @@ class Paper(TimeStampedModel):
                     value=getattr(self, field.name))
         return ids_str
 
-    def counts_ids(self):
+    def count_ids(self):
         count = 0
         # Loop through field starting with 'id_'
         for field in self._meta.fields:
@@ -320,7 +314,7 @@ class Paper(TimeStampedModel):
         return count
 
     @staticmethod
-    def detects_language(text):
+    def detect_language(text):
         """ Detect language
         """
         lang_code = detect(text)

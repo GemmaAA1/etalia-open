@@ -3,7 +3,7 @@ from . import gen_issn
 from stdnum import issn
 from django.test import TestCase
 from django.conf import settings
-from library.models import Paper, Journal, Author, Publisher, AuthorPosition
+from library.models import Paper, Journal, Author, Publisher, AuthorPaper
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -50,17 +50,18 @@ class JournalViewTest(TestCase):
                                          title='On the Stack')
         paper1 = Paper.objects.create(id_doi='xxx', journal=journal,
                                       title='A short story',
-                                      date=timezone.datetime(2015, 1, 1).date())
+                                      date_ep=timezone.datetime(2015, 1, 1).date())
         paper2 = Paper.objects.create(id_doi='yyy', journal=journal,
                                       title='A long story',
-                                      date=timezone.datetime(2014, 1, 1).date())
+                                      date_ep=timezone.datetime(2014, 1, 1).date())
         author1 = Author.objects.create(first_name='John', last_name='Crane')
         author2 = Author.objects.create(first_name='Keith', last_name='Haring')
-        AuthorPosition.objects.create(paper=paper1, author=author1, position=0)
-        AuthorPosition.objects.create(paper=paper2, author=author2, position=0)
+        AuthorPaper.objects.create(paper=paper1, author=author1, position=0)
+        AuthorPaper.objects.create(paper=paper2, author=author2, position=0)
 
         response = self.client.get('/library/journal/{0}/'.format(journal.pk))
 
         paper_list = list(Paper.objects.all())
 
-        self.assertEqual(list(response.context['paper_list']), paper_list)
+        self.assertIn(response.context['paper_list'][0], paper_list)
+        self.assertIn(response.context['paper_list'][1], paper_list)

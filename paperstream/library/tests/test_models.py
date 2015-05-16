@@ -1,9 +1,8 @@
 from django.test import TestCase
-from library.models import Paper, Journal, Author, AuthorPosition, Publisher
+from library.models import Paper, Journal, Author, Publisher, AuthorPaper
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength
-
+from ..constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
 
 class PublisherModelTest(TestCase):
 
@@ -25,9 +24,9 @@ class PaperModelTest(TestCase):
                          '/library/paper/{0}/'.format(paper.pk, ))
 
     def test_paper_ordering(self):
-        p1 = Paper.objects.create(title='Paper X', date=timezone.now().date())
+        p1 = Paper.objects.create(title='Paper X', date_ep=timezone.now().date())
         p2 = Paper.objects.create(title='Paper Y',
-            date=(timezone.now() - timezone.timedelta(days=2)).date())
+            date_ep=(timezone.now() - timezone.timedelta(days=2)).date())
         self.assertEqual(list(Paper.objects.all()), [p1, p2])
 
     def test_paper_can_have_multiple_ids(self):
@@ -66,12 +65,12 @@ class PaperModelTest(TestCase):
 
     def test_counts_id_defined(self):
         paper = Paper.objects.create(id_oth='xxx', id_arx='yyy')
-        self.assertEqual(paper.counts_ids(), 2)
+        self.assertEqual(paper.count_ids(), 2)
 
     def test_display_ids(self):
         paper = Paper.objects.create(id_oth='xxx', id_arx='yyy',
                                      id_doi='0000-0019', id_pmi='pubmed id')
-        disp_str = paper.ids_disp
+        disp_str = paper.print_ids
         self.assertIn('Arxiv: yyy', disp_str)
         self.assertIn('Other ID: xxx', disp_str)
         self.assertIn('DOI: 0000-0019', disp_str)
@@ -79,6 +78,7 @@ class PaperModelTest(TestCase):
 
 
 class JournalModelTest(TestCase):
+
 
     def setUp(self):
         Journal.objects.get_or_create(title='Journal X', id_issn='1053-8119')
@@ -109,14 +109,6 @@ class JournalModelTest(TestCase):
                                   'Journal Y',
                                   'Journal Z'])
 
-    def test_period_is_in_PUBLISH_PERIOD(self):
-        journal = Journal.objects.first()
-        journal.period = journal.PUBLISH_PERIOD[0][0]
-        journal.full_clean()
-        with self.assertRaises(ValidationError):
-            journal.period = 'STUFF'
-            journal.full_clean()
-
 class AuthorModelTest(TestCase):
 
     def test_empty_author_are_invalid(self):
@@ -141,17 +133,17 @@ class AuthorModelTest(TestCase):
         author = Author(first_name='Bernard', last_name='Paul')
         self.assertEqual(author.__str__(), 'Bernard Paul')
 
-    def test_compact_disp(self):
+    def test_compact_print(self):
         author = Author(first_name='Bernard', last_name='Le Normand')
-        self.assertEqual(author.compact_disp, 'Le Normand B.')
+        self.assertEqual(author.print_compact, 'Le Normand B.')
         author = Author(first_name='', last_name='Le Normand')
-        self.assertEqual(author.compact_disp, 'Le Normand')
+        self.assertEqual(author.print_compact, 'Le Normand')
 
-    def test_full_disp(self):
+    def test_print_full(self):
         author = Author(first_name='Patrick', last_name='Hernandez')
-        self.assertEqual(author.full_disp, 'Patrick Hernandez')
+        self.assertEqual(author.print_full, 'Patrick Hernandez')
         author = Author(first_name='', last_name='Hernandez')
-        self.assertEqual(author.full_disp, 'Hernandez')
+        self.assertEqual(author.print_full, 'Hernandez')
 
 
 class PaperAuthorTest(TestCase):
@@ -166,10 +158,10 @@ class PaperAuthorTest(TestCase):
         authors = Author.objects.all()
         paper = Paper.objects.first()
         for i, author in enumerate(authors):
-            AuthorPosition.objects.create(author=author,
+            AuthorPaper.objects.create(author=author,
                                           paper=paper,
                                           position=i+1)
-        cs = [cp.author for cp in AuthorPosition.objects.filter(paper=paper)]
+        cs = [cp.author for cp in AuthorPaper.objects.filter(paper=paper)]
         self.assertEqual(cs, list(authors))
 
     #TODO: test display
@@ -186,7 +178,7 @@ class JournalPaperTest(TestCase):
         Paper.objects.create(journal=journal, id_doi='yyy')
         Paper.objects.create(journal=journal, id_doi='zzz')
 
-        journal.counts_papers()
+        journal.count_papers()
         journal.save()
         journal = Journal.objects.get(id_issn='0000-0019')
         self.assertEqual(journal.paper_set.count(), 3)
@@ -195,9 +187,9 @@ class JournalPaperTest(TestCase):
     def test_ordering_of_papers_in_journal_by_date(self):
         journal = Journal.objects.create(id_issn='0000-0019')
         p1 = Paper.objects.create(id_doi='xxx', journal=journal,
-                                  date=timezone.datetime(2015, 1, 1))
+                                  date_ep=timezone.datetime(2015, 1, 1))
         p2 = Paper.objects.create(id_doi='yyy', journal=journal,
-                                  date=timezone.datetime(2015, 1, 2))
+                                  date_ep=timezone.datetime(2015, 1, 2))
         p3 = Paper.objects.create(id_doi='zzz', journal=journal,
-                                  date=timezone.datetime(2015, 1, 3))
+                                  date_ep=timezone.datetime(2015, 1, 3))
         self.assertEqual(list(journal.paper_set.all()), [p3, p2, p1])

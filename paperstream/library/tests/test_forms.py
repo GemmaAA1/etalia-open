@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..forms import JournalForm, PublisherForm
+from ..forms import JournalForm, PublisherForm, JournalFormFillBlanks
 from ..models import Journal, Publisher
 
 
@@ -48,16 +48,31 @@ class JournalFormTest(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_form_can_update_journal(self):
-        # first add a journal
         data_init = {'title': 'Test', 'id_issn': '0000-0019', 'id_eissn': ''}
         form = JournalForm(data_init)
+        self.assertTrue(form.is_valid())
+        journal = form.save()
+        # Then try updating
+        data_edit = {'title': 'Test', 'id_issn': '', 'id_eissn': '0918-9440'}
+        form = JournalForm(data_edit,
+                           instance=journal)
+        journal = form.save()
+        self.assertEqual(journal.id_eissn, '0918-9440')
+        self.assertEqual(journal.id_issn, '')
+
+
+class JournalFormFillUpTest(TestCase):
+
+    def test_form_can_consolidate_journal(self):
+        # first add a journal
+        data_init = {'title': 'Test', 'id_issn': '0000-0019', 'id_eissn': ''}
+        form = JournalFormFillBlanks(data_init)
         self.assertTrue(form.is_valid())
         journal = form.save()
         self.assertEqual(journal.id_issn, '0000-0019')
         # Then try updating
         data_edit = {'title': 'Test', 'id_issn': '', 'id_eissn': '0918-9440'}
-        form = JournalForm(data_edit,
-                           instance=journal)
+        form = JournalFormFillBlanks(data_edit, instance=journal)
         self.assertTrue(form.is_valid())
         journal = form.save()
         self.assertEqual(journal.id_eissn, '0918-9440')

@@ -3,7 +3,7 @@ import sys
 import tempfile
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from library.models import Publisher, Journal
-from library.forms import JournalFormFillUp, PublisherForm
+from library.forms import JournalFormFillBlanks, PublisherForm
 from django.db.models import Q
 
 
@@ -28,16 +28,17 @@ def populate_journal(csv_file, print_to=None):
         # Generate a dict per row, with the first CSV row being the keys.
         for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
             try:
-                journal = Journal.objects.get(Q(id_issn=row['id_issn']) |
-                                    Q(id_eissn=row['id_eissn']) |
-                                    Q(id_oth=row['id_oth']) |
-                                    Q(id_arx=row['id_arx']))
+                journal = Journal.objects.get(
+                    Q(id_issn=row['id_issn']) |
+                    Q(id_eissn=row['id_eissn']) |
+                    Q(id_oth=row['id_oth']) |
+                    Q(id_arx=row['id_arx']))
             except Journal.DoesNotExist:
                 journal = None
 
             # JournalFormFillUp is used here because we got multiple source of
             # journals that have complementary information
-            form = JournalFormFillUp(row, instance=journal)
+            form = JournalFormFillBlanks(row, instance=journal)
             if form.is_valid():
                 journal = form.save()
                 # Save as trusted

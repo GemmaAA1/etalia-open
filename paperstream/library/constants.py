@@ -1,4 +1,9 @@
+from consumers.constants import CONSUMER_TYPE
+from users.constants import PROVIDER_TYPE
+
 # Define constants used in models
+
+SOURCE_TYPE = tuple(set(CONSUMER_TYPE + PROVIDER_TYPE))
 
 PAPER_TYPE = (
     ('JOUR', 'Journal Article'),
@@ -12,8 +17,8 @@ PAPER_TYPE = (
 )
 
 PUBLISH_STATUS = (
-    ('ppublished', 'Paper Print'),
-    ('epublished', 'e-Print only'),
+    ('ppublish', 'Paper Print'),
+    ('epublish', 'e-Print only'),
     ('aheadofprint', 'e-Print ahead'),
     ('preprint', 'pre-Print'),
     ('', 'Unknown')
