@@ -3,7 +3,7 @@
 
 # Type of consumer (defined in consumers app)
 CONSUMER_TYPE = (
-    ('PUMD', 'PubMed'),
+    ('PUBM', 'PubMed'),
     ('ELSV', 'Elsevier'),
     ('ARXI', 'Arxiv'),
     ('IEEE', 'IEEE'),
@@ -11,11 +11,11 @@ CONSUMER_TYPE = (
 
 # Pubmed publication matching
 PUBMED_PT = (
-    ('Journal Article', 'JOUR'),
-    ('Letter',          'LETT'),
-    ('Editorial',       'EDIT'),
-    ('News',            'NEWS'),
-    ('Congresses',      'PROC'),
-    ('Review',          'REVI'),
-    ('Unknown',         ''),
+    ('JOURNAL ARTICLE', 'JOUR'),
+    ('LETTER',          'LETT'),
+    ('EDITORIAL',       'EDIT'),
+    ('NEWS',            'NEWS'),
+    ('CONGRESSES',      'PROC'),
+    ('REVIEW',          'REVI'),
+    ('UBKNOWN',         ''),
 )

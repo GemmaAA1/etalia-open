@@ -44,7 +44,7 @@ class Parser(metaclass=ABCMeta):
         journal = self.parse_journal(entry)
         paper = self.parse_paper(entry)
         authors = self.parse_authors(entry)
-        corp_authors = self.parse_corp_author(entry)
+        corp_authors = self.parse_corp_authors(entry)
 
         return {'journal': journal, 'authors': authors, 'paper': paper,
                 'corp_authors': corp_authors}
@@ -62,7 +62,12 @@ class PubmedParser(Parser):
         full_authors = entry.get('FAU', '')
         for auth in full_authors:
             author = self.author_template.copy()
-            last, first = tuple(list(map(str.strip, auth.split(','))))
+            try:
+                last, first = tuple(list(map(str.strip, auth.split(','))))
+            except ValueError:
+                last = auth.strip()
+                first = ''
+                pass
             author['last_name'] = last
             author['first_name'] = first
             authors.append(author)
@@ -91,7 +96,7 @@ class PubmedParser(Parser):
         # Type
         try:
             type_ = entry.get('PT', '')
-            paper['type'] = dict(PUBMED_PT)[type_]
+            paper['type'] = [dict(PUBMED_PT).get(typ, '') for typ in type_][0]
         except KeyError:
             paper['type'] = ''
 
@@ -138,7 +143,7 @@ class PubmedParser(Parser):
         paper['page'] = entry.get('PG', '')
 
         # Language
-        paper['language'] = entry.get('LA', '').upper()
+        paper['language'] = entry.get('LA', '')[0].upper()
 
         # Abstract
         paper['abstract'] = entry.get('AB', '')

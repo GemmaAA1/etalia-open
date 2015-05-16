@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 
 class Consumer(TimeStampedModel):
     """Kind of abstract Consumer class (kind of only because I cannot make
-    it abstract with the manytomany field"""
+    it abstract with the manytomany field
+    """
     #TODO: How to make this class abstract? See comment below
 
     # IDS
@@ -40,8 +41,7 @@ class Consumer(TimeStampedModel):
     day0 = models.IntegerField(default=61)
 
     # Journal associated with consumer
-    journals = models.ManyToManyField(Journal, through='ConsumerJournal',
-                                      related_name="%(class)s_related")
+    journals = models.ManyToManyField(Journal, through='ConsumerJournal')
 
     parser = None
 
@@ -51,11 +51,18 @@ class Consumer(TimeStampedModel):
     #     abstract = True
 
     def add_journal(self, journal):
+        """Link journal to consumer
+        :param: journal (Journal)
+        :return: (ConsumerJournal)
+        """
         cj, new = ConsumerJournal.objects.get_or_create(journal=journal,
                                                         consumer=self)
         return cj
 
     def activate_journal(self, journal):
+        """Activate row in ConsumerJournal table is feasible
+        :param: journal (Journal): journal instance
+        """
         try:
             self.consumerjournal_set.get(journal=journal).activate()
         except Journal.DoesNotExist:
@@ -64,6 +71,9 @@ class Consumer(TimeStampedModel):
             raise ValueError(msg)
 
     def deactivate_journal(self, journal):
+        """Deactivate row in ConsumerJournal table is feasible
+        :param: journal (Journal): journal instance
+        """
         try:
             self.consumerjournal_set.get(journal=journal).deactivate()
         except Journal.DoesNotExist:
@@ -72,6 +82,7 @@ class Consumer(TimeStampedModel):
             raise ValueError(msg)
 
     def deactivate_all(self):
+        """Deactivate all journals in ConsumerJournal table when feasible"""
         errors = []
         for journal in self.journals.all():
             try:
@@ -82,6 +93,7 @@ class Consumer(TimeStampedModel):
         return errors
 
     def activate_all(self):
+        """Deactivate all journals in ConsumerJournal table when feasible"""
         errors = []
         for journal in self.journals.all():
             try:
@@ -91,51 +103,11 @@ class Consumer(TimeStampedModel):
                 pass
         return errors
 
-    def populate_journal(self, journal):
-
-        if self.journal_is_valid(journal):
-            # retrieve new entries from journal
-            entries = self.consume(journal)
-
-            # save to database
-            for entry in entries:
-                item = self.parser.parse(entry)
-                item_paper = item['paper']
-                # create/consolidate paper
-                try:
-                    paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
-                                              Q(id_pmi=item_paper['id_pmi']) |
-                                              Q(id_pii=item_paper['id_pii']) |
-                                              Q(id_arx=item_paper['id_arx']) |
-                                              Q(id_oth=item_paper['id_oth']))
-                except Paper.DoesNotExist:
-                    paper = None
-                form = PaperFormFillBlanks(item['paper'], instance=paper)
-                if form.is_valid():
-                    paper = form.save()
-                    paper.journal = journal
-                    paper.is_trusted = True  # we trust consumer source
-                    paper.save()
-
-                # create/get authors
-                for pos, item_author in enumerate(item['authors']):
-                    author, _ = Author.objects.get_or_create(
-                        Q(first_name=item_author['first_name']) |
-                        Q(last_name=item_author['last_name']))
-                    AuthorPaper.objects.get_or_create(paper=paper,
-                                                      author=author,
-                                                      position=pos)
-                # create/get corp author
-                for pos, item_corp_author in enumerate(item['corp_authors']):
-                    corp_author, _ = CorpAuthor.objects.get_or_create(
-                        name=item_corp_author['name']
-                    )
-                    CorpAuthorPaper.objects.get_or_create(
-                        paper=paper,
-                        corp_author=corp_author,
-                        position=pos)
-
     def journal_is_valid(self, journal):
+        """ Check if journal is valid
+        :param journal (Journal): journal instance
+        :return: (Bool)
+        """
         # exist in ConsumerJournal
         try:
             cj = self.consumerjournal_set.get(journal=journal)
@@ -147,27 +119,83 @@ class Consumer(TimeStampedModel):
         else:
             return False
 
-    def consume(self, journal):
+    def consume_journal(self, journal):
+        """ Consume Consumer API and update stats
+
+        :param: journal (Journal): journal instance
+        :return: list of entries
+        """
         raise NotImplemented
 
+    def populate_journal(self, journal):
+        """Check journal validity, consume api, save stats, parse entries,
+        save records to DB
 
-class ConsumerPubmedManager(models.Manager):
-    def create(self, name):
-        consumer = self.create(name=name)
-        consumer.parser = PubmedParser()
-        consumer.save()
-        return consumer
+        :param: journal (Journal): journal instance
+        """
+        if self.journal_is_valid(journal):
+            # retrieve new entries from journal
+            entries = self.consume_journal(journal)
+
+            # save to database
+            for entry in entries:
+                item = self.parser.parse(entry)
+                item_paper = item['paper']
+                item_paper['source'] = self.type
+                # create/consolidate paper
+                try:
+                    paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
+                                              Q(id_pmi=item_paper['id_pmi']) |
+                                              Q(id_pii=item_paper['id_pii']) |
+                                              Q(id_arx=item_paper['id_arx']) |
+                                              Q(id_oth=item_paper['id_oth']))
+                except Paper.DoesNotExist:
+                    paper = None
+                form = PaperFormFillBlanks(item_paper, instance=paper)
+                if form.is_valid():
+                    paper = form.save()
+                    paper.journal = journal
+                    paper.is_trusted = True  # we trust consumer source
+                    paper.save()
+
+                # create/get authors
+                for pos, item_author in enumerate(item['authors']):
+                    author, _ = Author.objects.get_or_create(
+                        first_name=item_author['first_name'],
+                        last_name=item_author['last_name'])
+                    AuthorPaper.objects.get_or_create(paper=paper,
+                                                      author=author,
+                                                      position=pos)
+                # create/get corp author
+                for pos, item_corp_author in enumerate(item['corp_authors']):
+                    corp_author, _ = CorpAuthor.objects.get_or_create(
+                        name=item_corp_author['name']
+                    )
+                    CorpAuthorPaper.objects.get_or_create(
+                        paper=paper,
+                        corp_author=corp_author)
 
 
 class ConsumerPubmed(Consumer):
+    """Pubmed consumer subclass
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ConsumerPubmed, self).__init__(*args, **kwargs)
+        self.type = 'PUBM'
+
+    parser = PubmedParser()
 
     # email
     email = settings.PUBMED_EMAIL
 
-    objects = ConsumerPubmedManager
+    # objects = ConsumerPubmedManager()
 
-    def consume(self, journal):
-        """Consumes Pubmed API for journal with primary key pk
+    def consume_journal(self, journal):
+        """Consumes Pubmed API for journal
+
+        :param journal (Journal):
+        :return: (list) of entry
         """
 
         # Update consumer_journal status
@@ -220,8 +248,15 @@ class ConsumerPubmed(Consumer):
             handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
                                    retmode="text")
 
-            entries = Medline.parse(handle)
+            records = Medline.parse(handle)
+
+            entries = []
+            for record in records:
+                entries.append(record)
+
+            # close handle
             handle.close()
+
             # Update consumer_journal
             cj.update(True, len(id_list))
 
@@ -273,7 +308,7 @@ class ConsumerJournal(models.Model):
     last_number_papers = models.IntegerField(default=0)
 
     # Status monitor
-    status = fields.StatusField()
+    status = fields.StatusField(default='inactive')
     status_changed = fields.MonitorField(monitor='status')
 
     class Meta:
@@ -286,7 +321,6 @@ class ConsumerJournal(models.Model):
         elif self.status in ['idle', 'in_queue', 'consuming']:
             msg = 'journal already active: current status is {0}'.format(self.status)
             logger.info(msg)
-            raise ValueError(msg)
         else:
             msg = 'cannot activate, journal status is {0}'.format(self.status)
             logger.info(msg)
@@ -306,12 +340,17 @@ class ConsumerJournal(models.Model):
             raise ValueError(msg)
 
     def update(self, success, n):
+        """Update attributes and ConsumerJournalStats
+
+        :param success (bool):
+        :param n (int): number of papers fetched
+        """
         if success:
             self.status = 'idle'
             self.save()
             self.last_date_cons = self.status_changed
             self.last_number_papers = n
-            self.consumerjournalstat_set.create(
+            self.stats.create(
                 date=self.last_date_cons,
                 number_papers=self.last_number_papers,
                 status='SUC')
@@ -321,9 +360,8 @@ class ConsumerJournal(models.Model):
             self.save()
             self.last_date_cons = self.status_changed
             self.last_number_papers = 0
-            self.consumerjournalstat_set.create(date=self.last_date_cons,
-                                                number_papers=0,
-                                                status='FAI')
+            self.stats.create(date=self.last_date_cons, number_papers=0,
+                              status='FAI')
             self.save()
 
 

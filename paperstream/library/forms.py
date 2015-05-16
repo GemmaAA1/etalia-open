@@ -139,9 +139,26 @@ class PaperForm(forms.ModelForm):
                                    to_field_name='title',
                                    required=False)
         self.fields['source'] = \
-            forms.ModelChoiceField(choices=SOURCE_TYPE,
-                                   empty_label=None,
-                                   required=True)
+            forms.ChoiceField(choices=SOURCE_TYPE)
+
+    def clean(self):
+        cleaned_data = super(PaperForm, self).clean()
+
+        # language
+        if not self.cleaned_data['language']:
+            text = ' '.join([self.cleaned_data['abstract'],
+                             self.cleaned_data['title']])
+            self.cleaned_data['language'] = \
+                self.Meta.model.detect_language(text)
+
+        return cleaned_data
+
+
+class PaperFormFillBlanks(FillBlanksMixin, PaperForm):
+    pass
+
+
+class PaperFormClean(FillBlanksMixin, PaperForm):
 
     def clean_url(self):
         # Check if URL returns 200
@@ -224,7 +241,3 @@ class PaperForm(forms.ModelForm):
                     pass
 
         return cleaned_data
-
-
-class PaperFormFillBlanks(FillBlanksMixin, PaperForm):
-    pass

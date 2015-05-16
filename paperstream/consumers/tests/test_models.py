@@ -1,6 +1,6 @@
 from django.test import TestCase
 from ..models import ConsumerPubmed, ConsumerJournal
-from library.models import Journal
+from library.models import Journal, Paper
 from django.core.exceptions import ValidationError
 
 
@@ -51,17 +51,6 @@ class ConsumerTest(TestCase):
         with self.assertRaises(ValueError):
             consumer.activate_journal(journal)
 
-    def test_cannot_activate_if_doing_status(self):
-        consumer, journal, cj = self.add_journal()
-        cj.status = 'consuming'
-        cj.save()
-        with self.assertRaises(ValueError):
-            consumer.activate_journal(journal)
-        cj.status = 'in_queue'
-        cj.save()
-        with self.assertRaises(ValueError):
-            consumer.activate_journal(journal)
-
     def test_cannot_deactivate_if_doing_stuff(self):
         consumer, journal, cj = self.add_journal()
         cj.status = 'consuming'
@@ -85,15 +74,27 @@ class ConsumerPubmedTest(TestCase):
     def test_consume_journal_update_consumerjournal(self):
         journal = Journal.objects.first()
         consumer = ConsumerPubmed.objects.first()
-        consumer.consume(journal)
+        consumer.consume_journal(journal)
         self.assertIsNotNone(consumer.consumerjournal_set.first().last_date_cons)
         self.assertTrue(consumer.consumerjournal_set.first().last_number_papers > 0)
 
-    def test_consume_journal_update_consumerjournalstat(self):
+    def test_consume_journal_populate_stats(self):
         journal = Journal.objects.first()
         consumer = ConsumerPubmed.objects.first()
-        consumer.consume(journal)
-        consumer.consume(journal)
+        consumer.consume_journal(journal)
+        consumer.consume_journal(journal)
         cj = consumer.consumerjournal_set.first()
-        cjs = cj.stats_set.all()
+        cjs = cj.stats.all()
         self.assertEqual(cjs.count(), 2)
+
+    def test_consumer_populate_journal(self):
+        journal = Journal.objects.first()
+        consumer = ConsumerPubmed.objects.first()
+        consumer.day0 = 10
+        consumer.add_journal(journal)
+        consumer.activate_journal(journal)
+        papers = Paper.objects.filter(journal=journal)
+        self.assertTrue(papers.count() == 0)
+        consumer.populate_journal(journal)
+        papers = Paper.objects.filter(journal=journal)
+        self.assertTrue(papers.count() > 0)
