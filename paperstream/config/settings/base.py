@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 from unipath import Path
+from core.utils import get_env_variable
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 ROOT_DIR = Path(__file__).ancestor(4)  # (/a/b/myfile.py - 3 = /)
@@ -210,54 +212,86 @@ AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
 
-PUBMED_EMAIL = 'nicolas.pannetier@gmail.com'
+CONS_MIN_DELAY = 0   # Minimum delay between same journal is
+                     # consumed twice (day)
+CONS_MAX_DELAY = 7   # Maximum delay between same journal is consumed twice (day)
+CONS_INIT_PAST = 60
 
+# CELERY
+# ------------------------------------------------------------------------------
+
+BROKER_URL = 'amqp://'
+CELERY_RESULT_BACKEND = 'amqp://'
+CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
+# CELERYBEAT_SCHEDULE = {
+#     # TODO: make sure that the consumer task does not overlap !
+#     'pubmed-once-a-day': {
+#         'task': 'tasks.pubmed_once_a_day',
+#         'schedule': crontab(minute=0, hour=0),
+#     },
+# }
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(module)s %(message)s'
+        },
     },
     'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'paperstream.log'),
+            'formatter': 'verbose'
+        },
+        'populate': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'populate.log'),
+            'formatter': 'verbose'
+        },
+        'celery': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'celery.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 50,  # 100 mb
+        },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+        'django': {
+            'handlers': ['null'],
             'propagate': True,
+            'level': 'INFO',
+        },
+        # 'paperstream': {
+        #     'handlers': ['console', 'file'],
+        #     'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        # },
+        'paperstream.populate': {
+            'handlers': ['console', 'populate'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'celery': {
+            'handlers': ['celery', 'console'],
+            'level': 'DEBUG',
         },
     }
 }
-
-
-
-from django.core.exceptions import ImproperlyConfigured
-def get_env_variable(var_name, default=None):
-    """
-    Get the environment variable
-    """
-    try:
-        return os.environ[var_name]
-    except KeyError:
-        if default:
-            return default
-            pass
-        else:
-            error_msg = "Set the {} environment variable".format(var_name)
-            raise ImproperlyConfigured(error_msg)

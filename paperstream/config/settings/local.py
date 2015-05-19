@@ -33,5 +33,4 @@ CACHES = {
 # ------------------------------------------------------------------------------
 
 PUBMED_EMAIL = 'nicolas.pannetier@gmail.com'
-
 ELSEVIER_API_KEY = get_env_variable('ELSEVIER_API_KEY')

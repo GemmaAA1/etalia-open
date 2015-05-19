@@ -38,6 +38,10 @@ class TestPopulatePublisher(TestPopulateBase):
 
 class TestPopulateJournal(TestPopulateBase):
 
+    def test_through_errors_publisher_not_in_list(self):
+        rec, errors = populate_journal(JOU_LIST3, print_to=sys.stderr)
+        self.assertTrue(len(errors) > 0)
+
     def test_journal_can_be_save(self):
         # Pre populate publisher
         self.pre_populate_publisher()

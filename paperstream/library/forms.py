@@ -15,17 +15,22 @@ class FillBlanksMixin(object):
     """
 
     def clean(self):
-        # Order matters here. Fields need to be clean before super clean()
-        # is called
-        for field in self.Meta.fields:
+        """Order matters. fill_blank, which is field related, needs to be called
+        before super().clean(). Field wise cleaning is done here for DRY.
+        :return: (dict)
+        """
+        for field in self.cleaned_data.keys():
             self.cleaned_data[field] = self.fill_blank(field)
 
         cleaned_data = super(FillBlanksMixin, self).clean()
         return cleaned_data
 
     def fill_blank(self, field):
+        """Update field but do not update with blank or None value
+        :param field (str):
+        :return:
+        """
         field_val = self.cleaned_data[field]
-        # fill up blank or erase initial value if not blank
         if field_val:
             return field_val
         elif self.instance.pk:
@@ -146,10 +151,11 @@ class PaperForm(forms.ModelForm):
 
         # language
         if not self.cleaned_data['language']:
-            text = ' '.join([self.cleaned_data['abstract'],
-                             self.cleaned_data['title']])
-            self.cleaned_data['language'] = \
-                self.Meta.model.detect_language(text)
+            text = ' '.join([self.cleaned_data.get('abstract', ''),
+                             self.cleaned_data.get('title', '')])
+            if text.strip():
+                self.cleaned_data['language'] = \
+                    self.Meta.model.detect_language(text)
 
         return cleaned_data
 

@@ -183,7 +183,7 @@ class Paper(TimeStampedModel):
     id_oth = NullableCharField(max_length=32, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID')
     # Title
-    title = models.CharField(max_length=500, default='')
+    title = models.CharField(max_length=500, blank=False, default='')
 
     # Authors
     # authors

@@ -2,9 +2,11 @@
 
 
 # Type of consumer (defined in consumers app)
+# WARNING: HUMAN READABLE MUST MATCH Publisher.name FOR CONSUMER POPULATION
+# MANAGEMENT ROUTINE
 CONSUMER_TYPE = (
     ('PUBM', 'PubMed'),
-    ('ELSV', 'Elsevier'),
+    ('ELSE', 'Elsevier'),
     ('ARXI', 'Arxiv'),
     ('IEEE', 'IEEE'),
 )

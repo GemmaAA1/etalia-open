@@ -12,6 +12,7 @@ PAPER_TYPE = (
     ('NEWS', 'News'),
     ('PROC', 'Proceedings'),
     ('REVI', 'Review'),
+    ('PREP', 'e-Print'),  # e.g Arxiv
     ('DRAF', 'Draft'),
     ('', 'Unknown')
 )

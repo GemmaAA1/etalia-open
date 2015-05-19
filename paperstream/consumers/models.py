@@ -1,26 +1,33 @@
+import re
 import logging
-
+import requests
+import feedparser
+import time
+from dateutil import parser
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, F
 
-# from paperstream import capp
+from config.celery import celery_app as app
+from celery.contrib.methods import task_method
+from celery.utils.log import get_task_logger
+
 
 from Bio import Entrez
 from Bio import Medline
 from model_utils import Choices, fields
 
+from core.utils import get_env_variable
 from library.models import Journal, AuthorPaper, Paper, Author, CorpAuthor, \
     CorpAuthorPaper
 from core.models import TimeStampedModel
-from .parsers import PubmedParser
+from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
 
 from library.forms import AuthorForm, PaperFormFillBlanks
 
 logger = logging.getLogger(__name__)
-
 
 class Consumer(TimeStampedModel):
     """Kind of abstract Consumer class (kind of only because I cannot make
@@ -88,9 +95,8 @@ class Consumer(TimeStampedModel):
             try:
                 self.deactivate_journal(journal)
             except ValueError or AssertionError as err:
-                errors.append(err)
+                logger.warning(err)
                 pass
-        return errors
 
     def activate_all(self):
         """Deactivate all journals in ConsumerJournal table when feasible"""
@@ -99,9 +105,8 @@ class Consumer(TimeStampedModel):
             try:
                 self.activate_journal(journal)
             except ValueError as err:
-                errors.append(err)
+                logger.warning(err)
                 pass
-        return errors
 
     def journal_is_valid(self, journal):
         """ Check if journal is valid
@@ -114,7 +119,7 @@ class Consumer(TimeStampedModel):
         except ConsumerJournal.DoesNotExist:
             return False
         # is 'idle' and journal has id_eissn or id_issn
-        if cj.status == 'idle' and (journal.id_issn or journal.id_eissn):
+        if cj.status == 'idle':
             return True
         else:
             return False
@@ -127,39 +132,28 @@ class Consumer(TimeStampedModel):
         """
         raise NotImplemented
 
-    def populate_journal(self, journal):
-        """Check journal validity, consume api, save stats, parse entries,
-        save records to DB
-
-        :param: journal (Journal): journal instance
-        """
-        if self.journal_is_valid(journal):
-            # retrieve new entries from journal
-            entries = self.consume_journal(journal)
-
-            # save to database
-            for entry in entries:
-                item = self.parser.parse(entry)
-                item_paper = item['paper']
-                item_paper['source'] = self.type
-                # create/consolidate paper
-                try:
-                    paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
-                                              Q(id_pmi=item_paper['id_pmi']) |
-                                              Q(id_pii=item_paper['id_pii']) |
-                                              Q(id_arx=item_paper['id_arx']) |
-                                              Q(id_oth=item_paper['id_oth']))
-                except Paper.DoesNotExist:
-                    paper = None
-                form = PaperFormFillBlanks(item_paper, instance=paper)
-                if form.is_valid():
-                    paper = form.save()
-                    paper.journal = journal
-                    paper.is_trusted = True  # we trust consumer source
-                    paper.save()
+    def add_entry(self, entry, journal):
+        try:
+            item_paper = entry['paper']
+            item_paper['source'] = self.type
+            # create/consolidate paper
+            try:
+                paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
+                                          Q(id_pmi=item_paper['id_pmi']) |
+                                          Q(id_pii=item_paper['id_pii']) |
+                                          Q(id_arx=item_paper['id_arx']) |
+                                          Q(id_oth=item_paper['id_oth']))
+            except Paper.DoesNotExist:
+                paper = None
+            form = PaperFormFillBlanks(item_paper, instance=paper)
+            if form.is_valid():
+                paper = form.save()
+                paper.journal = journal
+                paper.is_trusted = True  # we trust consumer source
+                paper.save()
 
                 # create/get authors
-                for pos, item_author in enumerate(item['authors']):
+                for pos, item_author in enumerate(entry['authors']):
                     author, _ = Author.objects.get_or_create(
                         first_name=item_author['first_name'],
                         last_name=item_author['last_name'])
@@ -167,13 +161,66 @@ class Consumer(TimeStampedModel):
                                                       author=author,
                                                       position=pos)
                 # create/get corp author
-                for pos, item_corp_author in enumerate(item['corp_authors']):
+                for pos, item_corp_author in enumerate(entry['corp_authors']):
                     corp_author, _ = CorpAuthor.objects.get_or_create(
                         name=item_corp_author['name']
                     )
                     CorpAuthorPaper.objects.get_or_create(
                         paper=paper,
                         corp_author=corp_author)
+            return True
+        except Exception as e:
+            return False
+
+    @app.task(filter=task_method, name='tasks.populate_journal')
+    def populate_journal(self, journal):
+        """Check journal validity, consume api, save stats, parse entries,
+        save records to DB
+
+        :param: journal (Journal): journal instance
+        """
+
+        paper_added = 0
+
+        if self.journal_is_valid(journal):
+            # retrieve new entries from journal
+            entries = self.consume_journal(journal)
+
+            # save to database
+            for entry in entries:
+                item = self.parser.parse(entry)
+                if self.add_entry(item, journal):
+                    paper_added += 1
+
+            # Update consumer_journal
+            cj = self.consumerjournal_set.get(journal=journal)
+            cj.update(True, len(entries), paper_added)
+
+            logger.info('populating {0}: ok'.format(journal.title))
+        return paper_added
+
+    def run_once_per_day(self):
+
+        logger.info('starting {0}:{1} daily consumption'.format(self.type,
+                                                                self.name))
+
+        # Get journal active
+        consumer_journal_active = self.consumerjournal_set.filter(
+            Q(status='idle') | Q(status='consuming') | Q(status='in_queue'))
+
+        # Decrease day counter by 1
+        consumer_journal_active.filter(countdown_day__lt=0).update(
+            countdown_day=F('countdown_day')-1)
+
+        # Get journal active and which counter at < 1
+        consumerjournals_go_to_queue = \
+            consumer_journal_active.filter(
+                countdown_day__lt=1).select_related('journal')
+
+        # queue journal for consumption
+        for consumerjournal in consumerjournals_go_to_queue:
+            self.populate_journal.apply_async((consumerjournal.journal, ),
+                                              countdown=1)
 
 
 class ConsumerPubmed(Consumer):
@@ -184,12 +231,17 @@ class ConsumerPubmed(Consumer):
         super(ConsumerPubmed, self).__init__(*args, **kwargs)
         self.type = 'PUBM'
 
-    parser = PubmedParser()
+    parser = ParserPubmed()
 
     # email
-    email = settings.PUBMED_EMAIL
+    email = get_env_variable('PUBMED_EMAIL')
 
-    # objects = ConsumerPubmedManager()
+    def journal_is_valid(self, journal):
+        if super(ConsumerPubmed, self).journal_is_valid(journal):
+            if journal.id_issn or journal.id_eissn:
+                return True
+
+        return False
 
     def consume_journal(self, journal):
         """Consumes Pubmed API for journal
@@ -197,6 +249,8 @@ class ConsumerPubmed(Consumer):
         :param journal (Journal):
         :return: (list) of entry
         """
+
+        entries = []
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
@@ -250,7 +304,6 @@ class ConsumerPubmed(Consumer):
 
             records = Medline.parse(handle)
 
-            entries = []
             for record in records:
                 entries.append(record)
 
@@ -260,34 +313,199 @@ class ConsumerPubmed(Consumer):
             # Update consumer_journal
             cj.update(True, len(id_list))
 
+            #
+            logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
             cj.update(False, 0)
-
-            logger.exception(e)
-            logger.warning()
+            logger.warning('consuming {0}: FAILED'.format(journal.title))
             return list()
 
         return entries
 
 
-class ElsevierConsumer(Consumer):
+class ConsumerElsevier(Consumer):
 
     # Type
     type = 'ELSV'
 
+    parser = ParserElsevier()
+
     # API key
-    api_key = settings.ELSEVIER_API_KEY
+    API_KEY = get_env_variable('ELSEVIER_API_KEY')
 
     # URL
-    URL_QUERY = 'http://api.elsevier.com/content/search/scidir?query='
+    URL_QUERY = 'http://api.elsevier.com/content/search/index:SCIDIR?query='
+
+    def journal_is_valid(self, journal):
+        if super(ConsumerElsevier, self).journal_is_valid(journal):
+            if journal.id_issn or journal.id_eissn:
+                return True
+
+        return False
+
+    def consume_journal(self, journal):
+        # TODO: Volume is not fetched (
+        """Consumes Elsevier API for journal
+
+        ELSEVIER is a pain. I cannot make their API sorts the results by date
+        accordingly to what is ahead of print and inprint. A possible reason
+        is that prism:coverDisplayDate mixes up date of e-print and date of p-print.
+        WARNING: Elsevier limits to 25 items / request.
+
+        Approach followed here:
+            - request results sorted by covDate
+            - sort results by DOI (doi have timestamp embeded in them)
+            - check if date for last retrieve results in prior last_cons_date
+            - if not, keep going and increment starting point
+
+        Other issues:
+            Using SCOPUS doenot help because doesnot list aheadofprint papers.
+            Using SCIDIR doesnot have the volume field (SCOPUS has it. wtf)
+
+        :param journal (Journal):
+        :return: (list) of entry
+        """
+
+        entries = []
+
+        # Update consumer_journal status
+        cj = self.consumerjournal_set.get(journal=journal)
+        cj.status = 'consuming'
+        cj.save()
+
+        try:
+            headers = {'X-ELS-APIKey': self.API_KEY}
+            query = '{url}ISSN({issn})&sort=-coverDate'.format(
+                url=self.URL_QUERY,
+                issn=journal.id_issn or journal.id_eissn,
+            )
+
+            count = 0
+            entries = []
+            if cj.last_date_cons:
+                start_date = cj.last_date_cons
+            else:  # journal has never been scanned
+                start_date = timezone.now() - timezone.timedelta(self.day0)
+
+            while True:
+                data = {'count': str(self.ret_max),
+                        'field': u'doi,coverDate,coverDisplayDate,url,identifier,title,'
+                                 'publicationName,issueIdentifier,coverDisplayName,'
+                                 'authors,creator,description,startingPage,issn,'
+                                 'endingPage',
+                        'start': str(count),
+                        }
+
+                resp = requests.post(query, data=data, headers=headers)
+
+                entries += resp.json()['search-results']['entry']
+                count += self.ret_max
+
+                # sort entries by doi (doi are really time stamped)
+                entries = sorted(entries, key=lambda x: x['prism:doi'][-11:],
+                                 reverse=True)
+
+                if entries:
+                    current_start_date = entries[-1]['prism:coverDisplayDate']
+                    # strip 'Available online' tag if in coverDisplayDate
+                    current_start_date = re.sub(r'Available online', '',
+                                                current_start_date).strip()
+                    current_start_date = parser.parse(current_start_date)
+                    current_start_date = current_start_date.replace(
+                        tzinfo=timezone.pytz.timezone('UTC'))
+                    if current_start_date < start_date:
+                        break
+                    else:
+                        count += self.ret_max
+                else:
+                    break
+
+            logger.debug('consuming {0}: OK'.format(journal.title))
+        except Exception as e:
+            cj.update(False, 0, 0)
+            logger.warning('consuming {0}: FAILED'.format(journal.title))
+            return list()
+
+        return entries
 
 
-class ArxivConsumer(Consumer):
+class ConsumerArxiv(Consumer):
 
-    # Type
-    type = 'ARXI'
+    def __init__(self, *args, **kwargs):
+        super(ConsumerArxiv, self).__init__(*args, **kwargs)
+        self.type = 'ARXI'
+
+    parser = ParserArxiv()
 
     URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
+
+    def journal_is_valid(self, journal):
+        if super(ConsumerArxiv, self).journal_is_valid(journal):
+            if journal.id_arx:
+                return True
+
+        return False
+
+    def consume_journal(self, journal):
+        entries = []
+
+        # Update consumer_journal status
+        cj = self.consumerjournal_set.get(journal=journal)
+        cj.status = 'consuming'
+        cj.save()
+        try:
+            # get category
+            cat = re.sub(r'arxiv\.', '', cj.journal.id_arx)
+
+            # define query start date based on last scan or day0
+            if cj.last_date_cons:
+                start_date = cj.last_date_cons
+            else:  # journal has never been scanned
+                start_date = timezone.now() - timezone.timedelta(self.day0)
+            # format date for API call
+            start_date_q = '{year}{month:02d}{day:02d}'.format(
+                year=start_date.year,
+                month=start_date.month,
+                day=start_date.day)
+
+            end_date_q = '{year}{month:02d}{day:02d}'.format(
+                year=timezone.now().year,
+                month=timezone.now().month,
+                day=timezone.now().day)
+
+            count = 0
+            total_entries = 1
+            while count == 0 or count < total_entries:
+                query = '{url}cat:{cat}+AND+submittedDate:[{start}+TO+{end}]' \
+                        '&start={count}&max_results={ret_max}'.format(
+                            url=self.URL_QUERY,
+                            cat=cat,
+                            start=start_date_q,
+                            end=end_date_q,
+                            count=count,
+                            ret_max=self.ret_max)
+                resp = requests.get(query)
+                time.sleep(1)
+                data = feedparser.parse(resp.text)
+                total_entries = int(data['feed']['opensearch_totalresults'])
+                if len(data.entries) < 25 and \
+                                count < (total_entries - self.ret_max):
+                    # retry once
+                    resp = requests.get(query)
+                    time.sleep(1)
+                    data = feedparser.parse(resp.text)
+                    # print(len(data.entries))
+                    # print(data['feed'])
+                count += self.ret_max
+                entries += data.entries
+
+            logger.debug('consuming {0}: OK'.format(journal.title))
+        except Exception as e:
+            cj.update(False, 0, 0)
+            logger.warning('consuming {0}: FAILED'.format(journal.title))
+            return list()
+
+        return entries
 
 
 class ConsumerJournal(models.Model):
@@ -303,9 +521,16 @@ class ConsumerJournal(models.Model):
 
     # last update
     # datetime of last consumption
-    last_date_cons = models.DateTimeField(null=True, default=None)
-    # number of papers
-    last_number_papers = models.IntegerField(default=0)
+    last_date_cons = models.DateTimeField(
+        null=True,
+        default=timezone.now() - timezone.timedelta(days=settings.CONS_INIT_PAST))
+    # number of papers retrieved
+    last_number_papers_retrieved = models.IntegerField(default=0)
+    # number of papers retrieved
+    last_number_papers_fetched = models.IntegerField(default=0)
+
+    base_countdown_day = models.IntegerField(default=1)
+    countdown_day = models.IntegerField(default=0)
 
     # Status monitor
     status = fields.StatusField(default='inactive')
@@ -339,28 +564,41 @@ class ConsumerJournal(models.Model):
             logger.info(msg)
             raise ValueError(msg)
 
-    def update(self, success, n):
+    def update(self, success, n_fet, n_rec):
         """Update attributes and ConsumerJournalStats
 
         :param success (bool):
-        :param n (int): number of papers fetched
+        :param n_ret (int): number of papers fetched from API
+        :param n_rec (int): number of papers recorded in db
         """
         if success:
             self.status = 'idle'
-            self.save()
-            self.last_date_cons = self.status_changed
-            self.last_number_papers = n
-            self.stats.create(
-                date=self.last_date_cons,
-                number_papers=self.last_number_papers,
-                status='SUC')
+            self.last_date_cons = timezone.now()
+            self.last_number_papers_fetched = n_fet
+            self.last_number_papers_recorded = n_rec
+            self.stats.create(date=timezone.now(),
+                  number_papers_fetched=self.last_number_papers_fetched,
+                  number_papers_recorded=self.last_number_papers_recorded,
+                  status='SUC')
+            # update base countdown
+            if n_fet < 0:
+                if self.base_countdown_day < settings.CONS_MAX_DELAY:
+                    self.base_countdown_day += 1
+                else:
+                    self.base_countdown_day = settings.CONS_MAX_DELAY
+            elif n_fet > 0:
+                if self.base_countdown_day > settings.CONS_MIN_DELAY:
+                    self.base_countdown_day -= 1
+                else:
+                    self.base_countdown_day = settings.CONS_MIN_DELAY
+            # reinit counter
+            self.countdown_day = self.base_countdown_day
             self.save()
         else:
             self.status = 'error'
-            self.save()
-            self.last_date_cons = self.status_changed
-            self.last_number_papers = 0
-            self.stats.create(date=self.last_date_cons, number_papers=0,
+            self.stats.create(date=timezone.now(),
+                              number_papers_fetched=0,
+                              number_papers_recorded=0,
                               status='FAI')
             self.save()
 
@@ -372,8 +610,11 @@ class ConsumerJournalStat(models.Model):
     # date of consumption
     date = models.DateTimeField(null=False)
 
-    # number of papers
-    number_papers = models.IntegerField(default=0)
+    # number of papers fetched
+    number_papers_fetched = models.IntegerField(default=0)
+
+    # number of papers recorded
+    number_papers_recorded = models.IntegerField(default=0)
 
     # status
     status = models.CharField(max_length=3,
