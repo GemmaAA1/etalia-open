@@ -20,7 +20,7 @@ class Institution(models.Model):
         return self.name
 
 
-class MyUserManager(BaseUserManager):
+class PaperUserManager(BaseUserManager):
     def create_user(self, email, password, **kwargs):
         """
         Creates and saves a User with the given email and password.
@@ -55,7 +55,7 @@ class MyUserManager(BaseUserManager):
         return user
 
 
-class MyUser(AbstractBaseUser, PermissionsMixin):
+class PaperUser(AbstractBaseUser, PermissionsMixin):
     """user of the app
     """
 
@@ -68,7 +68,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=200, null=True, blank=True)
     last_name = models.CharField(max_length=200, null=True, blank=True)
 
-    objects = MyUserManager()
+    objects = PaperUserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['']
