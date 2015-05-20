@@ -1,0 +1,672 @@
+[
+  {
+    "PG": "756-765",
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Pallavaram S",
+      "D'Haese PF",
+      "Lake W",
+      "Konrad PE",
+      "Dawant BM",
+      "Neimat JS"
+    ],
+    "VI": "76",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "AD": "*Department of Electrical Engineering and Computer Science, Vanderbilt University, Nashville, Tennessee; double daggerDepartment of Neurosurgery, Vanderbilt University Medical Center, Nashville, Tennessee.",
+    "DA": "20150519",
+    "DP": "2015 Jun",
+    "JT": "Neurosurgery",
+    "AID": [
+      "10.1227/NEU.0000000000000714 [doi]",
+      "00006123-201506000-00024 [pii]"
+    ],
+    "AB": "BACKGROUND: Finding the optimal location for the implantation of the electrode in deep brain stimulation (DBS) surgery is crucial for maximizing the therapeutic benefit to the patient. Such targeting is challenging for several reasons, including anatomic variability between patients as well as the lack of consensus about the location of the optimal target. OBJECTIVE: To compare the performance of popular manual targeting methods against a fully automatic nonrigid image registration-based approach. METHODS: In 71 Parkinson disease subthalamic nucleus (STN)-DBS implantations, an experienced functional neurosurgeon selected the target manually using 3 different approaches: indirect targeting using standard stereotactic coordinates, direct targeting based on the patient magnetic resonance imaging, and indirect targeting relative to the red nucleus. Targets were also automatically predicted by using a leave-one-out approach to populate the CranialVault atlas with the use of nonrigid image registration. The different targeting methods were compared against the location of the final active contact, determined through iterative clinical programming in each individual patient. RESULTS: Targeting by using standard stereotactic coordinates corresponding to the center of the motor territory of the STN had the largest targeting error (3.69 mm), followed by direct targeting (3.44 mm), average stereotactic coordinates of active contacts from this study (3.02 mm), red nucleus-based targeting (2.75 mm), and nonrigid image registration-based automatic predictions using the CranialVault atlas (2.70 mm). The CranialVault atlas method had statistically smaller variance than all manual approaches. CONCLUSION: Fully automatic targeting based on nonrigid image registration with the use of the CranialVault atlas is as accurate and more precise than popular manual methods for STN-DBS. ABBREVIATIONS: AC, anterior commissureDBS, deep brain stimulationPC, posterior commissurePD, Parkinson diseaseRN, red nucleusSTN, subthalamic nucleusTR, repetition time.",
+    "SO": "Neurosurgery. 2015 Jun;76(6):756-765.",
+    "TA": "Neurosurgery",
+    "TI": "Fully Automated Targeting Using Nonrigid Image Registration Matches Accuracy and Exceeds Precision of Best Manual Approaches to Subthalamic Deep Brain Stimulation Targeting in Parkinson Disease.",
+    "LR": "20150520",
+    "PT": [
+      "JOURNAL ARTICLE"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "ppublish",
+    "PMID": "25988929",
+    "MHDA": "2015/05/20 06:00",
+    "JID": "7802914",
+    "IP": "6",
+    "FAU": [
+      "Pallavaram, Srivatsan",
+      "D'Haese, Pierre-Francois",
+      "Lake, Wendell",
+      "Konrad, Peter E",
+      "Dawant, Benoit M",
+      "Neimat, Joseph S"
+    ],
+    "IS": "1524-4040 (Electronic) 0148-396X (Linking)"
+  },
+  {
+    "PHST": [
+      "2015/03/18 [received]",
+      "2015/05/18 [accepted]"
+    ],
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Lasagna-Reeves CA",
+      "Rousseaux MW",
+      "Guerrero-Munoz MJ",
+      "Park J",
+      "Jafar-Nejad P",
+      "Richman R",
+      "Lu N",
+      "Sengupta U",
+      "Litvinchuk A",
+      "Orr HT",
+      "Kayed R",
+      "Zoghbi HY"
+    ],
+    "LID": "10.7554/eLife.07558 [doi]",
+    "VI": "4",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "OT": [
+      "Ataxin 1",
+      "amyloid oligomers",
+      "mouse",
+      "native interactors",
+      "neuroscience",
+      "proteinopathies"
+    ],
+    "AD": "Department of Molecular and Human Genetics, Baylor College of Medicine, Houston, United States. Department of Molecular and Human Genetics, Baylor College of Medicine, Houston, United States. Department of Neurology, University of Texas Medical Branch, Galveston, United States. Department of Molecular and Human Genetics, Baylor College of Medicine, Houston, United States. Department of Molecular and Human Genetics, Baylor College of Medicine, Houston, United States. Department of Molecular and Human Genetics, Howard Hughes Medical Institute, Baylor College of Medicine, Houston, United States. Department of Molecular and Human Genetics, Baylor College of Medicine, Houston, United States. Department of Neurology, University of Texas Medical Branch, Galveston, United States. Department of Molecular and Human Genetics, Baylor College of Medicine, Houston, United States. Institute for Translational Neuroscience, University of Minnesota, Minnesota, United States. Department of Neurology, University of Texas Medical Branch, Galveston, United States. Department of Molecular and Human Genetics, Howard Hughes Medical Institute, Baylor College of Medicine, Houston, United States.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "DP": "2015 May 19",
+    "JT": "eLife",
+    "AID": [
+      "10.7554/eLife.07558 [doi]"
+    ],
+    "AB": "Recent studies indicate that soluble oligomers drive pathogenesis in several neurodegenerative proteinopathies, including Alzheimer and Parkinson disease. Curiously, the same conformational antibody recognizes different disease-related oligomers, despite the variations in clinical presentation and brain regions affected, suggesting that the oligomer structure might be responsible for toxicity. We investigated whether polyglutamine-expanded Ataxin1, the protein that underlies spinocerebellar ataxia type 1, forms toxic oligomers and, if so, what underlies their toxicity. We found that mutant ATXN1 does form oligomers and that oligomer levels correlate with disease progression in the Atxn1154Q/+ mice. Moreover, oligomeric toxicity, stabilization and seeding require interaction with Capicua, which is expressed at greater ratios with respect to ATXN1 in the cerebellum than in less vulnerable brain regions. Thus, specific interactors, not merely oligomeric structure, drive pathogenesis and contribute to regional vulnerability. Identifying interactors that stabilize toxic oligomeric complexes could answer longstanding questions about the pathogenesis of other proteinopathies.",
+    "SO": "Elife. 2015 May 19;4. doi: 10.7554/eLife.07558.",
+    "TA": "Elife",
+    "TI": "A native interactor scaffolds and stabilizes toxic Ataxin-1 oligomers in SCA1.",
+    "DEP": "20150519",
+    "LR": "20150520",
+    "PT": [
+      "JOURNAL ARTICLE"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "aheadofprint",
+    "PMID": "25988806",
+    "MHDA": "2015/05/20 06:00",
+    "JID": "101579614",
+    "FAU": [
+      "Lasagna-Reeves, Cristian A",
+      "Rousseaux, Maxime W C",
+      "Guerrero-Munoz, Marcos J",
+      "Park, Jeehye",
+      "Jafar-Nejad, Paymaan",
+      "Richman, Ronald",
+      "Lu, Nan",
+      "Sengupta, Urmi",
+      "Litvinchuk, Alexandra",
+      "Orr, Harry T",
+      "Kayed, Rakez",
+      "Zoghbi, Huda Y"
+    ],
+    "IS": "2050-084X (Electronic) 2050-084X (Linking)"
+  },
+  {
+    "PG": "122-125",
+    "JID": "7502039",
+    "PHST": [
+      "2014/09/04 [received]",
+      "2015/03/19 [revised]",
+      "2015/04/25 [accepted]"
+    ],
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Sarkiss CA",
+      "Fogg GA",
+      "Skovrlj B",
+      "Cho SK",
+      "Caridi JM"
+    ],
+    "LID": "S0303-8467(15)00158-4 [pii] 10.1016/j.clineuro.2015.04.022 [doi]",
+    "VI": "134",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "OT": [
+      "Degenerative spondylosis",
+      "Kyphoscoliosis",
+      "Parkinson's disease",
+      "Spinal decompression",
+      "Spinal fusion"
+    ],
+    "AD": "Icahn School of Medicine at Mount Sinai, Department of Neurosurgery, New York, USA. Electronic address: Christopher.sarkiss@mountsinai.org. Saba University School of Medicine, Saba, Bonaire, Sint Eustatius and Saba. Icahn School of Medicine at Mount Sinai, Department of Neurosurgery, New York, USA. Icahn School of Medicine at Mount Sinai, Department of Orthopedic Surgery, New York, USA. Icahn School of Medicine at Mount Sinai, Department of Neurosurgery, New York, USA.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "DP": "2015 May 6",
+    "JT": "Clinical neurology and neurosurgery",
+    "AID": [
+      "S0303-8467(15)00158-4 [pii]",
+      "10.1016/j.clineuro.2015.04.022 [doi]"
+    ],
+    "AB": "INTRODUCTION: Degenerative spondylosis and kyphoscoliosis are increasingly recognized entities in patients with Parkinson's disease. Surgical treatment with spinal fusion can be complicated due to poor bone quality and muscular dysfunction in this patient population. The goal of this paper is to investigate surgical outcomes in Parkinson's patients undergoing spine surgery. METHODS: We performed a literature review using the PubMed and Google Scholar search engines investigating \"Parkinson's disease and spinal fusion surgery\" from the period of 2000 to 2013. The inclusion criteria included only English articles with Parkinson's patients that underwent spinal surgery. We identified and reviewed all six articles that included ninety-five patients with Parkinson's disease who underwent spinal surgery. RESULTS: A total of 95 patients with Parkinson's disease who underwent spinal fusion surgery were reviewed with average patient age of 69 and a 3:4 male to female ratio. With an average follow up of 40 months, 46 out of 73 patients (63%) were judged to have satisfactory outcomes with poor outcomes noted in the remaining 37%. These included but were not limited to pseudoarthrosis, hardware failure/pullout, development of adjacent level disease, persistent kyphosis or sagittal imbalance, and no improvement or worsening in their postoperative visual analog pain scale. There was a 45% (29/65) revision rate and a 59% (30/51) complication rate following the index procedure. CONCLUSION: It remains unclear whether Parkinson's patients benefit from spinal fusion surgery. Further prospective research is warranted to investigate surgical outcomes in this subset of patients.",
+    "SO": "Clin Neurol Neurosurg. 2015 May 6;134:122-125. doi: 10.1016/j.clineuro.2015.04.022.",
+    "CI": [
+      "Copyright (c) 2015 Elsevier B.V. All rights reserved."
+    ],
+    "DEP": "20150506",
+    "LR": "20150520",
+    "PT": [
+      "REVIEW"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "aheadofprint",
+    "PMID": "25988602",
+    "MHDA": "2015/05/20 06:00",
+    "TA": "Clin Neurol Neurosurg",
+    "TI": "To operate or not?: A literature review of surgical outcomes in 95 patients with Parkinson's disease undergoing spine surgery.",
+    "FAU": [
+      "Sarkiss, Christopher A",
+      "Fogg, Guy A",
+      "Skovrlj, Branko",
+      "Cho, Samuel K",
+      "Caridi, John M"
+    ],
+    "IS": "1872-6968 (Electronic) 0303-8467 (Linking)"
+  },
+  {
+    "PG": "3",
+    "JID": "101653173",
+    "PHST": [
+      "2015 [ecollection]",
+      "2014/11/18 [received]",
+      "2015/01/07 [accepted]",
+      "2015/01/23 [epublish]"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Khodakarami A",
+      "Saez I",
+      "Mels J",
+      "Vilchez D"
+    ],
+    "DP": "2015",
+    "VI": "2",
+    "LA": [
+      "eng"
+    ],
+    "STAT": "PubMed-not-MEDLINE",
+    "DCOM": "20150519",
+    "OT": [
+      "Alzheimer's disease",
+      "Huntington's disease",
+      "Parkinson's disease",
+      "aging",
+      "autophagy",
+      "germ cells",
+      "proteasome",
+      "proteostasis"
+    ],
+    "AD": "Cologne Excellence Cluster for Cellular Stress Responses in Aging-Associated Diseases, University of Cologne Cologne, Germany. Cologne Excellence Cluster for Cellular Stress Responses in Aging-Associated Diseases, University of Cologne Cologne, Germany. Cologne Excellence Cluster for Cellular Stress Responses in Aging-Associated Diseases, University of Cologne Cologne, Germany. Cologne Excellence Cluster for Cellular Stress Responses in Aging-Associated Diseases, University of Cologne Cologne, Germany.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "LID": "10.3389/fmolb.2015.00003 [doi]",
+    "JT": "Frontiers in molecular biosciences",
+    "AID": [
+      "10.3389/fmolb.2015.00003 [doi]"
+    ],
+    "AB": "Experimental interventions that reduce reproduction cause an extension in lifespan. In invertebrates, such as Caenorhabditis elegans, the aging of the soma is regulated by signals from the germline. Indeed, ablation of germ cells significantly extends lifespan. Notably, germline-deficient animals exhibit heightened resistance to proteotoxic stress. This phenotype correlates with increased potential of intracellular clearance mechanisms such as the proteasome and autophagy in somatic tissues. Here we review the molecular mechanisms by which signals from the germline regulate lifespan in C. elegans with special emphasis on clearance mechanisms.",
+    "PL": "Switzerland",
+    "SO": "Front Mol Biosci. 2015 Jan 23;2:3. doi: 10.3389/fmolb.2015.00003. eCollection 2015.",
+    "TA": "Front Mol Biosci",
+    "DEP": "20150123",
+    "PMID": "25988171",
+    "PT": [
+      "Journal Article",
+      "Review"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "epublish",
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "MHDA": "2015/05/20 06:01",
+    "TI": "Mediation of organismal aging and somatic proteostasis by the germline.",
+    "FAU": [
+      "Khodakarami, Amirabbas",
+      "Saez, Isabel",
+      "Mels, Johanna",
+      "Vilchez, David"
+    ],
+    "IS": "2296-889X (Electronic) 2296-889X (Linking)"
+  },
+  {
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Lim GG",
+      "Chua DS",
+      "Basil AH",
+      "Chan HY",
+      "Chai C",
+      "Arumugam T",
+      "Lim KL"
+    ],
+    "LID": "jbc.M114.622399 [pii]",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "OT": [
+      "PTEN-induced putative kinase 1 (PINK1)",
+      "Parkinson disease",
+      "mitophagy",
+      "parkin",
+      "ubiquitylation (ubiquitination)"
+    ],
+    "AD": "National Neuroscience Institute, Singapore; National Neuroscience Institute, Singapore; National Neuroscience Institute, Singapore; National Neuroscience Institute, Singapore; National Neuroscience Institute, Singapore; National University of Singapore, Singapore. National Neuroscience Institute, Singapore; kahleong.lim@duke-nus.edu.sg.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "DP": "2015 May 18",
+    "JT": "The Journal of biological chemistry",
+    "AID": [
+      "M114.622399 [pii]",
+      "10.1074/jbc.M114.622399 [doi]"
+    ],
+    "AB": "The potential cellular function of the 53 kDa cytosolic form of PINK1 (PINK1-53) is often overlooked due to its rapid degradation by the proteasome upon its production. Although a number of recent studies have suggested various roles for PINK1-53, how this labile PINK1 species attain an adequate expression level to fulfil these roles remains unclear. Here, we demonstrated that PINK1-53 is stabilized in the presence of enhanced K63-linked ubiquitination and identified TRAF6-related NF-kappaB activation as a novel pathway involved in this. We further showed that a mimetic of PINK1-53 promotes mitophagy but curiously in apparently healthy mitochondria. We speculate that this \"non-selective\" form of mitophagy may potentially help to counteract the build-up of reactive oxygen species in cells undergoing oxidative stress and as such represent a cytoprotective response.",
+    "SO": "J Biol Chem. 2015 May 18. pii: jbc.M114.622399.",
+    "CI": [
+      "Copyright (c) 2015, The American Society for Biochemistry and Molecular Biology."
+    ],
+    "TI": "Cytosolic PTEN-INDUCED PUTATIVE KINASE 1 is Stabilized By NF-kappaB Pathway and Promotes Non-Selective Mitophagy.",
+    "DEP": "20150518",
+    "LR": "20150520",
+    "PT": [
+      "JOURNAL ARTICLE"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "aheadofprint",
+    "PMID": "25987559",
+    "MHDA": "2015/05/20 06:00",
+    "TA": "J Biol Chem",
+    "JID": "2985121R",
+    "FAU": [
+      "Lim, Grace G Y",
+      "Chua, Doreen S K",
+      "Basil, Adeline H",
+      "Chan, Hui-Ying",
+      "Chai, Chou",
+      "Arumugam, Thiruma",
+      "Lim, Kah-Leong"
+    ],
+    "IS": "1083-351X (Electronic) 0021-9258 (Linking)"
+  },
+  {
+    "PG": "249-259",
+    "JID": "101120682",
+    "PHST": [
+      "2014/08/23 [aheadofprint]"
+    ],
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Elstein D",
+      "Alcalay R",
+      "Zimran A"
+    ],
+    "DP": "2015 Mar",
+    "VI": "29",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "OT": [
+      "Gaucher disease",
+      "Parkinson disease",
+      "alpha-synuclein",
+      "beta-glucocerebrosidase"
+    ],
+    "AD": "Gaucher Clinic, Shaare Zedek Medical Center Affiliated with the Hebrew University School of Medicine, Jerusalem Israel. Electronic address: elstein@szmc.org.il. Department of Neurology and the Taub Institute, Columbia University Medical Center, New York, NY, USA. Electronic address: rna2104@cumc.columbia.edu. Gaucher Clinic, Shaare Zedek Medical Center Affiliated with the Hebrew University School of Medicine, Jerusalem Israel. Electronic address: azimran@gmail.com.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "LID": "S1521-690X(14)00098-0 [pii] 10.1016/j.beem.2014.08.007 [doi]",
+    "JT": "Best practice & research. Clinical endocrinology & metabolism",
+    "AID": [
+      "S1521-690X(14)00098-0 [pii]",
+      "10.1016/j.beem.2014.08.007 [doi]"
+    ],
+    "AB": "In the last decade, several lines of evidence have been presented that document the clinical manifestations, genetic associations, and sub-cellular mechanisms of the inter-relatedness of beta-glucocerebrosidase mutations and the emergence of Parkinson disease among carriers and patients with Gaucher disease. This review is an attempt to apprise the reader of the recent literature with the caveat that this is an area of intensive exploration that is constantly being updated because of the immediate clinical ramifications but also because of the impact on our understanding of Parkinson disease, and finally because of the unexpected inter-reactions between these entities on the molecular level. It has been an unexpected happenstance that it has been discovered that a rare monogenetic disease has an interface at many points with a neurological disorder of the elderly that has both familial and sporadic forms: to date there is no cure for either of these disorders.",
+    "SO": "Best Pract Res Clin Endocrinol Metab. 2015 Mar;29(2):249-259. doi: 10.1016/j.beem.2014.08.007. Epub 2014 Aug 23.",
+    "CI": [
+      "Copyright (c) 2014 Elsevier Ltd. All rights reserved."
+    ],
+    "DEP": "20140823",
+    "LR": "20150520",
+    "PT": [
+      "REVIEW"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "ppublish",
+    "PMID": "25987177",
+    "MHDA": "2015/05/20 06:00",
+    "TA": "Best Pract Res Clin Endocrinol Metab",
+    "TI": "The emergence of Parkinson disease among patients with Gaucher disease.",
+    "IP": "2",
+    "FAU": [
+      "Elstein, Deborah",
+      "Alcalay, Roy",
+      "Zimran, Ari"
+    ],
+    "IS": "1878-1594 (Electronic) 1521-690X (Linking)"
+  },
+  {
+    "PHST": [
+      "2015/02/12 [received]",
+      "2015/04/21 [revised]",
+      "2015/05/04 [accepted]"
+    ],
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Beudel M",
+      "Roosma E",
+      "Martinez Manzanera OE",
+      "van Laar T",
+      "Maurits NM",
+      "de Jong BM"
+    ],
+    "LID": "S1353-8020(15)00201-1 [pii] 10.1016/j.parkreldis.2015.05.004 [doi]",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "OT": [
+      "Bradykinesia",
+      "EEG",
+      "Motor velocity",
+      "Parkinson's disease",
+      "Timing"
+    ],
+    "AD": "Department of Neurology, University Medical Center Groningen, University of Groningen, Groningen, The Netherlands. Electronic address: m.beudel@umcg.nl. Department of Neurology, University Medical Center Groningen, University of Groningen, Groningen, The Netherlands. Department of Neurology, University Medical Center Groningen, University of Groningen, Groningen, The Netherlands. Department of Neurology, University Medical Center Groningen, University of Groningen, Groningen, The Netherlands. Department of Neurology, University Medical Center Groningen, University of Groningen, Groningen, The Netherlands. Department of Neurology, University Medical Center Groningen, University of Groningen, Groningen, The Netherlands.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "DP": "2015 May 6",
+    "JT": "Parkinsonism & related disorders",
+    "AID": [
+      "S1353-8020(15)00201-1 [pii]",
+      "10.1016/j.parkreldis.2015.05.004 [doi]"
+    ],
+    "AB": "BACKGROUND: To deal with processing-time in the nervous system, visuomotor control requires anticipation. An index for such anticipation is provided by the 'flash-lag illusion' in which moving objects are perceived ahead of static objects while actually being in the same place. We investigated the neurophysiological relation between visuomotor anticipation and motor velocity in Parkinson's disease (PD) and controls. METHODS: Motor velocity was assessed by the number of keystrokes in 30s ('kinesia score') and visuomotor anticipation in a behavioural flash-lag paradigm while electroencephalography data was obtained. PD patients (n = 24) were divided in a 'PDslow' and a 'PDfast' group based on kinesia score. RESULTS: The PDslow group had a lower kinesia score than controls (resp. 40.3 +/- 1.7 and 64.9 +/- 4.6, p < 0.001). The flash-lag illusion was weaker in the PDslow group than in controls (resp. fractions 0.32 +/- 0.04 and 0.50 +/- 0.09 of the responses indicating perceived lagging, p = 0.03). Furthermore, the magnitude of the flash-lag illusion correlated with the kinesia score (cc = 0.45, p = 0.02). Finally, electroencephalography background frequency was lower in the PDslow group than in controls (resp 8.24 +/- 0.24 and 9.1 +/- 0.32 Hz, p = 0.01) and background frequency correlated with the kinesia score (cc = 0.58, p = 0.001). CONCLUSIONS: The decreased flash-lag illusion and lower electroencephalography background frequency in more bradykinetic PD patients provides support for disturbed visuomotor anticipations, putatively caused by reduced, sub-cortically mediated, network efficiency. This suggests a link between anticipation in early-stage visual motion processing and motor preparation.",
+    "SO": "Parkinsonism Relat Disord. 2015 May 6. pii: S1353-8020(15)00201-1. doi: 10.1016/j.parkreldis.2015.05.004.",
+    "CI": [
+      "Copyright (c) 2015 Elsevier Ltd. All rights reserved."
+    ],
+    "TI": "Parkinson bradykinesia correlates with EEG background frequency and perceptual forward projection.",
+    "DEP": "20150506",
+    "LR": "20150520",
+    "PT": [
+      "JOURNAL ARTICLE"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "aheadofprint",
+    "PMID": "25986742",
+    "MHDA": "2015/05/20 06:00",
+    "TA": "Parkinsonism Relat Disord",
+    "JID": "9513583",
+    "FAU": [
+      "Beudel, M",
+      "Roosma, E",
+      "Martinez Manzanera, O E",
+      "van Laar, T",
+      "Maurits, N M",
+      "de Jong, B M"
+    ],
+    "IS": "1873-5126 (Electronic) 1353-8020 (Linking)"
+  },
+  {
+    "PHST": [
+      "2014/11/03 [received]",
+      "2015/03/05 [revised]",
+      "2015/05/02 [accepted]"
+    ],
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "OWN": "NLM",
+    "AU": [
+      "Sengoku R",
+      "Matsushima S",
+      "Bono K",
+      "Sakuta K",
+      "Yamazaki M",
+      "Miyagawa S",
+      "Komatsu T",
+      "Mitsumura H",
+      "Kono Y",
+      "Kamiyama T",
+      "Ito K",
+      "Mochio S",
+      "Iguchi Y"
+    ],
+    "LID": "S1353-8020(15)00197-2 [pii] 10.1016/j.parkreldis.2015.05.001 [doi]",
+    "LA": [
+      "ENG"
+    ],
+    "STAT": "Publisher",
+    "OT": [
+      "(123)I-MIBG scintigraphy",
+      "MRI",
+      "OB",
+      "OSIT-J",
+      "OT",
+      "Olfactory bulb and tract volume",
+      "Olfactory dysfunction",
+      "Parkinsonism",
+      "UPDRS",
+      "magnetic resonance imaging",
+      "meta-iodobenzylguanidine ((123)I-MIBG) scintigraphy",
+      "meta-iodobenzylguanidine scintigraphy",
+      "odor stick identification test for Japanese",
+      "olfactory bulb",
+      "olfactory tract",
+      "unified Parkinson's Disease Rating Scale"
+    ],
+    "AD": "Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan; Department of Neurology, Tokyo Metropolitan Geriatric Hospital, Tokyo, Japan. Electronic address: renpeis@gmail.com. Department of Radiology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan. Department of Radiology, Tokyo Metropolitan Geriatric Hospital, Tokyo, Japan. The Jikei University School of Nursing, Tokyo, Japan. Department of Neurology, The Jikei University School of Medicine, Tokyo, Japan.",
+    "DA": "20150519",
+    "OTO": [
+      "NOTNLM"
+    ],
+    "DP": "2015 May 11",
+    "JT": "Parkinsonism & related disorders",
+    "AID": [
+      "S1353-8020(15)00197-2 [pii]",
+      "10.1016/j.parkreldis.2015.05.001 [doi]"
+    ],
+    "AB": "OBJECTIVE: This study aimed to examine whether the volume of the olfactory bulbs and tracts (OB & T) on magnetic resonance imaging (MRI) is useful for differentiating Parkinson's disease (PD) from PD-related disorders. METHODS: The study group comprised 13 patients with PD, 11 with multiple system atrophy (MSA), five with progressive supranuclear palsy, and five with corticobasal degeneration (PSP/CBD). All patients were evaluated using the odor stick identification test for Japanese (OSIT-J), 123I-meta-iodobenzylguanidine (MIBG) scintigraphy, and brain MRI. OB & T areas on 1-mm-thick coronal images were measured and summed for volumes. We examined relationships between olfactory function and volume, and cardiovascular dysautonomia. We defined the cut-off values for OSIT-J score or MIBG uptake and OB & T volume to discriminate PD from PD-related disorders and calculated the proportional rate of PD in four categorized groups. RESULTS: OB & T volume was smaller in PD than in MSA or PSP/CBD (p < 0.05 each). The cut-off for detecting PD patients was OSIT-J score <8, heart/mediastinum ratio <1.6, and OB & T volume <270 mm3. In the group with OSIT-J score <8 and OB & T volume <270 mm3, the proportion of PD patients among all patients with PD-related disorders was 91%. The rate of probable PD gradually increased as OSIT-J score and OB & T volume decreased (p < 0.001). CONCLUSIONS: Although preliminary, these data obtained from a combined morphological and functional evaluation of OB or cardiovascular dysautonomia could be useful for further differential of PD and other PD-related disorders.",
+    "SO": "Parkinsonism Relat Disord. 2015 May 11. pii: S1353-8020(15)00197-2. doi: 10.1016/j.parkreldis.2015.05.001.",
+    "CI": [
+      "Copyright (c) 2015 Elsevier Ltd. All rights reserved."
+    ],
+    "TI": "Olfactory function combined with morphology distinguishes Parkinson's disease.",
+    "DEP": "20150511",
+    "LR": "20150520",
+    "PT": [
+      "JOURNAL ARTICLE"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "aheadofprint",
+    "PMID": "25986741",
+    "MHDA": "2015/05/20 06:00",
+    "TA": "Parkinsonism Relat Disord",
+    "JID": "9513583",
+    "FAU": [
+      "Sengoku, Renpei",
+      "Matsushima, Satoshi",
+      "Bono, Keiko",
+      "Sakuta, Kenichi",
+      "Yamazaki, Mikihiro",
+      "Miyagawa, Shinji",
+      "Komatsu, Teppei",
+      "Mitsumura, Hidetaka",
+      "Kono, Yu",
+      "Kamiyama, Tsutomu",
+      "Ito, Kimiteru",
+      "Mochio, Soichiro",
+      "Iguchi, Yasuyuki"
+    ],
+    "IS": "1873-5126 (Electronic) 1353-8020 (Linking)"
+  },
+  {
+    "PG": "e500",
+    "OWN": "NLM",
+    "AU": [
+      "Obeyesekere MN",
+      "Klein GJ"
+    ],
+    "LID": "10.1161/CIRCULATIONAHA.114.014535 [doi]",
+    "VI": "131",
+    "LA": [
+      "eng"
+    ],
+    "STAT": "In-Data-Review",
+    "AD": "Northern Hospital Department of Cardiology, Victoria, Australia. Cardiology Division, Western University, University Hospital, London, ON, Canada.",
+    "DA": "20150519",
+    "DP": "2015 May 19",
+    "JT": "Circulation",
+    "AID": [
+      "CIRCULATIONAHA.114.014535 [pii]",
+      "10.1161/CIRCULATIONAHA.114.014535 [doi]"
+    ],
+    "PL": "United States",
+    "SO": "Circulation. 2015 May 19;131(20):e500. doi: 10.1161/CIRCULATIONAHA.114.014535.",
+    "TA": "Circulation",
+    "SB": "AIM IM",
+    "TI": "Response to Letter Regarding Editorial, \"The Asymptomatic Wolff-Parkinson-White Patient: Time to be More Proactive?\".",
+    "PMID": "25986453",
+    "PT": [
+      "Letter"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "ppublish",
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "MHDA": "2015/05/20 06:00",
+    "JID": "0147763",
+    "IP": "20",
+    "FAU": [
+      "Obeyesekere, Manoj N",
+      "Klein, George J"
+    ],
+    "IS": "1524-4539 (Electronic) 0009-7322 (Linking)"
+  },
+  {
+    "PG": "e499",
+    "OWN": "NLM",
+    "AU": [
+      "Pappone C",
+      "Vicedomini G",
+      "Manguso F",
+      "Saviano M",
+      "Baldi M",
+      "Pappone A",
+      "Ciaccio C",
+      "Giannelli L",
+      "Ionescu B",
+      "Petretta A",
+      "Vitale R",
+      "Cuko A",
+      "Calovic Z",
+      "Fundaliotis A",
+      "Moscatiello M",
+      "Tavazzi L",
+      "Santinelli V"
+    ],
+    "LID": "10.1161/CIRCULATIONAHA.114.014534 [doi]",
+    "VI": "131",
+    "LA": [
+      "eng"
+    ],
+    "STAT": "In-Data-Review",
+    "AD": "Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy. Department of Arrhythmology, Policlinico San Donato, University of Milan, Milan, Italy.",
+    "DA": "20150519",
+    "DP": "2015 May 19",
+    "JT": "Circulation",
+    "AID": [
+      "CIRCULATIONAHA.114.014534 [pii]",
+      "10.1161/CIRCULATIONAHA.114.014534 [doi]"
+    ],
+    "PL": "United States",
+    "SO": "Circulation. 2015 May 19;131(20):e499. doi: 10.1161/CIRCULATIONAHA.114.014534.",
+    "TA": "Circulation",
+    "SB": "AIM IM",
+    "TI": "Response to letter regarding article, \"wolff-Parkinson-white syndrome in the era of catheter ablation: insights from a registry study of 2169 patients\".",
+    "PMID": "25986452",
+    "PT": [
+      "Letter"
+    ],
+    "EDAT": "2015/05/20 06:00",
+    "PST": "ppublish",
+    "CRDT": [
+      "2015/05/20 06:00"
+    ],
+    "MHDA": "2015/05/20 06:00",
+    "JID": "0147763",
+    "IP": "20",
+    "FAU": [
+      "Pappone, Carlo",
+      "Vicedomini, Gabriele",
+      "Manguso, Francesco",
+      "Saviano, Massimo",
+      "Baldi, Mario",
+      "Pappone, Alessia",
+      "Ciaccio, Cristiano",
+      "Giannelli, Luigi",
+      "Ionescu, Bogdan",
+      "Petretta, Andrea",
+      "Vitale, Raffaele",
+      "Cuko, Amarild",
+      "Calovic, Zarko",
+      "Fundaliotis, Angelica",
+      "Moscatiello, Mario",
+      "Tavazzi, Luigi",
+      "Santinelli, Vincenzo"
+    ],
+    "IS": "1524-4539 (Electronic) 0009-7322 (Linking)"
+  }
+]
