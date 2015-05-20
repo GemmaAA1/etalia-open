@@ -10,7 +10,7 @@ class ZoteroAccount(ProviderAccount):
 class ZoteroProvider(OAuthProvider):
     id = 'zotero'
     name = 'Zotero'
-    package = 'paperstream.apps.accounts.providers.zotero'
+    package = 'users.providers.zotero'
     account_class = ZoteroAccount
 
     def get_default_scope(self):
@@ -22,6 +22,5 @@ class ZoteroProvider(OAuthProvider):
 
     def extract_common_fields(self, data):
         return dict(username=data.get('username', ''))
-
 
 providers.registry.register(ZoteroProvider)

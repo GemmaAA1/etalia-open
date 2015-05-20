@@ -19,7 +19,7 @@ class MendeleyAccount(ProviderAccount):
 class MendeleyProvider(OAuth2Provider):
     id = 'mendeley'
     name = 'Mendeley'
-    package = 'paperstream.apps.accounts.providers.mendeley'
+    package = 'users.providers.mendeley'
     account_class = MendeleyAccount
 
     def extract_extra_data(self, data):
@@ -35,6 +35,5 @@ class MendeleyProvider(OAuth2Provider):
         return dict(first_name=data.get('first_name'),
                     last_name=data.get('last_name'),
                     email=data.get('email'))
-
 
 providers.registry.register(MendeleyProvider)
