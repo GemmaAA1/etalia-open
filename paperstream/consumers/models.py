@@ -171,6 +171,8 @@ class Consumer(TimeStampedModel):
                             paper=paper,
                             corp_author=corp_author)
                     return True
+                else:
+                    return False
             return False
         # TODO: specify exception
         except Exception as e:
@@ -281,48 +283,52 @@ class ConsumerPubmed(Consumer):
                     '"{title}"[Journal]'.format(start_date=start_date_q,
                                                 title=issn)
 
-            # Call API
-            # search items corresponding to query
-            id_list = []
-            ret_start = 0
-            while True:
-                # query
-                handle = Entrez.esearch(db="pubmed",
-                                        term=query,
-                                        retmax=self.ret_max,
-                                        retstart=ret_start)
-                # read results
-                record = Entrez.read(handle)
-                # close handle
-                handle.close()
-                # get id list
-                id_list = id_list + list(record["IdList"])
-                if len(record["IdList"]) < int(self.ret_max):
-                    break
+            entries = self.get_q(self, query)
 
-                # update ret_start
-                ret_start += self.ret_max
-            # fetch items
-            handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
-                                   retmode="text")
-
-            records = Medline.parse(handle)
-
-            for record in records:
-                entries.append(record)
-
-            # close handle
-            handle.close()
-
-            # Update consumer_journal
-            cj.update(True, len(id_list))
-
-            #
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update(False, 0)
+            cj.update(False, 0, 0)
             logger.warning('consuming {0}: FAILED'.format(journal.title))
             return list()
+
+        return entries
+
+    def get_q(self, query):
+
+        entries = []
+
+        # Call API
+        # search items corresponding to query
+        id_list = []
+        ret_start = 0
+        while True:
+            # query
+            handle = Entrez.esearch(db="pubmed",
+                                    term=query,
+                                    retmax=self.ret_max,
+                                    retstart=ret_start)
+            # read results
+            record = Entrez.read(handle)
+            # close handle
+            handle.close()
+            # get id list
+            id_list = id_list + list(record["IdList"])
+            if len(record["IdList"]) < int(self.ret_max):
+                break
+
+            # update ret_start
+            ret_start += self.ret_max
+        # fetch items
+        handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
+                               retmode="text")
+
+        records = Medline.parse(handle)
+
+        for record in records:
+            entries.append(record)
+
+        # close handle
+        handle.close()
 
         return entries
 

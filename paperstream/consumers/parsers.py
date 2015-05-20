@@ -25,15 +25,15 @@ class Parser(metaclass=ABCMeta):
              for field in CorpAuthorForm.Meta.fields])
 
     @abstractmethod
-    def parse_authors(self, entry):
-        return NotImplementedError
-
-    @abstractmethod
     def parse_journal(self, entry):
         return NotImplementedError
 
     @abstractmethod
     def parse_paper(self, entry):
+        return NotImplementedError
+
+    @abstractmethod
+    def parse_authors(self, entry):
         return NotImplementedError
 
     @abstractmethod
@@ -55,40 +55,31 @@ class ParserPubmed(Parser):
     TEMPLATE_IDS = {'id_doi': r'(.+)\s\[doi\]',
                     'id_pii': r'(.+)\s\[pii\]'}
 
-    def parse_authors(self, entry):
+    def parse_journal(self, entry):
 
-        authors = []
+        journal = self.journal_template.copy()
 
-        full_authors = entry.get('FAU', [''])
-        for auth in full_authors:
-            author = self.author_template.copy()
+        # Journal
+        IS = entry.get('IS', '')
+        issn_match = re.findall(r'(?P<issn1>\d{4}-\d{3}[\dX])\s\(Printing\)|'
+                                r'(?P<issn2>\d{4}-\d{3}[\dX])\s\(Linking\)|'
+                                r'(?P<eissn>\d{4}-\d{3}[\dX])\s\(Electronic\)',
+                                IS)
+        # the following two lines sucks because the regexp matching above sucks
+        issn = ''
+        eissn = ''
+        if issn_match:
             try:
-                last, first = tuple(list(map(str.strip, auth.split(','))))
-            except ValueError:
-                last = auth.strip()
-                first = ''
+                issn = [i[0] or i[1] for i in issn_match if i[0] or i[1]][0]
+                eissn = [i[2] for i in issn_match if i[2]][0]
+            except IndexError:
                 pass
-            author['last_name'] = last
-            author['first_name'] = first
-            authors.append(author)
-        return authors
 
-    def parse_corp_authors(self, entry):
+        journal['id_issn'] = issn
+        journal['id_eissn'] = eissn
+        journal['title'] = entry.get('JT', '')
 
-        corp_authors = []
-
-        corp_authors_items = entry.get('CN', '')
-        if corp_authors_items:
-            if isinstance(corp_authors_items, list):
-                for corp_auth in corp_authors_items:
-                    corp_author = self.corp_author_template.copy()
-                    corp_author['name'] = corp_auth
-                    corp_authors.append(corp_author)
-            else:
-                corp_author = self.corp_author_template.copy()
-                corp_author['name'] = corp_authors_items
-                corp_authors.append(corp_author)
-        return corp_authors
+        return journal
 
     def parse_paper(self, entry):
 
@@ -158,31 +149,40 @@ class ParserPubmed(Parser):
 
         return paper
 
-    def parse_journal(self, entry):
+    def parse_authors(self, entry):
 
-        journal = self.journal_template.copy()
+        authors = []
 
-        # Journal
-        IS = entry.get('IS', '')
-        issn_match = re.findall(r'(?P<issn1>\d{4}-\d{3}[\dX])\s\(Printing\)|'
-                                r'(?P<issn2>\d{4}-\d{3}[\dX])\s\(Linking\)|'
-                                r'(?P<eissn>\d{4}-\d{3}[\dX])\s\(Electronic\)',
-                                IS)
-        # the following two lines sucks because the regexp matching above sucks
-        issn = ''
-        eissn = ''
-        if issn_match:
+        full_authors = entry.get('FAU', [''])
+        for auth in full_authors:
+            author = self.author_template.copy()
             try:
-                issn = [i[0] or i[1] for i in issn_match if i[0] or i[1]][0]
-                eissn = [i[2] for i in issn_match if i[2]][0]
-            except IndexError:
+                last, first = tuple(list(map(str.strip, auth.split(','))))
+            except ValueError:
+                last = auth.strip()
+                first = ''
                 pass
+            author['last_name'] = last
+            author['first_name'] = first
+            authors.append(author)
+        return authors
 
-        journal['id_issn'] = issn
-        journal['id_eissn'] = issn
-        journal['title'] = entry.get('JT', '')
+    def parse_corp_authors(self, entry):
 
-        return journal
+        corp_authors = []
+
+        corp_authors_items = entry.get('CN', '')
+        if corp_authors_items:
+            if isinstance(corp_authors_items, list):
+                for corp_auth in corp_authors_items:
+                    corp_author = self.corp_author_template.copy()
+                    corp_author['name'] = corp_auth
+                    corp_authors.append(corp_author)
+            else:
+                corp_author = self.corp_author_template.copy()
+                corp_author['name'] = corp_authors_items
+                corp_authors.append(corp_author)
+        return corp_authors
 
 
 class ParserArxiv(Parser):
