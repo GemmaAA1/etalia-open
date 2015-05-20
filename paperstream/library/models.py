@@ -188,7 +188,7 @@ class Paper(TimeStampedModel):
     # Authors
     # authors
     authors = models.ManyToManyField(Author, through='AuthorPaper',
-                                     blank=True, default=None)
+                                     blank=True, default=None, null=False)
     # corporate authorship
     corp_author = models.ManyToManyField(CorpAuthor, through='CorpAuthorPaper',
                                          blank=True, default=None)

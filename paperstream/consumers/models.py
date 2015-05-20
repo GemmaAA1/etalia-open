@@ -134,41 +134,45 @@ class Consumer(TimeStampedModel):
 
     def add_entry(self, entry, journal):
         try:
-            item_paper = entry['paper']
-            item_paper['source'] = self.type
-            # create/consolidate paper
-            try:
-                paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
-                                          Q(id_pmi=item_paper['id_pmi']) |
-                                          Q(id_pii=item_paper['id_pii']) |
-                                          Q(id_arx=item_paper['id_arx']) |
-                                          Q(id_oth=item_paper['id_oth']))
-            except Paper.DoesNotExist:
-                paper = None
-            form = PaperFormFillBlanks(item_paper, instance=paper)
-            if form.is_valid():
-                paper = form.save()
-                paper.journal = journal
-                paper.is_trusted = True  # we trust consumer source
-                paper.save()
+            # minimum to be a paper: have a title and an author
+            if entry['paper'].get('title', '') and entry['authors']:
+                item_paper = entry['paper']
+                item_paper['source'] = self.type
+                # create/consolidate paper
+                try:
+                    paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
+                                              Q(id_pmi=item_paper['id_pmi']) |
+                                              Q(id_pii=item_paper['id_pii']) |
+                                              Q(id_arx=item_paper['id_arx']) |
+                                              Q(id_oth=item_paper['id_oth']))
+                except Paper.DoesNotExist:
+                    paper = None
+                form = PaperFormFillBlanks(item_paper, instance=paper)
+                if form.is_valid():
+                    paper = form.save()
+                    paper.journal = journal
+                    paper.is_trusted = True  # we trust consumer source
+                    paper.save()
 
-                # create/get authors
-                for pos, item_author in enumerate(entry['authors']):
-                    author, _ = Author.objects.get_or_create(
-                        first_name=item_author['first_name'],
-                        last_name=item_author['last_name'])
-                    AuthorPaper.objects.get_or_create(paper=paper,
-                                                      author=author,
-                                                      position=pos)
-                # create/get corp author
-                for pos, item_corp_author in enumerate(entry['corp_authors']):
-                    corp_author, _ = CorpAuthor.objects.get_or_create(
-                        name=item_corp_author['name']
-                    )
-                    CorpAuthorPaper.objects.get_or_create(
-                        paper=paper,
-                        corp_author=corp_author)
-            return True
+                    # create/get authors
+                    for pos, item_author in enumerate(entry['authors']):
+                        author, _ = Author.objects.get_or_create(
+                            first_name=item_author['first_name'],
+                            last_name=item_author['last_name'])
+                        AuthorPaper.objects.get_or_create(paper=paper,
+                                                          author=author,
+                                                          position=pos)
+                    # create/get corp author
+                    for pos, item_corp_author in enumerate(entry['corp_authors']):
+                        corp_author, _ = CorpAuthor.objects.get_or_create(
+                            name=item_corp_author['name']
+                        )
+                        CorpAuthorPaper.objects.get_or_create(
+                            paper=paper,
+                            corp_author=corp_author)
+                    return True
+            return False
+        # TODO: specify exception
         except Exception as e:
             return False
 
@@ -199,7 +203,7 @@ class Consumer(TimeStampedModel):
             logger.info('populating {0}: ok'.format(journal.title))
         return paper_added
 
-    def run_once_per_day(self):
+    def run_once_per_period(self):
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,
                                                                 self.name))
@@ -325,9 +329,6 @@ class ConsumerPubmed(Consumer):
 
 class ConsumerElsevier(Consumer):
 
-    # Type
-    type = 'ELSV'
-
     parser = ParserElsevier()
 
     # API key
@@ -335,6 +336,10 @@ class ConsumerElsevier(Consumer):
 
     # URL
     URL_QUERY = 'http://api.elsevier.com/content/search/index:SCIDIR?query='
+
+    def __init__(self, *args, **kwargs):
+        super(ConsumerElsevier, self).__init__(*args, **kwargs)
+        self.type = 'ELSE'
 
     def journal_is_valid(self, journal):
         if super(ConsumerElsevier, self).journal_is_valid(journal):

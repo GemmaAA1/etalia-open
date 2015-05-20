@@ -15,13 +15,13 @@ PUB_LIST = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                      'data_publisher.csv')
 
 
-class TestPopulateBase(TestCase):
+class PopulateBaseTest(TestCase):
 
     def pre_populate_publisher(self):
         populate_publisher(PUB_LIST, print_to=sys.stderr)
 
 
-class TestPopulatePublisher(TestPopulateBase):
+class PopulatePublisherTest(PopulateBaseTest):
 
     def test_publisher_can_be_save(self):
         records_added, errors = populate_publisher(PUB_LIST,
@@ -36,7 +36,7 @@ class TestPopulatePublisher(TestPopulateBase):
         self.assertIn('Arxiv', list(pub_names))
 
 
-class TestPopulateJournal(TestPopulateBase):
+class PopulateJournalTest(PopulateBaseTest):
 
     def test_through_errors_publisher_not_in_list(self):
         rec, errors = populate_journal(JOU_LIST3, print_to=sys.stderr)
@@ -81,3 +81,4 @@ class TestPopulateJournal(TestPopulateBase):
         journal = Journal.objects.get(title='NeuroImage')
         publisher = Publisher.objects.get(name='Elsevier')
         self.assertEqual(journal.publisher, publisher)
+

@@ -212,9 +212,12 @@ AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
 
-CONS_MIN_DELAY = 0   # Minimum delay between same journal is
-                     # consumed twice (day)
-CONS_MAX_DELAY = 7   # Maximum delay between same journal is consumed twice (day)
+# Minimum delay between same journal is consumed twice (in period of scheduler.
+# ie if period is a day, then unit is in days)
+CONS_MIN_DELAY = 0
+CONS_MAX_DELAY = 7
+
+# In days, how many day in the past to look at when initializing database
 CONS_INIT_PAST = 60
 
 # CELERY
@@ -223,13 +226,21 @@ CONS_INIT_PAST = 60
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
-# CELERYBEAT_SCHEDULE = {
-#     # TODO: make sure that the consumer task does not overlap !
-#     'pubmed-once-a-day': {
-#         'task': 'tasks.pubmed_once_a_day',
-#         'schedule': crontab(minute=0, hour=0),
-#     },
-# }
+CELERYBEAT_SCHEDULE = {
+    'pubmed-once-a-day': {
+        'task': 'tasks.pubmed_run',
+        'schedule': crontab(minute=0, hour=0),  # daily at midnight
+    },
+    'arxiv-once-a-day': {
+        'task': 'tasks.arxiv_run',
+        'schedule': crontab(minute=0, hour=12),  # daily at 12pm
+    },
+    'elsevier-once-a-day': {
+        'task': 'tasks.elsevier_run',
+        'schedule': crontab(minute=0, hour=18),  # daily at 6pm
+    },
+
+}
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------
