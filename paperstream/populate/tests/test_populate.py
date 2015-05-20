@@ -82,3 +82,13 @@ class PopulateJournalTest(PopulateBaseTest):
         publisher = Publisher.objects.get(name='Elsevier')
         self.assertEqual(journal.publisher, publisher)
 
+class PopulateConsumerTest(PopulateBaseTest):
+
+    def test_consumer_pubmed(self):
+        pass
+
+    def test_consumer_elsevier(self):
+        pass
+
+    def test_consumer_arxiv(self):
+        pass

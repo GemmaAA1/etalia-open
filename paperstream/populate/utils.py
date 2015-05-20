@@ -112,6 +112,7 @@ def populate_consumer(type_, name, csv_file=None, print_to=None):
     if type_ == 'PUBM':
         consumer = ConsumerPubmed.objects.create(name=name)
         records_added, errors = populate_consumer_from_file(consumer,
+                                                            type_,
                                                             csv_file,
                                                             print_to=print_to)
     elif type_ == 'ARXI':
@@ -161,7 +162,7 @@ def populate_consumer_from_db(consumer, type_, print_to=None):
 
     return records_added, errors
 
-def populate_consumer_from_file(consumer, csv_file, print_to=None):
+def populate_consumer_from_file(consumer, type_, csv_file, print_to=None):
 
     # Init
     records_added = 0
@@ -183,9 +184,9 @@ def populate_consumer_from_file(consumer, csv_file, print_to=None):
         # Generate a dict per row, with the first CSV row being the keys.
         for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
             try:
-                if type == 'PUBM':
+                if type_ == 'PUBM':
                     journal = Journal.objects.get(id_issn=row['id_issn'])
-                elif type == 'ARXI':
+                elif type_ == 'ARXI':
                     journal = Journal.objects.get(id_arx=row['id_arx'])
                 else:
                     journal = None
