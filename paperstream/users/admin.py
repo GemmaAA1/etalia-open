@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from users.models import PaperUser
+from users.models import User
 
 
 class UserCreationForm(forms.ModelForm):
@@ -14,8 +14,8 @@ class UserCreationForm(forms.ModelForm):
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
 
     class Meta:
-        model = PaperUser
-        fields = ('email', 'date_of_birth')
+        model = User
+        fields = ('email', 'first_name', 'last_name')
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -42,8 +42,8 @@ class UserChangeForm(forms.ModelForm):
     password = ReadOnlyPasswordHashField()
 
     class Meta:
-        model = PaperUser
-        fields = ('email', 'password', 'date_of_birth', 'is_active', 'is_admin')
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'password', 'is_active', 'is_admin')
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
@@ -60,10 +60,10 @@ class MyUserAdmin(UserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'date_of_birth', 'is_admin')
+    list_display = ('email', 'first_name', 'last_name', 'is_admin')
     list_filter = ('is_admin',)
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        (None, {'fields': ('email', 'first_name', 'last_name', 'password')}),
         ('Personal info', {'fields': ('date_of_birth',)}),
         ('Permissions', {'fields': ('is_admin',)}),
     )
@@ -72,15 +72,15 @@ class MyUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'date_of_birth', 'password1', 'password2')}
+            'fields': ('email', 'password1', 'password2')}
         ),
     )
-    search_fields = ('email',)
-    ordering = ('email',)
+    search_fields = ('email', 'first_name', 'last_name')
+    ordering = ('email', )
     filter_horizontal = ()
 
 # Now register the new UserAdmin...
-admin.site.register(PaperUser, MyUserAdmin)
+admin.site.register(User, MyUserAdmin)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 admin.site.unregister(Group)

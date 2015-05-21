@@ -37,13 +37,14 @@ DJANGO_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 )
 
 
 THIRD_PARTY_APPS = (
-    # 'allauth',  # registration
-    # 'allauth.account',  # registration
-    # 'allauth.socialaccount',  # registration
+    'allauth',  # registration
+    'allauth.account',  # registration
+    'allauth.socialaccount',  # registration
 )
 
 LOCAL_APPS = (
@@ -51,6 +52,7 @@ LOCAL_APPS = (
     'library',
     'populate',
     'consumers',
+    'users',
     # 'feeds',
     # 'nlprocess',
     # 'users',
@@ -146,15 +148,15 @@ USE_TZ = True
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 # use to serve static file in production by collecting static files in root
-# STATIC_ROOT = APPS_DIR.child('static')
+STATIC_ROOT = APPS_DIR.child('static')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = (
-    str(APPS_DIR.child('static')),
-)
+# STATICFILES_DIRS = (
+#     str(APPS_DIR.child('static')),
+# )
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
@@ -190,21 +192,21 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 # ACCOUNT_SIGNUP_FORM_CLASS = 'users.forms.CustomSignupForm'
-# ACCOUNT_LOGOUT_ON_GET = True
-# ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
-# ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL='/'
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL='/'
 ACCOUNT_USER_DISPLAY='accounts.utils.user_display'
-# ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = True
-# ACCOUNT_PASSWORD_MIN_LENGTH = 6
-# SOCIALACCOUNT_AUTO_SIGNUP = False
-# SOCIALACCOUNT_FORMS = {}
+ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = True
+ACCOUNT_PASSWORD_MIN_LENGTH = 8
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_FORMS = {}
 
 
 # Custom user app defaults
 # Select the correct user model
-# AUTH_USER_MODEL = 'users.PaperUser'
-# LOGIN_REDIRECT_URL = 'users:redirect'
-# LOGIN_URL = 'account_login'
+AUTH_USER_MODEL = 'users.User'
+LOGIN_REDIRECT_URL = 'users:redirect'
+LOGIN_URL = 'account_login'
 
 # SLUGLIFIER
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
