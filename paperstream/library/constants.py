@@ -6,14 +6,14 @@ from users.constants import PROVIDER_TYPE
 SOURCE_TYPE = tuple(set(CONSUMER_TYPE + PROVIDER_TYPE))
 
 PAPER_TYPE = (
-    ('JOUR', 'Journal Article'),
-    ('LETT', 'Letter'),
-    ('EDIT', 'Editorial'),
-    ('NEWS', 'News'),
-    ('PROC', 'Proceedings'),
-    ('REVI', 'Review'),
-    ('PREP', 'e-Print'),  # e.g Arxiv
-    ('DRAF', 'Draft'),
+    ('JOU', 'Journal Article'),
+    ('LET', 'Letter'),
+    ('EDI', 'Editorial'),
+    ('NEW', 'News'),
+    ('PRO', 'Proceedings'),
+    ('REV', 'Review'),
+    ('PRE', 'e-Print'),  # e.g Arxiv
+    ('DRA', 'Draft'),
     ('', 'Unknown')
 )
 

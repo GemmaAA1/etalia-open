@@ -32,7 +32,7 @@ class ParserPubmedTest(TestCase):
         self.assertEqual(paper['id_doi'], '10.1227/NEU.0000000000000714')
         self.assertEqual(paper['id_pii'], '00006123-201506000-00024')
         self.assertEqual(paper['abstract'][:len('BACKGROUND:')], 'BACKGROUND:')
-        self.assertEqual(paper['type'], 'JOUR')
+        self.assertEqual(paper['type'], 'JOU')
         self.assertEqual(paper['id_pmi'], '25988929')
         self.assertEqual(paper['publish_status'], 'ppublish')
         self.assertEqual(paper['volume'], '76')
@@ -91,7 +91,7 @@ class ParserElsevierTest(TestCase):
         self.assertEqual(paper['id_pii'], 'S1769721215000920')
         self.assertEqual(paper['abstract'][:len('AbstractWilliams')],
                          'AbstractWilliams')
-        self.assertEqual(paper['type'], 'JOUR')
+        self.assertEqual(paper['type'], 'JOU')
         self.assertEqual(paper['id_pmi'], '')
         self.assertEqual(paper['publish_status'], 'aheadofprint')
         self.assertEqual(paper['volume'], '')
@@ -128,6 +128,7 @@ class ParserElsevierTest(TestCase):
 
 
 class ParserArxivTest(TestCase):
+# TODO: Test ConsumerArxiv
 
     def test_parserarxiv_journal(self):
         pass

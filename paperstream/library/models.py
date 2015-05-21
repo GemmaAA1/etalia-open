@@ -166,7 +166,7 @@ class Paper(TimeStampedModel):
     publish_status_changed = MonitorField(monitor='publish_status')
 
     # Type of paper
-    type = models.CharField(max_length=4, choices=PAPER_TYPE, blank=True,
+    type = models.CharField(max_length=3, choices=PAPER_TYPE, blank=True,
                             default='')
 
     # TODO: Test if db_index=True improve performance

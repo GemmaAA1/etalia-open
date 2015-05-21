@@ -75,7 +75,6 @@ class ConsumerPubmedTest(TestCase):
     def setUp(self):
         journal, _ = Journal.objects.get_or_create(id_issn='1053-8119')
         consumer, _ = ConsumerPubmed.objects.get_or_create(name='pub cons #1')
-        journal = Journal.objects.first()
         consumer.day0 = 10
         consumer.add_journal(journal)
         consumer.activate_journal(journal)
@@ -170,3 +169,8 @@ class ConsumerElsevierTest(TestCase):
         consumer.populate_journal(journal)
         papers = Paper.objects.filter(journal=journal)
         self.assertEqual(papers.count(), 10)
+
+
+class ConsumerArxivTest(TestCase):
+# TODO: Implement
+    pass

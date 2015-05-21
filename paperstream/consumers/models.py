@@ -37,7 +37,7 @@ class Consumer(TimeStampedModel):
     #TODO: How to make this class abstract? See comment below
 
     # IDS
-    type = models.CharField(max_length=4, choices=CONSUMER_TYPE)
+    type = models.CharField(max_length=3, choices=CONSUMER_TYPE)
 
     # name
     name = models.CharField(max_length=200, unique=True)
@@ -255,7 +255,7 @@ class ConsumerPubmed(Consumer):
 
     def __init__(self, *args, **kwargs):
         super(ConsumerPubmed, self).__init__(*args, **kwargs)
-        self.type = 'PUBM'
+        self.type = 'PUB'
 
     parser = ParserPubmed()
 
@@ -357,7 +357,7 @@ class ConsumerElsevier(Consumer):
 
     def __init__(self, *args, **kwargs):
         super(ConsumerElsevier, self).__init__(*args, **kwargs)
-        self.type = 'ELSE'
+        self.type = 'ELS'
 
     def journal_is_valid(self, journal):
         if super(ConsumerElsevier, self).journal_is_valid(journal):
@@ -456,7 +456,7 @@ class ConsumerArxiv(Consumer):
 
     def __init__(self, *args, **kwargs):
         super(ConsumerArxiv, self).__init__(*args, **kwargs)
-        self.type = 'ARXI'
+        self.type = 'ARX'
 
     parser = ParserArxiv()
 
@@ -544,9 +544,7 @@ class ConsumerJournal(models.Model):
 
     # last update
     # datetime of last consumption
-    last_date_cons = models.DateTimeField(
-        null=True,
-        default=timezone.now() - timezone.timedelta(days=settings.CONS_INIT_PAST))
+    last_date_cons = models.DateTimeField(null=True, blank=True)
     # number of papers retrieved
     last_number_papers_recorded = models.IntegerField(default=0)
     # number of papers retrieved

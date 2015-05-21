@@ -2,7 +2,7 @@
 
 # Type of providers (defined in users app)
 PROVIDER_TYPE = (
-    ('ZOTE', 'Zotero'),
-    ('MEND', 'Mendeley'),
+    ('ZOT', 'Zotero'),
+    ('MEN', 'Mendeley'),
     ('', 'Unknown')
 )

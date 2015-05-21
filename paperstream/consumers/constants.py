@@ -5,19 +5,19 @@
 # WARNING: HUMAN READABLE MUST MATCH Publisher.name FOR CONSUMER POPULATION
 # MANAGEMENT ROUTINE
 CONSUMER_TYPE = (
-    ('PUBM', 'PubMed'),
-    ('ELSE', 'Elsevier'),
-    ('ARXI', 'Arxiv'),
-    ('IEEE', 'IEEE'),
+    ('PUB', 'PubMed'),
+    ('ELS', 'Elsevier'),
+    ('ARX', 'Arxiv'),
+    ('IEE', 'IEEE'),
 )
 
 # Pubmed publication matching
 PUBMED_PT = (
-    ('JOURNAL ARTICLE', 'JOUR'),
-    ('LETTER',          'LETT'),
-    ('EDITORIAL',       'EDIT'),
-    ('NEWS',            'NEWS'),
-    ('CONGRESSES',      'PROC'),
-    ('REVIEW',          'REVI'),
+    ('JOURNAL ARTICLE', 'JOU'),
+    ('LETTER',          'LET'),
+    ('EDITORIAL',       'EDI'),
+    ('NEWS',            'NEW'),
+    ('CONGRESSES',      'PRO'),
+    ('REVIEW',          'REV'),
     ('UNKNOWN',         ''),
 )

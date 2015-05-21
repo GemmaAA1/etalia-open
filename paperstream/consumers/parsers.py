@@ -281,7 +281,7 @@ class ParserElsevier(Parser):
         paper = self.paper_template.copy()
 
         # type
-        paper['type'] = 'JOUR'
+        paper['type'] = 'JOU'
 
         if 'Available online' in entry.get('prism:coverDisplayDate', ''):
             paper['publish_status'] = 'aheadofprint'
