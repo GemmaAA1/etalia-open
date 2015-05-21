@@ -1,0 +1,503 @@
+[
+  {
+    "prism:publicationName": "European Journal of Medical Genetics",
+    "dc:identifier": "DOI:10.1016/j.ejmg.2015.05.002",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Kimiko, Ueda",
+    "@_fa": "true",
+    "prism:issn": "17697212",
+    "prism:coverDisplayDate": "Available online 20 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-20"
+      }
+    ],
+    "dc:description": "AbstractWilliams syndrome (WS) is a well-known genetic syndrome caused by a microdeletion on chromosome 7q11.23 encompassing the elastin gene. It is characterized by distinctive facies, congenital cardiovascular malformations, intellectual disabilities, and various other manifestations.Some patients were reported with craniosynostosis. Here, we report 8 WS cases diagnosed with craniosynostosis using three-dimensional cranial computed tomography. These findings suggest that craniosynostosis may occur more frequently in WS patients than expected.",
+    "dc:title": "Eight Patients with Williams Syndrome and Craniosynostosis",
+    "authors": {
+      "author": [
+        {
+          "surname": "Ueda",
+          "@_fa": "true",
+          "given-name": "Kimiko"
+        },
+        {
+          "surname": "Yamada",
+          "@_fa": "true",
+          "given-name": "Junji"
+        },
+        {
+          "surname": "Takemoto",
+          "@_fa": "true",
+          "given-name": "Osamu"
+        },
+        {
+          "surname": "Okamoto",
+          "@_fa": "true",
+          "given-name": "Nobuhiko"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.ejmg.2015.05.002",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S1769721215000920"
+  },
+  {
+    "prism:publicationName": "European Journal of Medical Genetics",
+    "dc:identifier": "DOI:10.1016/j.ejmg.2015.05.001",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Julia, Kolarova",
+    "@_fa": "true",
+    "prism:issn": "17697212",
+    "prism:coverDisplayDate": "Available online 21 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-21"
+      }
+    ],
+    "dc:description": "AbstractDespite recent progresses in molecular karyotyping and clinical sequencing the cause of intellectual disability in a considerable subset of individuals affected by this phenotype remains elusive. As intellectual disability is also a feature of various imprinting disorders and some monogenic forms of intellectual disability are caused by epigenetic modifiers we hypothesized that changes in DNA-methylation might be associated with or even causative in some cases of intellectual disability. Therefore, we performed a DNA-methylation analysis of peripheral blood samples from 82 patients with intellectual disability and additional features using the HumanMethylation450k BeadChip. The findings were compared to that of 19 normal controls. Differentially methylated loci were validated by bisulfite pyrosequencing. On a global level, we failed to detect a robust DNA-methylation signature segregating individuals with intellectual disability from controls. Using an individual approach, we identified 157 regions showing individual DNA-methylation changes in at least one patient. These correlated to 107 genes including genes linked to conditions associated with intellectual disability, namely COLEC11, SHANK2, GLI2 and KCNQ2, as well as imprinted genes like FAM50B and MEG3. The latter was suggestive of an undiagnosed Temple syndrome which could be confirmed by diagnostic tests. Subsequent in-depth analysis of imprinted loci revealed DNA-methylation changes at additional imprinted loci, i.e. PPIEL, IGF2R, MEG8 and MCTS2/HM13, in up to four patients. Our findings indicate that imprinting disorders are rare but probably under-diagnosed in patients with intellectual disability and moreover point to DNA-methylation changes as potential alternative means to identify deregulated genes involved in the pathogenesis of intellectual disability.",
+    "dc:title": "Array-based DNA-methylation analysis in individuals with developmental delay/intellectual disability and normal molecular karyotype",
+    "authors": {
+      "author": [
+        {
+          "surname": "Kolarova",
+          "@_fa": "true",
+          "given-name": "Julia"
+        },
+        {
+          "surname": "Tangen",
+          "@_fa": "true",
+          "given-name": "Imke"
+        },
+        {
+          "surname": "Bens",
+          "@_fa": "true",
+          "given-name": "Susanne"
+        },
+        {
+          "surname": "Gillessen-Kaesbach",
+          "@_fa": "true",
+          "given-name": "Gabriele"
+        },
+        {
+          "surname": "Gutwein",
+          "@_fa": "true",
+          "given-name": "Jana"
+        },
+        {
+          "surname": "Kautza",
+          "@_fa": "true",
+          "given-name": "Monika"
+        },
+        {
+          "surname": "Rydzanicz",
+          "@_fa": "true",
+          "given-name": "Malgorzata"
+        },
+        {
+          "surname": "Stephani",
+          "@_fa": "true",
+          "given-name": "Ulrich"
+        },
+        {
+          "surname": "Siebert",
+          "@_fa": "true",
+          "given-name": "Reiner"
+        },
+        {
+          "surname": "Ammerpohl",
+          "@_fa": "true",
+          "given-name": "Ole"
+        },
+        {
+          "surname": "Caliebe",
+          "@_fa": "true",
+          "given-name": "Almuth"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.ejmg.2015.05.001",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S1769721215000919"
+  },
+  {
+    "prism:publicationName": "Journal of Solid State Chemistry",
+    "dc:identifier": "DOI:10.1016/j.jssc.2015.05.019",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "K., Kn\u00ed\u017eek",
+    "@_fa": "true",
+    "prism:issn": "00224596",
+    "prism:coverDisplayDate": "Available online 21 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-21"
+      }
+    ],
+    "dc:description": "AbstractThe layered cobaltate Lax/3CoO2 (x/3=0.33(2)) was prepared by an ionic exchange from the NaxCoO2 precursor. Its crystal structure has been studied by neutron powder diffraction at room and low temperatures and by X-ray powder diffraction at elevated temperatures. Compared to Na+ in the parent system, the La3+ ions occupy only one third of available sites, forming a 2-dimensional superstructure in the ab-plane. The absence of long-range ordering of La cations along c-axis was confirmed by a simulation using the stacking faults approach. No significant deviations of the basic structure from the hexagonal P63/mmc symmetry were observed up to the decomposition temperature of 800K. The 2-dimensional superstructure of La3+ is essential for the overall structure stability and is thus preserved up to the temperature of decomposition. The thermal expansion of Lax/3CoO2 is similar in a and c-directions, in contrast to the highly anisotropic thermal expansion of the parent NaxCoO2. This difference is attributed to a higher covalency of La-O bonds compared to more ionic Na-O bonds.",
+    "dc:title": "Structural study of layered cobaltate Lax/3CoO2 (x\u223c1) at temperatures up to 800K",
+    "authors": {
+      "author": [
+        {
+          "surname": "Kn\u00ed\u017eek",
+          "@_fa": "true",
+          "given-name": "K."
+        },
+        {
+          "surname": "Jir\u00e1k",
+          "@_fa": "true",
+          "given-name": "Z."
+        },
+        {
+          "surname": "Hejtm\u00e1nek",
+          "@_fa": "true",
+          "given-name": "J."
+        },
+        {
+          "surname": "Br\u00e1zda",
+          "@_fa": "true",
+          "given-name": "P."
+        },
+        {
+          "surname": "Bur\u0161\u00edk",
+          "@_fa": "true",
+          "given-name": "J."
+        },
+        {
+          "surname": "Soroka",
+          "@_fa": "true",
+          "given-name": "M."
+        },
+        {
+          "surname": "Beran",
+          "@_fa": "true",
+          "given-name": "P."
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.jssc.2015.05.019",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0022459615002091"
+  },
+  {
+    "prism:publicationName": "Journal of Solid State Chemistry",
+    "dc:identifier": "DOI:10.1016/j.jssc.2015.05.017",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "V.V., Atuchin",
+    "@_fa": "true",
+    "prism:issn": "00224596",
+    "prism:coverDisplayDate": "Available online 19 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-19"
+      }
+    ],
+    "dc:description": "AbstractThe crystal growth of large high-quality inclusion-free CdWO4 crystals, 115mm in diameter and mass up to 20kg, has been carried out by the Low Thermal Gradient Czochralski (LTG Cz) technique. The high-purity CdWO4(010) surface has been prepared by cleavage and high structural quality of the surface has been verified by RHEED, revealing a system of Kikuchi lines. The chemical state and electronic structure of the surface have been studied using X-ray photoelectron spectroscopy (XPS) and X-ray emission spectroscopy (XES). The total and partial densities of states of the CdWO4 tungstate were calculated employing the first-principles full potential linearized augmented plane wave (FP-LAPW) method. The results indicate that the principal contributors to the valence band of CdWO4 are the Cd 4d, W 5d and O 2p states which contribute mainly at the bottom, in the central portion and at the top of the valence band, respectively, with also significant contributions of the mentioned states throughout the whole CdWO4 valence-band region. With respect to the occupation of the O 2p states, the results of the FP-LAPW calculations are confirmed by comparison on a common energy scale of the XPS valence-band spectrum and the XES band representing the energy distribution of the O 2p states in this compound. Additionally, the FP-LAPW data allow us to conclude that the CdWO4 tungstate is a non-direct semiconductor.",
+    "dc:title": "Low thermal gradient Czochralski growth of large CdWO4 crystals and electronic properties of (010) cleaved surface",
+    "authors": {
+      "author": [
+        {
+          "surname": "Atuchin",
+          "@_fa": "true",
+          "given-name": "V.V."
+        },
+        {
+          "surname": "Galashov",
+          "@_fa": "true",
+          "given-name": "E.N."
+        },
+        {
+          "surname": "Khyzhun",
+          "@_fa": "true",
+          "given-name": "O.Y."
+        },
+        {
+          "surname": "Bekenev",
+          "@_fa": "true",
+          "given-name": "V.L."
+        },
+        {
+          "surname": "Pokrovsky",
+          "@_fa": "true",
+          "given-name": "L.D."
+        },
+        {
+          "surname": "Borovlev",
+          "@_fa": "true",
+          "given-name": "Yu.A."
+        },
+        {
+          "surname": "Zhdankov",
+          "@_fa": "true",
+          "given-name": "V.N."
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.jssc.2015.05.017",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S002245961500198X"
+  },
+  {
+    "prism:publicationName": "The American Journal of Emergency Medicine",
+    "dc:identifier": "DOI:10.1016/j.ajem.2015.05.012",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Dustin G., Mark",
+    "@_fa": "true",
+    "prism:issn": "07356757",
+    "prism:coverDisplayDate": "Available online 15 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-15"
+      }
+    ],
+    "dc:description": "AbstractBackgroundRecently proposed cut-off criteria for cerebrospinal fluid (CSF) analyses might safely exclude a diagnosis of aneurysmal subarachnoid hemorrhage (aSAH).ObjectiveTo examine the sensitivity of a CSF red blood cell (RBC) count greater than 2,000x106/L (i.e. 2,000 RBCs per microliter) or the presence of visible CSF xanthochromia in identifying patients with aSAH.MethodsWe identified a retrospective case series of patients diagnosed with aSAH following lumbar puncture (LP) in an integrated health delivery system between January 2000 and June 2013 by chart review. All identified patients had at least one cerebral aneurysm that was treated with a neurosurgical or endovascular intervention during the index hospitalization. The lowest CSF RBC count was used for validation analysis. CSF color was determined by visual inspection. Xanthochromia was defined as pink, orange or yellow pigmentation of CSF supernatant.ResultsSixty-four patients met study inclusion criteria. Of these, 17/52 (33%) underwent LP within twelve hours of headache onset and 49/58 (84%) exhibited CSF xanthochromia. The median CSF RBC count was 63,250x106/L. The sensitivity of a CSF RBC count of greater than 2,000x106/L in identifying aSAH was 96.9% (95% CI 89.3-99.1). Additional consideration of CSF xanthochromia resulted in a sensitivity of 100% (95% CI 94.3-100).ConclusionsAll patients in this case series of patients with aSAH had either a CSF RBC count greater than 2,000 x106/L or visible CSF xanthochromia, increasing the likelihood that this proposed cut-off strategy may safely identify patients who warrant further investigation for an aneurysmal cause of SAH.",
+    "dc:title": "Validation of cerebrospinal fluid findings in aneurysmal subarachnoid hemorrhage: a case series study",
+    "authors": {
+      "author": [
+        {
+          "surname": "Mark",
+          "@_fa": "true",
+          "given-name": "Dustin G."
+        },
+        {
+          "surname": "Kene",
+          "@_fa": "true",
+          "given-name": "Mamata V."
+        },
+        {
+          "surname": "Offerman",
+          "@_fa": "true",
+          "given-name": "Steven R."
+        },
+        {
+          "surname": "Vinson",
+          "@_fa": "true",
+          "given-name": "David R."
+        },
+        {
+          "surname": "Ballard",
+          "@_fa": "true",
+          "given-name": "Dustin W."
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.ajem.2015.05.012",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0735675715003903"
+  },
+  {
+    "prism:publicationName": "The American Journal of Emergency Medicine",
+    "dc:identifier": "DOI:10.1016/j.ajem.2015.05.011",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Paolo, Carraro",
+    "@_fa": "true",
+    "prism:issn": "07356757",
+    "prism:coverDisplayDate": "Available online 16 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-16"
+      }
+    ],
+    "dc:description": "AbstractObjectiveTo determine the ways in which pre-analytical factors related to physiological status can affect the complete blood cell count (CBC) in patients referring to an Emergency Department (ED).MethodsOver a one-year period the results of hemoglobin (Hb) and white blood cell (WBC) counts of the first CBC tests undertaken in consecutive patients (no =11,487) referring to the ED were compared with those obtained in the same patients at a second test undertaken within 24 hours of admission. A prospective evaluation of the same differences was made in another group (Group 2) of 1,025 consecutive ED patients, several clinical characteristics being taken into consideration.ResultsMean Hb concentrations were higher in the first (range 8.0 - 15.9 g/dl) than in the second test results (median overestimation, 0.4-0.8 g/dl; p<0.0001). At multivariate analysis of results in Group 2 patients, it was found that fluid administration (>0.5L) and the presence of edema played a significant role in the initial overestimation of Hb (p=0.001 and p=0.045, respectively). The comparison between leukocyte counts (WBC) showed that values from the first were higher than those in the second test (median overestimation ranging from 0.42 to 3.63 x109/L cells, in the range counts from 4.0 to 30.0 x109/L). None of the clinical factors studied appeared to have affected this overestimation.ConclusionOn interpreting CBC results in patients admitted to the ED, physicians must consider the effect of physiological variables on Hb (mainly hydration status) and WBC (mental and physical stress).",
+    "dc:title": "Complete blood count at the emergency department: pre-analytical variables for hemoglobin and leukocytes",
+    "authors": {
+      "author": [
+        {
+          "surname": "Carraro",
+          "@_fa": "true",
+          "given-name": "Paolo"
+        },
+        {
+          "surname": "Vettore",
+          "@_fa": "true",
+          "given-name": "Gianna"
+        },
+        {
+          "surname": "Padoan",
+          "@_fa": "true",
+          "given-name": "Andrea"
+        },
+        {
+          "surname": "Piva",
+          "@_fa": "true",
+          "given-name": "Elisa"
+        },
+        {
+          "surname": "Plebani",
+          "@_fa": "true",
+          "given-name": "Mario"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.ajem.2015.05.011",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0735675715003897"
+  },
+  {
+    "prism:publicationName": "Chemical Geology",
+    "prism:startingPage": "25",
+    "dc:identifier": "DOI:10.1016/j.chemgeo.2015.04.019",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Deng, Liu",
+    "prism:endingPage": "33",
+    "@_fa": "true",
+    "prism:issn": "00092541",
+    "prism:coverDisplayDate": "16 June 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-06-16"
+      }
+    ],
+    "dc:description": "AbstractBiogenic mineral assemblages that form from circumneutral microbial reduction of iron in smectite have been suggested as biosignatures in the geological record. However, mineralogical transformation of smectite mediated by microbes under extreme pH condition is still poorly known. The objective of this study was to understand the reduction capacity of structural Fe(III) in iron-rich smectite (nontronite, NAu-2) by a novel anaerobic alkaliphile (strain CCSD-1) isolated from the deep subsurface, and associated mineralogical changes. The experiments with CCSD-1 were conducted in a growth medium containing the electron shuttle anthraquinone-2,6-disulfonate (AQDS) at pH9.4. The Fe(II) concentration was monitored over the course of the experiment via wet chemistry, and unreduced and reduced nontronites were characterized with X-ray diffraction (XRD), and scanning and transmission electron microscopy (SEM and TEM). The results indicate that strain CCSD-1 utilizes proteinaceous substrates (yeast extract and tryptone) to reduce structural Fe(III) in smectite with the maximum reduction extent of 26.2%. Mineralogical analysis confirmed that biogenic plagioclase (Na\u2013Ca feldspar) and illite were formed after bioreduction. Our work shows that the interaction between alkaliphile and iron-bearing smectite could account for low-temperature feldspar and illite formation and these minerals may be used as biosignatures in sedimentary rocks.",
+    "dc:title": "Low-temperature feldspar and illite formation through bioreduction of Fe(III)-bearing smectite by an alkaliphilic bacterium",
+    "authors": {
+      "author": [
+        {
+          "surname": "Liu",
+          "@_fa": "true",
+          "given-name": "Deng"
+        },
+        {
+          "surname": "Dong",
+          "@_fa": "true",
+          "given-name": "Hailiang"
+        },
+        {
+          "surname": "Wang",
+          "@_fa": "true",
+          "given-name": "Hongmei"
+        },
+        {
+          "surname": "Zhao",
+          "@_fa": "true",
+          "given-name": "Linduo"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.chemgeo.2015.04.019",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0009254115002326"
+  },
+  {
+    "prism:publicationName": "Chemical Geology",
+    "dc:identifier": "DOI:10.1016/j.chemgeo.2015.04.018",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Fan, Xiao",
+    "@_fa": "true",
+    "prism:issn": "00092541",
+    "prism:coverDisplayDate": "Available online 4 May 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-05-04"
+      }
+    ],
+    "dc:description": "AbstractThioarsenates have been found to be major arsenic species in some sulfidic waters and their interactions with minerals play an important role in the geochemical cycling of arsenic. This work investigated the sorption behavior of monothioarsenate (mtAsV) on amorphous aluminum hydroxide (am-Al(OH)3) at various pHs and characterized the adsorbed arsenic by using X-ray absorption spectroscopy (XAS) and Fourier transform infrared spectroscopy (FTIR). The uptake of arsenic by am-Al(OH)3 from mtAsV solution (86 \u2013 16mg\u00b7g\u22121) was found to be much less than that from arsenate (AsV) solution (112 \u2013 50.5mg\u00b7g\u22121) at all pHs applied (4 \u2013 10). MtAsV was partly reduced to arsenite with concurrent production of elemental sulfur, and the interaction with am-Al(OH)3 at acidic pH enhanced the reduction, which is attributed to acid-catalysis at the am-Al(OH)3 surface. Transformation of mtAsV to arsenate also occurred during the adsorption process. The linear combination fitting (LCF) of As K-edge X-ray absorption near edge structure (XANES) spectra indicated that the arsenic adsorbed on am-Al(OH)3 was present dominantly as mtAsV, with minor amounts as arsenite and arsenate. The As K-edge extended X-ray absorption fine structure (EXAFS) and FTIR results suggested that bidentate binuclear complexation was involved in the adsorption of mtAsV on am-Al(OH)3. This study is the first documentation of mtAsV sorption on aluminum hydroxides and is necessary to assess geochemical cycling of arsenic in sulfidic natural or mining-impacted environments.",
+    "dc:title": "Adsorption of Monothioarsenate on Amorphous Aluminum Hydroxide under Anaerobic Conditions",
+    "authors": {
+      "author": [
+        {
+          "surname": "Xiao",
+          "@_fa": "true",
+          "given-name": "Fan"
+        },
+        {
+          "surname": "Wang",
+          "@_fa": "true",
+          "given-name": "Shaofeng"
+        },
+        {
+          "surname": "Xu",
+          "@_fa": "true",
+          "given-name": "Liying"
+        },
+        {
+          "surname": "Wang",
+          "@_fa": "true",
+          "given-name": "Ying"
+        },
+        {
+          "surname": "Yuan",
+          "@_fa": "true",
+          "given-name": "Zidan"
+        },
+        {
+          "surname": "Jia",
+          "@_fa": "true",
+          "given-name": "Yongfeng"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.chemgeo.2015.04.018",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0009254115002314"
+  },
+  {
+    "prism:publicationName": "Journal of Algebra",
+    "prism:startingPage": "85",
+    "dc:identifier": "DOI:10.1016/j.jalgebra.2015.05.009",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Philippe, Ellia",
+    "prism:endingPage": "89",
+    "@_fa": "true",
+    "prism:issn": "00218693",
+    "prism:coverDisplayDate": "15 September 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-09-15"
+      }
+    ],
+    "dc:description": "AbstractLet E be a normalized, rank two vector bundle on P3. Let H be a general plane. If E is stable with c2\u22654, we show that h0(EH(1))\u22642+c1. It follows that h0(E(1))\u22642+c1. We also show that if E is properly semi-stable and indecomposable, h0(EH(1))=3.",
+    "dc:title": "A restriction theorem for stable rank two vector bundles on P3",
+    "authors": {
+      "author": [
+        {
+          "surname": "Ellia",
+          "@_fa": "true",
+          "given-name": "Philippe"
+        },
+        {
+          "surname": "Gruson",
+          "@_fa": "true",
+          "given-name": "Laurent"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.jalgebra.2015.05.009",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0021869315002434"
+  },
+  {
+    "prism:publicationName": "Journal of Algebra",
+    "prism:startingPage": "48",
+    "dc:identifier": "DOI:10.1016/j.jalgebra.2015.05.008",
+    "prism:issueIdentifier": "0",
+    "dc:creator": "Charef, Beddani",
+    "prism:endingPage": "59",
+    "@_fa": "true",
+    "prism:issn": "00218693",
+    "prism:coverDisplayDate": "15 September 2015",
+    "prism:coverDate": [
+      {
+        "@_fa": "true",
+        "$": "2015-09-15"
+      }
+    ],
+    "dc:description": "AbstractThis paper shows that if (R,m) is a N\u0153therian unibranch local domain with field of fractions K, then the integral closure S of R in K is analytically irreducible and finite over R if and only if R is analytically irreducible. We also prove the equality between the number of minimal prime ideals in R\u02c6 and the number of maximal ideals in S in the case when R is a N\u0153therian quasi-unmixed local domain such that S is finite over R and Sn\u02c6 has only one minimal prime for all the maximal ideals n in S, where Sn\u02c6 is the n-adic completion of Sn.",
+    "dc:title": "Some results on quasi-unmixed local domains",
+    "authors": {
+      "author": [
+        {
+          "surname": "Beddani",
+          "@_fa": "true",
+          "given-name": "Charef"
+        },
+        {
+          "surname": "Spivakovsky",
+          "@_fa": "true",
+          "given-name": "Mark"
+        }
+      ]
+    },
+    "prism:doi": "10.1016/j.jalgebra.2015.05.008",
+    "prism:url": "http://api.elsevier.com/content/article/pii:S0021869315002422"
+  }
+]
