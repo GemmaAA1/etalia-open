@@ -8,10 +8,11 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from library.models import Paper, Journal
 
 
-class Institution(models.Model):
-    """Institution
+class Affiliation(models.Model):
+    """Affiliations
     """
-    name = models.CharField(max_length=200, null=True)
+    department = models.CharField(max_length=200, null=True)
+    institution = models.CharField(max_length=200, null=True)
     city = models.CharField(max_length=50, null=True)
     state = models.CharField(max_length=20, null=True)
     country = models.CharField(max_length=50, null=True)

@@ -269,7 +269,7 @@ class ParserElsevier(Parser):
 
         issn = entry.get('prism:issn', '')
         if issn:
-            id_issn = '{0}-{1}'.format(issn[:3], issn[3:])
+            id_issn = '{0}-{1}'.format(issn[:4], issn[4:])
             journal['id_issn'] = id_issn
 
         journal['title'] = entry.get('prism:publicationName', '')
@@ -305,6 +305,8 @@ class ParserElsevier(Parser):
         paper['id_pii'] = re.sub('http://api.elsevier.com/content/article/pii:',
                                  '',
                                  entry.get('prism:url', ''))
+
+        paper['issue'] = entry.get('prism:issueIdentifier', '')
 
         paper['url'] = '{urlbase}{pii}X'.format(
             urlbase='http://www.sciencedirect.com/science/article/pii/',

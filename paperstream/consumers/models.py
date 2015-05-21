@@ -8,6 +8,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q, F
+from django.db.models.query import QuerySet
 
 from config.celery import celery_app as app
 from celery.contrib.methods import task_method
@@ -45,7 +46,7 @@ class Consumer(TimeStampedModel):
     ret_max = models.IntegerField(default=25)
 
     # number of past day to look through during initialization
-    day0 = models.IntegerField(default=61)
+    day0 = models.IntegerField(default=settings.CONS_INIT_PAST)
 
     # Journal associated with consumer
     journals = models.ManyToManyField(Journal, through='ConsumerJournal')
@@ -62,9 +63,15 @@ class Consumer(TimeStampedModel):
         :param: journal (Journal)
         :return: (ConsumerJournal)
         """
-        cj, new = ConsumerJournal.objects.get_or_create(journal=journal,
-                                                        consumer=self)
+        cj, new = ConsumerJournal.objects.get_or_create(
+            journal=journal,
+            consumer=self,
+            last_date_cons=timezone.now() - timezone.timedelta(days=self.day0))
         return cj
+
+    def add_journals(self, journals):
+        for journal in journals:
+            self.add_journal(journal)
 
     def activate_journal(self, journal):
         """Activate row in ConsumerJournal table is feasible
@@ -104,6 +111,19 @@ class Consumer(TimeStampedModel):
         for journal in self.journals.all():
             try:
                 self.activate_journal(journal)
+            except ValueError as err:
+                logger.warning(err)
+                pass
+
+    def update_last_date_cons(self, journal):
+        q = self.consumerjournal_set.filter(journal=journal)
+        q.update(last_date_cons=
+                 timezone.now() - timezone.timedelta(days=self.day0))
+
+    def update_all_last_date_cons(self):
+        for journal in self.journals.all():
+            try:
+                self.update_last_date_cons(journal)
             except ValueError as err:
                 logger.warning(err)
                 pass
@@ -200,7 +220,7 @@ class Consumer(TimeStampedModel):
 
             # Update consumer_journal
             cj = self.consumerjournal_set.get(journal=journal)
-            cj.update(True, len(entries), paper_added)
+            cj.update_stats(True, len(entries), paper_added)
 
             logger.info('populating {0}: ok'.format(journal.title))
         return paper_added
@@ -283,52 +303,44 @@ class ConsumerPubmed(Consumer):
                     '"{title}"[Journal]'.format(start_date=start_date_q,
                                                 title=issn)
 
-            entries = self.get_q(self, query)
+            # Call API
+            # search items corresponding to query
+            id_list = []
+            ret_start = 0
+            while True:
+                # query
+                handle = Entrez.esearch(db="pubmed",
+                                        term=query,
+                                        retmax=self.ret_max,
+                                        retstart=ret_start)
+                # read results
+                record = Entrez.read(handle)
+                # close handle
+                handle.close()
+                # get id list
+                id_list = id_list + list(record["IdList"])
+                if len(record["IdList"]) < int(self.ret_max):
+                    break
+
+                # update ret_start
+                ret_start += self.ret_max
+            # fetch items
+            handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
+                                   retmode="text")
+
+            records = Medline.parse(handle)
+
+            for record in records:
+                entries.append(record)
+
+            # close handle
+            handle.close()
 
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update(False, 0, 0)
+            cj.update_stats(False, 0, 0)
             logger.warning('consuming {0}: FAILED'.format(journal.title))
             return list()
-
-        return entries
-
-    def get_q(self, query):
-
-        entries = []
-
-        # Call API
-        # search items corresponding to query
-        id_list = []
-        ret_start = 0
-        while True:
-            # query
-            handle = Entrez.esearch(db="pubmed",
-                                    term=query,
-                                    retmax=self.ret_max,
-                                    retstart=ret_start)
-            # read results
-            record = Entrez.read(handle)
-            # close handle
-            handle.close()
-            # get id list
-            id_list = id_list + list(record["IdList"])
-            if len(record["IdList"]) < int(self.ret_max):
-                break
-
-            # update ret_start
-            ret_start += self.ret_max
-        # fetch items
-        handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
-                               retmode="text")
-
-        records = Medline.parse(handle)
-
-        for record in records:
-            entries.append(record)
-
-        # close handle
-        handle.close()
 
         return entries
 
@@ -433,7 +445,7 @@ class ConsumerElsevier(Consumer):
 
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update(False, 0, 0)
+            cj.update_stats(False, 0, 0)
             logger.warning('consuming {0}: FAILED'.format(journal.title))
             return list()
 
@@ -512,7 +524,7 @@ class ConsumerArxiv(Consumer):
 
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update(False, 0, 0)
+            cj.update_stats(False, 0, 0)
             logger.warning('consuming {0}: FAILED'.format(journal.title))
             return list()
 
@@ -536,7 +548,7 @@ class ConsumerJournal(models.Model):
         null=True,
         default=timezone.now() - timezone.timedelta(days=settings.CONS_INIT_PAST))
     # number of papers retrieved
-    last_number_papers_retrieved = models.IntegerField(default=0)
+    last_number_papers_recorded = models.IntegerField(default=0)
     # number of papers retrieved
     last_number_papers_fetched = models.IntegerField(default=0)
 
@@ -575,7 +587,7 @@ class ConsumerJournal(models.Model):
             logger.info(msg)
             raise ValueError(msg)
 
-    def update(self, success, n_fet, n_rec):
+    def update_stats(self, success, n_fet, n_rec):
         """Update attributes and ConsumerJournalStats
 
         :param success (bool):

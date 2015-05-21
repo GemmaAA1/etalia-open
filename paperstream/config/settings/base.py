@@ -145,7 +145,8 @@ USE_TZ = True
 #  https://docs.djangoproject.com/en/1.8/howto/static-files/
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = APPS_DIR.child('static')
+# use to serve static file in production by collecting static files in root
+# STATIC_ROOT = APPS_DIR.child('static')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
@@ -201,7 +202,7 @@ ACCOUNT_USER_DISPLAY='accounts.utils.user_display'
 
 # Custom user app defaults
 # Select the correct user model
-# AUTH_USER_MODEL = 'users.User'
+# AUTH_USER_MODEL = 'users.PaperUser'
 # LOGIN_REDIRECT_URL = 'users:redirect'
 # LOGIN_URL = 'account_login'
 

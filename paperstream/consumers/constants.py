@@ -19,5 +19,5 @@ PUBMED_PT = (
     ('NEWS',            'NEWS'),
     ('CONGRESSES',      'PROC'),
     ('REVIEW',          'REVI'),
-    ('UBKNOWN',         ''),
+    ('UNKNOWN',         ''),
 )

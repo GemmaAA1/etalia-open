@@ -4,21 +4,25 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from library.models import Journal, Paper
-from ..models import ConsumerPubmed, ConsumerJournal
+from ..models import ConsumerPubmed, ConsumerJournal, ConsumerElsevier, \
+    ConsumerArxiv
 
 
 class ConsumerTest(TestCase):
 
     def setUp(self):
-        Journal.objects.create(title='Journal of the consumers',
-                               id_issn='0000-0019')
+        journal = Journal.objects.create(title='Journal of the consumers',
+                                         id_issn='0000-0019')
+        consumer = ConsumerPubmed.objects.create()
+        consumer.day0 = 20
+        consumer.save()
+        cj = consumer.add_journal(journal)
 
     @staticmethod
-    def add_journal():
-        consumer = ConsumerPubmed.objects.create()
+    def return_utils():
+        consumer = ConsumerPubmed.objects.first()
         journal = Journal.objects.first()
-        consumer.add_journal(journal)
-        cj = consumer.add_journal(journal)
+        cj = ConsumerJournal.objects.first()
         return consumer, journal, cj
 
     def test_consumer_have_unique_name(self):
@@ -26,36 +30,27 @@ class ConsumerTest(TestCase):
         with self.assertRaises(ValidationError):
             ConsumerPubmed(name='consumer #1').full_clean()
 
-    def test_can_add_and_retrieve_journal(self):
-        consumer = ConsumerPubmed.objects.create()
-        journal = Journal.objects.first()
-        consumer.add_journal(journal)
-        cj = ConsumerJournal.objects.all()[0]
-        self.assertEqual(journal, cj.journal)
-        self.assertEqual(consumer.pk, cj.consumer.pk)
-        self.assertEqual(cj.status, 'inactive')
-
     def test_can_activate_journal(self):
-        consumer, journal, cj = self.add_journal()
+        consumer, journal, cj = self.return_utils()
         consumer.activate_journal(journal)
         cj = consumer.consumerjournal_set.get(journal=journal)
         self.assertEqual(cj.status, 'idle')
 
     def test_can_deactivate_journal(self):
-        consumer, journal, cj = self.add_journal()
+        consumer, journal, cj = self.return_utils()
         consumer.activate_journal(journal)
         consumer.deactivate_journal(journal)
         self.assertEqual(cj.status, 'inactive')
 
     def test_cannot_activate_if_error_status(self):
-        consumer, journal, cj = self.add_journal()
+        consumer, journal, cj = self.return_utils()
         cj.status = 'error'
         cj.save()
         with self.assertRaises(ValueError):
             consumer.activate_journal(journal)
 
     def test_cannot_deactivate_if_doing_stuff(self):
-        consumer, journal, cj = self.add_journal()
+        consumer, journal, cj = self.return_utils()
         cj.status = 'consuming'
         cj.save()
         with self.assertRaises(ValueError):
@@ -64,6 +59,15 @@ class ConsumerTest(TestCase):
         cj.save()
         with self.assertRaises(ValueError):
             consumer.deactivate_journal(journal)
+
+    def tests_can_update_last_date_cons(self):
+        consumer, journal, cj = self.return_utils()
+        last1 = cj.last_date_cons
+        consumer.day0 = 10
+        consumer.update_last_date_cons(journal)
+        cj = consumer.consumerjournal_set.get(journal=journal)
+        last2 = cj.last_date_cons
+        self.assertTrue(last2 > last1)
 
 
 class ConsumerPubmedTest(TestCase):
@@ -80,19 +84,32 @@ class ConsumerPubmedTest(TestCase):
         with open('consumers/tests/pubmed_sample.json') as file:
             self.entries = json.load(file)
 
-    def test_consume_journal_populate_stats(self):
+    def test_add_entry(self):
+        consumer = ConsumerPubmed.objects.first()
+        journal = Journal.objects.first()
+        item = consumer.parser.parse(self.entries[0])
+        consumer.add_entry(item, journal)
+        self.assertEqual(Paper.objects.all().count(), 1)
+
+    @patch('consumers.models.ConsumerPubmed.consume_journal')
+    def test_consume_update_journal(self, mock_consume_journal):
+        # setup mock object
+        mock_consume_journal.return_value = self.entries
+
         journal = Journal.objects.first()
         consumer = ConsumerPubmed.objects.first()
-        consumer.consume_journal(journal)
-        consumer.consume_journal(journal)
-        cj = consumer.consumerjournal_set.first()
-        cjs = cj.stats.all()
-        self.assertEqual(cjs.count(), 2)
+        consumer.populate_journal(journal)
 
-    @patch('consumers.models.ConsumerPubmed.get_q')
-    def test_consumer_populate_journal(self, mock_get_q):
+        self.assertIsNotNone(consumer.consumerjournal_set.first().last_date_cons)
+        self.assertTrue(
+            consumer.consumerjournal_set.first().last_number_papers_recorded > 0)
+        self.assertTrue(
+            consumer.consumerjournal_set.first().last_number_papers_fetched > 0)
+
+    @patch('consumers.models.ConsumerPubmed.consume_journal')
+    def test_populate_journal(self, mock_consume_journal):
         # setup mock object
-        mock_get_q.return_value = self.entries
+        mock_consume_journal.return_value = self.entries
 
         journal = Journal.objects.first()
         consumer = ConsumerPubmed.objects.first()
@@ -103,17 +120,53 @@ class ConsumerPubmedTest(TestCase):
         papers = Paper.objects.filter(journal=journal)
         self.assertEqual(papers.count(), 10)
 
-    @patch('consumers.models.ConsumerPubmed.get_q')
-    def test_consumer_update_journal(self, mock_get_q):
+
+class ConsumerElsevierTest(TestCase):
+
+    def setUp(self):
+        journal, _ = Journal.objects.get_or_create(id_issn='1053-8119')
+        consumer, _ = ConsumerElsevier.objects.get_or_create(name='pub cons #1')
+        journal = Journal.objects.first()
+        consumer.day0 = 10
+        consumer.add_journal(journal)
+        consumer.activate_journal(journal)
+        consumer.save()
+
+        with open('consumers/tests/elsevier_sample.json') as file:
+            self.entries = json.load(file)
+
+    def test_add_entry(self):
+        consumer = ConsumerElsevier.objects.first()
+        journal = Journal.objects.first()
+        item = consumer.parser.parse(self.entries[0])
+        consumer.add_entry(item, journal)
+        self.assertEqual(Paper.objects.all().count(), 1)
+
+    @patch('consumers.models.ConsumerElsevier.consume_journal')
+    def test_consume_update_journal(self, mock_consume_journal):
         # setup mock object
-        mock_get_q.return_value = self.entries
+        mock_consume_journal.return_value = self.entries
 
         journal = Journal.objects.first()
-        consumer = ConsumerPubmed.objects.first()
+        consumer = ConsumerElsevier.objects.first()
         consumer.populate_journal(journal)
 
         self.assertIsNotNone(consumer.consumerjournal_set.first().last_date_cons)
-        self.assertTrue(consumer.consumerjournal_set.first().
-                        last_number_papers_retrieved > 0)
-        self.assertTrue(consumer.consumerjournal_set.first().
-                        last_number_papers_fetched > 0)
+        self.assertTrue(
+            consumer.consumerjournal_set.first().last_number_papers_recorded > 0)
+        self.assertTrue(
+            consumer.consumerjournal_set.first().last_number_papers_fetched > 0)
+
+    @patch('consumers.models.ConsumerElsevier.consume_journal')
+    def test_populate_journal(self, mock_consume_journal):
+        # setup mock object
+        mock_consume_journal.return_value = self.entries
+
+        journal = Journal.objects.first()
+        consumer = ConsumerElsevier.objects.first()
+
+        papers = Paper.objects.filter(journal=journal)
+        self.assertTrue(papers.count() == 0)
+        consumer.populate_journal(journal)
+        papers = Paper.objects.filter(journal=journal)
+        self.assertEqual(papers.count(), 10)

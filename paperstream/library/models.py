@@ -171,16 +171,16 @@ class Paper(TimeStampedModel):
 
     # TODO: Test if db_index=True improve performance
     # identifiers (uniqueness defined thereafter)
-    id_doi = NullableCharField(max_length=32, blank=True, default='',
+    id_doi = NullableCharField(max_length=64, blank=True, default='',
                                null=True, unique=True, verbose_name='DOI')
-    id_arx = NullableCharField(max_length=32, blank=True, default='',
+    id_arx = NullableCharField(max_length=64, blank=True, default='',
                                null=True, unique=True, verbose_name='Arxiv')
-    id_pmi = NullableCharField(max_length=32, blank=True, default='',
+    id_pmi = NullableCharField(max_length=64, blank=True, default='',
                                null=True, unique=True, verbose_name='PMID')
     # none unique because publisher dependent
-    id_pii = NullableCharField(max_length=32, blank=True, default='',
+    id_pii = NullableCharField(max_length=64, blank=True, default='',
                                null=True, verbose_name='PII')
-    id_oth = NullableCharField(max_length=32, blank=True, default='',
+    id_oth = NullableCharField(max_length=64, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID')
     # Title
     title = models.CharField(max_length=500, blank=False, default='')
