@@ -31,8 +31,13 @@ def require_affiliation(strategy, details, request=None, user=None, *args, **kwa
             country=request.get('country', ''),
         )
         user.userlib.affiliation = affiliation
-        userlib.save()
+        user.userlib.save()
         return
     else:
         return redirect('users:require_affiliation')
+
+
+@partial
+def update_user_lib(user, *args, **kwargs):
+    pass
 
