@@ -5,7 +5,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from stdnum import issn
-from library.models import Paper, Journal, Author, AuthorPosition
+from library.models import Paper, Journal, Author, AuthorPaper
 
 
 class FunctionalTest(StaticLiveServerTestCase):

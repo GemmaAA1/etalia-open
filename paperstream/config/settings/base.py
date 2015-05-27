@@ -42,9 +42,10 @@ DJANGO_APPS = (
 
 
 THIRD_PARTY_APPS = (
-    'allauth',  # registration
-    'allauth.account',  # registration
-    'allauth.socialaccount',  # registration
+    'social.apps.django_app.default',
+    # 'allauth',  # registration
+    # 'allauth.account',  # registration
+    # 'allauth.socialaccount',  # registration
 )
 
 LOCAL_APPS = (
@@ -55,11 +56,8 @@ LOCAL_APPS = (
     'users',
     # 'feeds',
     # 'nlprocess',
-    # 'users',
     # 'comments',
     # 'networks',
-    # 'users.providers.mendeley',
-    # 'users.providers.zotero',
     # 'functional_tests',
 )
 
@@ -104,8 +102,6 @@ DATABASES = {
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
-    'allauth.account.context_processors.account',
-    'allauth.socialaccount.context_processors.socialaccount',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
@@ -114,6 +110,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
     # Your stuff: custom template context processors go here
+    'social.apps.django_app.context_processors.backends',
+    # 'allauth.account.context_processors.account',
+    # 'allauth.socialaccount.context_processors.socialaccount',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
@@ -148,15 +147,15 @@ USE_TZ = True
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 # use to serve static file in production by collecting static files in root
-STATIC_ROOT = APPS_DIR.child('static')
+# STATIC_ROOT = APPS_DIR.child('static')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-# STATICFILES_DIRS = (
-#     str(APPS_DIR.child('static')),
-# )
+STATICFILES_DIRS = (
+    str(APPS_DIR.child('static')),
+)
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
@@ -184,32 +183,64 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
-SITE_ID = 1
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-# ACCOUNT_SIGNUP_FORM_CLASS = 'users.forms.CustomSignupForm'
-ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL='/'
-ACCOUNT_USER_DISPLAY='accounts.utils.user_display'
-ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = True
-ACCOUNT_PASSWORD_MIN_LENGTH = 8
-SOCIALACCOUNT_AUTO_SIGNUP = False
-SOCIALACCOUNT_FORMS = {}
+AUTHENTICATION_BACKENDS = (
+    # 'social.backends.mendeley.MendeleyOAuth2',
+    'users.backends.mendeley.CustomMendeleyOAuth2',
+    'social.backends.zotero.ZoteroOAuth',
+    'social.backends.email.EmailAuth',
+    'django.contrib.auth.backends.ModelBackend',
+    # 'allauth.account.auth_backends.AuthenticationBackend',
+)
 
-
-# Custom user app defaults
-# Select the correct user model
 AUTH_USER_MODEL = 'users.User'
-LOGIN_REDIRECT_URL = 'users:redirect'
-LOGIN_URL = 'account_login'
 
-# SLUGLIFIER
-AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+URL_PATH = ''
+SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
+SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
+SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/userinfo.profile'
+]
+# SOCIAL_AUTH_EMAIL_FORM_URL = '/signup-email'
+SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
+SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'users.mail.send_validation'
+SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'users:validation_sent'
+# SOCIAL_AUTH_USERNAME_FORM_URL = '/signup-username'
+SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+
+EMAIL_FROM = 'noreply@paperstream.io'
+
+SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.auth_allowed',
+    'social.pipeline.social_auth.social_user',
+    'social.pipeline.user.get_username',
+    'users.pipeline.require_primary',
+    'social.pipeline.mail.mail_validation',
+    'social.pipeline.user.create_user',
+    'social.pipeline.social_auth.associate_user',
+    'social.pipeline.debug.debug',
+    'social.pipeline.social_auth.load_extra_data',
+    'social.pipeline.user.user_details',
+    'user.pipeline.update_user_lib',
+    'users.pipeline.require_affiliation',
+
+    'social.pipeline.debug.debug'
+)
+# ****
+# API KEY TO MOVE IN ENV VARIABLE LATTER
+# ****
+SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = '1678'
+SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = 'caOrLU0DqOUC4wdD'
+
+SOCIAL_AUTH_ZOTERO_KEY = '1c8bea7240c0ad03d65d'
+SOCIAL_AUTH_ZOTERO_SECRET = '64bfb072306cfbee0fa2'
+
+
 
 
 # CONSUMER CONFIGURATION

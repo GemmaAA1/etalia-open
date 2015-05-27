@@ -597,7 +597,7 @@ class ConsumerJournal(models.Model):
             self.last_date_cons = timezone.now()
             self.last_number_papers_fetched = n_fet
             self.last_number_papers_recorded = n_rec
-            self.stats.create(date=timezone.now(),
+            self.stats.create(
                   number_papers_fetched=self.last_number_papers_fetched,
                   number_papers_recorded=self.last_number_papers_recorded,
                   status='SUC')
@@ -617,8 +617,7 @@ class ConsumerJournal(models.Model):
             self.save()
         else:
             self.status = 'error'
-            self.stats.create(date=timezone.now(),
-                              number_papers_fetched=0,
+            self.stats.create(number_papers_fetched=0,
                               number_papers_recorded=0,
                               status='FAI')
             self.save()
@@ -629,13 +628,13 @@ class ConsumerJournalStat(models.Model):
     consumer_journal = models.ForeignKey(ConsumerJournal, related_name='stats')
 
     # date of consumption
-    date = models.DateTimeField(null=False)
+    datetime = models.DateTimeField(null=False, auto_now_add=True)
 
     # number of papers fetched
-    number_papers_fetched = models.IntegerField(default=0)
+    number_papers_fetched = models.IntegerField()
 
     # number of papers recorded
-    number_papers_recorded = models.IntegerField(default=0)
+    number_papers_recorded = models.IntegerField()
 
     # status
     status = models.CharField(max_length=3,
