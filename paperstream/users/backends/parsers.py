@@ -24,6 +24,10 @@ class ParserBackend(Parser):
         out = super(ParserBackend, self).parse(entry)
         return dict({'user_info': self.parse_user_info(entry)}, **out)
 
+    @staticmethod
+    def id_oth_generator(size=10, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
 
 class ParserMendeley(ParserBackend):
 
@@ -59,15 +63,21 @@ class ParserMendeley(ParserBackend):
         for key, val in ids.items():
             if key == 'doi':
                 paper['id_doi'] = val
-            if key == 'pmi':
+            elif key == 'pmi':
                 paper['id_pmi'] = val
-            if key == 'pii':
+            elif key == 'pii':
                 paper['id_pii'] = val
-            if key == 'arxiv':
+            elif key == 'arxiv':
                 paper['id_arx'] = val
                 # overwrite paper type
                 paper['type'] = 'PRE'
                 paper['publish_status'] = 'preprint'
+            else:
+                paper['id_oth'] = '{0}_{1}'.format(key, val)
+
+        if not any([paper[key] for key in ['id_doi', 'id_pmi', 'id_pii',
+                                           'id_arx', 'id_oth']]):
+            paper['id_oth'] = 'rand{0}'.format(self.id_oth_generator())
 
         # URL
         if entry.websites:
@@ -107,8 +117,6 @@ class ParserMendeley(ParserBackend):
 
         # Abstract
         paper['abstract'] = entry.abstract
-
-
 
         return paper
 
