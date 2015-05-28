@@ -14,6 +14,10 @@ PAPER_TYPE = (
     ('REV', 'Review'),
     ('PRE', 'e-Print'),  # e.g Arxiv
     ('DRA', 'Draft'),
+    ('BOO', 'Book'),
+    ('BOS', 'Book section'),
+    ('PAT', 'Patent'),
+    ('THE', 'Thesis'),
     ('', 'Unknown')
 )
 

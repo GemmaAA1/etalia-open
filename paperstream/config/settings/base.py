@@ -184,9 +184,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
 AUTHENTICATION_BACKENDS = (
-    # 'social.backends.mendeley.MendeleyOAuth2',
     'users.backends.mendeley.CustomMendeleyOAuth2',
-    'social.backends.zotero.ZoteroOAuth',
+    'users.backends.zotero.CustomZoteroOAuth',
     'social.backends.email.EmailAuth',
     'django.contrib.auth.backends.ModelBackend',
     # 'allauth.account.auth_backends.AuthenticationBackend',
@@ -228,17 +227,17 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details',
     'users.pipeline.update_user_lib',
     'users.pipeline.require_affiliation',
-
     'social.pipeline.debug.debug'
 )
 # ****
 # API KEY TO MOVE IN ENV VARIABLE LATTER
 # ****
+# Mendeley
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = '1678'
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = 'caOrLU0DqOUC4wdD'
-
-SOCIAL_AUTH_ZOTERO_KEY = '1c8bea7240c0ad03d65d'
-SOCIAL_AUTH_ZOTERO_SECRET = '64bfb072306cfbee0fa2'
+# Zotero
+SOCIAL_AUTH_CUSTOM_ZOTERO_KEY = 'a7ecbff3d0bbe59abc4b'
+SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = 'c5d0c178d9196e62bdbf'
 
 
 

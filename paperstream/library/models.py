@@ -30,17 +30,21 @@ class Journal(TimeStampedModel):
     """
 
     # TODO: Test if db_index=True improve performance
+    # NullableCharField is used to enforced uniqueness at the database level,
+    # by default django save None charfield as '' which is considered as a string
+    # in query and conflict with uniqueness
     id_issn = NullableCharField(max_length=9, blank=True, null=True,
-                                default=None, validators=[validate_issn],
-                                unique=True, verbose_name='ISSN')
+                                default='', validators=[validate_issn],
+                                unique=True, verbose_name='ISSN', db_index=True)
     id_eissn = NullableCharField(max_length=9, blank=True, null=True,
-                                 default=None, validators=[validate_issn],
-                                 unique=True, verbose_name='e-ISSN')
+                                 default='', validators=[validate_issn],
+                                 unique=True, verbose_name='e-ISSN',
+                                 db_index=True)
     id_arx = NullableCharField(max_length=32, blank=True, null=True,
-                               default=None, unique=True,
+                               default='', unique=True, db_index=True,
                                verbose_name='Arxiv ID')
     id_oth = NullableCharField(max_length=32, blank=True, null=True,
-                               default=None, unique=True,
+                               default='', unique=True, db_index=True,
                                verbose_name='Other ID')
 
     # periodical title
@@ -171,17 +175,24 @@ class Paper(TimeStampedModel):
 
     # TODO: Test if db_index=True improve performance
     # identifiers (uniqueness defined thereafter)
+    # NullableCharField is used to enforced uniqueness at the database level,
+    # by default django save None charfield as '' which is considered as a string
+    # in query and conflict with uniqueness
     id_doi = NullableCharField(max_length=64, blank=True, default='',
-                               null=True, unique=True, verbose_name='DOI')
+                               null=True, unique=True, verbose_name='DOI',
+                               db_index=True)
     id_arx = NullableCharField(max_length=64, blank=True, default='',
-                               null=True, unique=True, verbose_name='Arxiv')
+                               null=True, unique=True, verbose_name='Arxiv',
+                               db_index=True)
     id_pmi = NullableCharField(max_length=64, blank=True, default='',
-                               null=True, unique=True, verbose_name='PMID')
-    # none unique because publisher dependent
+                               null=True, unique=True, verbose_name='PMID',
+                               db_index=True)
+    # not unique because publisher dependent
     id_pii = NullableCharField(max_length=64, blank=True, default='',
-                               null=True, verbose_name='PII')
+                               null=True, verbose_name='PII', db_index=True)
     id_oth = NullableCharField(max_length=64, blank=True, default='',
-                               null=True, unique=True, verbose_name='Other ID')
+                               null=True, unique=True, verbose_name='Other ID',
+                               db_index=True)
     # Title
     title = models.CharField(max_length=500, blank=False, default='')
 

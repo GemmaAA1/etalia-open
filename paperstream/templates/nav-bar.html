@@ -24,29 +24,16 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
 
-                {% if not user.is_lib_synced %}
-                {% include "core/spinner.html" %}
-                <li id="lib-sync">
-                    <a href="#">Syncing <span id="lib-sync-count">{{ user.lib_size }}</span> papers</a>
+                <li id="nav-bar-feed" class="{% active request 'feed.+' %}">
+                    <a href="#">Feed</a>
                 </li>
-                {% endif %}
-                {% if not user.is_feed_synced and user.is_lib_synced %}
-                {% include "core/spinner.html" %}
-                <li id="feed-sync">
-                    <a href="#"><em>Curating <span id="feed-sync-count">{{ user.feedhome.lib_size }}</span> papers</em></a>
-                </li>
-                {% endif %}
-
-                <li id="nav-bar-feed" class="{% active request 'feed.+' %} {% if not user.is_lib_synced %} disabled {% endif %}">
-                    <a href="{% url 'feed' %}">Feed</a>
-                </li>
-                <li id="nav-bar-discover" class="{% active request 'discover.+' %} {% if not user.is_lib_synced %} disabled {% endif %}">
+                <li id="nav-bar-discover" class="{% active request 'discover.+' %}">
                     <a href="#">Discover</a>
                 </li>
-                <li id="nav-bar-connect" class="{% active request 'connect.+' %} {% if not user.is_lib_synced %} disabled {% endif %}">
+                <li id="nav-bar-connect" class="{% active request 'connect.+' %}">
                     <a href="#">Connect</a>
                 </li>
-                <li id="nav-bar-comment" class="{% active request 'comment.+' %} {% if not user.is_lib_synced %} disabled {% endif %}">
+                <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
                     <a href="#">Comment</a>
                 </li>
                 <li class="{% active request 'search.+' %}">
@@ -56,12 +43,12 @@
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
                     <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                      <li class="{% active request 'library.+' %}"><a href="{% url 'library' %}">Library</a></li>
-                      <li class="{% active request 'accounts/profile' %}"><a href="{% url 'profile' %}">Profile</a></li>
-                      <li class="{% active request 'accounts/settings' %}"><a href="{% url 'settings' %}">Settings</a></li>
+                      <li class="{% active request 'library.+' %}"><a href="#">Library</a></li>
+                      <li class="{% active request 'users/profile' %}"><a href="#">Profile</a></li>
+                      <li class="{% active request 'users/settings' %}"><a href="#">Settings</a></li>
                       <li><a href="#">Help</a></li>
                       <li class="divider"></li>
-                      <li><a href="{% url 'account_logout' %}">Logout</a></li>
+                      <li><a href="{% url 'users:logout' %}">Logout</a></li>
                     </ul>
                 </li>
             </ul>

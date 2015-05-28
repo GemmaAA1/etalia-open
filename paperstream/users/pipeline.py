@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from social.pipeline.partial import partial
-from .models import Affiliation, UserLib
+from .models import Affiliation
 
 
 @partial
@@ -22,7 +23,9 @@ def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs)
 
 @partial
 def require_affiliation(strategy, details, request=None, user=None, *args, **kwargs):
-    if request.get('city', None) and request.get('country', None) and user:
+    if getattr(user, 'affiliation'):
+        return
+    elif request.get('city', None) and request.get('country', None) and user:
         affiliation, _ = Affiliation.objects.get_or_create(
             department=request.get('department', ''),
             institution=request.get('institution', ''),
@@ -30,14 +33,17 @@ def require_affiliation(strategy, details, request=None, user=None, *args, **kwa
             state=request.get('state', ''),
             country=request.get('country', ''),
         )
-        user.userlib.affiliation = affiliation
-        user.userlib.save()
+        user.affiliation = affiliation
+        user.save()
         return
     else:
         return redirect('users:require_affiliation')
 
-
 @partial
-def update_user_lib(user, *args, **kwargs):
-    pass
+def update_user_lib(backend, social, user, *args, **kwargs):
+    session = backend.get_session(social, user, *args, **kwargs)
+    backend.update_lib(session, user, *args, **kwargs)
+
+    return {}
+
 

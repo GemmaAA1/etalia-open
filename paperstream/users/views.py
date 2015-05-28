@@ -1,7 +1,13 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView
 from .forms import SocialPrimaryForm
 # Create your views here.
+
+def logout(request):
+    """Logs out user"""
+    auth_logout(request)
+    return redirect('/')
 
 def done(request):
     redirect('landing')
@@ -22,7 +28,7 @@ def require_primary(request):
 def require_affiliation(request):
     backend = request.session['partial_pipeline']['backend']
     details = request.session['partial_pipeline']['kwargs']['details']
-    affiliation = details.get('affiliation', {})
+    affiliation = details.get('tmp_affiliation', {})
     context = {
         'affiliation': True,
         'backend': backend,

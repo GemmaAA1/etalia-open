@@ -6,3 +6,14 @@ PROVIDER_TYPE = (
     ('MEN', 'Mendeley'),
     ('', 'Unknown')
 )
+
+MENDELEY_PT = (
+    ('journal',                 'JOU'),
+    ('book',                    'BOO'),
+    ('book_section',            'BOS'),
+    ('conference_proceedings',  'PRO'),
+    ('working_paper',           'DRA'),
+    ('patent',                  'PAT'),
+    ('thesis',                  'THE'),
+    ('UNKNOWN',                 ''),
+)

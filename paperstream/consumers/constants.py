@@ -19,5 +19,6 @@ PUBMED_PT = (
     ('NEWS',            'NEW'),
     ('CONGRESSES',      'PRO'),
     ('REVIEW',          'REV'),
+    ('PATENTS',         'PAT'),
     ('UNKNOWN',         ''),
 )

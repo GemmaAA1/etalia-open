@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 from django.db.models import Q
 from datetime import date
 from django.core.mail import send_mail
@@ -45,6 +46,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         UserLib.objects.create(user=user)
+        UserStats.objects.create(user=user)
         return user
 
     def create_superuser(self, **kwargs):
@@ -75,6 +77,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(_('active'), default=True,
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
+
+    affiliation = models.ForeignKey(Affiliation, null=True, default=None)
 
     objects = UserManager()
 
@@ -118,46 +122,73 @@ class User(AbstractBaseUser, PermissionsMixin):
 class UserLib(models.Model):
     """Library data of user"""
 
-    user = models.OneToOneField(User, primary_key=True, related_name='userlib')
-
-    affiliation = models.ForeignKey(Affiliation, null=True)
+    user = models.OneToOneField(User, primary_key=True, related_name='lib')
 
     papers = models.ManyToManyField(Paper, through='UserLibPaper')
 
-    own_papers = models.ManyToManyField(Paper, related_name='own')
-
     journals = models.ManyToManyField(Journal, through='UserLibJournal')
 
-    library_status = models.CharField(max_length=3, blank=True, default= '',
+    library_status = models.CharField(max_length=3, blank=True, default='',
         choices=(('', 'Uninitialized'),
-                 ('SYN', 'Synced'),
+                 ('IDL', 'Idle'),
                  ('ING', 'Syncing')))
 
     feed_status = models.CharField(max_length=3, blank=True, default='',
         choices=(('', 'Uninitialized'),
-                 ('SYN', 'Synced'),
+                 ('IDL', 'Idle'),
                  ('ING', 'Syncing')))
-
-    is_library_hooked = models.BooleanField(default=False)
 
     def count_papers(self):
         return self.papers.all().count()
 
     def count_journals(self):
-        return self.papers.all().count()
+        return self.journals.all().count()
+
+    def set_lib_syncing(self):
+        self.library_status = 'ING'
+        self.save()
+
+    def set_lib_idle(self):
+        self.library_status = 'IDL'
+        self.save()
+
+    def set_feed_syncing(self):
+        self.feed_status = 'ING'
+        self.save()
+
+    def set_feed_idle(self):
+        self.feed_status = 'IDL'
+        self.save()
 
 
-class UserLibStats(models.Model):
+class UserStatsManager(models.Manager):
+    def create_lib_stats(self, user, count):
+        stats = self.model(user=user, state='LIB', number_papers=count)
+        stats.save(using=self._db)
+        return stats
+
+    def create_feed_stats(self, user, count):
+        stats = self.model(user=user, state='FEE', number_papers=count)
+        stats.save(using=self._db)
+        return stats
+
+
+class UserStats(models.Model):
     """Trace of user library/feed activity
     """
-    userlib = models.ForeignKey(UserLib, related_name='stats')
+    user = models.ForeignKey(User, related_name='stats')
 
     state = models.CharField(max_length=3,
-                             choices=(('LOG', 'Log in'),
-                                      ('LIB', 'Library syncing'),
-                                      ('FEE', 'Feed syncing')))
+                             choices=(('LIN', 'Log in'),
+                                      ('LOU', 'Log out'),
+                                      ('LIB', 'Library sync'),
+                                      ('FEE', 'Feed sync')))
+
+    number_papers = models.IntegerField(default=0)
 
     datetime = models.DateTimeField(null=False, auto_now_add=True)
+
+    objects = UserStatsManager()
 
 
 class UserLibPaper(models.Model):
@@ -167,15 +198,22 @@ class UserLibPaper(models.Model):
 
     paper = models.ForeignKey(Paper)
 
-    date_added = models.DateField(default=date(2000, 1, 1))
+    date_created = models.DateField(default=date(2000, 1, 1))
+
+    date_last_modified = models.DateField(default=date(2000, 1, 1))
+
+    authored = models.BooleanField(default=False)
+
+    starred = models.BooleanField(default=False)
+
+    scored = models.FloatField(default=0.)
 
     class Meta:
-        ordering = ['-date_added']
+        ordering = ['-date_created']
 
     def __str__(self):
         return '{0}@{1}'.format(self.paper.short_title(),
                                 self.userlib.user.email)
-
 
 class UserLibJournal(models.Model):
     """Intermediate model to user - journal
@@ -187,23 +225,12 @@ class UserLibJournal(models.Model):
     # number of paper link to that journal for this user
     papers_in_journal = models.IntegerField(default=0, null=False)
 
-    # Score of the journal based on normalized distribution of paper per
-    # journals
-    score = models.FloatField(default=0.)
-
     def __str__(self):
         return '%s@%s' % (self.userlib.user.email, self.journal.short_title)
 
     def update_papers_in_journal(self):
         self.papers_in_journal = self.userlib.papers.filter(
             journal=self.journal).count()
-        self.save()
-
-    def update_score(self):
-        self.update_papers_in_journal()
-        total_papers_with_journal = \
-            self.userlib.papers.filter(~Q(journal=None)).count()
-        self.score = self.papers_in_journal / total_papers_with_journal
         self.save()
 
 
