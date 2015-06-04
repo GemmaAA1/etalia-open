@@ -25,6 +25,7 @@ class BackendLibMixin(object):
                                               Q(id_pmi=item_paper['id_pmi']) |
                                               Q(id_pii=item_paper['id_pii']) |
                                               Q(id_arx=item_paper['id_arx']) |
+                                              Q(id_isbn=item_paper['id_isbn']) |
                                               Q(id_oth=item_paper['id_oth']))
                     if paper.is_trusted:
                         return paper
@@ -36,7 +37,8 @@ class BackendLibMixin(object):
                 if form.is_valid():
                     paper = form.save()
                     try:
-                        # because most of provider does not distinguished e-issn and issn
+                        # 1st and 2nd conditions are because most of providers
+                        # do not distinguish e-issn and issn
                         journal = Journal.objects.get(
                             Q(id_issn=item_journal['id_issn']) |
                             Q(id_eissn=item_journal['id_issn']) |

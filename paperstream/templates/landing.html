@@ -11,123 +11,127 @@
 
 {% block content %}
 
-<!-- Header -->
-<div class="intro-header">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="intro-message">
+{% if not user.is_authenticated %}
+    <!-- Header -->
+    <div class="intro-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="intro-message">
 
-                    <h1>Streams for Researchers</h1>
-                    <h3>News Feeds, Comments and Scientific Network</h3>
-                    <h3>Tailored to Your Library</h3>
+                        <h1>Streams for Researchers</h1>
+                        <h3>News Feeds, Comments and Scientific Network</h3>
+                        <h3>Tailored to Your Library</h3>
 
-                    <hr class="intro-divider">
-                    <ul class="list-inline intro-social-buttons">
+                        <hr class="intro-divider">
+                        <ul class="list-inline intro-social-buttons">
+                            <li>
+                                <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg">
+                                    <span class="network-name">[M] Mendeley</span></a>
+                            </li>
+                            <li>
+                                <a href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg">
+                                     <span class="network-name">[Z] Zotero</span></a>
+                            </li>
+                        </ul>
+                        <h4>Start now and hook your provider, </h4>
+                        <h5>or <a href="#">sign up</a> and upload your library manually</h5>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+    </div>
+    <!-- /.intro-header -->
+
+    <!-- Page Content -->
+    <a name="about"></a>
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Connect your reference managers <br>and Power-up PaperStream</h2>
+                    <p class="lead">Paperstream works in sync with your <a href="www.zotero.org">Zotero</a> or <a href="www.mendeley.com">Mendeley</a> account (others will follow). Connect and power-up your Paperstream. </p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/mendeley_img.jpg' %}" alt="">
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+    </div>
+    <!-- /.content-section-a -->
+
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Stay tuned on your research field</h2>
+                    <p class="lead">Paperstream scans the scientific literature and feeds you with the latest findings in your field. </p>
+                    <p class="lead">Exploring a new field? Changing focus? Paperstream adapts in real-time.</p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/mendeley_img2.jpg' %}" alt="">
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+    </div>
+    <!-- /.content-section-b -->
+
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Bring papers to life<br>with dynamic comments</h2>
+                    <p class="lead">Want to discuss on a paper of get feedback from other scientists. Paperstream keeps you tuned on comments that are relevant for you.</p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/mendeley_img3.png' %}" alt="">
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.content-section-a -->
+
+    <div class="banner">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h2>Connect to PaperStream:</h2>
+                </div>
+                <div class="col-lg-4">
+                    <ul class="list-inline banner-social-buttons">
                         <li>
                             <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg">
                                 <span class="network-name">[M] Mendeley</span></a>
                         </li>
                         <li>
-                            <a href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg">
+                            <a href="{% url "social:begin" backend="zotero" %}" class="btn btn-default btn-lg">
                                  <span class="network-name">[Z] Zotero</span></a>
                         </li>
                     </ul>
-                    <h4>Start now and hook your provider, </h4>
-                    <h5>or <a href="#">sign up</a> and upload your library manually</h5>
                 </div>
             </div>
+
         </div>
-
+        <!-- /.container -->
     </div>
-    <!-- /.container -->
-</div>
-<!-- /.intro-header -->
+    <!-- /.banner -->
+{% else %}
 
-<!-- Page Content -->
-<a name="about"></a>
-<div class="content-section-a">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-5 col-sm-6">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Connect your reference managers <br>and Power-up PaperStream</h2>
-                <p class="lead">Paperstream works in sync with your <a href="www.zotero.org">Zotero</a> or <a href="www.mendeley.com">Mendeley</a> account (others will follow). Connect and power-up your Paperstream. </p>
-            </div>
-            <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                <img class="img-responsive" src="{% static '/static/img/mendeley_img.jpg' %}" alt="">
-            </div>
-        </div>
-
-    </div>
-    <!-- /.container -->
-</div>
-<!-- /.content-section-a -->
-
-<div class="content-section-b">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Stay tuned on your research field</h2>
-                <p class="lead">Paperstream scans the scientific literature and feeds you with the latest findings in your field. </p>
-                <p class="lead">Exploring a new field? Changing focus? Paperstream adapts in real-time.</p>
-            </div>
-            <div class="col-lg-5 col-sm-pull-6  col-sm-6">
-                <img class="img-responsive" src="{% static '/static/img/mendeley_img2.jpg' %}" alt="">
-            </div>
-        </div>
-
-    </div>
-    <!-- /.container -->
-</div>
-<!-- /.content-section-b -->
-
-<div class="content-section-a">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-5 col-sm-6">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Bring papers to life<br>with dynamic comments</h2>
-                <p class="lead">Want to discuss on a paper of get feedback from other scientists. Paperstream keeps you tuned on comments that are relevant for you.</p>
-            </div>
-            <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                <img class="img-responsive" src="{% static '/static/img/mendeley_img3.png' %}" alt="">
-            </div>
-        </div>
-
-    </div>
-    <!-- /.container -->
-
-</div>
-<!-- /.content-section-a -->
-
-<div class="banner">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <h2>Connect to PaperStream:</h2>
-            </div>
-            <div class="col-lg-4">
-                <ul class="list-inline banner-social-buttons">
-                    <li>
-                        <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg">
-                            <span class="network-name">[M] Mendeley</span></a>
-                    </li>
-                    <li>
-                        <a href="{% url "social:begin" backend="zotero" %}" class="btn btn-default btn-lg">
-                             <span class="network-name">[Z] Zotero</span></a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-    </div>
-    <!-- /.container -->
-</div>
-<!-- /.banner -->
+{% endif %}
 
 {% endblock %}

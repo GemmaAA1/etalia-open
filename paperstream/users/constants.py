@@ -17,3 +17,13 @@ MENDELEY_PT = (
     ('thesis',                  'THE'),
     ('UNKNOWN',                 ''),
 )
+
+ZOTERO_PT = (
+    ('journalArticle',  'JOU'),
+    ('book', 'BOO'),
+    ('bookSection', 'BOS'),
+    ('conferencePaper', 'PRO'),
+    ('thesis', 'THE'),
+    ('patent', 'PAT'),
+    ('letter', 'LET'),
+)

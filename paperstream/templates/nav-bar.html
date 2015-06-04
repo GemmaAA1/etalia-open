@@ -20,53 +20,52 @@
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         {% if user.is_authenticated %}
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
 
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-
-                <li id="nav-bar-feed" class="{% active request 'feed.+' %}">
-                    <a href="#">Feed</a>
-                </li>
-                <li id="nav-bar-discover" class="{% active request 'discover.+' %}">
-                    <a href="#">Discover</a>
-                </li>
-                <li id="nav-bar-connect" class="{% active request 'connect.+' %}">
-                    <a href="#">Connect</a>
-                </li>
-                <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
-                    <a href="#">Comment</a>
-                </li>
-                <li class="{% active request 'search.+' %}">
-                    <a href=""><span class="glyphicon glyphicon-search"></span></a>
-                </li>
-                <li class="dropdown {% active request 'library.+|accounts.+' %}">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
-                    <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                      <li class="{% active request 'library.+' %}"><a href="#">Library</a></li>
-                      <li class="{% active request 'users/profile' %}"><a href="#">Profile</a></li>
-                      <li class="{% active request 'users/settings' %}"><a href="#">Settings</a></li>
-                      <li><a href="#">Help</a></li>
-                      <li class="divider"></li>
-                      <li><a href="{% url 'users:logout' %}">Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+                    <li id="nav-bar-feed" class="{% active request 'feed.+' %}">
+                        <a href="#">Feed</a>
+                    </li>
+                    <li id="nav-bar-discover" class="{% active request 'discover.+' %}">
+                        <a href="#">Discover</a>
+                    </li>
+                    <li id="nav-bar-connect" class="{% active request 'connect.+' %}">
+                        <a href="#">Connect</a>
+                    </li>
+                    <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
+                        <a href="#">Comment</a>
+                    </li>
+                    <li class="{% active request 'search.+' %}">
+                        <a href=""><span class="glyphicon glyphicon-search"></span></a>
+                    </li>
+                    <li class="dropdown {% active request 'library.+|accounts.+' %}">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
+                        <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                          <li class="{% active request 'library.+' %}"><a href="#">Library</a></li>
+                          <li class="{% active request 'users/profile' %}"><a href="#">Profile</a></li>
+                          <li class="{% active request 'users/settings' %}"><a href="#">Settings</a></li>
+                          <li><a href="#">Help</a></li>
+                          <li class="divider"></li>
+                          <li><a href="{% url 'users:logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
         {% else %}
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="{% url 'core:home' %}#about">About</a>
-                </li>
-                <li>
-                    <a href="{% url 'core:home' %}#contact">Contact</a>
-                </li>
-                <li>
-                    <a href="#">Login</a>
-                </li>
-            </ul>
-        </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="{% url 'core:home' %}#about">About</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'core:home' %}#contact">Contact</a>
+                    </li>
+                    <li>
+                        <a href="#">Login</a>
+                    </li>
+                </ul>
+            </div>
         {% endif %}
         <!-- /.navbar-collapse -->
     </div>

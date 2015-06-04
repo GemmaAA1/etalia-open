@@ -121,8 +121,6 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             else:
                 break
 
-
-
         # update UserLib and Stats
         self.create_lib_stats(user, count)
         user.lib.set_lib_idle()

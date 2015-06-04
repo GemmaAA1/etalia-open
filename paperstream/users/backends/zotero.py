@@ -54,7 +54,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         while True:
             for item in items:
-                entry = self.parser.parse(item)
+                entry = self.parser.parse(item['data'])
                 paper, journal = self.add_entry(entry)
                 if paper:
                     new = self.associate_paper(paper, user, entry['user_info']) and new
@@ -64,8 +64,12 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                         break
                     if journal:
                         self.associate_journal(journal, user)
-
             try:
                 items = session.follow()
             except:
                 break
+
+        # update UserLib and Stats
+        self.create_lib_stats(user, count)
+        user.lib.set_lib_idle()
+        return count
