@@ -190,6 +190,9 @@ class Paper(TimeStampedModel):
     # not unique because publisher dependent
     id_pii = NullableCharField(max_length=64, blank=True, default='',
                                null=True, verbose_name='PII', db_index=True)
+    id_isbn = NullableCharField(max_length=64, blank=True, default='',
+                               null=True, unique=True, verbose_name='ISBN',
+                               db_index=True)
     id_oth = NullableCharField(max_length=64, blank=True, default='',
                                null=True, unique=True, verbose_name='Other ID',
                                db_index=True)
