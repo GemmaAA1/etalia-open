@@ -38,16 +38,18 @@
                     <li class="{% active request 'search.+' %}">
                         <a href=""><span class="glyphicon glyphicon-search"></span></a>
                     </li>
+                    <li class="{% active request 'message.+' %}">
+                        <a href=""><span class="glyphicon glyphicon-envelope"></span></a>
+                    </li>
                     <li class="dropdown {% active request 'library.+|accounts.+' %}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
                         <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                          <li class="{% active request 'library.+' %}"><a href="#">Library</a></li>
-                          <li class="{% active request 'users/profile' %}"><a href="#">Profile</a></li>
-                          <li class="{% active request 'users/settings' %}"><a href="#">Settings</a></li>
+                        <ul class="dropdown-menu" role="menu">
+                          <li class="{% active request 'library.+' %}"><a href="{% url 'user:library' %}">Library</a></li>
+                          <li class=""><a href="#" data-toggle="modal" data-target="#profileModal">Profile</a></li>
                           <li><a href="#">Help</a></li>
                           <li class="divider"></li>
-                          <li><a href="{% url 'users:logout' %}">Logout</a></li>
+                          <li><a href="{% url 'user:logout' %}">Logout</a></li>
                         </ul>
                     </li>
                 </ul>

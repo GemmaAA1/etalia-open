@@ -46,7 +46,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         UserLib.objects.create(user=user)
-        UserStats.objects.create(user=user)
+        UserStats.objects.create_user_init_row(user)
         return user
 
     def create_superuser(self, **kwargs):
@@ -128,12 +128,7 @@ class UserLib(models.Model):
 
     journals = models.ManyToManyField(Journal, through='UserLibJournal')
 
-    library_status = models.CharField(max_length=3, blank=True, default='',
-        choices=(('', 'Uninitialized'),
-                 ('IDL', 'Idle'),
-                 ('ING', 'Syncing')))
-
-    feed_status = models.CharField(max_length=3, blank=True, default='',
+    status = models.CharField(max_length=3, blank=True, default='',
         choices=(('', 'Uninitialized'),
                  ('IDL', 'Idle'),
                  ('ING', 'Syncing')))
@@ -145,33 +140,46 @@ class UserLib(models.Model):
         return self.journals.all().count()
 
     def set_lib_syncing(self):
-        self.library_status = 'ING'
+        self.status = 'ING'
         self.save()
 
     def set_lib_idle(self):
-        self.library_status = 'IDL'
-        self.save()
-
-    def set_feed_syncing(self):
-        self.feed_status = 'ING'
-        self.save()
-
-    def set_feed_idle(self):
-        self.feed_status = 'IDL'
+        self.status = 'IDL'
         self.save()
 
 
 class UserStatsManager(models.Manager):
-    def create_lib_stats(self, user, count):
-        stats = self.model(user=user, state='LIB', number_papers=count)
+    def create_lib_row(self, user, count=0):
+        stats = self.model(user=user, state='LIB')
+        stats.number_papers = count
         stats.save(using=self._db)
         return stats
 
-    def create_feed_stats(self, user, count):
-        stats = self.model(user=user, state='FEE', number_papers=count)
+    def create_feed_row(self, user, count=0):
+        stats = self.model(user=user, state='FEE')
+        stats.number_papers = count
         stats.save(using=self._db)
         return stats
 
+    def create_user_init_row(self, user):
+        stats = self.model(user=user, state='CRE')
+        stats.save(using=self._db)
+        return stats
+
+    def create_user_email_valid_row(self, user):
+        stats = self.model(user=user, state='EMA')
+        stats.save(using=self._db)
+        return stats
+
+    def create_user_log_in_row(self, user):
+        stats = self.model(user=user, state='LIN')
+        stats.save(using=self._db)
+        return stats
+
+    def create_user_log_out_row(self, user):
+        stats = self.model(user=user, state='LOU')
+        stats.save(using=self._db)
+        return stats
 
 class UserStats(models.Model):
     """Trace of user library/feed activity
@@ -182,9 +190,11 @@ class UserStats(models.Model):
                              choices=(('LIN', 'Log in'),
                                       ('LOU', 'Log out'),
                                       ('LIB', 'Library sync'),
-                                      ('FEE', 'Feed sync')))
+                                      ('FEE', 'Feed sync'),
+                                      ('EMA', 'Email validated'),
+                                      ('CRE', 'Create user')))
 
-    number_papers = models.IntegerField(default=0)
+    number_papers = models.IntegerField(default=None, null=True, blank=True)
 
     datetime = models.DateTimeField(null=False, auto_now_add=True)
 
@@ -202,9 +212,9 @@ class UserLibPaper(models.Model):
 
     date_last_modified = models.DateField(default=date(2000, 1, 1))
 
-    authored = models.BooleanField(default=False)
+    authored = models.NullBooleanField(default=None, null=True, blank=True)
 
-    starred = models.BooleanField(default=False)
+    starred = models.NullBooleanField(default=None, null=True, blank=True)
 
     scored = models.FloatField(default=0.)
 

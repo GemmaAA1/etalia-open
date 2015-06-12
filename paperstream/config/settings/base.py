@@ -205,7 +205,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
 # SOCIAL_AUTH_EMAIL_FORM_URL = '/signup-email'
 SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
 SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'users.mail.send_validation'
-SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'users:validation_sent'
+SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'user:validation_sent'
 # SOCIAL_AUTH_USERNAME_FORM_URL = '/signup-username'
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
@@ -329,9 +329,13 @@ LOGGING = {
         #     'handlers': ['console', 'file'],
         #     'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         # },
-        'paperstream.populate': {
+        'populate': {
             'handlers': ['console', 'populate'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'users': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
         },
         'celery': {
             'handlers': ['celery', 'console'],

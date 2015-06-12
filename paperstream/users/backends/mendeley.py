@@ -1,3 +1,4 @@
+import logging
 from social.backends.oauth import BaseOAuth2
 from social.backends.mendeley import MendeleyMixin
 from mendeley import Mendeley
@@ -7,6 +8,8 @@ from mendeley.exception import MendeleyApiException
 
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserMendeley
+
+logger = logging.getLogger(__name__)
 
 class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
@@ -28,8 +31,6 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         ('expires_at', 'expires_at'),
         ('token_type', 'token_type'),
     ]
-
-
 
     def get_user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
@@ -107,15 +108,28 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         while True:
             for item in page.items:
                 entry = self.parser.parse(item)
-                paper, journal = self.add_entry(entry)
+                paper, journal = self.get_or_create_entry(entry)
+
                 if paper:
+                    logger.info(
+                        '+ Entry: {ids} from {user} / {backend}'.format(
+                            ids=paper.print_ids,
+                            user=user.email,
+                            backend=self.name))
                     new = self.associate_paper(paper, user, entry['user_info']) and new
                     if new:
                         count += 1
                     else:
+                        # escape when reaching already uploaded references
                         break
                     if journal:
                         self.associate_journal(journal, user)
+                else:
+                    logger.info(
+                        '- Item: {type_} from {user} / {backend}'.format(
+                            type_=item.type,
+                            user=user.email,
+                            backend=self.name))
             if page.next_page:
                 page = page.next_page
             else:

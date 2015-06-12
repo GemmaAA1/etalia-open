@@ -1,0 +1,117 @@
+<div class="modal fade" id="profileModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Profile</h4>
+            </div>
+            <div class="modal-body">
+                <div class="tabbable">
+                    <!-- Only required for left/right tabs -->
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">Info</a>
+                        </li>
+                        <li><a href="#tab2" data-toggle="tab">Affiliation</a>
+                        </li>
+                        <li><a href="#tab3" data-toggle="tab">Settings</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="tab1">
+                            <p>
+                            <form role="form" method="post" action="#">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="first-name"
+                                           class="control-label">First
+                                        Name:</label>
+                                    <input type="text" name="first_name"
+                                           class="form-control input-md"
+                                           placeholder='First Name'
+                                           value={{ user.first_name }}>
+                                </div>
+                                <div class="form-group">
+                                    <label for="last-name"
+                                           class="control-label">Last
+                                        Name:</label>
+                                    <input type="text" name="last_name"
+                                           class="form-control input-md"
+                                           placeholder="Last Name"
+                                           value={{ user.last_name }}>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email" class="control-label">Email:</label>
+                                    <input type="email" name="email"
+                                           class="form-control input-md"
+                                           disabled placeholder="Email"
+                                           value={{ user.email }}>
+                                </div>
+                            </form>
+                            </p>
+                        </div>
+                        <div class="tab-pane" id="tab2">
+                            <p>
+
+                            <form role="form" method="post" action="#">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="department"
+                                           class="control-label">Department:</label>
+                                    <input type="text" name="department"
+                                           class="form-control input-md"
+                                           placeholder='Department'
+                                           value="{{ user.affiliation.department }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="institution"
+                                           class="control-label">Institution:</label>
+                                    <input type="text" name="institution"
+                                           class="form-control input-md"
+                                           placeholder='Institution'
+                                           value="{{ user.affiliation.institution }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="city" class="control-label">City:</label>
+                                    <input type="text" name="city"
+                                           class="form-control input-md"
+                                           placeholder="City"
+                                           value="{{ user.affiliation.city }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="state" class="control-label">State:</label>
+                                    <input type="text" name="state"
+                                           class="form-control input-md"
+                                           placeholder="State"
+                                           value="{{ user.affiliation.state }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="country" class="control-label">Country:</label>
+                                    <input type="text" name="country"
+                                           class="form-control input-md"
+                                           placeholder="Country"
+                                           value="{{ user.affiliation.country }}">
+                                </div>
+                            </form>
+                            </p>
+                        </div>
+                        <div class="tab-pane" id="tab3">
+                            <p>Settings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-default btn-md"
+                        data-dismiss="modal">Close
+                </button>
+                <button id="save-profile" type="submit"
+                        class="btn btn-primary btn-md">Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

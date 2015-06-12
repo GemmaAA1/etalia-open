@@ -1,0 +1,118 @@
+{% extends 'landing.html' %}
+
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/test.css' %}" type="text/css" >
+{% endblock %}
+
+
+
+{% block content %}
+
+<!-- Modal Primary Info -->
+{% if stage == 'primary' %}
+<div class="modal fade in" id="modalPrimaryInfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+{#        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
+        <h4 class="modal-title" id="myModalLabel">First thing we need is some <code>base info</code></h4>
+      </div>
+      <div class="modal-body">
+        <form role="form" method="post" action="{% url "social:complete" backend=backend %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="first-name" class="control-label">First Name:</label>
+                <input type="text" name="first_name" class="form-control input-lg" placeholder='First Name'
+                        value={{ first_name }}>
+            </div>
+            <div class="form-group">
+                <label for="last-name" class="control-label">Last Name:</label>
+                <input type="text" name="last_name" class="form-control input-lg" placeholder="Last Name"
+                       value={{ last_name }}>
+            </div>
+            <div class="form-group">
+                <label for="email" class="control-label">Email:</label>
+                <input type="email" name="email" class="form-control input-lg" placeholder="Email"
+                       value={{ email }}>
+            </div>
+          <div class="modal-footer center">
+            <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop in"> </div>
+{% endif %}
+
+{% if stage == 'affiliation' %}
+<div class="modal fade in" id="modalAffiliationInfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+{#        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
+        <h4 class="modal-title" id="myModalLabel">Last thing we need is your <code>Affiliation</code></h4>
+      </div>
+      <div class="modal-body">
+        <form role="form" method="post" action="{% url "social:complete" backend=backend %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="department" class="control-label">Department:</label>
+                <input type="text" name="department" class="form-control input-lg" placeholder='Department' value="{{ department }}">
+            </div>
+
+            <div class="form-group">
+                <label for="institution" class="control-label">Institution:</label>
+                <input type="text" name="institution" class="form-control input-lg" placeholder='Institution'
+                        value="{{ institution }}">
+            </div>
+            <div class="form-group">
+                <label for="city" class="control-label">City:</label>
+                <input type="text" name="city" class="form-control input-lg" placeholder="City"
+                       value="{{ city }}">
+            </div>
+            <div class="form-group">
+                <label for="state" class="control-label">State:</label>
+                <input type="text" name="state" class="form-control input-lg" placeholder="State"
+                       value="{{ state }}">
+            </div>
+            <div class="form-group">
+                <label for="country" class="control-label">Country:</label>
+                <input type="text" name="country" class="form-control input-lg" placeholder="Country"
+                       value="{{ country }}">
+            </div>
+            <div class="modal-footer center">
+              <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop in"> </div>
+{% endif %}
+
+{% if stage == 'validation_sent' %}
+<div class="modal fade in" id="modalValidationSentInfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">An email validation was sent</h4>
+      </div>
+      <div class="modal-body">
+        An email validation was sent{% if email %} to <code>{{ email }}</code>{% endif %}.
+        <p>Click the link sent to finish the authentication process.</p>
+        We are uploading your references in the meantime.
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop in"> </div>
+{% endif %}
+
+{% endblock content %}

@@ -248,7 +248,10 @@ class Paper(TimeStampedModel):
 
     @property
     def short_title(self):
-        return '{0}[...]'.format(self.title[:50])
+        if len(self.title) > 49:
+            return '{0}...'.format(self.title[:50])
+        else:
+            return self.title
 
     @property
     def print_compact_authors(self):
@@ -258,7 +261,7 @@ class Paper(TimeStampedModel):
             for author in authors:
                 if authors_str:
                     authors_str += ', '
-                authors_str += author.compact_disp
+                authors_str += author.print_compact
             return authors_str
         else:
             return 'Unknown Authors'
@@ -271,7 +274,7 @@ class Paper(TimeStampedModel):
             for author in authors:
                 if authors_str:
                     authors_str += ', '
-                authors_str += author.full_disp
+                authors_str += author.print_full
             return authors_str
         else:
             return 'Unknown Authors'
@@ -280,7 +283,7 @@ class Paper(TimeStampedModel):
     def print_full_first_author(self):
         first_author = self.authors.first()
         if first_author:
-            return '{0} et al.'.format(first_author.full_disp)
+            return '{0} et al.'.format(first_author.print_full)
         else:
             return 'Unknown authors'
 
@@ -288,16 +291,18 @@ class Paper(TimeStampedModel):
     def print_compact_first_author(self):
         first_author = self.authors.first()
         if first_author:
-            return '{0} et al.'.format(first_author.compact_disp)
+            return '{0} et al.'.format(first_author.print_compact)
         else:
             return 'Unknown authors'
 
     @property
     def print_date(self):
-        if self.date:
-            return self.date.strftime('%e %b %Y')
+        if self.date_pp:
+            return self.date_pp.strftime('%e %b %Y')
+        elif self.date_ep:
+            return '{date} (epub)'.format(date=self.date_ep.strftime('%e %b %Y'))
         else:
-            return 'Unknown date'
+            return 'Unknown Date'
 
     @property
     def print_journal_title(self):

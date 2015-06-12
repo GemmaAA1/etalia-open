@@ -80,7 +80,7 @@ class ParserElsevierTest(TestCase):
         journal = parser.parse_journal(entry)
         self.assertEqual(journal['title'], 'European Journal of Medical Genetics')
         self.assertEqual(journal['id_issn'], '1769-7212')
-        self.assertEqual(journal['id_eissn'], None)
+        self.assertEqual(journal['id_eissn'], '')
 
     def test_parse_paper(self):
         # test only first record

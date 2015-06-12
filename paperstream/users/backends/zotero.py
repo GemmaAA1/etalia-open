@@ -1,8 +1,11 @@
 from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
+import logging
 
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserZotero
+
+logger = logging.getLogger(__name__)
 
 
 class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
@@ -55,15 +58,28 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         while True:
             for item in items:
                 entry = self.parser.parse(item['data'])
-                paper, journal = self.add_entry(entry)
+                paper, journal = self.get_or_create_entry(entry)
+
                 if paper:
+                    logger.info(
+                        '+ Entry: {ids} from {user} / {backend}'.format(
+                            ids=paper.print_ids,
+                            user=user.email,
+                            backend=self.name))
                     new = self.associate_paper(paper, user, entry['user_info']) and new
                     if new:
                         count += 1
                     else:
+                        # escape when reaching already uploaded references
                         break
                     if journal:
                         self.associate_journal(journal, user)
+                else:
+                    logger.info(
+                        '- Item: {type_} from {user} / {backend}'.format(
+                            type_=item['data']['itemType'],
+                            user=user.email,
+                            backend=self.name))
             try:
                 items = session.follow()
             except:

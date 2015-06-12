@@ -6,3 +6,5 @@ def home(request):
     host = request.get_host()
     return render(request, 'landing.html', {'host': host})
 
+def test(request):
+    return render(request, 'test.html', {})

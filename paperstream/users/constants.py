@@ -20,10 +20,11 @@ MENDELEY_PT = (
 
 ZOTERO_PT = (
     ('journalArticle',  'JOU'),
-    ('book', 'BOO'),
-    ('bookSection', 'BOS'),
+    ('book',            'BOO'),
+    ('bookSection',     'BOS'),
     ('conferencePaper', 'PRO'),
-    ('thesis', 'THE'),
-    ('patent', 'PAT'),
-    ('letter', 'LET'),
+    ('thesis',          'THE'),
+    ('patent',          'PAT'),
+    ('letter',          'LET'),
+    ('UNKNOWN',         ''),
 )

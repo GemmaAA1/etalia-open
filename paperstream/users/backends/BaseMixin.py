@@ -12,10 +12,11 @@ class BackendLibMixin(object):
     _type = None
     parser = None
 
-    def add_entry(self, entry):
+    def get_or_create_entry(self, entry):
         try:
-            # minimum to be a paper: have a title and an author
-            if entry['paper'].get('title', '') and entry['authors']:
+            # minimum to be a paper: have a title and an author and be a support paper type
+            if entry['paper'].get('title', '') and entry['authors'] and \
+                    entry['paper'].get('type', ''):
                 item_paper = entry['paper']
                 item_journal = entry['journal']
                 item_paper['source'] = self._type
@@ -68,12 +69,9 @@ class BackendLibMixin(object):
                             paper=paper,
                             corp_author=corp_author)
                     return paper, journal
-                else:
-                    return None
-            return None
-        # TODO: specify exception
+            return None, None
         except Exception as e:
-            return None
+            return None, None
 
     @staticmethod
     def associate_paper(paper, user, info):
@@ -97,7 +95,7 @@ class BackendLibMixin(object):
 
     @staticmethod
     def create_lib_stats(user, count):
-        UserStats.objects.create_lib_stats(user, count)
+        UserStats.objects.create_lib_row(user, count)
 
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')

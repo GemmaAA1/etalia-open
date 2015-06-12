@@ -19,7 +19,7 @@ def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs)
             details['first_name'] = first_name
             details['last_name'] = last_name
         else:
-            return redirect('users:require_primary')
+            return redirect('user:require_primary')
 
 @partial
 def require_affiliation(strategy, details, request=None, user=None, *args, **kwargs):
@@ -37,7 +37,7 @@ def require_affiliation(strategy, details, request=None, user=None, *args, **kwa
         user.save()
         return
     else:
-        return redirect('users:require_affiliation')
+        return redirect('user:require_affiliation')
 
 @partial
 def update_user_lib(backend, social, user, *args, **kwargs):

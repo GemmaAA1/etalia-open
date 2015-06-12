@@ -7,4 +7,6 @@ urlpatterns = [
     url(r'^email-sent/$', views.validation_sent, name='validation_sent'),
     url(r'^done/$', views.done, name='done'),
     url(r'^logout/$',views.logout, name='logout'),
+    url(r'^library/$',views.library, name='library'),
+    url(r'^profile/$',views.profile, name='profile'),
 ]

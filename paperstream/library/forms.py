@@ -120,6 +120,7 @@ class PaperForm(forms.ModelForm):
                   'id_arx',
                   'id_pii',
                   'id_pmi',
+                  'id_isbn',
                   'id_oth',
                   'title',
                   'abstract',

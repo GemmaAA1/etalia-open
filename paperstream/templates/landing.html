@@ -4,14 +4,19 @@
 
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/landing.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}" type="text/css" >
 {% endblock %}
 
+{% block head %}
+{% endblock head %}
+
 {% block title %}{% endblock %}
+
 
 {% block content %}
 
 {% if not user.is_authenticated %}
+
     <!-- Header -->
     <div class="intro-header">
         <div class="container">
@@ -20,8 +25,8 @@
                     <div class="intro-message">
 
                         <h1>Streams for Researchers</h1>
-                        <h3>News Feeds, Comments and Scientific Network</h3>
-                        <h3>Tailored to Your Library</h3>
+                        <h3>News Feed, Comments and Scientific Network</h3>
+                        <h3>Tailored for Your Library</h3>
 
                         <hr class="intro-divider">
                         <ul class="list-inline intro-social-buttons">

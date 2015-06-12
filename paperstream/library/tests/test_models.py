@@ -67,7 +67,7 @@ class PaperModelTest(TestCase):
         paper = Paper.objects.create(id_oth='xxx', id_arx='yyy')
         self.assertEqual(paper.count_ids(), 2)
 
-    def test_display_ids(self):
+    def test_print_ids(self):
         paper = Paper.objects.create(id_oth='xxx', id_arx='yyy',
                                      id_doi='0000-0019', id_pmi='pubmed id')
         disp_str = paper.print_ids
@@ -75,6 +75,8 @@ class PaperModelTest(TestCase):
         self.assertIn('Other ID: xxx', disp_str)
         self.assertIn('DOI: 0000-0019', disp_str)
         self.assertIn('PMID: pubmed id', disp_str)
+
+
 
 
 class JournalModelTest(TestCase):

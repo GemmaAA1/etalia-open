@@ -1,3 +1,7 @@
+.modal.in {
+   display:block;
+}
+
 .centered-form .panel{
     background: #f8f8f8;
 }

@@ -63,7 +63,7 @@ class ParserMendeley(ParserBackend):
         for key, val in ids.items():
             if key == 'doi':
                 paper['id_doi'] = val
-            elif key == 'pmi':
+            elif key == 'pmid':
                 paper['id_pmi'] = val
             elif key == 'pii':
                 paper['id_pii'] = val
@@ -73,7 +73,8 @@ class ParserMendeley(ParserBackend):
                 paper['type'] = 'PRE'
                 paper['publish_status'] = 'preprint'
             else:
-                paper['id_oth'] = '{0}_{1}'.format(key, val)
+                if not key == 'issn':
+                    paper['id_oth'] = '{0}_{1}'.format(key, val)
 
         if not any([paper[key] for key in ['id_doi', 'id_pmi', 'id_pii',
                                            'id_arx', 'id_oth']]):
@@ -140,8 +141,15 @@ class ParserMendeley(ParserBackend):
 
         user_info = self.user_info_template.copy()
 
-        user_info['created'] = parse(str(entry.created))
-        user_info['last_modified'] = parse(str(entry.last_modified))
+        try:
+            user_info['created'] = parse(str(entry.created) or 'Nothing')
+        except ValueError:
+            pass
+        try:
+            user_info['last_modified'] = parse(str(entry.last_modified)
+                                               or 'Nothing')
+        except ValueError:
+            pass
         user_info['starred'] = entry.starred
         user_info['authored'] = entry.authored
 
@@ -210,7 +218,7 @@ class ParserZotero(ParserBackend):
         # Published date
         try:
             paper['date_pp'] = parse(entry.get('date',
-                                               'something that except')).date()
+                                               'Nothing') or 'Nothing').date()
         except ValueError:
             pass
 
@@ -246,16 +254,23 @@ class ParserZotero(ParserBackend):
     def parse_user_info(self, entry):
 
         user_info = self.user_info_template.copy()
-
-        user_info['created'] = parse(str(entry.get('dateAdded', '')))
-        # TODO: check this  !
-        user_info['last_modified'] = parse(str(entry.get('dateLastmodified', '')))
+        try:
+            user_info['created'] = parse(str(entry.get('dateAdded', ''))
+                                         or 'Nothing')
+        except ValueError:
+            pass
+        try:
+            user_info['last_modified'] = parse(
+                str(entry.get('dateLastmodified', '')) or 'Nothing')
+        except ValueError:
+            pass
 
         return user_info
 
     @staticmethod
     def process_arxiv(entry, return_what):
-
+        """Retrieve arxiv specific fields
+        """
         paper_id_arx = ''
         journal_id_arx = ''
         if entry.get('libraryCatalog', '') == 'arXiv.org':

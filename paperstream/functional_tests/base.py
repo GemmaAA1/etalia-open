@@ -68,7 +68,7 @@ class FunctionalTest(StaticLiveServerTestCase):
             # add authors
             nb_authors_paper = random.randint(0, 5)
             for a in range(nb_authors_paper):
-                AuthorPosition.objects.create(
+                AuthorPaper.objects.create(
                     paper=paper,
                     author=authors[random.randint(0, nb_authors - 1)],
                     position=a)
