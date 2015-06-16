@@ -4,7 +4,8 @@ from social.pipeline.partial import partial
 
 from core.utils import get_celery_worker_status
 from .models import Affiliation
-from .tasks import update_lib_mendeley_static
+
+from .tasks import update_lib as async_update_lib
 
 @partial
 def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs):
@@ -47,7 +48,7 @@ def update_user_lib(backend, social, user, *args, **kwargs):
     # if True:
         backend.update_lib(user, session)
     else:
-        backend.update_lib.apply_async((user, session), serializer='pickle')
+        async_update_lib.apply_async((user, social.provider), )
     return {}
 
 

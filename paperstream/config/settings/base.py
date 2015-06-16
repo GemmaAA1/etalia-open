@@ -253,8 +253,6 @@ CONS_INIT_PAST = 60
 
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
-CELERY_IMPORTS = ('consumers.tasks', 'users.backends.mendeley',
-                  'users.backends.zotero', )
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
 CELERYBEAT_SCHEDULE = {
     'pubmed-once-a-day': {
