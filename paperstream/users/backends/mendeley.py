@@ -93,7 +93,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return mendeley_session
 
-    #TODO: can make celery call this method because serialization of backend obj fails
+    # TODO: cannot make celery call this method because serialization of backend obj fails
     # @app.task(filter=task_method)
     def update_lib(self, user, mendeley_session):
 
