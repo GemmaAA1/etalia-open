@@ -2,6 +2,9 @@ from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
 import logging
 
+from config.celery import celery_app as app
+from celery.contrib.methods import task_method
+
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserZotero
 
@@ -46,7 +49,8 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return session
 
-    def update_lib(self, session, user, *args, **kwargs):
+
+    def update_lib(self, session, user):
 
         # Init
         new = True

@@ -100,7 +100,7 @@ class BackendLibMixin(object):
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')
 
-    def update_lib(self, session, user, *args, **kwargs):
+    def update_lib(self, session, user):
         raise NotImplementedError('Implement in subclass')
 
 

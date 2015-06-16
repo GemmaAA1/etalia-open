@@ -43,9 +43,6 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
-    # 'allauth',  # registration
-    # 'allauth.account',  # registration
-    # 'allauth.socialaccount',  # registration
 )
 
 LOCAL_APPS = (
@@ -54,7 +51,7 @@ LOCAL_APPS = (
     'populate',
     'consumers',
     'users',
-    # 'feeds',
+    'feeds',
     # 'nlprocess',
     # 'comments',
     # 'networks',
@@ -111,8 +108,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     # Your stuff: custom template context processors go here
     'social.apps.django_app.context_processors.backends',
-    # 'allauth.account.context_processors.account',
-    # 'allauth.socialaccount.context_processors.socialaccount',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
@@ -205,7 +200,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
 # SOCIAL_AUTH_EMAIL_FORM_URL = '/signup-email'
 SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
 SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'users.mail.send_validation'
-SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'user:validation_sent'
+SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'user:validation-sent'
 # SOCIAL_AUTH_USERNAME_FORM_URL = '/signup-username'
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
@@ -258,6 +253,8 @@ CONS_INIT_PAST = 60
 
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
+CELERY_IMPORTS = ('consumers.tasks', 'users.backends.mendeley',
+                  'users.backends.zotero', )
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
 CELERYBEAT_SCHEDULE = {
     'pubmed-once-a-day': {

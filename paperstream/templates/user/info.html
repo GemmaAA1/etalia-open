@@ -12,7 +12,7 @@
 {% block content %}
 
 <!-- Modal Primary Info -->
-{% if stage == 'primary' %}
+{% if stage == 'basic_info' %}
 <div class="modal fade in" id="modalPrimaryInfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -21,22 +21,33 @@
         <h4 class="modal-title" id="myModalLabel">First thing we need is some <code>base info</code></h4>
       </div>
       <div class="modal-body">
-        <form role="form" method="post" action="{% url "social:complete" backend=backend %}">
+        <form role="form" method="POST" action="{% url "user:require-basic-info" %}">
             {% csrf_token %}
+            {% for field in form %}
+                {% if field.errors %}
+                    {% for error in field.errors  %}
+                        <div class="alert alert-danger" role="alert">
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                            {{ error|escape }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
             <div class="form-group">
-                <label for="first-name" class="control-label">First Name:</label>
-                <input type="text" name="first_name" class="form-control input-lg" placeholder='First Name'
-                        value={{ first_name }}>
+                <label for="{{ form.first_name.id_for_label }}" class="control-label">First Name:</label>
+                <input type="text" name="{{ form.first_name.html_name }}" class="form-control input-lg {% if form.first_name.errors %} alert alert-danger {% endif %}" placeholder='First Name'
+                        value={{ form.first_name.value }}>
             </div>
             <div class="form-group">
-                <label for="last-name" class="control-label">Last Name:</label>
-                <input type="text" name="last_name" class="form-control input-lg" placeholder="Last Name"
-                       value={{ last_name }}>
+                <label for="{{ form.last_name.id_for_label }}" class="control-label">Last Name:</label>
+                <input type="text" name="{{ form.last_name.html_name }}" class="form-control input-lg {% if form.last_name.errors %} alert alert-danger {% endif %}" placeholder="Last Name"
+                       value={{ form.last_name.value }}>
             </div>
             <div class="form-group">
-                <label for="email" class="control-label">Email:</label>
-                <input type="email" name="email" class="form-control input-lg" placeholder="Email"
-                       value={{ email }}>
+                <label for="{{ form.email.id_for_label }}" class="control-label">Email:</label>
+                <input type="text" name="{{ form.email.html_name }}" class="form-control input-lg {% if form.email.errors %} alert alert-danger {% endif %}" placeholder="Email"
+                       value={{ form.email.value }}>
             </div>
           <div class="modal-footer center">
             <button type="submit" class="btn btn-primary btn-lg">Continue</button>
@@ -54,39 +65,49 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-{#        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
         <h4 class="modal-title" id="myModalLabel">Last thing we need is your <code>Affiliation</code></h4>
       </div>
       <div class="modal-body">
-        <form role="form" method="post" action="{% url "social:complete" backend=backend %}">
+        <form role="form" method="POST" action="{% url "user:require-affiliation" %}">
             {% csrf_token %}
+            {% for field in form %}
+                {% if field.errors %}
+                    {% for error in field.errors  %}
+                        <div class="alert alert-danger" role="alert">
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                            {{ error|escape }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
             <div class="form-group">
-                <label for="department" class="control-label">Department:</label>
-                <input type="text" name="department" class="form-control input-lg" placeholder='Department' value="{{ department }}">
+                <label for="{{ form.department.id_for_label }}" class="control-label">Department:</label>
+                <input type="text" name="{{ form.department.html_name }}" class="form-control input-lg {% if form.department.errors %} alert alert-danger {% endif %}" placeholder='Department' value="{{ form.department.value }}">
             </div>
 
             <div class="form-group">
-                <label for="institution" class="control-label">Institution:</label>
-                <input type="text" name="institution" class="form-control input-lg" placeholder='Institution'
-                        value="{{ institution }}">
+                <label for="{{ form.institution.id_for_label }}" class="control-label">Institution:</label>
+                <input type="text" name="{{ form.institution.html_name }}" class="form-control input-lg {% if form.institution.errors %} alert alert-danger {% endif %}" placeholder='Institution'
+                        value="{{ form.institution.value }}">
             </div>
             <div class="form-group">
-                <label for="city" class="control-label">City:</label>
-                <input type="text" name="city" class="form-control input-lg" placeholder="City"
-                       value="{{ city }}">
+                <label for="{{ form.city.id_for_label }}" class="control-label">City:</label>
+                <input type="text" name="{{ form.city.html_name }}" class="form-control input-lg {% if form.city.errors %} alert alert-danger {% endif %}" placeholder="City"
+                       value="{{ form.city.value }}">
             </div>
             <div class="form-group">
-                <label for="state" class="control-label">State:</label>
-                <input type="text" name="state" class="form-control input-lg" placeholder="State"
-                       value="{{ state }}">
+                <label for="{{ form.state.id_for_label }}" class="control-label">State:</label>
+                <input type="text" name="{{ form.state.html_name }}" class="form-control input-lg {% if form.state.errors %} alert alert-danger {% endif %}" placeholder="State"
+                       value="{{ form.state.value }}">
             </div>
             <div class="form-group">
-                <label for="country" class="control-label">Country:</label>
-                <input type="text" name="country" class="form-control input-lg" placeholder="Country"
-                       value="{{ country }}">
+                <label for="{{ form.country.id_for_label }}" class="control-label">Country:</label>
+                <input type="text" name="{{ form.country.html_name }}" class="form-control input-lg {% if form.country.errors %} alert alert-danger {% endif %}" placeholder="Country"
+                       value="{{ form.country.value }}">
             </div>
             <div class="modal-footer center">
-              <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+              <button type="submit" class="btn btn-primary btn-lg ">Continue</button>
             </div>
         </form>
       </div>

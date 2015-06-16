@@ -5,11 +5,14 @@ from mendeley import Mendeley
 from mendeley.auth import MendeleySession, \
     MendeleyAuthorizationCodeTokenRefresher
 from mendeley.exception import MendeleyApiException
+from config.celery import celery_app as app
+from celery.contrib.methods import task_method
 
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserMendeley
 
 logger = logging.getLogger(__name__)
+
 
 class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
@@ -90,7 +93,9 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return mendeley_session
 
-    def update_lib(self, mendeley_session, user, *args, **kwargs):
+    #TODO: can make celery call this method because serialization of backend obj fails
+    # @app.task(filter=task_method)
+    def update_lib(self, user, mendeley_session):
 
         # Init
         new = True

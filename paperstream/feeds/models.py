@@ -1,33 +1,45 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-# Create your models here.
+from django.conf import settings
 
+from .validators import validate_feed_name
 from library.models import Paper
-
-User = get_user_model()
 
 
 class UserFeed(models.Model):
     """Feed of user"""
 
-    user = models.ForeignKey(User, related_name='feed')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed')
 
-    papers = models.ManyToManyField(Paper, through='UserFeedPaper')
+    # cluster of paper that is used in the similarity matching
+    paper_in = models.ManyToManyField(Paper, related_name='paper_in')
 
-    feed_status = models.CharField(max_length=3, blank=True, default='',
-                                   choices=(('', 'Uninitialized'),
-                                            ('IDL', 'Idle'),
-                                            ('ING', 'Syncing')))
+    # relevant papers matched
+    paper_out = models.ManyToManyField(Paper, through='UserFeedPaper',
+                                       related_name='paper_out')
 
-    def count_papers(self):
-        return self.papers.all().count()
+    status = models.CharField(max_length=3, blank=True, default='',
+                               choices=(('', 'Uninitialized'),
+                                        ('IDL', 'Idle'),
+                                        ('ING', 'Syncing')))
+
+    name = models.CharField(max_length=100, default='Main',
+                            validators=[validate_feed_name])
+
+    @property
+    def count_paper_in(self):
+        return self.paper_in.all().count()
+
+    @property
+    def count_paper_out(self):
+        return self.paper_out.all().count()
 
     def set_feed_syncing(self):
         self.feed_status = 'ING'
         self.save()
 
     def set_feed_idle(self):
-        self.feed_status = 'IDL'
+        self.status = 'IDL'
         self.save()
 
 
@@ -38,3 +50,6 @@ class UserFeedPaper(models.Model):
     paper = models.ForeignKey(Paper)
 
     score = models.FloatField(default=0.)
+
+    class Meta:
+        ordering = ['-score']

@@ -1,8 +1,10 @@
-from django.shortcuts import redirect, render
-from django.utils import timezone
+from django.shortcuts import redirect
+from django.conf import settings
 from social.pipeline.partial import partial
-from .models import Affiliation
 
+from core.utils import get_celery_worker_status
+from .models import Affiliation
+from .tasks import update_lib_mendeley_static
 
 @partial
 def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs):
@@ -10,40 +12,42 @@ def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs)
     """
     if user and user.email and user.first_name and user.last_name:
         return
-    elif is_new:
-        email = strategy.request_data().get('email')
-        first_name = strategy.request_data().get('first_name')
-        last_name = strategy.request_data().get('last_name')
-        if email and first_name and last_name:
-            details['email'] = email
-            details['first_name'] = first_name
-            details['last_name'] = last_name
-        else:
-            return redirect('user:require_primary')
+    else:
+        if strategy.session.get('basic_info', None):
+            basic_info = strategy.session.get('basic_info')
+            details['first_name'] = basic_info.get('first_name')
+            details['last_name'] = basic_info.get('last_name')
+            details['email'] = basic_info.get('email')
+            return
+        return redirect('user:require-basic-info')
 
 @partial
 def require_affiliation(strategy, details, request=None, user=None, *args, **kwargs):
     if getattr(user, 'affiliation'):
         return
-    elif request.get('city', None) and request.get('country', None) and user:
-        affiliation, _ = Affiliation.objects.get_or_create(
-            department=request.get('department', ''),
-            institution=request.get('institution', ''),
-            city=request.get('city', ''),
-            state=request.get('state', ''),
-            country=request.get('country', ''),
-        )
-        user.affiliation = affiliation
-        user.save()
-        return
     else:
-        return redirect('user:require_affiliation')
+        if strategy.session.get('affiliation_pk', None):
+            affiliation_pk = strategy.session.get('affiliation_pk')
+            try:
+                affiliation = Affiliation.objects.get(pk=affiliation_pk)
+                user.affiliation = affiliation
+                user.save()
+                return
+            except Affiliation.DoesNotExist:
+                pass
+
+        return redirect('user:require-affiliation')
+
 
 @partial
 def update_user_lib(backend, social, user, *args, **kwargs):
-    session = backend.get_session(social, user, *args, **kwargs)
-    backend.update_lib(session, user, *args, **kwargs)
-
+    session = backend.get_session(social, user)
+    # if settings.DEBUG and get_celery_worker_status().get('ERROR'):
+    # TODO: cannot make it work with celery :(
+    if True:
+        backend.update_lib(user, session)
+    else:
+        backend.update_lib.delay(user, session)
     return {}
 
 

@@ -11,6 +11,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from library.models import Paper, Journal
 from model_utils import fields
 
+from .validators import validate_first_name, validate_last_name
+
 
 class Affiliation(models.Model):
     """Affiliations
@@ -66,9 +68,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), max_length=255,
                               unique=True, db_index=True)
 
-    first_name = models.CharField(max_length=255, blank=True, default='')
+    first_name = models.CharField(max_length=255, blank=True, default='',
+                                  validators=[validate_first_name])
 
-    last_name = models.CharField(max_length=255, blank=True, default='')
+    last_name = models.CharField(max_length=255, blank=True, default='',
+                                 validators=[validate_last_name])
 
     is_staff = models.BooleanField(_('staff status'), default=False,
         help_text=_('Designates whether the user can log into this admin '
@@ -133,9 +137,11 @@ class UserLib(models.Model):
                  ('IDL', 'Idle'),
                  ('ING', 'Syncing')))
 
+    @property
     def count_papers(self):
         return self.papers.all().count()
 
+    @property
     def count_journals(self):
         return self.journals.all().count()
 
