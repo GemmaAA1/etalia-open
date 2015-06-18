@@ -12,9 +12,10 @@ from library.models import Paper, Journal
 from model_utils import fields
 
 from .validators import validate_first_name, validate_last_name
+from core.models import TimeStampedModel
 
 
-class Affiliation(models.Model):
+class Affiliation(TimeStampedModel):
     """Affiliations
     """
     department = models.CharField(max_length=200, blank=True, default='')
@@ -123,7 +124,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return True
 
 
-class UserLib(models.Model):
+class UserLib(TimeStampedModel):
     """Library data of user"""
 
     user = models.OneToOneField(User, primary_key=True, related_name='lib')
@@ -225,7 +226,7 @@ class UserStats(models.Model):
     objects = UserStatsManager()
 
 
-class UserLibPaper(models.Model):
+class UserLibPaper(TimeStampedModel):
     """Intermediate model to user - paper
     """
     userlib = models.ForeignKey(UserLib)
@@ -249,7 +250,7 @@ class UserLibPaper(models.Model):
         return '{0}@{1}'.format(self.paper.short_title(),
                                 self.userlib.user.email)
 
-class UserLibJournal(models.Model):
+class UserLibJournal(TimeStampedModel):
     """Intermediate model to user - journal
     """
     userlib = models.ForeignKey(UserLib)

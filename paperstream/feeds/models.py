@@ -2,11 +2,12 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
+from core.models import TimeStampedModel
 from .validators import validate_feed_name
 from library.models import Paper
 
 
-class UserFeed(models.Model):
+class UserFeed(TimeStampedModel):
     """Feed of user"""
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed')
@@ -43,7 +44,7 @@ class UserFeed(models.Model):
         self.save()
 
 
-class UserFeedPaper(models.Model):
+class UserFeedPaper(TimeStampedModel):
 
     feed = models.ForeignKey(UserFeed)
 
