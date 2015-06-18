@@ -259,15 +259,15 @@ CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
 CELERYBEAT_SCHEDULE = {
     'pubmed-once-a-day': {
-        'task': 'tasks.pubmed_run',
+        'task': 'tasks.pubmed_run_all',
         'schedule': crontab(minute=0, hour=0),  # daily at midnight
     },
     'arxiv-once-a-day': {
-        'task': 'tasks.arxiv_run',
+        'task': 'tasks.arxiv_run_all',
         'schedule': crontab(minute=0, hour=12),  # daily at 12pm
     },
     'elsevier-once-a-day': {
-        'task': 'tasks.elsevier_run',
+        'task': 'tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at 6pm
     },
 
