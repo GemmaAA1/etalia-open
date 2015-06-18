@@ -178,7 +178,7 @@ class ParserArxiv(Parser):
 
         paper = self.paper_template.copy()
 
-        paper['type'] = 'PREP'
+        paper['type'] = 'PRE'
         paper['publish_status'] = 'preprint'
 
         paper['id_arx'] = re.sub(r'http://arxiv.org/abs/','', entry.get('id', ''))
