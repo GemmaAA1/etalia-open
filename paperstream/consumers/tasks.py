@@ -1,17 +1,39 @@
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
 
+
+@app.task(name='tasks.pubmed_run_all')
+def pubmed_run_all():
+    cps = ConsumerPubmed.objects.all()
+    names = [cp.name for cp in cps]
+    for name in names:
+        pubmed_run(name)
+
+@app.task(name='tasks.arxiv_run_all')
+def arxiv_run_all():
+    cps = ConsumerArxiv.objects.all()
+    names = [cp.name for cp in cps]
+    for name in names:
+        arxiv_run(name)
+
+@app.task(name='tasks.elsevier_run_all')
+def elsevier_run_all():
+    cps = ConsumerElsevier.objects.all()
+    names = [cp.name for cp in cps]
+    for name in names:
+        elsevier_run(name)
+
 @app.task(name='tasks.pubmed_run')
-def pubmed_run(self, name):
-    pubmed_consumer = ConsumerPubmed.object.get(name=name)
+def pubmed_run(name):
+    pubmed_consumer = ConsumerPubmed.objects.get(name=name)
     pubmed_consumer.run_once_per_period()
 
 @app.task(name='tasks.arxiv_run')
-def arxiv_run(self, name):
-    arxiv_consumer = ConsumerArxiv.object.get(name=name)
+def arxiv_run(name):
+    arxiv_consumer = ConsumerArxiv.objects.get(name=name)
     arxiv_consumer.run_once_per_period()
 
 @app.task(name='tasks.elsevier_run')
-def elsevier_run(self, name):
-    elsevier_consumer = ConsumerElsevier.object.get(name=name)
+def elsevier_run(name):
+    elsevier_consumer = ConsumerElsevier.objects.get(name=name)
     elsevier_consumer.run_once_per_period()
