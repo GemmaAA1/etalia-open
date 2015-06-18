@@ -199,12 +199,14 @@ class Consumer(TimeStampedModel):
             return False
 
     @app.task(filter=task_method, name='tasks.populate_journal')
-    def populate_journal(self, journal):
+    def populate_journal(self, journal_pk):
         """Check journal validity, consume api, save stats, parse entries,
         save records to DB
 
         :param: journal (Journal): journal instance
         """
+
+        journal = Journal.objects.get(pk=journal_pk)
 
         paper_added = 0
 
@@ -245,8 +247,9 @@ class Consumer(TimeStampedModel):
 
         # queue journal for consumption
         for consumerjournal in consumerjournals_go_to_queue:
-            self.populate_journal.apply_async((consumerjournal.journal, ),
-                                              countdown=1)
+            self.populate_journal.apply_async(args=[consumerjournal.journal.pk, ],
+                                              countdown=1,
+                                              serializer='pickle')
 
 
 class ConsumerPubmed(Consumer):

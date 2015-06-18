@@ -1,5 +1,43 @@
-jQuery(function ($) {
+$(document).ready(function() {
+    applyWhenElementExists('#user-lib-count-papers', '#loading-lib-block', update_lib_count, 1000);
+});
 
+function applyWhenElementExists(sel_to_up, sel_to_hide, myFunction, intervalTime) {
+
+    var obj_up = jQuery(sel_to_up);
+    var obj_hide = jQuery(sel_to_hide);
+    var runningInterval = obj_up.data('interval');
+    // if interval running, clear it
+    if(runningInterval) {
+        clearInterval(runningInterval);
+        obj_up.removeData('interval');
+    }
+    // set interval
+    var interval = setInterval(function() {
+        if (obj_up.length > 0) {
+            myFunction(obj_up, obj_hide);
+        }
+    }, intervalTime);
+    // store interval in object for latter clearing in myFunction
+    obj_up.data('interval', interval);
+}
+
+function update_lib_count(obj_up, obj_hide) {
+    $.getJSON('/user/user-lib-count-papers/', function (json) {
+        if (json.stop) {
+            var libInterval = obj_up.data('interval');
+            clearInterval(libInterval);
+            obj_up.removeData('interval');
+            obj_hide.hide();
+        }
+        else {
+            obj_up.html(json.count_papers);
+        }
+    });
+}
+
+jQuery(function ($) {
+    // Profile update ajax call
     $('form[data-async]').on('submit', function (event) {
         var $form = $(this);
         var $target = $($form.attr('data-target'));
@@ -33,7 +71,8 @@ jQuery(function ($) {
                 });
             }
         });
-
         event.preventDefault();
     });
 });
+
+

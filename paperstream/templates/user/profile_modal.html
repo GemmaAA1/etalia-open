@@ -1,5 +1,4 @@
 <!-- modals -->
-
 <div class="modal fade" root-modal id="update-profile-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -14,7 +13,8 @@
                         <li class="active"><a href="#tab1" data-toggle="tab">Info</a></li>
                         <li><a href="#tab2" data-toggle="tab">Affiliation</a></li>
                         <li><a href="#tab3" data-toggle="tab">Library</a></li>
-                        <li><a href="#tab4" data-toggle="tab">Settings</a></li>
+                        <li><a href="#tab4" data-toggle="tab">Feeds</a></li>
+                        <li><a href="#tab5" data-toggle="tab">Settings</a></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane active" id="tab1">
@@ -108,10 +108,17 @@
                             <ul class="list-group">
                                 <li class="list-group-item">Paper linked: {{ user.lib.count_papers }}</li>
                                 <li class="list-group-item">Journal linked: {{ user.lib.count_journals }}</li>
-                                <li class="list-group-item">Library status: {{ user.lib.get_status_display }}</li>
+                                <li class="list-group-item">Library status: {{ user.lib.get_status_display }}
+                                    <a href="{% url 'user:update-user-lib' %}">  (update)</a>
+                                </li>
+                                <li class="list-group-item">Library provier: {{ user.social_auth.first.get_backend.print_name }}</li>
                             </ul>
                         </div>
                         <div class="tab-pane" id="tab4">
+                            <ul class="list-group">
+                            </ul>
+                        </div>
+                        <div class="tab-pane" id="tab5">
                             <ul class="list-group">
                             </ul>
                         </div>

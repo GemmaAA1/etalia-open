@@ -89,3 +89,24 @@ footer {
 p.copyright {
     margin: 15px 0 0;
 }
+
+/* Modal */
+.syncing {
+    padding-top: 200px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 200px;
+    text-align: center;
+    color: #f8f8f8;
+    /*background: url(../img/intro-bg.jpg) no-repeat center center;*/
+    background: #39b3d7;
+    background-size: cover;
+}
+
+.modal.display {
+    display:block;
+}
+
+#loading-lib-modal {
+    top: 20%;
+    outline: none;
+}
+

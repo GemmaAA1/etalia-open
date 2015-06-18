@@ -48,7 +48,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         UserLib.objects.create(user=user)
-        UserStats.objects.create_user_init_row(user)
+        UserStats.objects.create_user_init(user, '')
         return user
 
     def create_superuser(self, **kwargs):
@@ -155,35 +155,51 @@ class UserLib(models.Model):
 
 
 class UserStatsManager(models.Manager):
-    def create_lib_row(self, user, count=0):
-        stats = self.model(user=user, state='LIB')
-        stats.number_papers = count
+    def create_lib_starts_sync(self, user, options=''):
+        stats = self.model(user=user, state='LSS')
+        stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_feed_row(self, user, count=0):
-        stats = self.model(user=user, state='FEE')
-        stats.number_papers = count
+    def create_lib_ends_sync(self, user, options=''):
+        stats = self.model(user=user, state='LES')
+        stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_init_row(self, user):
+    def create_feed_starts_sync(self, user, options=''):
+        stats = self.model(user=user, state='FSS')
+        stats.options = options
+        stats.save(using=self._db)
+        return stats
+
+    def create_feed_ends_sync(self, user, options=''):
+        stats = self.model(user=user, state='FSS')
+        stats.options = options
+        stats.save(using=self._db)
+        return stats
+
+    def create_user_init(self, user, options=''):
         stats = self.model(user=user, state='CRE')
+        stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_email_valid_row(self, user):
+    def create_user_email_valid(self, user, options=''):
         stats = self.model(user=user, state='EMA')
+        stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_log_in_row(self, user):
+    def create_user_log_in(self, user, options=''):
         stats = self.model(user=user, state='LIN')
+        stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_log_out_row(self, user):
+    def create_user_log_out(self, user, options=''):
         stats = self.model(user=user, state='LOU')
+        stats.options = options
         stats.save(using=self._db)
         return stats
 
@@ -195,12 +211,14 @@ class UserStats(models.Model):
     state = models.CharField(max_length=3,
                              choices=(('LIN', 'Log in'),
                                       ('LOU', 'Log out'),
-                                      ('LIB', 'Library sync'),
-                                      ('FEE', 'Feed sync'),
+                                      ('LSS', 'Library starts syncing'),
+                                      ('LES', 'Library ends syncing'),
+                                      ('FSS', 'Feed starts sync'),
+                                      ('FES', 'Feed ends sync'),
                                       ('EMA', 'Email validated'),
                                       ('CRE', 'Create user')))
 
-    number_papers = models.IntegerField(default=None, null=True, blank=True)
+    options = models.CharField(max_length=64, default='', blank=True)
 
     datetime = models.DateTimeField(null=False, auto_now_add=True)
 

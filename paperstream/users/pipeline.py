@@ -44,11 +44,10 @@ def require_affiliation(strategy, details, request=None, user=None, *args, **kwa
 def update_user_lib(backend, social, user, *args, **kwargs):
     session = backend.get_session(social, user)
     if settings.DEBUG and get_celery_worker_status().get('ERROR'):
-    # TODO: cannot make it work with celery :(
-    # if True:
         backend.update_lib(user, session)
     else:
-        async_update_lib.apply_async((user, social.provider), )
+        async_update_lib.apply_async(args=[user.pk, social.provider],
+                                     serializer='json')
     return {}
 
 

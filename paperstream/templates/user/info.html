@@ -122,13 +122,11 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">An email validation was sent</h4>
+        <h4 class="modal-title" id="myModalLabel">Email validation sent to <code>{{ email }}</code></h4>
       </div>
       <div class="modal-body">
         An email validation was sent{% if email %} to <code>{{ email }}</code>{% endif %}.
-        <p>Click the link sent to finish the authentication process.</p>
-        We are uploading your references in the meantime.
+        <p>Click the link in the sent email to finish the authentication process.</p>
       </div>
     </div>
   </div>

@@ -22,6 +22,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
     # base
     name = 'custom-mendeley-oauth2'
+    print_name = 'Mendeley'
     REQUIRES_EMAIL_VALIDATION = True
     AUTHORIZATION_URL = 'https://api-oauth2.mendeley.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://api-oauth2.mendeley.com/oauth/token'
@@ -93,13 +94,15 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return mendeley_session
 
-    # TODO: cannot make celery call this method because serialization of backend obj fails
-    # @app.task(filter=task_method)
     def update_lib(self, user, mendeley_session):
 
         # Init
         new = True
         count = 0
+        not_new_stack_count = 0
+
+        # update db state
+        user.stats.create_lib_starts_sync(user)
         user.lib.set_lib_syncing()
 
         # retrieve list of documents per page
@@ -112,7 +115,11 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         # loop through documents/page until end or find already registered doc
         while True:
             for item in page.items:
-                entry = self.parser.parse(item)
+                try:
+                    entry = self.parser.parse(item)
+                except Exception as e:
+                    logger.exception('Mendeley parser failed')
+                    continue
                 paper, journal = self.get_or_create_entry(entry)
 
                 if paper:
@@ -124,9 +131,9 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                     new = self.associate_paper(paper, user, entry['user_info']) and new
                     if new:
                         count += 1
+                        not_new_stack_count = 0
                     else:
-                        # escape when reaching already uploaded references
-                        break
+                        not_new_stack_count += 1
                     if journal:
                         self.associate_journal(journal, user)
                 else:
@@ -135,13 +142,17 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             type_=item.type,
                             user=user.email,
                             backend=self.name))
+
+            if not_new_stack_count > 10:
+                break  # exit when reaching 10 already uploaded references
+
             if page.next_page:
                 page = page.next_page
             else:
                 break
 
         # update UserLib and Stats
-        self.create_lib_stats(user, count)
+        user.stats.create_lib_ends_sync(user, count)
         user.lib.set_lib_idle()
         return count
 

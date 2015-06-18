@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
-
+from django.core.urlresolvers import reverse
 
 def home(request):
-    # TODO: remove this and make url in template dynamic
-    host = request.get_host()
-    return render(request, 'landing.html', {'host': host})
+    if request.user.is_authenticated():
+        return redirect('feeds:home')
+    else:
+        return render(request, 'landing.html')
 
 def test(request):
     return render(request, 'test.html', {})

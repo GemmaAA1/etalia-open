@@ -2,6 +2,7 @@ import json
 from django.contrib import messages
 from django.shortcuts import HttpResponse
 from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout, login
@@ -12,6 +13,7 @@ from django.contrib.auth import get_user_model
 from .forms import UserBasicForm, UserAffiliationForm, UserBasicNoEmailForm
 from .models import Affiliation
 from library.models import Paper
+from .tasks import update_lib as async_update_lib
 
 from braces.views import LoginRequiredMixin
 
@@ -44,9 +46,9 @@ class UserBasicInfoSignupView(FormView):
     def get_initial(self):
         initial = super(UserBasicInfoSignupView, self).get_initial()
         details = self.request.session['partial_pipeline']['kwargs']['details']
-        initial['first_name'] = details['first_name']
-        initial['last_name'] = details['last_name']
-        initial['email'] = details['email']
+        initial['first_name'] = details.get('first_name', '')
+        initial['last_name'] = details.get('last_name', '')
+        initial['email'] = details.get('email', '')
         return initial
 
     def form_valid(self, form):
@@ -76,7 +78,7 @@ class UserAffiliationSignupView(FormView):
     def get_initial(self):
         initial = super(UserAffiliationSignupView, self).get_initial()
         details = self.request.session['partial_pipeline']['kwargs']['details']
-        return dict(details['tmp_affiliation'], **initial)
+        return dict(details.get('tmp_affiliation', ''), **initial)
 
     def form_invalid(self, form):
         if Affiliation.objects.filter(**form.cleaned_data).exists():  # invalid because of uniqueness
@@ -162,7 +164,7 @@ class UserBasicInfoUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
                 'last_name': self.request.user.last_name}
         return data
 
-update_basic_info = UserBasicInfoUpdateView.as_view()
+ajax_update_basic_info = UserBasicInfoUpdateView.as_view()
 
 
 class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
@@ -198,5 +200,23 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
                 'country': self.request.user.affiliation.country}
         return data
 
-update_affiliation = UserAffiliationUpdateView.as_view()
+ajax_update_affiliation = UserAffiliationUpdateView.as_view()
 
+
+@login_required
+def ajax_user_lib_count_papers(request):
+    if request.method == 'GET':
+        if request.user.lib.status == 'IDL':
+            data = {'stop': True}
+        else:
+            data = {'stop': False,
+                    'count_papers': request.user.lib.count_papers}
+        return JsonResponse(data)
+
+@login_required
+def async_update_user_lib(request):
+    user = request.user
+    provider_name = user.social_auth.first().provider
+    async_update_lib.apply_async(args=[user.pk, provider_name],
+                                 serializer='json')
+    return redirect('feeds:home')

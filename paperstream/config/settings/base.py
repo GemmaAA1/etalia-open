@@ -86,7 +86,10 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
-        'ATOMIC_REQUESTS': True,
+        'ATOMIC_REQUESTS': False,
+        # NB: True conflicts with the use of python-social-auth (whose entire
+        # pipeline is atomic and the requirement that user is accessible from
+        # celery during the pipeline authentication process TODO: find a fix ?
     }
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
@@ -188,7 +191,8 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_USER_MODEL = 'users.User'
 
-LOGIN_URL = '/login/'
+# LOGIN_URL = '/login/'
+LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
@@ -217,15 +221,15 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.mail.mail_validation',
     'social.pipeline.user.create_user',
     'social.pipeline.social_auth.associate_user',
-    'social.pipeline.debug.debug',
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
+    'social.pipeline.debug.debug',
     'users.pipeline.update_user_lib',
     'users.pipeline.require_affiliation',
-    'social.pipeline.debug.debug'
 )
+
 # ****
-# API KEY TO MOVE IN ENV VARIABLE LATTER
+# API KEY TO MOVE IN ENV VARIABLE LATER
 # ****
 # Mendeley
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = '1678'
@@ -252,6 +256,7 @@ CONS_INIT_PAST = 60
 # ------------------------------------------------------------------------------
 
 BROKER_URL = 'amqp://'
+CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
 CELERYBEAT_SCHEDULE = {

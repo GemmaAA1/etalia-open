@@ -38,11 +38,12 @@ class ParserMendeley(ParserBackend):
         # Journal
         journal['title'] = entry.source
 
-        for key, val in entry.identifiers.items():
-            if key == 'issn':
-                journal['id_issn'] = val
-            if key == 'arxiv':
-                journal['id_arx'] = 'arxiv.common'
+        if isinstance(entry.identifiers, dict):
+            for key, val in entry.identifiers.items():
+                if key == 'issn':
+                    journal['id_issn'] = val
+                if key == 'arxiv':
+                    journal['id_arx'] = 'arxiv.common'
 
         return journal
 
@@ -59,22 +60,22 @@ class ParserMendeley(ParserBackend):
 
         # Identifiers
         # match template
-        ids = entry.identifiers
-        for key, val in ids.items():
-            if key == 'doi':
-                paper['id_doi'] = val
-            elif key == 'pmid':
-                paper['id_pmi'] = val
-            elif key == 'pii':
-                paper['id_pii'] = val
-            elif key == 'arxiv':
-                paper['id_arx'] = val
-                # overwrite paper type
-                paper['type'] = 'PRE'
-                paper['publish_status'] = 'preprint'
-            else:
-                if not key == 'issn':
-                    paper['id_oth'] = '{0}_{1}'.format(key, val)
+        if isinstance(entry.identifiers, dict):
+            for key, val in entry.identifiers.items():
+                if key == 'doi':
+                    paper['id_doi'] = val
+                elif key == 'pmid':
+                    paper['id_pmi'] = val
+                elif key == 'pii':
+                    paper['id_pii'] = val
+                elif key == 'arxiv':
+                    paper['id_arx'] = val
+                    # overwrite paper type
+                    paper['type'] = 'PRE'
+                    paper['publish_status'] = 'preprint'
+                else:
+                    if not key == 'issn':
+                        paper['id_oth'] = '{0}_{1}'.format(key, val)
 
         if not any([paper[key] for key in ['id_doi', 'id_pmi', 'id_pii',
                                            'id_arx', 'id_oth']]):

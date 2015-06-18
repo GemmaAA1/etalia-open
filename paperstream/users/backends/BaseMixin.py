@@ -93,10 +93,6 @@ class BackendLibMixin(object):
         ulj.papers_in_journal += 1
         ulj.save()
 
-    @staticmethod
-    def create_lib_stats(user, count):
-        UserStats.objects.create_lib_row(user, count)
-
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')
 

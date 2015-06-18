@@ -22,7 +22,8 @@
                         <tr>
                             <td><h5>Authors</h5></td>
                             <td><h5>Title</h5></td>
-                            <td><h5>Date</h5></td>
+                            <td><h5>Published</h5></td>
+                            <td><h5>Added</h5></td>
                         </tr>
                         {% for paper in paper_list %}
                             <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'library:paper' paper.pk %}'">
@@ -37,13 +38,13 @@
                     {% if is_paginated %}
                         <ul class="pager">
                             {% if page_obj.has_previous %}
-                                <li><a href="{% url 'view_journal' page_obj.previous_page_number %}">Previous</a></li>
+                                <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
                             {% endif %}
                             <span class="page-current">
                           Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
                           </span>
                             {% if page_obj.has_next %}
-                                <li><a href="{% url 'view_journal' page_obj.next_page_number %}">Next</a></li>
+                                <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
                             {% endif %}
                         </ul>
                     {% endif %}

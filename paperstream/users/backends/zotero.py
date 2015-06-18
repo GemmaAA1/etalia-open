@@ -21,6 +21,8 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
     # base
     name = 'custom-zotero'
+    print_name = 'Zotero'
+    REQUIRES_EMAIL_VALIDATION = True
     AUTHORIZATION_URL = 'https://www.zotero.org/oauth/authorize'
     REQUEST_TOKEN_URL = 'https://www.zotero.org/oauth/request'
     ACCESS_TOKEN_URL = 'https://www.zotero.org/oauth/access'
@@ -49,19 +51,26 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return session
 
-
-    def update_lib(self, session, user):
+    def update_lib(self, user, session):
 
         # Init
         new = True
         count = 0
+        not_new_stack_count = 0
+
+        # update db states
+        user.stats.create_lib_starts_sync(user)
         user.lib.set_lib_syncing()
 
         items = session.top(limit=self.CHUNK_SIZE)
 
         while True:
             for item in items:
-                entry = self.parser.parse(item['data'])
+                try:
+                    entry = self.parser.parse(item['data'])
+                except Exception as e:
+                    logger.exception('Zotero parser failed')
+                    continue
                 paper, journal = self.get_or_create_entry(entry)
 
                 if paper:
@@ -70,12 +79,12 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info']) and new
+                    new = self.associate_paper(paper, user, entry['user_info'])
                     if new:
                         count += 1
+                        not_new_stack_count = 0
                     else:
-                        # escape when reaching already uploaded references
-                        break
+                        not_new_stack_count += 1
                     if journal:
                         self.associate_journal(journal, user)
                 else:
@@ -84,12 +93,14 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             type_=item['data']['itemType'],
                             user=user.email,
                             backend=self.name))
+            if not_new_stack_count > 10:
+                break  # exit when reaching a stack of 10 already uploaded references
             try:
                 items = session.follow()
             except:
                 break
 
         # update UserLib and Stats
-        self.create_lib_stats(user, count)
+        user.stats.create_lib_ends_sync(user, count)
         user.lib.set_lib_idle()
         return count
