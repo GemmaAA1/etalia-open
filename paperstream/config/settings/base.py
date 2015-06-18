@@ -239,8 +239,6 @@ SOCIAL_AUTH_CUSTOM_ZOTERO_KEY = 'a7ecbff3d0bbe59abc4b'
 SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = 'c5d0c178d9196e62bdbf'
 
 
-
-
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
 
@@ -250,7 +248,7 @@ CONS_MIN_DELAY = 0
 CONS_MAX_DELAY = 7
 
 # In days, how many day in the past to look at when initializing database
-CONS_INIT_PAST = 60
+CONS_INIT_PAST = 180
 
 # CELERY
 # ------------------------------------------------------------------------------

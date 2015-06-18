@@ -8,18 +8,32 @@ from ...constants import PUBLISHER_OPTIONS, JOURNAL_OPTIONS, CONSUMER_OPTIONS
 
 class Command(BaseCommand):
     """
+    Pre-Populate paperstream models: Three models <what> can be populated:
+       - Journal (populate journal)\n
+       - Publisher (populate publisher) \n
+       - Consumer (populate consumer)\n
+    The <source> for pre-population must be specified and defined in constant.py.
+    For Journal and Publisher, <source>=all will populate models with all
+    possible sources as defined in constant.py
+    Note: journal associated to consumers are all active when populated
 
+    Ex:
+    >> ./manage populate journal thomson
+    will create Journal instances based on the thomson list file as defined in constant.py
+
+    >> ./manage populate consumer pubmed --name pubmed1
+    will create one PubmedConsumer based on pubmed list as defined in constant.py
     """
 
-    help = 'Pre-Populate paperstream Journal (populate jounral), Publisher ' \
-           '(populate publisher), Consumer (populate consumer) or all ' \
-           '(populate all)'
+    help = 'Pre-Populate paperstream models'
 
     def add_arguments(self, parser):
-        parser.add_argument('what', nargs=1, type=str)
-        parser.add_argument('source', nargs='?', type=str, default='all')
+        parser.add_argument('what', nargs=1, type=str,
+                            help='specify the model (journal, publisher, consumer or all)')
+        parser.add_argument('source', nargs='?', type=str, default='all',
+                            help='specify source name (all or as defined in constant.py')
         parser.add_argument('-n', '--name', action='store', dest='name',
-                            help='Consumer name', type=str)
+                            help='specify consumer name (mandatory if populating consumer)', type=str)
 
     def handle(self, *args, **options):
         pop_what = options['what'][0]
