@@ -115,15 +115,15 @@ class Consumer(TimeStampedModel):
                 logger.warning(err)
                 pass
 
-    def update_last_date_cons(self, journal):
+    def reset_last_date_cons(self, journal):
         q = self.consumerjournal_set.filter(journal=journal)
         q.update(last_date_cons=
                  timezone.now() - timezone.timedelta(days=self.day0))
 
-    def update_all_last_date_cons(self):
+    def reset_all_last_date_cons(self):
         for journal in self.journals.all():
             try:
-                self.update_last_date_cons(journal)
+                self.reset_last_date_cons(journal)
             except ValueError as err:
                 logger.warning(err)
                 pass
@@ -164,6 +164,7 @@ class Consumer(TimeStampedModel):
                                               Q(id_pmi=item_paper['id_pmi']) |
                                               Q(id_pii=item_paper['id_pii']) |
                                               Q(id_arx=item_paper['id_arx']) |
+                                              Q(id_isbn=item_paper['id_isbn']) |
                                               Q(id_oth=item_paper['id_oth']))
                 except Paper.DoesNotExist:
                     paper = None
@@ -203,7 +204,7 @@ class Consumer(TimeStampedModel):
         """Check journal validity, consume api, save stats, parse entries,
         save records to DB
 
-        :param: journal (Journal): journal instance
+        :param: journal_pk (Journal): pk of journal instance
         """
 
         journal = Journal.objects.get(pk=journal_pk)
@@ -212,7 +213,7 @@ class Consumer(TimeStampedModel):
 
         if self.journal_is_valid(journal):
             # retrieve new entries from journal
-            entries = self.consume_journal(journal)
+            entries, success = self.consume_journal(journal)
 
             # save to database
             for entry in entries:
@@ -222,7 +223,7 @@ class Consumer(TimeStampedModel):
 
             # Update consumer_journal
             cj = self.consumerjournal_set.get(journal=journal)
-            cj.update_stats(True, len(entries), paper_added)
+            cj.update_stats(success, len(entries), paper_added)
 
             logger.info('populating {0}: ok'.format(journal.title))
         return paper_added
@@ -280,6 +281,7 @@ class ConsumerPubmed(Consumer):
         """
 
         entries = []
+        ok = True
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
@@ -341,11 +343,11 @@ class ConsumerPubmed(Consumer):
 
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update_stats(False, 0, 0)
+            ok = False
             logger.warning('consuming {0}: FAILED'.format(journal.title))
-            return list()
+            return list(), ok
 
-        return entries
+        return entries, ok
 
 
 class ConsumerElsevier(Consumer):
@@ -393,6 +395,7 @@ class ConsumerElsevier(Consumer):
         """
 
         entries = []
+        ok = True
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
@@ -407,7 +410,6 @@ class ConsumerElsevier(Consumer):
             )
 
             count = 0
-            entries = []
             if cj.last_date_cons:
                 start_date = cj.last_date_cons
             else:  # journal has never been scanned
@@ -448,11 +450,11 @@ class ConsumerElsevier(Consumer):
 
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update_stats(False, 0, 0)
+            ok = False
             logger.warning('consuming {0}: FAILED'.format(journal.title))
-            return list()
+            return list(), ok
 
-        return entries
+        return entries, ok
 
 
 class ConsumerArxiv(Consumer):
@@ -473,7 +475,9 @@ class ConsumerArxiv(Consumer):
         return False
 
     def consume_journal(self, journal):
+
         entries = []
+        ok = True
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
@@ -518,20 +522,18 @@ class ConsumerArxiv(Consumer):
                                 count < (total_entries - self.ret_max):
                     # retry once
                     resp = requests.get(query)
-                    time.sleep(1)
+                    time.sleep(1)  # for politeness
                     data = feedparser.parse(resp.text)
-                    # print(len(data.entries))
-                    # print(data['feed'])
                 count += self.ret_max
                 entries += data.entries
 
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
-            cj.update_stats(False, 0, 0)
+            ok = False
             logger.warning('consuming {0}: FAILED'.format(journal.title))
             return list()
 
-        return entries
+        return entries, ok
 
 
 class ConsumerJournal(models.Model):
