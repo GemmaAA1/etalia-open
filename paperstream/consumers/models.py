@@ -121,12 +121,8 @@ class Consumer(TimeStampedModel):
                  timezone.now() - timezone.timedelta(days=self.day0))
 
     def reset_all_last_date_cons(self):
-        for journal in self.journals.all():
-            try:
-                self.reset_last_date_cons(journal)
-            except ValueError as err:
-                logger.warning(err)
-                pass
+        ConsumerJournal.objects.filter(consumer=self).update(
+            last_date_cons=timezone.now() - timezone.timedelta(days=self.day0))
 
     def journal_is_valid(self, journal):
         """ Check if journal is valid
@@ -199,6 +195,14 @@ class Consumer(TimeStampedModel):
         except Exception as e:
             return False
 
+    def get_start_date(self, cj):
+        if cj.last_date_cons:
+            # for safety we look one day back
+            start_date = cj.last_date_cons - timezone.timedelta(days=1)
+        else:  # journal has never been scanned
+            start_date = timezone.now() - timezone.timedelta(self.day0)
+        return start_date
+
     @app.task(filter=task_method, name='tasks.populate_journal')
     def populate_journal(self, journal_pk):
         """Check journal validity, consume api, save stats, parse entries,
@@ -229,6 +233,20 @@ class Consumer(TimeStampedModel):
         return paper_added
 
     def run_once_per_period(self):
+        """
+        This works as follows: run_once_per_period is designed to run
+        periodically by a scheduler. To avoid consuming a bench of not
+        very active journals (journals that published only every 3 months or
+        so and there are a lot), we use a dynamic counter (<base_coundown_period>
+        in [settings.CONS_MIN_DELAY, settings.CONS_MAX_DELAY]) that is updated
+        at evry new consumption (increase if no paper fetched, decrease if
+        paper fetched). After each consumption <coundown_period> is reset to
+        <base_countdown_period>. Each new call to run_once_per_period decreases
+        <coundown_period> by 1 and queue the ConsumerJournal instance for
+        consumption is <countdown_period> < 1.
+
+        :return:
+        """
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,
                                                                 self.name))
@@ -238,13 +256,13 @@ class Consumer(TimeStampedModel):
             Q(status='idle') | Q(status='consuming') | Q(status='in_queue'))
 
         # Decrease day counter by 1
-        consumer_journal_active.filter(countdown_day__lt=0).update(
-            countdown_day=F('countdown_day')-1)
+        consumer_journal_active.filter(coundown_period__lt=0).update(
+            coundown_period=F('coundown_period')-1)
 
         # Get journal active and which counter at < 1
         consumerjournals_go_to_queue = \
             consumer_journal_active.filter(
-                countdown_day__lt=1).select_related('journal')
+                coundown_period__lt=1).select_related('journal')
 
         # queue journal for consumption
         for consumerjournal in consumerjournals_go_to_queue:
@@ -293,11 +311,7 @@ class ConsumerPubmed(Consumer):
         Entrez.email = self.email
 
         try:
-            # define query start date based on last scan or day0
-            if cj.last_date_cons:
-                start_date = cj.last_date_cons
-            else:  # journal has never been scanned
-                start_date = timezone.now() - timezone.timedelta(self.day0)
+            start_date = self.get_start_date(cj)
             # format date for API call
             start_date_q = start_date.strftime('%Y/%m/%d')
 
@@ -410,10 +424,8 @@ class ConsumerElsevier(Consumer):
             )
 
             count = 0
-            if cj.last_date_cons:
-                start_date = cj.last_date_cons
-            else:  # journal has never been scanned
-                start_date = timezone.now() - timezone.timedelta(self.day0)
+
+            start_date = self.get_start_date(cj)
 
             while True:
                 data = {'count': str(self.ret_max),
@@ -487,11 +499,8 @@ class ConsumerArxiv(Consumer):
             # get category
             cat = re.sub(r'arxiv\.', '', cj.journal.id_arx)
 
-            # define query start date based on last scan or day0
-            if cj.last_date_cons:
-                start_date = cj.last_date_cons
-            else:  # journal has never been scanned
-                start_date = timezone.now() - timezone.timedelta(self.day0)
+            start_date = self.get_start_date(cj)
+
             # format date for API call
             start_date_q = '{year}{month:02d}{day:02d}'.format(
                 year=start_date.year,
@@ -550,13 +559,13 @@ class ConsumerJournal(models.Model):
     # last update
     # datetime of last consumption
     last_date_cons = models.DateTimeField(null=True, blank=True)
-    # number of papers retrieved
+    # number of papers recorded in db
     last_number_papers_recorded = models.IntegerField(default=0)
-    # number of papers retrieved
+    # number of papers fetched from provider
     last_number_papers_fetched = models.IntegerField(default=0)
 
-    base_countdown_day = models.IntegerField(default=1)
-    countdown_day = models.IntegerField(default=0)
+    base_coundown_period = models.IntegerField(default=1)
+    coundown_period = models.IntegerField(default=0)
 
     # Status monitor
     status = fields.StatusField(default='inactive')
@@ -608,17 +617,17 @@ class ConsumerJournal(models.Model):
                   status='SUC')
             # update base countdown
             if n_fet < 0:
-                if self.base_countdown_day < settings.CONS_MAX_DELAY:
-                    self.base_countdown_day += 1
+                if self.base_coundown_period < settings.CONS_MAX_DELAY:
+                    self.base_coundown_period += 1
                 else:
-                    self.base_countdown_day = settings.CONS_MAX_DELAY
+                    self.base_coundown_period = settings.CONS_MAX_DELAY
             elif n_fet > 0:
-                if self.base_countdown_day > settings.CONS_MIN_DELAY:
-                    self.base_countdown_day -= 1
+                if self.base_coundown_period > settings.CONS_MIN_DELAY:
+                    self.base_coundown_period -= 1
                 else:
-                    self.base_countdown_day = settings.CONS_MIN_DELAY
+                    self.base_coundown_period = settings.CONS_MIN_DELAY
             # reinit counter
-            self.countdown_day = self.base_countdown_day
+            self.coundown_period = self.base_coundown_period
             self.save()
         else:
             self.status = 'error'
@@ -626,6 +635,9 @@ class ConsumerJournal(models.Model):
                               number_papers_recorded=0,
                               status='FAI')
             self.save()
+
+    class Meta:
+        ordering = ['last_date_cons']
 
 
 class ConsumerJournalStat(models.Model):

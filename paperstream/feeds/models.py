@@ -10,22 +10,22 @@ from library.models import Paper
 class UserFeed(TimeStampedModel):
     """Feed of user"""
 
+    name = models.CharField(max_length=100, default='Main',
+                            validators=[validate_feed_name])
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed')
 
     # cluster of paper that is used in the similarity matching
-    paper_in = models.ManyToManyField(Paper, related_name='paper_in')
+    paper_seed = models.ManyToManyField(Paper, related_name='paper_in')
 
     # relevant papers matched
-    paper_out = models.ManyToManyField(Paper, through='UserFeedPaper',
+    paper_match = models.ManyToManyField(Paper, through='UserFeedPaper',
                                        related_name='paper_out')
 
     status = models.CharField(max_length=3, blank=True, default='',
                                choices=(('', 'Uninitialized'),
                                         ('IDL', 'Idle'),
                                         ('ING', 'Syncing')))
-
-    name = models.CharField(max_length=100, default='Main',
-                            validators=[validate_feed_name])
 
     @property
     def count_paper_in(self):
