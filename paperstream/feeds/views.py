@@ -11,7 +11,8 @@ from .models import UserFeed, UserFeedPaper
 
 class home_feed(LoginRequiredMixin, ListView):
     model = UserFeedPaper
-    paginate_by = settings.ITEMS_PER_PAGE
+    # paginate_by = settings.ITEMS_PER_PAGE
+    paginate_by = 10
     template_name = 'feeds/feed.html'
 
     def get_queryset(self):
