@@ -39,12 +39,34 @@ def update_lib(user_pk, provider_name):
 
     return user_pk
 
-@app.task(name='tasks.update_feed')
+
+# The following task may be moved to feeds.tasks
+
+@app.task(name='tasks.init_default_feed')
 def init_default_feed(user_pk):
 
     # get user
     user = User.objects.get(pk=user_pk)
 
-    UserFeed.objects.init_default_userfeed(user)
+    # create default ('main') feed
+    user_feed = UserFeed.objects.init_default_userfeed(user)
+
+    # update
+    user_feed.update()
 
     return user_pk
+
+@app.task(name='tasks.update_feed')
+def update_feed(user_pk, feed_name):
+
+    # get user
+    user = User.objects.get(pk=user_pk)
+
+    # get user_feed
+    user_feed = user.feed.get(name='feed_name')
+
+    # update
+    user_feed.update()
+
+    return user_pk
+

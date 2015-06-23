@@ -29,7 +29,7 @@ class BackendLibMixin(object):
                                               Q(id_isbn=item_paper['id_isbn']) |
                                               Q(id_oth=item_paper['id_oth']))
                     if paper.is_trusted:
-                        return paper
+                        return paper, paper.journal
 
                 except Paper.DoesNotExist:
                     paper = None

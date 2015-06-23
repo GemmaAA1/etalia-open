@@ -7,68 +7,59 @@
     <link rel="stylesheet" href="{% static 'css/feed.css' %}" type="text/css" >
 {% endblock css %}
 
-{% block head %}
-{% endblock head %}
-
 {% block title %}
+    User Library
 {% endblock title %}
 
 {% block content %}
-{#    {% if user.is_authenticated %}#}
-        <div class="intro-header">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-1"></div>
-                    <div class="col-lg-10">
-                        <ul class="list-group">
-                            {% for ufp in object_list %}
-                                <li id="{{ ufp.id }}" class="list-group-item">
-                                    <div class="btn-group pull-right" role="group" aria-label="...">
-                                        <span class="btn-group dislikes"  id="dislikes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                            <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-remove"></span></button>
-                                        </span>
-                                        <span class="btn-group likes" id="likes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                            <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-ok"></span></button>
-                                        </span>
-                                    </div>
+    <div class="container">
+        <div class="feed">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <ul class="list-group">
+                        {% for ufp in object_list %}
+                            <li id="{{ ufp.id }}" class="list-group-item">
+                                <div class="btn-group pull-right" role="group" aria-label="...">
+                                    <span class="btn-group dislikes"  id="dislikes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
+                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-remove"></span></button>
+                                    </span>
+                                    <span class="btn-group likes" id="likes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
+                                        <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-ok"></span></button>
+                                    </span>
+                                </div>
 
-                                    <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">
-                                        <a class="list-group-item-heading" href={{ ufp.paper.paper.url }} target="_blank"> <strong>{{ ufp.paper.paper.display_title }}</strong></a>
-                                    </span>
-                                    <p class="list-group-item-text"><em>{{ ufp.paper.paper.display_creators }}</em> <span>(sc: {{ufp.display_score}})</span></p>
-{#                                    <details>#}
-{#                                        <summary>{{ ufp.paper.paper.display_journal }} {{ ufp.paper.paper.display_date }}</summary>#}
-{#                                        <p class="list-group-item-text">{{ ufp.paper.paper.abstract }}</p>#}
-{#                                    </details>#}
-                                    <p>{{ ufp.paper.paper.display_journal }}, {{ ufp.paper.paper.display_date }}</p>
-                                    <span id="abstract{{ ufp.id }}" class="abstract">
-                                        <p class="list-group-item-text">{{ ufp.paper.paper.abstract }}</p>
-                                    </span>
-                                </li>
-                                <br>
-                            {% endfor %}
+                                <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">
+                                    <a class="list-group-item-heading" href={{ ufp.paper.url }} target="_blank"> <strong>{{ ufp.paper.title }}</strong></a>
+                                </span>
+                                <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
+                                <p>{{ ufp.paper.print_journal_title }}, {{ ufp.paper.print_date }}, {{ ufp.paper.print_ids }}</p>
+                                <p><span>(score: {{ufp.score}})</span></p>
+                                <span id="abstract{{ ufp.id }}" class="abstract">
+                                    <p class="list-group-item-text">{{ ufp.paper.abstract }}</p>
+                                </span>
+                            </li>
+                            <br>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Pagination bar -->
+                    {% if is_paginated %}
+                        <ul class="pager">
+                            {% if page_obj.has_previous %}
+                                <li><a href="{% url 'feed' page_obj.previous_page_number %}">Previous</a></li>
+                            {% endif %}
+                            <span class="page-current">
+                          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                          </span>
+                            {% if page_obj.has_next %}
+                                <li><a href="{% url 'feed' page_obj.next_page_number %}">Next</a></li>
+                            {% endif %}
                         </ul>
-
-                        <!-- Pagination bar -->
-                        {% if is_paginated %}
-                            <ul class="pager">
-                                {% if page_obj.has_previous %}
-                                    <li><a href="{% url 'feed' page_obj.previous_page_number %}">Previous</a></li>
-                                {% endif %}
-                                <span class="page-current">
-                              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                              </span>
-                                {% if page_obj.has_next %}
-                                    <li><a href="{% url 'feed' page_obj.next_page_number %}">Next</a></li>
-                                {% endif %}
-                            </ul>
-                        {% endif %}
-                    </div>
-                    <div class="col-lg-1"></div>
+                    {% endif %}
                 </div>
+                <div class="col-lg-1"></div>
             </div>
         </div>
-{#    {% else %}#}
-{#        {% include "home/login_required.html" %}#}
-{#    {% endif %}#}
+    </div>
 {% endblock content %}

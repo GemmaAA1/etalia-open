@@ -10,15 +10,17 @@ from library.models import Paper
 
 class UserFeedManager(BaseUserManager):
 
-    def init_userfeed(self, name, user, papers_seed):
-        uf = UserFeed(user=user, name=name)
+    def init_userfeed(self, name, user, papers_seed, **kwargs):
+        user_feed = self.model(user=user, name=name, **kwargs)
+        user_feed.save(using=self._db)
         for paper in papers_seed:
-            uf.papers_seed.add(paper)
-        uf.save()
-        return uf
+            user_feed.papers_seed.add(paper)
+        user_feed.save(using=self._db)
+        return user_feed
 
-    def init_default_userfeed(self, user):
-        return self.init_userfeed('main', user, user.lib.papers.all())
+    def init_default_userfeed(self, user, **kwargs):
+        papers_seed = user.lib.papers.all()
+        return self.init_userfeed('main', user, papers_seed, **kwargs)
 
 
 class UserFeed(TimeStampedModel):
@@ -58,6 +60,14 @@ class UserFeed(TimeStampedModel):
     def set_feed_idle(self):
         self.status = 'IDL'
         self.save()
+
+    def __str__(self):
+        return self.name
+
+    def update(self):
+        # TODO:
+        for paper in self.papers_seed.all():
+            UserFeedPaper.objects.get_or_create(feed=self, paper=paper)
 
 
 class UserFeedPaper(TimeStampedModel):

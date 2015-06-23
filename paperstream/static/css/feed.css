@@ -1,0 +1,19 @@
+/* CSS for feed app*/
+
+.feed {
+    padding-top:60px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 50px;
+    text-align: left;
+    color: #000000;
+    background: #39b3d7;
+}
+
+.abstract {
+    /*width: auto;*/
+    /*height: auto;*/
+    display: block;
+    -webkit-transition: max-height .5s ease;
+    -moz-transition: max-height .5s ease;
+    transition: max-height .5s ease;
+    overflow: hidden;
+}
