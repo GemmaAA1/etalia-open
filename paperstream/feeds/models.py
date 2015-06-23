@@ -52,5 +52,11 @@ class UserFeedPaper(TimeStampedModel):
 
     score = models.FloatField(default=0.)
 
+    is_in_user_lib = models.BooleanField(default=False)
+
+    is_disliked = models.BooleanField(default=False)
+
+    is_liked = models.BooleanField(default=False)
+
     class Meta:
         ordering = ['-score']
