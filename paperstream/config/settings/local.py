@@ -32,5 +32,5 @@ CACHES = {
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
 
-PUBMED_EMAIL = 'nicolas.pannetier@gmail.com'
+PUBMED_EMAIL = get_env_variable('PUBMED_EMAIL')
 ELSEVIER_API_KEY = get_env_variable('ELSEVIER_API_KEY')
