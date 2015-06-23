@@ -24,7 +24,7 @@ function applyWhenElementExists(sel_to_up, sel_to_hide, myFunction, intervalTime
 
 function update_lib_count(obj_up, obj_hide) {
     $.getJSON('/user/user-lib-count-papers/', function (json) {
-        if (json.stop) {
+        if (json.done) {
             var libInterval = obj_up.data('interval');
             clearInterval(libInterval);
             obj_up.removeData('interval');

@@ -182,9 +182,9 @@ ajax_update_affiliation = UserAffiliationUpdateView.as_view()
 def ajax_user_lib_count_papers(request):
     if request.method == 'GET':
         if request.user.lib.status == 'IDL':
-            data = {'stop': True}
+            data = {'done': True}
         else:
-            data = {'stop': False,
+            data = {'done': False,
                     'count_papers': request.user.lib.count_papers}
         return JsonResponse(data)
 

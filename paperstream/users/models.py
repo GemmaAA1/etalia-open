@@ -8,8 +8,11 @@ from datetime import date
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from library.models import Paper, Journal
+
 from model_utils import fields
+
+from library.models import Paper, Journal
+from feeds.models import UserFeed
 
 from .validators import validate_first_name, validate_last_name
 from core.models import TimeStampedModel
