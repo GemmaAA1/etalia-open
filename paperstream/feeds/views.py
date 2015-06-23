@@ -10,12 +10,13 @@ from .models import UserFeed, UserFeedPaper
 
 class home_feed(LoginRequiredMixin, ListView):
     model = UserFeedPaper
+    paginate_by = settings.ITEMS_PER_PAGE
     template_name = 'feeds/feed.html'
 
     def get_queryset(self):
         ufp = UserFeedPaper.objects.filter(
             Q(feed=self.request.user.feed.first()),
-            Q(is_disliked=False))
+            Q(is_disliked=False))[:100]
         return ufp
 
 home = home_feed.as_view()
