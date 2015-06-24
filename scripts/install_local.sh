@@ -6,10 +6,13 @@
 # After running that script you should be able to fire up the server locally
 # > ./manage.py runserver --settings=config.settings.local
 #
-# However, for asynchroneous tasks to run you need to fire up celery and
+# For asynchroneous tasks to run you need to fire up celery and
 # rabbitmq-server up front
 # > rabbitmq-server &
 # > celery -A config worker --loglevel=info
+#
+# Also modified 'USER' in DATABASES definition in config/base.py to match
+# you postgres username.
 
 # install local requirement
 pip3 install -r ../requirements/local.txt
