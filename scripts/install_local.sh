@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This is script must be run from the virtual env you have defined.
+# -> python3.4, pip3, psql (Postgres), rabbitmq are considered installed
+#
 # After running that script you should be able to fire up the server locally
 # > ./manage.py runserver --settings=config.settings.local
 #
@@ -9,7 +12,7 @@
 # > celery -A config worker --loglevel=info
 
 # install local requirement
-pip install -r ../requirements/local.txt
+pip3 install -r ../requirements/local.txt
 
 # Set environment variable for current virtual environment
 ./routines/init_env_vars.sh
