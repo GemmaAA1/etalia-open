@@ -17,13 +17,14 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6 col-md-offset-3 jumbotron">
-                <h4><a href="{% url 'library:journals' %}">Journals</a> ({{ journal_count }})</h4>
+                <h4><a href="{% url 'library:journals' %}">Journals</a></h4>
+                <p>{{ journal_count }} journals</p>
             </div>
         </div>
-
         <div class="row">
             <div class="col-md-6 col-md-offset-3 jumbotron">
-                <h4><a href="{% url 'library:papers' %}">Papers</a>{{ paper_count }}</h4>
+                <h4><a href="{% url 'library:papers' %}">Papers</a></h4>
+                <p>{{ paper_count }} papers</p>
             </div>
         </div>
     </div>

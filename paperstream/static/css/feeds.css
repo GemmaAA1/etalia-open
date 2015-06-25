@@ -17,3 +17,12 @@
     transition: max-height .5s ease;
     overflow: hidden;
 }
+
+@media screen {
+    .abstract {
+        max-height: 0px;
+    }
+    .abstract.active {
+        max-height: 500px;
+    }
+}

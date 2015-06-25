@@ -4,7 +4,7 @@
 
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/feed.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
 {% endblock css %}
 
 {% block title %}
@@ -22,10 +22,10 @@
                             <li id="{{ ufp.id }}" class="list-group-item">
                                 <div class="btn-group pull-right" role="group" aria-label="...">
                                     <span class="btn-group dislikes"  id="dislikes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-remove"></span></button>
+                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-minus"></span></button>
                                     </span>
                                     <span class="btn-group likes" id="likes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                        <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-ok"></span></button>
+                                        <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-plus"></span></button>
                                     </span>
                                 </div>
 
@@ -35,9 +35,7 @@
                                 <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
                                 <p>{{ ufp.paper.print_journal_title }}, {{ ufp.paper.print_date }}, {{ ufp.paper.print_ids }}</p>
                                 <p><span>(score: {{ufp.score}})</span></p>
-                                <span id="abstract{{ ufp.id }}" class="abstract">
-                                    <p class="list-group-item-text">{{ ufp.paper.abstract }}</p>
-                                </span>
+                                <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>
                             </li>
                             <br>
                         {% endfor %}
