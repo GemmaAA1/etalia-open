@@ -8,6 +8,7 @@ fi
 
 # export environment variable to virtulalenv postactivate
 file=$VIRTUAL_ENV/bin/postactivate
+rm $file
 echo "#!/usr/bin/env bash" >> $file
 echo "export DJANGO_LOG_LEVEL='DEBUG'" >> $file
 echo "export DJANGO_DEBUG=True" >> $file
