@@ -11,7 +11,7 @@ file=$VIRTUAL_ENV/bin/postactivate
 echo "#!/usr/bin/env bash" >> $file
 echo "export DJANGO_LOG_LEVEL='DEBUG'" >> $file
 echo "export DJANGO_DEBUG=True" >> $file
-echo "export DJANGO_EMAIL_BACKEND='contact@paperstream.io'" >> $file
+#echo "export DJANGO_EMAIL_BACKEND=''" >> $file
 echo "export PAP_SECRET_KEY='_kjjr3)+tdlfbcw7uu&oue+*50+hbv9gsd-yx35^*%n\$5ugp-s'" >> $file
 
 echo "export ELSEVIER_API_KEY='293e288c325d7765b7c22f5195175351'" >> $file
