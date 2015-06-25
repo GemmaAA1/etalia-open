@@ -20,6 +20,9 @@ pip3 install -r ../requirements/local.txt
 # Set environment variable for current virtual environment
 ./routines/init_env_vars.sh
 
+# Create local files
+./routines/init_files.sh
+
 # Create Postgres database
 ./routines/create_db.sh
 
