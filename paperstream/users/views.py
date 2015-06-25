@@ -31,7 +31,8 @@ def logout(request):
 def done(request):
     redirect('landing')
 
-
+# User authentication
+# ---------------
 class UserBasicInfoSignupView(FormView):
 
     form_class = UserBasicForm
@@ -58,7 +59,8 @@ class UserBasicInfoSignupView(FormView):
         self.request.session['basic_info'] = {
             'first_name': form.cleaned_data['first_name'],
             'last_name': form.cleaned_data['last_name'],
-            'email': form.cleaned_data['email']}
+            'email': form.cleaned_data['email'],
+            'password': form.cleaned_data['password1']}
         return super(UserBasicInfoSignupView, self).form_valid(form)
 
 require_basic_info = UserBasicInfoSignupView.as_view()
@@ -107,6 +109,8 @@ def validation_sent(request):
     return render(request, 'user/info.html', context)
 
 
+# User Library
+# ---------------
 class UserLibraryView(LoginRequiredMixin, ListView):
     model = Paper
     template_name = 'user/library.html'
@@ -124,6 +128,8 @@ class UserLibraryView(LoginRequiredMixin, ListView):
 library = UserLibraryView.as_view()
 
 
+# User profile update
+# -------------------
 class UserBasicInfoUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
                               UpdateView):
     form_class = UserBasicNoEmailForm
@@ -176,7 +182,6 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return data
 
 ajax_update_affiliation = UserAffiliationUpdateView.as_view()
-
 
 @login_required
 def ajax_user_lib_count_papers(request):
