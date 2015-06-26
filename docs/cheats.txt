@@ -9,6 +9,5 @@ Use select_related() and exclude() on query to retrieve and update
 Actually use mixin for this from django-brace
 
 
-
- coverage run --source='.' manage.py test
+coverage run --source='.' manage.py test
 coverage html --omit="admin.py"

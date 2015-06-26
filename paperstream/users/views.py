@@ -4,7 +4,8 @@ from django.shortcuts import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import logout as auth_logout, login
+from django.contrib.auth import logout as auth_logout, login, \
+    REDIRECT_FIELD_NAME
 from django.views.generic import UpdateView, FormView
 from django.views.generic.list import ListView
 from django.conf import settings
@@ -14,7 +15,8 @@ from django.http import JsonResponse
 from braces.views import LoginRequiredMixin
 
 from library.models import Paper
-from .forms import UserBasicForm, UserAffiliationForm, UserBasicNoEmailForm
+from .forms import UserBasicForm, UserAffiliationForm, UserBasicNoEmailForm, \
+    ActiveAuthenticationForm
 from .models import Affiliation
 from core.mixins import AjaxableResponseMixin
 from .tasks import update_lib as async_update_lib
@@ -33,6 +35,21 @@ def done(request):
 
 # User authentication
 # ---------------
+class UserLoginView(FormView):
+
+    form_class = ActiveAuthenticationForm
+    redirect_field_name = settings.LOGIN_REDIRECT_URL
+    template_name = 'user/login.html'
+
+    def form_valid(self, form):
+        """
+        """
+        login(self.request, form.get_user())
+        return super(UserLoginView, self).form_valid(form)
+
+login = UserLoginView.as_view()
+
+
 class UserBasicInfoSignupView(FormView):
 
     form_class = UserBasicForm

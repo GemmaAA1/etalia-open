@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^email-sent/$', views.validation_sent, name='validation-sent'),
     url(r'^done/$', views.done, name='done'),
     url(r'^logout/$',views.logout, name='logout'),
+    url(r'^login/$',views.login, name='paper_login'),
     url(r'^library/$',views.library, name='library'),
     url(r'^update-basic-info/$',views.ajax_update_basic_info,
         name='update-basic-info'),
