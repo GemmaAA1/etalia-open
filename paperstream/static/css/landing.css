@@ -12,7 +12,7 @@
 .intro-message {
     position: relative;
     padding-top: 10%;
-    padding-bottom: 10%;
+    padding-bottom: 5%;
 }
 
 .intro-message > h1 {
@@ -55,13 +55,6 @@
     }
 }
 
-.network-name {
-    text-transform: uppercase;
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: 2px;
-}
-
 .content-section-a {
     padding: 50px 0;
     background-color: #f8f8f8;
@@ -82,4 +75,22 @@
     float: left;
     width: 200px;
     border-top: 3px solid #e7e7e7;
+}
+
+.borderless {
+    border: none;
+    background-color: #39b3d7;
+}
+
+.provider-button {
+    /*text-transform: uppercase;*/
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    width: 200px;
+}
+
+.provider-logo {
+    height: 30px;
+    margin-right: 10px;
 }
