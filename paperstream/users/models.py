@@ -66,16 +66,16 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 
     # completely useless but required by python-social-auth
-    username = models.CharField(_('username (UNUSED'), max_length=255,
+    username = models.CharField(_('username (UNUSED)'), max_length=255,
                                 blank=True, default='', db_index=True)
 
-    email = models.EmailField(_('email address'), max_length=255,
+    email = models.EmailField(_('Email'), max_length=255,
                               unique=True, db_index=True)
 
-    first_name = models.CharField(max_length=255, blank=True, default='',
+    first_name = models.CharField(_('First Name'), max_length=255, blank=True, default='',
                                   validators=[validate_first_name])
 
-    last_name = models.CharField(max_length=255, blank=True, default='',
+    last_name = models.CharField(_('Last Name'), max_length=255, blank=True, default='',
                                  validators=[validate_last_name])
 
     is_staff = models.BooleanField(_('staff status'), default=False,

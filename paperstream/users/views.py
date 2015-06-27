@@ -4,6 +4,7 @@ from django.shortcuts import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+
 from django.contrib.auth import logout as auth_logout, login, \
     REDIRECT_FIELD_NAME
 from django.views.generic import UpdateView, FormView
@@ -15,8 +16,8 @@ from django.http import JsonResponse
 from braces.views import LoginRequiredMixin
 
 from library.models import Paper
-from .forms import UserBasicForm, UserAffiliationForm, UserBasicNoEmailForm, \
-    ActiveAuthenticationForm
+from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
+    UserAuthenticationForm
 from .models import Affiliation
 from core.mixins import AjaxableResponseMixin
 from .tasks import update_lib as async_update_lib
@@ -35,19 +36,31 @@ def done(request):
 
 # User authentication
 # ---------------
-class UserLoginView(FormView):
+class UserLoginView(AjaxableResponseMixin, FormView):
 
-    form_class = ActiveAuthenticationForm
+    form_class = UserAuthenticationForm
     redirect_field_name = settings.LOGIN_REDIRECT_URL
-    template_name = 'user/login.html'
+    template_name = 'user/signin.html'
 
     def form_valid(self, form):
-        """
-        """
         login(self.request, form.get_user())
-        return super(UserLoginView, self).form_valid(form)
+        response = super(AjaxableResponseMixin, self).form_valid(form)
+        if self.request.is_ajax():
+            data = self.get_ajax_data()
+            return JsonResponse(data)
+        else:
+            return response
 
-login = UserLoginView.as_view()
+    def get_success_url(self):
+        return reverse('feeds:home')
+
+    def get_ajax_data(self):
+        data = {'email': self.request.user.email,
+                'redirect': self.get_success_url(),
+                }
+        return data
+
+ajax_signin = UserLoginView.as_view()
 
 
 class UserBasicInfoSignupView(FormView):
@@ -147,9 +160,9 @@ library = UserLibraryView.as_view()
 
 # User profile update
 # -------------------
-class UserBasicInfoUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
+class UpdateUserBasicInfoView(LoginRequiredMixin, AjaxableResponseMixin,
                               UpdateView):
-    form_class = UserBasicNoEmailForm
+    form_class = UpdateUserBasicForm
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -162,7 +175,7 @@ class UserBasicInfoUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
                 'last_name': self.request.user.last_name}
         return data
 
-ajax_update_basic_info = UserBasicInfoUpdateView.as_view()
+ajax_update_basic_info = UpdateUserBasicInfoView.as_view()
 
 
 class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
@@ -176,7 +189,7 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return reverse('core:home')
 
     def form_invalid(self, form):
-        if Affiliation.objects.filter(**form.cleaned_data).exists():  # invalid because of uniqueness
+        if Affiliation.objects.filter(**form.cleaned_data).exists():
             self.request.user.affiliation = \
                 Affiliation.objects.get(**form.cleaned_data)
             self.request.user.save()
@@ -204,7 +217,8 @@ ajax_update_affiliation = UserAffiliationUpdateView.as_view()
 def ajax_user_lib_count_papers(request):
     if request.method == 'GET':
         if request.user.lib.status == 'IDL':
-            data = {'done': True}
+            data = {'done': True,
+                    'redirect': reverse('feeds:home')}
         else:
             data = {'done': False,
                     'count_papers': request.user.lib.count_papers}

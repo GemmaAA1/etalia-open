@@ -68,16 +68,20 @@
 
     <!-- modal -->
     {% block modal %}
-        {% include "user/profile_modal.html" %}
+        {% if user.is_authenticated %}
+            {% include "user/profile_modal.html" %}
+        {% else %}
+            {% include "user/login_modal.html" %}
+        {% endif %}
     {% endblock modal %}
 
     <!-- library loading modal view -->
     {% if user.is_authenticated and user.lib.status == 'ING'%}
-    <div class="syncing" id="loading-lib-block">
+        <div class="syncing" id="loading-lib-block">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    {% include "core/loading-modal.html" %}
+                    {% include "core/initializing-modal.html" %}
                 </div>
             </div>
         </div>

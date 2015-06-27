@@ -6,14 +6,13 @@ from .validators import validate_first_name, validate_last_name
 
 User = get_user_model()
 
-class ActiveAuthenticationForm(AuthenticationForm):
 
-    def confirm_login_allowed(self, user):
-        if not user.is_active:
-            raise forms.ValidationError(
-                "This account is inactive.",
-                code='inactive',
-            )
+class UserAuthenticationForm(AuthenticationForm):
+
+    error_messages = {
+        'invalid_login': "Please enter a correct %(username)s and password.",
+        'inactive': "This account is inactive.",
+    }
 
 
 class UserBasicForm(forms.ModelForm):
@@ -58,7 +57,21 @@ class UserBasicForm(forms.ModelForm):
         model = User
         fields = ('first_name', 'last_name', 'email')
 
-class UserBasicNoEmailForm(UserBasicForm):
+
+class UpdateUserBasicForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(UpdateUserBasicForm, self).__init__(*args, **kwargs)
+        self.fields['first_name'].validators.append(validate_first_name)
+        self.fields['last_name'].validators.append(validate_last_name)
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        return first_name.strip()
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data['last_name']
+        return last_name.strip()
 
     class Meta:
         model = User

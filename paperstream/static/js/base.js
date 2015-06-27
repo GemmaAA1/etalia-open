@@ -41,8 +41,8 @@ jQuery(function ($) {
     $('form[data-async]').on('submit', function (event) {
         var $form = $(this);
         var $target = $($form.attr('data-target'));
-        var $rootModal = $('div[root-modal]')
-        console.log('form submitted!');
+        var $rootModal = $($form.attr('root-modal'));
+        //console.log('form submitted!');
         $.ajax({
             type: $form.attr('method'),
             url: $form.attr('action'),
@@ -56,7 +56,11 @@ jQuery(function ($) {
                     $field.removeClass("alert alert-danger");
                 });
                 $rootModal.modal('hide');
-                console.log('success');
+                //redirect if key exists
+                if(json.hasOwnProperty('redirect')) {
+                    $(location).attr('href', json.redirect);
+                }
+                //console.log('success');
             },
 
             error: function (resp) {

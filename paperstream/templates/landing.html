@@ -25,26 +25,31 @@
                     <div class="intro-message">
 
                         <h1>Streams for Researchers</h1>
-                        <h3>News Feed, Comments and Scientific Network</h3>
-                        <h3>Tailored for Your Library</h3>
+{#                        <h3>News Feed, Comments and Scientific Network</h3>#}
+{#                        <h3>Tailored for Your Library</h3>#}
 
                         <hr class="intro-divider">
+                        <h4>Connect with: </h4>
                         <ul class="list-inline intro-social-buttons">
                             <li>
-                                <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg">
-                                    <span class="network-name">[M] Mendeley</span></a>
+                                <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">
+                                    <img src="{% static 'img/mendeley_logo_small.png' %}" class="provider-logo">
+                                    Mendeley
+                                </a>
                             </li>
                             <li>
-                                <a href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg">
-                                     <span class="network-name">[Z] Zotero</span></a>
+                                <a href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg provider-button">
+                                     <img src="{% static 'img/zotero_logo_small.png' %}" class="provider-logo">
+                                     Zotero
+                                </a>
                             </li>
                         </ul>
-                        <h4>Start now and hook your provider, </h4>
-                        <h5>or <a href="#">sign up</a> and upload your library manually</h5>
+                        <div>
+                            <h4>or <a href="#">Sign-up</a> from scratch</h4>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
         <!-- /.container -->
     </div>
@@ -58,8 +63,8 @@
                 <div class="col-lg-5 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Connect your reference managers <br>and Power-up PaperStream</h2>
-                    <p class="lead">Paperstream works in sync with your <a href="www.zotero.org">Zotero</a> or <a href="www.mendeley.com">Mendeley</a> account (others will follow). Connect and power-up your Paperstream. </p>
+                    <h2 class="section-heading">Connect your reference managers <br>and Start using PaperStream</h2>
+                    <p class="lead">PaperStream works in sync with your reference manager (<a href="www.zotero.org">Zotero</a>, <a href="www.mendeley.com">Mendeley</a>, others will follow) and stays up-to-date with your instant interests.</p>
                 </div>
                 <div class="col-lg-5 col-lg-offset-2 col-sm-6">
                     <img class="img-responsive" src="{% static '/static/img/mendeley_img.jpg' %}" alt="">
@@ -77,9 +82,9 @@
                 <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Stay tuned on your research field</h2>
-                    <p class="lead">Paperstream scans the scientific literature and feeds you with the latest findings in your field. </p>
-                    <p class="lead">Exploring a new field? Changing focus? Paperstream adapts in real-time.</p>
+                    <h2 class="section-heading">Stay tuned on your research interest</h2>
+                    <p class="lead">PaperStream crawls the web for recently published papers that match your own interest using advanced Natural Language Modeling techniques.</p>
+                    <p class="lead">Exploring a new field? Changing focus? PaperStream adapts as you move forward.</p>
                 </div>
                 <div class="col-lg-5 col-sm-pull-6  col-sm-6">
                     <img class="img-responsive" src="{% static '/static/img/mendeley_img2.jpg' %}" alt="">
@@ -97,8 +102,8 @@
                 <div class="col-lg-5 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Bring papers to life<br>with dynamic comments</h2>
-                    <p class="lead">Want to discuss on a paper of get feedback from other scientists. Paperstream keeps you tuned on comments that are relevant for you.</p>
+                    <h2 class="section-heading">Bring papers to life by comments notifications.
+                    <p class="lead">Commenting on a paper has never been as easy. PaperStream notifies you when comments are posted on the papers that are interesting to you.</p>
                 </div>
                 <div class="col-lg-5 col-lg-offset-2 col-sm-6">
                     <img class="img-responsive" src="{% static '/static/img/mendeley_img3.png' %}" alt="">
