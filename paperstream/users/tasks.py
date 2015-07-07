@@ -15,7 +15,8 @@ User = get_user_model()
 @app.task(name='tasks.init_user')
 def init_user(user_pk, provider_name):
     # chain user library update, and default feed initialization
-    chain(update_lib.s(user_pk, provider_name), init_default_feed.s())()
+    chain(update_lib.s(user_pk, provider_name),
+          init_default_feed.s())()
 
     return user_pk
 
