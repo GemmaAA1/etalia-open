@@ -43,7 +43,8 @@ class ParserPubmed(Parser):
         # Type
         type_ = entry.get('PT', [''])
         if type_:
-            paper['type'] = [dict(PUBMED_PT).get(typ, '') for typ in type_][0]
+            paper['type'] = \
+                [dict(PUBMED_PT).get(typ.upper(), '') for typ in type_][0]
 
         # Identifiers
         # match template
