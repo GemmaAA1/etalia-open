@@ -40,14 +40,9 @@ class DumpPaperData(object):
         124: the title of the document #2 . the abstract of the document .
     """
 
-    def __init__(self, papers, **kwargs):
+    def __init__(self, **kwargs):
 
-        self.CHUNK_SIZE = 1000
-
-        try:
-            _ = iter(papers)
-        except TypeError:
-            raise TypeError('<papers> is not iterable')
+        self.CHUNK_SIZE = settings.NLP_CHUNK_SIZE
 
         if 'fields' in kwargs:
             if not isinstance(kwargs['fields'], list):
@@ -56,10 +51,9 @@ class DumpPaperData(object):
             if not isinstance(kwargs['to'], str):
                 raise TypeError('<to> must be path string')
 
-        self.papers = list(papers)
+
         self.fields = kwargs.get('fields', ['abstract'])
-        self.to = kwargs.get('to', os.path.join(str(settings.APPS_DIR),
-                                                'nlp/data'))
+        self.to = kwargs.get('to', settings.NLP_DATA_PATH)
 
     @staticmethod
     def pre_process_text(text):
@@ -74,28 +68,28 @@ class DumpPaperData(object):
 
         return ' '.join(tokens)
 
-    def dump(self):
-        tot = len(self.papers)
+    def dump(self, papers):
+
+        tot = papers.count()
         file_count = 0
-        paper_count = 0
+        file = None
 
         if not os.path.exists(self.to):
             os.makedirs(self.to)
 
-        file = open(os.path.join(self.to,
-                                 '{0:03d}.txt'.format(file_count)), 'w+')
-        for i, paper in enumerate(self.papers):
+        for count, paper in enumerate(papers):
 
-            if not i % 10:
-                print('{0}/{1}'.format(i, tot))
+            if not count % 10:
+                print('{0}/{1}'.format(count, tot))
 
-            if paper_count > self.CHUNK_SIZE:
-                file.close()
+            if not count % self.CHUNK_SIZE:
+                if file:
+                    file.close()
+                file = open(os.path.join(self.to,
+                                         '{0:06d}.txt'.format(file_count)),
+                            'w+')
                 file_count += 1
-                paper_count = 0
-                file = open(
-                    os.path.join(self.to,
-                                 '{0:%03d}.txt'.format(file_count)), 'w+')
+
             # write head
             file.write('{pk}: '.format(pk=paper.pk))
 
@@ -122,7 +116,7 @@ class DumpPaperData(object):
 
             # write new line
             file.write('\n')
-            paper_count += 1
+
         file.close()
 
 

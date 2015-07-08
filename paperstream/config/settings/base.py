@@ -254,7 +254,9 @@ CONS_INIT_PAST = 180
 
 # NLP APP
 # ------------------------------------------------------------------------------
-DATA_PATH = ''
+NLP_CHUNK_SIZE = 10000
+NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data')
+NLP_MOD_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods')
 
 # CELERY
 # ------------------------------------------------------------------------------
