@@ -1,4 +1,4 @@
-MOD_STATES = (
+MODEL_STATES = (
     ('UNT', 'Untrained'),
     ('VOC', 'Building Vocabulary'),
     ('TRA', 'Training'),

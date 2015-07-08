@@ -655,4 +655,5 @@ class ConsumerJournalStat(models.Model):
 
     # status
     status = models.CharField(max_length=3,
-                              choices=(('SUC', 'Success'), (('FAI'), 'Failed')))
+                              choices=(('SUC', 'Success'),
+                                       (('FAI'), 'Failed')))

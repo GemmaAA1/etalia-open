@@ -6,15 +6,16 @@ from core.models import TimeStampedModel
 
 from gensim.models import Doc2Vec
 
-from .constants import MOD_STATES
+from .constants import MODEL_STATES
 
 from library.models import Paper
 # Create your models here.
 
-class ModManager(models.Manager):
+class ModelManager(models.Manager):
     def create(self, **kwargs):
-        model = super(ModManager, self).create(**kwargs)
-        model.mod = Doc2Vec(
+        model = self.model(**kwargs)
+        model.save(using=self._db)
+        model.doc2vec = Doc2Vec(
             dm=model.dm,
             size=model.size,
             window=model.window,
@@ -35,27 +36,27 @@ class ModManager(models.Manager):
         return model
 
     def get(self, **kwargs):
-        model = super(ModManager, self).get(**kwargs)
+        model = super(ModelManager, self).get(**kwargs)
         try:
-            model.mod = Doc2Vec.load(os.path.join(model.mods_path,
-                                   '{0}.mod'.format(model.name)))
+            model.doc2vec = Doc2Vec.load(os.path.join(model.doc2vec_path,
+                                         '{0}.mod'.format(model.name)))
         except FileNotFoundError:
             raise FileNotFoundError
         return model
 
 
-class Mods(TimeStampedModel):
+class Model(TimeStampedModel):
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
 
-    mods_path = models.CharField(
+    doc2vec_path = models.CharField(
         max_length=256,
-        default=settings.NLP_MOD_PATH)
+        default=settings.NLP_DOC2VEC_PATH)
 
-    status = models.CharField(max_length=3, choices=MOD_STATES, default='UNT')
+    status = models.CharField(max_length=3, choices=MODEL_STATES, default='UNT')
 
-    object = ModManager()
+    objects = ModelManager()
 
     # Model parameters
     # ----------------------
@@ -124,29 +125,45 @@ class Mods(TimeStampedModel):
     # of doc-vectors only).
     dbow_words = models.IntegerField(default=0)
 
-    mod = Doc2Vec()
+    doc2vec = Doc2Vec()
 
     def __str__(self):
         return self.name
 
     def build_vocab(self, documents):
-        self.mod.build_vocab(documents)
+        self.update_status('VOC')
+        self.doc2vec.build_vocab(documents)
+        self.update_status('IDL')
 
     def train(self, documents):
-        self.mod.train(documents)
+        self.update_status('TRA')
+        self.doc2vec.train(documents)
+        self.update_status('IDL')
+
+    def save_model_only(self, *args, **kwargs):
+        super(Model, self).save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        super(Mods, self).save(*args, **kwargs)
-        self.mod.save(os.path.join(self.mods_path, '{0}.mod'.format(self.name)))
+        self.update_status('SAV')
+        super(Model, self).save(*args, **kwargs)
+        self.doc2vec.save(os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
+        self.update_status('IDL')
 
     def delete(self, *args, **kwargs):
-        super(Mods, self).delete(*args, **kwargs)
-        os.remove(os.path.join(self.mods_path, '{0}.mod'.format(self.name)))
+        try:
+            os.remove(os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
+        except FileNotFoundError:
+            pass
+        super(Model, self).delete(*args, **kwargs)
+
+    def update_status(self, state):
+        self.status = state
+        self.save_model_only()
 
 
 class Fingerprint(TimeStampedModel):
     paper = models.ForeignKey(Paper)
 
-    mod = models.ForeignKey(Mods)
+    mod = models.ForeignKey(Model)
 
     vec = ArrayField(models.FloatField())
