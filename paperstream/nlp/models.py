@@ -14,39 +14,22 @@ from library.models import Paper
 class ModelManager(models.Manager):
     def create(self, **kwargs):
         model = self.model(**kwargs)
+        model.update_doc2vec()
         model.save(using=self._db)
-        model.doc2vec = Doc2Vec(
-            dm=model.dm,
-            size=model.size,
-            window=model.window,
-            alpha=model.alpha,
-            seed=model.seed,
-            min_count=model.min_count,
-            max_vocab_size=model.max_vocab_size,
-            sample=model.sample,
-            workers=model.workers,
-            hs=model.hs,
-            negative=model.negative,
-            dm_mean=model.dm_mean,
-            dm_concat=model.dm_concat,
-            dm_tag_count=model.dm_tag_count,
-            dbow_words=model.dbow_words
-        )
-        model.save()
         return model
 
     def get(self, **kwargs):
         model = super(ModelManager, self).get(**kwargs)
         try:
             model.doc2vec = Doc2Vec.load(os.path.join(model.doc2vec_path,
-                                         '{0}.mod'.format(model.name)))
+                                                      '{0}.mod'.format(
+                                                          model.name)))
         except FileNotFoundError:
             raise FileNotFoundError
         return model
 
 
 class Model(TimeStampedModel):
-
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
 
@@ -124,6 +107,25 @@ class Model(TimeStampedModel):
     # of doc-vectors only).
     dbow_words = models.IntegerField(default=0)
 
+    # use in model clean
+    model_arguments = [
+        ('dm', 'dm'),
+        ('size', 'vector_size'),
+        ('window', 'window'),
+        ('alpha', 'alpha'),
+        ('seed', 'seed'),
+        ('min_count', 'min_count'),
+        ('max_vocab_size', 'max_vocab_size'),
+        ('sample', 'sample'),
+        ('workers', 'workers'),
+        ('hs', 'hs'),
+        ('negative', 'negative'),
+        ('dm_mean', 'cbow_mean'),
+        ('dm_concat', 'dm_concat'),
+        ('dm_tag_count', 'dm_tag_count'),
+        ('dbow_words', 'dbow_words'),
+    ]
+
     doc2vec = Doc2Vec()
 
     def __str__(self):
@@ -134,23 +136,28 @@ class Model(TimeStampedModel):
         self.doc2vec.build_vocab(documents)
         self.update_status('IDL')
 
-    def train(self, documents):
+    def train(self, documents, iteration=1):
         self.update_status('TRA')
-        self.doc2vec.train(documents)
+        for ite in range(iteration):
+            self.doc2vec.train(documents)
         self.update_status('IDL')
 
     def save_model_only(self, *args, **kwargs):
         super(Model, self).save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
+        self.full_clean()
+        current_status = self.status
         self.update_status('SAV')
         super(Model, self).save(*args, **kwargs)
-        self.doc2vec.save(os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
-        self.update_status('IDL')
+        self.doc2vec.save(
+            os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
+        self.update_status(current_status)
 
     def delete(self, *args, **kwargs):
         try:
-            os.remove(os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
+            os.remove(
+                os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
         except FileNotFoundError:
             pass
         super(Model, self).delete(*args, **kwargs)
@@ -158,6 +165,34 @@ class Model(TimeStampedModel):
     def update_status(self, state):
         self.status = state
         self.save_model_only()
+
+    def clean(self):
+        """Check concordance of model field attributes and doc2vec attributes
+        """
+        for attr in self.model_arguments:
+            if not getattr(self, attr[0]) == getattr(self.doc2vec, attr[1]):
+                raise ValueError('{attr} does not match'.format(attr=attr[0]))
+
+    def update_doc2vec(self):
+        """Instantiate new doc2vec with model field attributes
+        """
+        self.doc2vec = Doc2Vec(
+            dm=self.dm,
+            size=self.size,
+            window=self.window,
+            alpha=self.alpha,
+            seed=self.seed,
+            min_count=self.min_count,
+            max_vocab_size=self.max_vocab_size,
+            sample=self.sample,
+            workers=self.workers,
+            hs=self.hs,
+            negative=self.negative,
+            dm_mean=self.dm_mean,
+            dm_concat=self.dm_concat,
+            dm_tag_count=self.dm_tag_count,
+            dbow_words=self.dbow_words
+        )
 
 
 class Fingerprint(TimeStampedModel):

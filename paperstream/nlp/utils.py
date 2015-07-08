@@ -25,7 +25,7 @@ class TaggedDocumentsIterator(object):
         #TODO: shuffle lines ?
         for filename in self.filenames:
             for line in open(filename):
-                print(line)
+                # print(line)
                 pk, text = re.match(r'([\d]+): (.+)', line).groups()
                 yield TaggedDocument(text.strip().split(' '), [pk, ])
 

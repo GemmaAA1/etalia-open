@@ -5,4 +5,5 @@ MODEL_STATES = (
     ('SAV', 'Saving'),
     ('LOA', 'Loading'),
     ('IDL', 'Idle'),
+    ('USE', 'Usable'),
 )
