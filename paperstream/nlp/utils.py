@@ -5,9 +5,11 @@ import nltk
 import glob
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from bs4 import BeautifulSoup
-from django.conf import settings
 
+from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
+
+from django.conf import settings
 
 import logging
 
@@ -16,6 +18,32 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
 
 
 class TaggedDocumentsIterator(object):
+
+    def __init__(self, dir_path, **kwargs):
+        self.FILE_FORMAT = '*.txt'
+        if 'phraser' in kwargs:
+            if not isinstance(kwargs['phraser'], Phrases):
+                raise TypeError('phraser not a Phrases instance')
+            else:
+
+                self.phraser = kwargs['phraser']
+        else:
+            self.phraser = None
+        self.dir_path = dir_path
+        self.filenames = glob.glob(os.path.join(dir_path, self.FILE_FORMAT))
+
+    def __iter__(self):
+        for filename in self.filenames:
+            for line in open(filename):
+                # print(line)
+                pk, text = re.match(r'([\d]+): (.+)', line).groups()
+                if self.phraser:
+                    text_l = self.phraser(text.strip().split(' '))
+                else:
+                    text_l = text.strip().split(' ')
+                yield TaggedDocument(text, [pk, ])
+
+class WordListIterator(object):
 
     def __init__(self, dir_path):
         self.FILE_FORMAT = '*.txt'
@@ -27,8 +55,7 @@ class TaggedDocumentsIterator(object):
             for line in open(filename):
                 # print(line)
                 pk, text = re.match(r'([\d]+): (.+)', line).groups()
-                yield TaggedDocument(text.strip().split(' '), [pk, ])
-
+                yield text.strip().split(' ')
 
 class DumpPaperData(object):
     """Dump papers data to pre-process text files.

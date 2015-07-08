@@ -39,6 +39,9 @@ class Model(TimeStampedModel):
 
     status = models.CharField(max_length=3, choices=MODEL_STATES, default='UNT')
 
+    # document2vector instance from gensim
+    doc2vec = Doc2Vec()
+
     objects = ModelManager()
 
     # Model parameters
@@ -125,8 +128,6 @@ class Model(TimeStampedModel):
         ('dm_tag_count', 'dm_tag_count'),
         ('dbow_words', 'dbow_words'),
     ]
-
-    doc2vec = Doc2Vec()
 
     def __str__(self):
         return self.name
