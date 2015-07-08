@@ -61,8 +61,7 @@ class Model(TimeStampedModel):
     # Model parameters
     # ----------------------
     # `dm` defines the training algorithm. By default (`dm=1`), 'distributed
-    # memory' (PV-DM) is used.
-    # Otherwise, `distributed bag of words` (PV-DBOW) is employed.
+    # memory' (PV-DM) is used. Otherwise, `distributed bag of words` (PV-DBOW) is employed.
     dm = models.IntegerField(default=1)
 
     # `size` is the dimensionality of the feature vectors.

@@ -13,6 +13,7 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.INFO)
 
+
 class TaggedDocumentsIterator(object):
 
     def __init__(self, dir_path):
