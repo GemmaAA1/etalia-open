@@ -52,7 +52,7 @@ LOCAL_APPS = (
     'consumers',
     'users',
     'feeds',
-    # 'nlprocess',
+    'nlp',
     # 'comments',
     # 'networks',
     # 'functional_tests',
@@ -250,6 +250,11 @@ CONS_MAX_DELAY = 7
 
 # In days, how many day in the past to look at when initializing database
 CONS_INIT_PAST = 180
+
+
+# NLP APP
+# ------------------------------------------------------------------------------
+DATA_PATH = ''
 
 # CELERY
 # ------------------------------------------------------------------------------
