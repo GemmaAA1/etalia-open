@@ -3,6 +3,7 @@ import os
 import re
 import nltk
 import glob
+from progressbar import ProgressBar, Percentage, Bar, ETA
 from bs4 import BeautifulSoup
 from django.conf import settings
 
@@ -22,7 +23,6 @@ class TaggedDocumentsIterator(object):
         self.filenames = glob.glob(os.path.join(dir_path, self.FILE_FORMAT))
 
     def __iter__(self):
-        #TODO: shuffle lines ?
         for filename in self.filenames:
             for line in open(filename):
                 # print(line)
@@ -70,6 +70,10 @@ class DumpPaperData(object):
         return ' '.join(tokens)
 
     def dump(self, papers):
+        """Dump paper date to files.
+
+        Note: It is useful to order paper randomly (order_by('?')) to avoid bias
+        """
 
         tot = papers.count()
         file_count = 0
@@ -77,6 +81,9 @@ class DumpPaperData(object):
 
         if not os.path.exists(self.to):
             os.makedirs(self.to)
+
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=tot, redirect_stderr=True).start()
 
         for count, paper in enumerate(papers):
 
@@ -117,6 +124,11 @@ class DumpPaperData(object):
 
             # write new line
             file.write('\n')
+
+            # update progress bar
+            pbar.update(count)
+        # close progress bar
+        pbar.finish()
 
         file.close()
 
