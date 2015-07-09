@@ -235,11 +235,8 @@ class Model(TimeStampedModel):
         for paper_pk in self.doc2vec.docvecs.doctags:
             paper = Paper.objects.get(pk=int(paper_pk))
             vector = self.doc2vec.docvecs[paper_pk].tolist()
-            try:
-                pv, _ = PaperVectors.objects.get_or_create(model=self,
-                                                           paper=paper)
-            except Exception:
-                raise Exception('issue with {0}'.format(paper_pk))
+            pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                       paper=paper)
             pv.vector = vector
             pv.save()
             pbar.update(count)
