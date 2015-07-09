@@ -12,7 +12,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from model_utils import fields
 
 from library.models import Paper, Journal
+from nlp.models import Model
 from feeds.models import UserFeed
+from feeds.constants import FEED_TIME_CHOICES
 
 from .validators import validate_first_name, validate_last_name
 from core.models import TimeStampedModel
@@ -53,6 +55,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         UserLib.objects.create(user=user)
         UserStats.objects.create_user_init(user, '')
+        UserSettings.objects.create(user=user)
         return user
 
     def create_superuser(self, **kwargs):
@@ -272,4 +275,30 @@ class UserLibJournal(TimeStampedModel):
         self.save()
 
 
+class UserSettingsManager(models.Manager):
+
+    def create(self, **kwargs):
+        model = self.model(**kwargs)
+        if not 'model' in kwargs:
+            nlp_model = Model.objects.first()
+            model.model = nlp_model
+        model.save(using=self._db)
+        return model
+
+
+class UserSettings(TimeStampedModel):
+
+    user = models.OneToOneField(User, primary_key=True, related_name='settings')
+
+    # NLP model to use
+    model = models.ForeignKey(Model, null=True)
+
+    # in days
+    time_lapse = models.IntegerField(default=7,
+                                     choices=FEED_TIME_CHOICES)
+
+    objects = UserSettingsManager()
+
+    def __str__(self):
+        return self.user.email
 

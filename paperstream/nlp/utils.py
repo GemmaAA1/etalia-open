@@ -79,8 +79,7 @@ class DumpPaperData(object):
             if not isinstance(kwargs['to'], str):
                 raise TypeError('<to> must be path string')
 
-
-        self.fields = kwargs.get('fields', ['abstract'])
+        self.fields = kwargs.get('fields', ['title', 'abstract'])
         self.to = kwargs.get('to', settings.NLP_DATA_PATH)
 
     @staticmethod

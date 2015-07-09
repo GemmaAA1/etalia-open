@@ -258,6 +258,11 @@ NLP_CHUNK_SIZE = 10000
 NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data')
 NLP_DOC2VEC_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods')
 
+
+# FEED APP
+# ------------------------------------------------------------------------------
+
+
 # CELERY
 # ------------------------------------------------------------------------------
 

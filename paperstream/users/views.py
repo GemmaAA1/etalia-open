@@ -17,7 +17,7 @@ from braces.views import LoginRequiredMixin
 
 from library.models import Paper
 from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
-    UserAuthenticationForm
+    UserAuthenticationForm, UserSettingsForm
 from .models import Affiliation
 from core.mixins import AjaxableResponseMixin
 from .tasks import update_lib as async_update_lib
@@ -195,7 +195,7 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
             self.request.user.save()
             return super(UserAffiliationUpdateView, self).form_valid(form)
         else:
-            return super(UserAffiliationUpdateView, self).form_valid(form)
+            return super(UserAffiliationUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
         affiliation = form.save()
@@ -212,6 +212,33 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return data
 
 ajax_update_affiliation = UserAffiliationUpdateView.as_view()
+
+
+class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
+                             FormView):
+    form_class = UserSettingsForm
+
+    def get_object(self, queryset=None):
+        return self.request.user.settings
+
+    def get_success_url(self):
+        return reverse('core:home')
+
+    def form_invalid(self, form):
+        return super(UserSettingsUpdateView, self).form_invalid(form)
+
+    def form_valid(self, form):
+        self.request.user.settings = form.save()
+        self.request.user.save()
+        return super(UserSettingsUpdateView, self).form_valid(form)
+
+    def get_ajax_data(self):
+        data = {'model': self.request.user.settings.model,
+                'time_lapse': self.request.user.settings.time_lapse,
+                }
+        return data
+
+ajax_update_settings = UserSettingsUpdateView.as_view()
 
 @login_required
 def ajax_user_lib_count_papers(request):

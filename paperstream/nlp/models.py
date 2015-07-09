@@ -36,20 +36,21 @@ class Model(TimeStampedModel):
     Model for a doc2vec type of Natural Language Modeling leveraging gensim
 
     Example of use case for training a new model:
-    1) Prepare and dump data.
-    >>> papers = Papers.objects.all()
-    >>> dumper = DumpPaperData('nlp/data')
-    >>> dumper.dump(papers)
-    2) Create model
+    1) Create model
     >>> model = Model.objects.create(name='test') # with default parameters
+    2) Prepare and dump data.
+    >>> papers = Papers.objects.all()
+    >>> dumper = DumpPaperData(to=model.data_path)
+    >>> dumper.dump(papers)
     3) Build vocab (with a phraser to join common n-gram word. ie new_york)
     >>> docs_l = WordListIterator('nlp/data')
     >>> phraser = Phrases(docs_l)
     >>> docs = TaggedDocumentsIterator('nlp/data', phraser=phraser)
     >>> model.build_vocab(docs)
-    4) Train and save
+    4) Train, save and set_active
     >>> model.train(docs, iteration=1)
     >>> model.save()
+    >>> model.set_active()
     5) Populate library is needed
     >>> model.populate_library()
     """
@@ -177,6 +178,8 @@ class Model(TimeStampedModel):
         current_status = self.status
         self.update_status('SAV')
         super(Model, self).save(*args, **kwargs)
+        if not os.path.exists(self.doc2vec_path):
+            os.makedirs(self.doc2vec_path)
         self.doc2vec.save(
             os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
         self.update_status(current_status)
@@ -225,7 +228,7 @@ class Model(TimeStampedModel):
         )
 
     def populate_library(self):
-        # Check that model status is Useable
+        # Check that model is Useable
         if not self.status == 'USE':
             raise StatusError('model status is {0}'.format(self.status))
         self.update_status('POP')
@@ -246,6 +249,13 @@ class Model(TimeStampedModel):
         # close progress bar
         pbar.finish()
         self.update_status('USE')
+
+    def set_active(self):
+        self.is_active = True
+        self.save_model_only()
+
+    class Meta:
+        ordering = ['name', ]
 
 
 class PaperVectors(TimeStampedModel):

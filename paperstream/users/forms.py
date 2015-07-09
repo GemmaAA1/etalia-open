@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Affiliation
+from .models import Affiliation, UserSettings
 from .validators import validate_first_name, validate_last_name
+
+from nlp.models import Model
 
 User = get_user_model()
 
@@ -90,3 +92,18 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email', 'affiliation')
+
+
+class UserSettingsForm(forms.ModelForm):
+
+    model = forms.ModelChoiceField(queryset=Model.objects.all(),
+                                   to_field_name='name')
+
+    def __init__(self, *args, **kwargs):
+        super(UserSettingsForm, self).__init__(*args, **kwargs)
+        # self.fields['model'].queryset = Model.objects.all()
+
+    class Meta:
+        model = UserSettings
+        fields = ('model', 'time_lapse')
+

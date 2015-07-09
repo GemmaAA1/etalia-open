@@ -105,16 +105,30 @@
                                 <li class="list-group-item">Library status: {{ user.lib.get_status_display }}
                                     <a href="{% url 'user:update-user-lib' %}">  (update)</a>
                                 </li>
-                                <li class="list-group-item">Library provier: {{ user.social_auth.first.get_backend.print_name }}</li>
+                                <li class="list-group-item">Library provider: {{ user.social_auth.first.get_backend.print_name }}</li>
                             </ul>
                         </div>
                         <div class="tab-pane" id="tab4">
-                            <ul class="list-group">
-                            </ul>
                         </div>
                         <div class="tab-pane" id="tab5">
-                            <ul class="list-group">
-                            </ul>
+                            <p>
+                            <form role="form" method="POST" id="settingsForm" data-async data-target="#update-settings" action="{% url "user:update-settings" %}">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="department"
+                                           class="control-label">NLP Model:</label>
+                                    <input type="text" name="model"
+                                           class="form-control input-md"
+                                           placeholder="model"
+                                           value="{{ user.settings.model.name }}">
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
+                                    <button id="save-settings" type="submit" class="btn btn-primary btn-md">Save</button>
+                                </div>
+                            </form>
+                            </p>
                         </div>
                     </div>
                 </div>
