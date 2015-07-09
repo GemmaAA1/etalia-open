@@ -63,6 +63,8 @@ class Model(TimeStampedModel):
 
     status = models.CharField(max_length=3, choices=MODEL_STATES, default='UNT')
 
+    is_active = models.BooleanField(default=False)
+
     # document2vector instance from gensim
     doc2vec = Doc2Vec()
 
