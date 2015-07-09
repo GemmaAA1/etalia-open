@@ -38,10 +38,10 @@ class TaggedDocumentsIterator(object):
                 # print(line)
                 pk, text = re.match(r'([\d]+): (.+)', line).groups()
                 if self.phraser:
-                    text_l = self.phraser(text.strip().split(' '))
+                    text_l = self.phraser[text.strip().split(' ')]
                 else:
                     text_l = text.strip().split(' ')
-                yield TaggedDocument(text, [pk, ])
+                yield TaggedDocument(text_l, [pk, ])
 
 class WordListIterator(object):
 
@@ -109,13 +109,12 @@ class DumpPaperData(object):
         if not os.path.exists(self.to):
             os.makedirs(self.to)
 
+        sub_update_step = 20
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=tot, redirect_stderr=True).start()
+                           maxval=int(tot/sub_update_step),
+                           redirect_stderr=True).start()
 
         for count, paper in enumerate(papers):
-
-            if not count % 10:
-                print('{0}/{1}'.format(count, tot))
 
             if not count % self.CHUNK_SIZE:
                 if file:
@@ -153,7 +152,8 @@ class DumpPaperData(object):
             file.write('\n')
 
             # update progress bar
-            pbar.update(count)
+            if not count % sub_update_step:
+                pbar.update(count/sub_update_step)
         # close progress bar
         pbar.finish()
 

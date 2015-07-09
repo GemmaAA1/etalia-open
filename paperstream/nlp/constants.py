@@ -4,6 +4,7 @@ MODEL_STATES = (
     ('TRA', 'Training'),
     ('SAV', 'Saving'),
     ('LOA', 'Loading'),
+    ('POP', 'Populating'),
     ('IDL', 'Idle'),
     ('USE', 'Usable'),
 )

@@ -3,10 +3,12 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 from core.models import TimeStampedModel
+from progressbar import ProgressBar, Percentage, Bar, ETA
 
-from gensim.models import Doc2Vec
+from gensim.models import Doc2Vec, Phrases
 
 from .constants import MODEL_STATES
+from .exceptions import StatusError
 
 from library.models import Paper
 # Create your models here.
@@ -30,6 +32,28 @@ class ModelManager(models.Manager):
 
 
 class Model(TimeStampedModel):
+    """
+    Model for a doc2vec type of Natural Language Modeling leveraging gensim
+
+    Example of use case for training a new model:
+    1) Prepare and dump data.
+    >>> papers = Papers.objects.all()
+    >>> dumper = DumpPaperData('nlp/data')
+    >>> dumper.dump(papers)
+    2) Create model
+    >>> model = Model.objects.create(name='test') # with default parameters
+    3) Build vocab (with a phraser to join common n-gram word. ie new_york)
+    >>> docs_l = WordListIterator('nlp/data')
+    >>> phraser = Phrases(docs_l)
+    >>> docs = TaggedDocumentsIterator('nlp/data', phraser=phraser)
+    >>> model.build_vocab(docs)
+    4) Train and save
+    >>> model.train(docs, iteration=1)
+    >>> model.save()
+    5) Populate library is needed
+    >>> model.populate_library()
+    """
+
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
 
@@ -177,6 +201,9 @@ class Model(TimeStampedModel):
     def update_doc2vec(self):
         """Instantiate new doc2vec with model field attributes
         """
+        if not self.status == 'IDL' or 'USE':
+            raise StatusError('model status is {0}'.format(self.status))
+
         self.doc2vec = Doc2Vec(
             dm=self.dm,
             size=self.size,
@@ -195,10 +222,45 @@ class Model(TimeStampedModel):
             dbow_words=self.dbow_words
         )
 
+    def populate_library(self):
+        # Check that model status is Useable
+        if not self.status == 'USE':
+            raise StatusError('model status is {0}'.format(self.status))
+        self.update_status('POP')
 
-class Fingerprint(TimeStampedModel):
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=len(self.doc2vec.docvecs.doctags),
+                           redirect_stderr=True).start()
+        count = 0
+        for paper_pk in self.doc2vec.docvecs.doctags:
+            paper = Paper.objects.get(pk=int(paper_pk))
+            vector = self.doc2vec.docvecs[paper_pk].tolist()
+            try:
+                pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                           paper=paper)
+            except Exception:
+                raise Exception('issue with {0}'.format(paper_pk))
+            pv.vector = vector
+            pv.save()
+            pbar.update(count)
+            count += 1
+        # close progress bar
+        pbar.finish()
+        self.update_status('USE')
+
+
+class PaperVectors(TimeStampedModel):
     paper = models.ForeignKey(Paper)
 
-    mod = models.ForeignKey(Model)
+    model = models.ForeignKey(Model)
 
-    vec = ArrayField(models.FloatField())
+    vector = ArrayField(models.FloatField(null=True), null=True)
+
+    class meta:
+        unique_together = ('paper', 'model')
+
+    def __str__(self):
+        return '{pk} with {name}'.format(pk=self.paper.pk, name=self.model.name)
+
+
+

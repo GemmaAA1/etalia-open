@@ -19,6 +19,8 @@ class UserFeedManager(BaseUserManager):
         return user_feed
 
     def init_default_userfeed(self, user, **kwargs):
+        """Populate a userfeed 'main' with all papers in user library
+        """
         papers_seed = user.lib.papers.all()
         return self.init_userfeed('main', user, papers_seed, **kwargs)
 
