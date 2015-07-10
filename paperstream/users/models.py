@@ -278,24 +278,27 @@ class UserLibJournal(TimeStampedModel):
 class UserSettingsManager(models.Manager):
 
     def create(self, **kwargs):
-        model = self.model(**kwargs)
-        if not 'model' in kwargs:
+        # if nlp_model not defined, defaut to first nlp_model
+        if 'model' not in kwargs:
             nlp_model = Model.objects.first()
-            model.model = nlp_model
+            kwargs['model'] = nlp_model
+        model = self.model(**kwargs)
         model.save(using=self._db)
         return model
 
 
 class UserSettings(TimeStampedModel):
 
-    user = models.OneToOneField(User, primary_key=True, related_name='settings')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=True,
+                                related_name='settings')
 
     # NLP model to use
-    model = models.ForeignKey(Model, null=True)
+    model = models.ForeignKey(Model, verbose_name='NLP Model')
 
     # in days
     time_lapse = models.IntegerField(default=7,
-                                     choices=FEED_TIME_CHOICES)
+                                     choices=FEED_TIME_CHOICES,
+                                     verbose_name='Feed from the past')
 
     objects = UserSettingsManager()
 

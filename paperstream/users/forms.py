@@ -78,6 +78,14 @@ class UpdateUserBasicForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name')
+        widgets = {
+            'first_name':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'First Name'}),
+            'last_name':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Last Name'}),
+        }
 
 
 class UserAffiliationForm(forms.ModelForm):
@@ -85,25 +93,39 @@ class UserAffiliationForm(forms.ModelForm):
     class Meta:
         model = Affiliation
         fields = ('department', 'institution', 'city', 'state', 'country')
-
-
-class UserProfileForm(forms.ModelForm):
-
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email', 'affiliation')
+        widgets = {
+            'department':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Department'}),
+            'institution':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Institution'}),
+            'city':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'City'}),
+            'state':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'State'}),
+            'country':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Institution'}),
+        }
 
 
 class UserSettingsForm(forms.ModelForm):
 
-    model = forms.ModelChoiceField(queryset=Model.objects.all(),
-                                   to_field_name='name')
+    # model = forms.ModelChoiceField(queryset=Model.objects.all(),
+    #                                to_field_name='name')
 
     def __init__(self, *args, **kwargs):
         super(UserSettingsForm, self).__init__(*args, **kwargs)
-        # self.fields['model'].queryset = Model.objects.all()
+        self.fields['model'].choices = [(mod.pk, mod.name) for mod in Model.objects.all()]
 
     class Meta:
         model = UserSettings
         fields = ('model', 'time_lapse')
+        widgets = {
+            'model': forms.Select(attrs={'class': 'form-control'}),
+            'time_lapse': forms.Select(attrs={'class': 'form-control'}),
+        }
 

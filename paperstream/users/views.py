@@ -228,8 +228,9 @@ class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserSettingsUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
-        self.request.user.settings = form.save()
-        self.request.user.save()
+        self.request.user.settings.time_lapse = form.cleaned_data['time_lapse']
+        self.request.user.settings.model = form.cleaned_data['model']
+        self.request.user.settings.save()
         return super(UserSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
