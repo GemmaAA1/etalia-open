@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
+from django.db.models import Q, F
+from django.utils import timezone
 
 from core.models import TimeStampedModel
 from .validators import validate_feed_name
@@ -9,7 +11,6 @@ from library.models import Paper
 
 
 class UserFeedManager(BaseUserManager):
-
     def init_userfeed(self, name, user, papers_seed, **kwargs):
         user_feed = self.model(user=user, name=name, **kwargs)
         user_feed.save(using=self._db)
@@ -38,12 +39,12 @@ class UserFeed(TimeStampedModel):
 
     # relevant papers matched
     papers_match = models.ManyToManyField(Paper, through='UserFeedPaper',
-                                       related_name='paper_out')
+                                          related_name='paper_out')
 
     status = models.CharField(max_length=3, blank=True, default='',
-                               choices=(('', 'Uninitialized'),
-                                        ('IDL', 'Idle'),
-                                        ('ING', 'Syncing')))
+                              choices=(('', 'Uninitialized'),
+                                       ('IDL', 'Idle'),
+                                       ('ING', 'Syncing')))
 
     objects = UserFeedManager()
 
@@ -66,14 +67,21 @@ class UserFeed(TimeStampedModel):
     def __str__(self):
         return self.name
 
-    def update(self):
-        # TODO:
-        for paper in self.papers_seed.all():
-            UserFeedPaper.objects.get_or_create(feed=self, paper=paper)
+    def initialize(self):
+        # get library matrix vector for paper seed of feed
+        model_pk = self.user.settings.model.pk
+        seed_papers = self.papers_seed.all()
+        seed_papers_vec = [paper.papervectors_set.get(model__pk=model_pk).vector for paper in seed_papers]
+        seed_journals_pk = [paper.journal.pk for paper in seed_papers if paper.journal]
 
+        # get papers to look at
+        from_date = (timezone.now() - timezone.timedelta(
+            days=self.user.settings.time_lapse)).date()
+        target_papers = Paper.objects.filter(Q(date_ep__gt=from_date) | (Q(date_pp__gt=from_date) & Q(date_ep=None)))
+
+        
 
 class UserFeedPaper(TimeStampedModel):
-
     feed = models.ForeignKey(UserFeed)
 
     paper = models.ForeignKey(Paper)

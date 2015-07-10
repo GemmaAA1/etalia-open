@@ -198,7 +198,8 @@ class Paper(TimeStampedModel):
                                null=True, unique=True, verbose_name='Other ID',
                                db_index=True)
     # Title
-    title = models.CharField(max_length=500, blank=False, default='')
+    title = models.CharField(max_length=500, blank=False, default='',
+                             db_index=True)
 
     # Authors
     # authors
@@ -211,7 +212,8 @@ class Paper(TimeStampedModel):
     abstract = models.TextField(blank=True, default='')
 
     # Journal
-    journal = models.ForeignKey(Journal, null=True, blank=True, default=None)
+    journal = models.ForeignKey(Journal, null=True, blank=True, default=None,
+                                db_index=True)
     # volume
     volume = models.CharField(max_length=200, blank=True, default='')
     # issue
@@ -224,9 +226,11 @@ class Paper(TimeStampedModel):
 
     # Dates
     # date electronically published
-    date_ep = models.DateField(null=True, blank=True, default=None)
+    date_ep = models.DateField(null=True, blank=True, default=None,
+                               db_index=True)
     # date of publication in issue journal
-    date_pp = models.DateField(null=True, blank=True, default=None)
+    date_pp = models.DateField(null=True, blank=True, default=None,
+                               db_index=True)
     # date of paper last revised (e.g. arxiv, or publisher with e.g grant#)
     date_lr = models.DateField(null=True, blank=True, default=None)
 
