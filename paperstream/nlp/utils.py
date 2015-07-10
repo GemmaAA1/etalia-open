@@ -123,8 +123,12 @@ class DumpPaperData(object):
                             'w+')
                 file_count += 1
 
-            # write head
-            file.write('{pk}: '.format(pk=paper.pk))
+            # write header
+            if paper.journal:
+                j_pk = paper.journal.pk
+            else:
+                j_pk = 0
+            file.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
 
             # write line body
             line_val = []
