@@ -53,7 +53,7 @@ def init_default_feed(user_pk):
     user_feed = UserFeed.objects.init_default_userfeed(user)
 
     # update
-    user_feed.update()
+    user_feed.initialize()
 
     return user_pk
 

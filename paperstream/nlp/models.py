@@ -1,4 +1,5 @@
 import os
+from random import shuffle
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
@@ -10,13 +11,13 @@ from gensim.models import Doc2Vec, Phrases
 from .constants import MODEL_STATES
 from .exceptions import StatusError
 
-from library.models import Paper
+from library.models import Paper, Journal
 # Create your models here.
 
 class ModelManager(models.Manager):
     def create(self, **kwargs):
         model = self.model(**kwargs)
-        model.update_doc2vec()
+        model.init_doc2vec()
         model.save(using=self._db)
         return model
 
@@ -61,8 +62,6 @@ class Model(TimeStampedModel):
     doc2vec_path = models.CharField(
         max_length=256,
         default=settings.NLP_DOC2VEC_PATH)
-
-    status = models.CharField(max_length=3, choices=MODEL_STATES, default='UNT')
 
     is_active = models.BooleanField(default=False)
 
@@ -111,7 +110,7 @@ class Model(TimeStampedModel):
 
     # `hs` = if 1 (default), hierarchical sampling will be used for model
     # training (else set to 0).
-    hs = models.IntegerField(default=1)
+    hs = models.IntegerField(default=0)
 
     # `negative` = if > 0, negative sampling will be used, the int for negative
     # specifies how many "noise words" should be drawn (usually between 5-20).
@@ -160,29 +159,32 @@ class Model(TimeStampedModel):
         return self.name
 
     def build_vocab(self, documents):
-        self.update_status('VOC')
         self.doc2vec.build_vocab(documents)
-        self.update_status('IDL')
 
-    def train(self, documents, iteration=1):
-        self.update_status('TRA')
-        for ite in range(iteration):
+    def train(self, documents, passes=10):
+        # Using explicit multiple-pass, alpha-reduction approach as sketched in
+        # gensim doc2vec blog post
+        alpha, min_alpha, passes = (0.025, 0.001, passes)
+        alpha_delta = (alpha - min_alpha) / passes
+        for epoch in range(passes):
+            print('Epoch {epoch}/{passes}\n'.format(epoch=epoch, passes=passes))
+            shuffle(documents)
+            self.alpha = alpha
+            self.doc2vec.alpha = alpha
+            self.doc2vec.min_alpha = alpha
             self.doc2vec.train(documents)
-        self.update_status('IDL')
+            alpha -= alpha_delta
 
-    def save_model_only(self, *args, **kwargs):
+    def save_db_only(self, *args, **kwargs):
         super(Model, self).save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        current_status = self.status
-        self.update_status('SAV')
         super(Model, self).save(*args, **kwargs)
         if not os.path.exists(self.doc2vec_path):
             os.makedirs(self.doc2vec_path)
         self.doc2vec.save(
             os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
-        self.update_status(current_status)
 
     def delete(self, *args, **kwargs):
         try:
@@ -192,10 +194,6 @@ class Model(TimeStampedModel):
             pass
         super(Model, self).delete(*args, **kwargs)
 
-    def update_status(self, state):
-        self.status = state
-        self.save_model_only()
-
     def clean(self):
         """Check concordance of model field attributes and doc2vec attributes
         """
@@ -203,12 +201,9 @@ class Model(TimeStampedModel):
             if not getattr(self, attr[0]) == getattr(self.doc2vec, attr[1]):
                 raise ValueError('{attr} does not match'.format(attr=attr[0]))
 
-    def update_doc2vec(self):
+    def init_doc2vec(self):
         """Instantiate new doc2vec with model field attributes
         """
-        if not self.status == 'IDL' or 'USE':
-            raise StatusError('model status is {0}'.format(self.status))
-
         self.doc2vec = Doc2Vec(
             dm=self.dm,
             size=self.size,
@@ -228,27 +223,38 @@ class Model(TimeStampedModel):
         )
 
     def populate_library(self):
-        # Check that model is Useable
-        if not self.status == 'USE':
-            raise StatusError('model status is {0}'.format(self.status))
-        self.update_status('POP')
 
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=len(self.doc2vec.docvecs.doctags),
                            redirect_stderr=True).start()
         count = 0
-        for paper_pk in self.doc2vec.docvecs.doctags:
-            paper = Paper.objects.get(pk=int(paper_pk))
-            vector = self.doc2vec.docvecs[paper_pk].tolist()
-            pv, _ = PaperVectors.objects.get_or_create(model=self,
-                                                       paper=paper)
-            pv.vector = vector
-            pv.save()
+        # TODO: replace with bulk update / create ?
+        for pk in self.doc2vec.docvecs.doctags:
+
+            if pk[0] == 'j':
+                try:
+                    journal = Journal.objects.get(pk=int(pk[2:]))
+                    vector = self.doc2vec.docvecs[pk].tolist()
+                    pv, _ = JournalVectors.objects.get_or_create(model=self,
+                                                                 journal=journal)
+                    pv.vector = vector
+                    pv.save()
+                except Journal.DoesNotExist:
+                    print('Journal {pk} did not match'.format(pk=pk))
+            else:
+                try:
+                    paper = Paper.objects.get(pk=int(pk))
+                    vector = self.doc2vec.docvecs[pk].tolist()
+                    pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                               paper=paper)
+                    pv.vector = vector
+                    pv.save()
+                except Paper.DoesNotExist:
+                    print('Paper {pk} did not match'.format(pk=pk))
             pbar.update(count)
             count += 1
         # close progress bar
         pbar.finish()
-        self.update_status('USE')
 
     def set_active(self):
         self.is_active = True
@@ -259,6 +265,7 @@ class Model(TimeStampedModel):
 
 
 class PaperVectors(TimeStampedModel):
+
     paper = models.ForeignKey(Paper)
 
     model = models.ForeignKey(Model)
@@ -272,4 +279,17 @@ class PaperVectors(TimeStampedModel):
         return '{pk} with {name}'.format(pk=self.paper.pk, name=self.model.name)
 
 
+class JournalVectors(TimeStampedModel):
+
+    journal = models.ForeignKey(Journal)
+
+    model = models.ForeignKey(Model)
+
+    vector = ArrayField(models.FloatField(null=True), null=True)
+
+    class meta:
+        unique_together = ('journal', 'model')
+
+    def __str__(self):
+        return '{pk} with {name}'.format(pk=self.journal.pk, name=self.model.name)
 

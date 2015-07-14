@@ -36,12 +36,12 @@ class TaggedDocumentsIterator(object):
         for filename in self.filenames:
             for line in open(filename):
                 # print(line)
-                pk, text = re.match(r'([\d]+): (.+)', line).groups()
+                pk, j_pk, text = re.match(r'(?P<pk>[\d]+), (?P<j_pk>j_[\d]+): (.+)', line).groups()
                 if self.phraser:
                     text_l = self.phraser[text.strip().split(' ')]
                 else:
                     text_l = text.strip().split(' ')
-                yield TaggedDocument(text_l, [pk, ])
+                yield TaggedDocument(text_l, [pk, j_pk])
 
 class WordListIterator(object):
 
