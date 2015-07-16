@@ -8,3 +8,8 @@ MODEL_STATES = (
     ('IDL', 'Idle'),
     ('USE', 'Usable'),
 )
+
+FIELDS_FOR_MODEL = (
+    ('title', 'Title'),
+    ('abstract', 'Abstract'),
+)

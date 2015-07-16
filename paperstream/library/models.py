@@ -7,6 +7,7 @@ from core.models import TimeStampedModel, NullableCharField
 from .validators import validate_issn, validate_author_names
 from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
 from .utils import langcode_to_langpap
+from .forms import PaperFormFillBlanks
 from model_utils import Choices
 from model_utils.fields import MonitorField, StatusField
 

@@ -14,7 +14,8 @@ class BackendLibMixin(object):
 
     def get_or_create_entry(self, entry):
         try:
-            # minimum to be a paper: have a title and an author and be a support paper type
+            # minimum to be a paper: have a title and an author and be a
+            # supported paper type
             if entry['paper'].get('title', '') and entry['authors'] and \
                     entry['paper'].get('type', ''):
                 item_paper = entry['paper']
@@ -49,7 +50,7 @@ class BackendLibMixin(object):
                     except Journal.DoesNotExist:
                         journal = None
                     paper.journal = journal
-                    paper.is_trusted = False  # we trust consumer source only currently
+                    paper.is_trusted = False  # we do not trust user based source
                     paper.save()
 
                     # create/get authors

@@ -3,22 +3,24 @@ from random import shuffle
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
-from core.models import TimeStampedModel
-from progressbar import ProgressBar, Percentage, Bar, ETA
+from django.core.validators import MaxValueValidator, MinValueValidator
 
+from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec, Phrases
 
 from .constants import MODEL_STATES, FIELDS_FOR_MODEL
 from .exceptions import StatusError
 from .utils import paper2tokens
 
+from core.models import TimeStampedModel
 from library.models import Paper, Journal
-# Create your models here.
+
 
 
 class ModelManager(models.Manager):
     def create(self, **kwargs):
         model = self.model(**kwargs)
+        super(Model, model).save(using=self._db)
 
         # paper fields used to generate model data
         if 'fields' in kwargs:
@@ -31,10 +33,9 @@ class ModelManager(models.Manager):
         # Init doc2vec from gensim
         model.init_doc2vec()
 
-        model.save(using=self._db)
         return model
 
-    def get(self, **kwargs):
+    def load(self, **kwargs):
         model = super(ModelManager, self).get(**kwargs)
         try:
             model.doc2vec = Doc2Vec.load(os.path.join(model.doc2vec_path,
@@ -65,7 +66,9 @@ class Model(TimeStampedModel):
     >>> model.save()
     >>> model.set_active()
     5) Populate library is needed
-    >>> model.infer_library()
+    >>> model.save_all_vec_from_bulk()
+    6) Infer new paper <paper> as they come in
+    >>> model.infer_paper(paper)
     """
 
     name = models.CharField(max_length=128, blank=False, null=False,
@@ -92,7 +95,8 @@ class Model(TimeStampedModel):
     dm = models.IntegerField(default=1)
 
     # `size` is the dimensionality of the feature vectors.
-    size = models.IntegerField(default=100)
+    size = models.IntegerField(default=100,
+           validators=[MaxValueValidator(settings.NLP_MAX_VECTOR_SIZE)])
 
     # `window` is the maximum distance between the predicted word and context
     # words used for prediction within a document.
@@ -191,6 +195,7 @@ class Model(TimeStampedModel):
             alpha -= alpha_delta
 
     def save_db_only(self, *args, **kwargs):
+        self.full_clean()
         super(Model, self).save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
@@ -273,7 +278,7 @@ class Model(TimeStampedModel):
                     vector = self.doc2vec.docvecs[pk].tolist()
                     pv, _ = PaperVectors.objects.get_or_create(model=self,
                                                                paper=paper)
-                    pv.vector = vector
+                    pv.set_vector(vector)
                     pv.save()
                 except Paper.DoesNotExist:
                     print('Paper {pk} did not match'.format(pk=pk))
@@ -288,39 +293,58 @@ class Model(TimeStampedModel):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper):
+    def infer_paper(self, paper, alpha=0.05, min_alpha=0.0001, steps=5):
         """Infer model vector for paper
         """
-        fields = self.paperfields_set.all().values_list('field', flat='True')
+        fields = list(self.paperfields.all().values_list('field', flat='True'))
 
         pv, _ = PaperVectors.objects.get_or_create(model=self,
                                                    paper_id=paper)
         doc_words = paper2tokens(paper, fields=fields)
         vector = self.doc2vec.infer_vector(doc_words,
-                                           alpha=0.1,
-                                           min_alpha=0.0001,
-                                           steps=5)
-        pv.vector = vector
+                                           alpha=alpha,
+                                           min_alpha=min_alpha,
+                                           steps=steps)
+        pv.set_vector(vector.tolist())
         pv.save()
 
-    def infer_paper_library(self):
+        return vector
+
+    def infer_papers(self, papers, **kwargs):
         """Infer model vector for all papers in library
         """
-        papers = Paper.objects.all()
 
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=papers.count(), redirect_stderr=True).start()
         count = 0
         for paper in papers:
-            self.infer_paper(paper)
+            self.infer_paper(paper, **kwargs)
             pbar.update(count)
             count += 1
         # close progress bar
         pbar.finish()
 
+    @classmethod
+    def infer_paper_all_models(cls, paper, **kwargs):
+        """Infer all model vector for paper
+        """
+        model_names = list(cls.objects.all().values_list('name', flat='True'))
+        for model_name in model_names:
+            model = cls.objects.get(name=model_name)
+            model.infer_paper(paper, **kwargs)
+
+    @classmethod
+    def infer_papers_all_models(cls, papers, **kwargs):
+        """Infer all model vector for all papers
+        """
+        model_names = list(cls.objects.all().values_list('name', flat='True'))
+        for model_name in model_names:
+            model = cls.objects.get(name=model_name)
+            model.infer_papers(papers, **kwargs)
+
     def set_active(self):
         self.is_active = True
-        self.save_model_only()
+        self.save_db_only()
 
     def dump(self, papers):
         """Dump papers data to pre-process text files.
@@ -336,7 +360,7 @@ class Model(TimeStampedModel):
         Note: It is useful to order paper randomly (order_by('?')) to avoid bias
         """
 
-        fields = self.paperfields_set.all().values_list('field', flat='True')
+        fields = list(self.paperfields.all().values_list('field', flat='True'))
         tot = papers.count()
         file_count = 0
         file = None
@@ -395,14 +419,35 @@ class FieldUseInModel(TimeStampedModel):
     class Meta:
         unique_together = [('model', 'field')]
 
+    def __str__(self):
+        return '{field}'.format(field=self.field)
+
+class PaperVectorsManager(models.Manager):
+
+    def create(self, **kwargs):
+        # enforce model is active
+        nlp_model = kwargs.get('model')
+        if not nlp_model.is_active:
+            raise ValueError('model {0} is not active'.format(nlp_model.name))
+        return super(PaperVectorsManager, self).create(**kwargs)
+
 
 class PaperVectors(TimeStampedModel):
+    """Paper Vector relationship
 
-    paper = models.ForeignKey(Paper)
+    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
+    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
+    Shorter vectors are pad with None
+    """
+
+    paper = models.ForeignKey(Paper, related_name='vectors')
 
     model = models.ForeignKey(Model)
 
-    vector = ArrayField(models.FloatField(null=True), null=True)
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE)
+
+    objects = PaperVectorsManager()
 
     class meta:
         unique_together = ('paper', 'model')
@@ -410,6 +455,14 @@ class PaperVectors(TimeStampedModel):
     def __str__(self):
         return '{pk} with {name}'.format(pk=self.paper.pk, name=self.model.name)
 
+    def infer_vector(self, **kwargs):
+        self.set_vector(self.model.infer_paper(self.paper, **kwargs))
+
+    def set_vector(self, vector):
+        if len(vector) < settings.NLP_MAX_VECTOR_SIZE:
+            vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
+        self.vector = vector
+        self.save()
 
 class JournalVectors(TimeStampedModel):
 

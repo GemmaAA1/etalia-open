@@ -77,10 +77,7 @@ class PaperModelTest(TestCase):
         self.assertIn('PMID: pubmed id', disp_str)
 
 
-
-
 class JournalModelTest(TestCase):
-
 
     def setUp(self):
         Journal.objects.get_or_create(title='Journal X', id_issn='1053-8119')

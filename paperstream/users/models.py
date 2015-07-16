@@ -2,18 +2,12 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
-from django.db.models import Q
 from datetime import date
 from django.core.mail import send_mail
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
-
-from model_utils import fields
 
 from library.models import Paper, Journal
 from nlp.models import Model
-from feeds.models import UserFeed
 from feeds.constants import FEED_TIME_CHOICES
 
 from .validators import validate_first_name, validate_last_name
@@ -239,9 +233,9 @@ class UserLibPaper(TimeStampedModel):
 
     paper = models.ForeignKey(Paper)
 
-    date_created = models.DateField(default=date(2000, 1, 1))
+    date_created = models.DateField(default=None, null=True)
 
-    date_last_modified = models.DateField(default=date(2000, 1, 1))
+    date_last_modified = models.DateField(default=None, null=True)
 
     authored = models.NullBooleanField(default=None, null=True, blank=True)
 

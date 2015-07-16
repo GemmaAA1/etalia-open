@@ -16,19 +16,6 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                     level=logging.INFO)
 
-
-def pre_process_text(text):
-    # remove HTML
-    text = BeautifulSoup(text).get_text()
-
-    # lower text
-    text = text.lower()
-
-    # tokenize
-    tokens = nltk.word_tokenize(text)
-
-    return ' '.join(tokens)
-
 def paper2tokens(paper, **kwargs):
     """Convert paper instance to tokens list
     """
@@ -52,7 +39,21 @@ def paper2tokens(paper, **kwargs):
         # pre-process
         tokens_list.append(pre_process_text(str_val))
 
-    return tokens_list
+    return ' '.join(tokens_list).split(' ')
+
+def pre_process_text(text):
+    """Preprocess text
+    """
+    # remove HTML
+    text = BeautifulSoup(text).get_text()
+
+    # lower text
+    text = text.lower()
+
+    # tokenize
+    tokens = nltk.word_tokenize(text)
+
+    return ' '.join(tokens)
 
 class TaggedDocumentsIterator(object):
 
