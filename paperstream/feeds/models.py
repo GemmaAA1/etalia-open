@@ -18,9 +18,12 @@ from nlp.models import PaperVectors, JournalVectors, Model
 
 from .validators import validate_feed_name
 
+
 class UserFeedManager(BaseUserManager):
 
     def create(self, **kwargs):
+        """Create new UserFeed / UserFeedVector
+        """
         if 'name' not in kwargs:
             raise AssertionError('<name> is not defined')
         if 'user' not in kwargs:
@@ -45,7 +48,8 @@ class UserFeedManager(BaseUserManager):
         return user_feed
 
     def create_default(self, **kwargs):
-        """Populate a userfeed 'main' with all papers in user library
+        """Create a new default UserFeed / UserFeedVector, named 'main' with
+        all papers in user library
         """
         if 'user' not in kwargs:
             raise AssertionError('<user> is not defined')
@@ -54,7 +58,8 @@ class UserFeedManager(BaseUserManager):
 
 
 class UserFeed(TimeStampedModel):
-    """Feed of user"""
+    """User Feed model
+    """
 
     name = models.CharField(max_length=100, default='main',
                             validators=[validate_feed_name])
@@ -77,11 +82,11 @@ class UserFeed(TimeStampedModel):
     objects = UserFeedManager()
 
     @property
-    def count_paper_in(self):
+    def count_papers_seed(self):
         return self.papers_seed.all().count()
 
     @property
-    def count_paper_out(self):
+    def count_papers_match(self):
         return self.papers_match.all().count()
 
     def set_feed_syncing(self):
@@ -98,7 +103,9 @@ class UserFeed(TimeStampedModel):
     def initialize(self):
         """Initialize a news feed
         """
-        # get papers to look at excluding papers already in user lib and none trusted
+
+        # get papers to look at excluding papers already in user lib and not
+        # trusted
         from_date = (timezone.now() - timezone.timedelta(days=self.user.settings.time_lapse)).date()
         paper_exclude_pks = self.user.lib.papers.values_list('pk', flat='True')
         target_papers_pk = Paper.objects\
@@ -371,6 +378,7 @@ class UserFeedPaper(TimeStampedModel):
 
     class Meta:
         ordering = ['-score']
+
 
 class UserFeedVector(TimeStampedModel):
     """Feature vector for feed is defined as the averaged of paper vectors in

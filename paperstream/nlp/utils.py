@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
 
+from .models import Model
+
 from django.conf import settings
 
 import logging
@@ -56,7 +58,8 @@ def pre_process_text(text):
     return ' '.join(tokens)
 
 class TaggedDocumentsIterator(object):
-
+    """Iterator of TaggedDocument
+    """
     def __init__(self, dir_path, **kwargs):
         self.FILE_FORMAT = '*.txt'
         if 'phraser' in kwargs:

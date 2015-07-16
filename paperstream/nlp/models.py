@@ -7,15 +7,15 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec, Phrases
+from gensim.models.doc2vec import TaggedDocument
 
 from .constants import MODEL_STATES, FIELDS_FOR_MODEL
 from .exceptions import StatusError
-from .utils import paper2tokens
+from .utils import paper2tokens, TaggedDocumentsIterator, WordListIterator
 
 from core.models import TimeStampedModel
 from core.utils import pad_vector
 from library.models import Paper, Journal
-
 
 
 class ModelManager(models.Manager):
@@ -34,6 +34,10 @@ class ModelManager(models.Manager):
         model.init_doc2vec()
 
         return model
+
+    def get(self, **kwargs):
+        print('Not loading Doc2Vec. Use load() instead')
+        return super(ModelManager, self).get(**kwargs)
 
     def load(self, **kwargs):
         model = super(ModelManager, self).get(**kwargs)
@@ -56,34 +60,36 @@ class Model(TimeStampedModel):
     2) Prepare and dump data.
     >>> papers = Papers.objects.all()
     >>> model.dump(papers)
-    3) Build vocab (with a phraser to join common n-gram word. ie new_york)
-    >>> docs_l = WordListIterator('nlp/data')
-    >>> phraser = Phrases(docs_l)
-    >>> docs = TaggedDocumentsIterator('nlp/data', phraser=phraser)
+    3) Build phraser and vocab (phraser: join common n-gram word. ie new_york, optional)
+    >>> docs = model.load_documents()
+    >>> phraser = model.build_phraser(docs, min_count=)
+    >>> docs = model.load_documents(phraser=phraser)
     >>> model.build_vocab(docs)
     4) Train, save and set_active
-    >>> model.train(docs, iteration=1)
+    >>> model.train(docs, passes=10, shuffle_=True)
     >>> model.save()
     >>> model.set_active()
     5) Populate library is needed
-    >>> model.save_all_vec_from_bulk()
-    6) Infer new paper <paper> as they come in
+    >>> model.save_journal_vec_from_bulk()
+    >>> model.save_paper_vec_from_bulk()
+    6) Start embedding new paper <paper> as they come in
     >>> model.infer_paper(paper)
     """
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
-
+    # path to where data are dump for learning
     data_path = models.CharField(max_length=256,
                                  default=settings.NLP_DATA_PATH)
-
+    # path where to load/save Doc2Vec instance
     doc2vec_path = models.CharField(
         max_length=256,
         default=settings.NLP_DOC2VEC_PATH)
 
+    # when trained, model becomes active
     is_active = models.BooleanField(default=False)
 
-    # document2vector instance from gensim
+    # doc2vec instance from gensim
     doc2vec = Doc2Vec()
 
     objects = ModelManager()
@@ -177,22 +183,26 @@ class Model(TimeStampedModel):
     def __str__(self):
         return self.name
 
-    def build_vocab(self, documents):
-        self.doc2vec.build_vocab(documents)
-
-    def train(self, documents, passes=10):
-        # Using explicit multiple-pass, alpha-reduction approach as sketched in
-        # gensim doc2vec blog post
-        alpha, min_alpha, passes = (0.025, 0.001, passes)
-        alpha_delta = (alpha - min_alpha) / passes
-        for epoch in range(passes):
-            print('Epoch {epoch}/{passes}\n'.format(epoch=epoch, passes=passes))
-            shuffle(documents)
-            self.alpha = alpha
-            self.doc2vec.alpha = alpha
-            self.doc2vec.min_alpha = alpha
-            self.doc2vec.train(documents)
-            alpha -= alpha_delta
+    def init_doc2vec(self):
+        """Instantiate new doc2vec with model field attributes
+        """
+        self.doc2vec = Doc2Vec(
+            dm=self.dm,
+            size=self.size,
+            window=self.window,
+            alpha=self.alpha,
+            seed=self.seed,
+            min_count=self.min_count,
+            max_vocab_size=self.max_vocab_size,
+            sample=self.sample,
+            workers=self.workers,
+            hs=self.hs,
+            negative=self.negative,
+            dm_mean=self.dm_mean,
+            dm_concat=self.dm_concat,
+            dm_tag_count=self.dm_tag_count,
+            dbow_words=self.dbow_words
+        )
 
     def save_db_only(self, *args, **kwargs):
         self.full_clean()
@@ -215,136 +225,11 @@ class Model(TimeStampedModel):
         super(Model, self).delete(*args, **kwargs)
 
     def clean(self):
-        """Check concordance of model field attributes and doc2vec attributes
+        """Check  model field attributes and doc2vec attributes are in agreements
         """
         for attr in self.model_arguments:
             if not getattr(self, attr[0]) == getattr(self.doc2vec, attr[1]):
                 raise ValueError('{attr} does not match'.format(attr=attr[0]))
-
-    def init_doc2vec(self):
-        """Instantiate new doc2vec with model field attributes
-        """
-        self.doc2vec = Doc2Vec(
-            dm=self.dm,
-            size=self.size,
-            window=self.window,
-            alpha=self.alpha,
-            seed=self.seed,
-            min_count=self.min_count,
-            max_vocab_size=self.max_vocab_size,
-            sample=self.sample,
-            workers=self.workers,
-            hs=self.hs,
-            negative=self.negative,
-            dm_mean=self.dm_mean,
-            dm_concat=self.dm_concat,
-            dm_tag_count=self.dm_tag_count,
-            dbow_words=self.dbow_words
-        )
-
-    def save_journal_vec_from_bulk(self):
-        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=len(self.doc2vec.docvecs.doctags),
-                           redirect_stderr=True).start()
-        count = 0
-        # TODO: replace with bulk update / create ?
-        for pk in self.doc2vec.docvecs.doctags:
-            if pk[0] == 'j':
-                try:
-                    journal = Journal.objects.get(pk=int(pk[2:]))
-                    vector = self.doc2vec.docvecs[pk].tolist()
-                    pv, _ = JournalVectors.objects.get_or_create(model=self,
-                                                                 journal=journal)
-                    pv.vector = vector
-                    pv.save()
-                except Journal.DoesNotExist:
-                    print('Journal {pk} did not match'.format(pk=pk))
-            pbar.update(count)
-            count += 1
-        # close progress bar
-        pbar.finish()
-
-    def save_paper_vec_from_bulk(self):
-
-        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=len(self.doc2vec.docvecs.doctags),
-                           redirect_stderr=True).start()
-        count = 0
-        # TODO: replace with bulk update / create ?
-        for pk in self.doc2vec.docvecs.doctags:
-            if not pk[0] == 'j':
-                try:
-                    paper = Paper.objects.get(pk=int(pk))
-                    vector = self.doc2vec.docvecs[pk].tolist()
-                    pv, _ = PaperVectors.objects.get_or_create(model=self,
-                                                               paper=paper)
-                    pv.set_vector(vector)
-                    pv.save()
-                except Paper.DoesNotExist:
-                    print('Paper {pk} did not match'.format(pk=pk))
-            pbar.update(count)
-            count += 1
-        # close progress bar
-        pbar.finish()
-
-    def save_all_vec_from_bulk(self):
-        """
-        """
-        self.save_paper_vec_from_bulk()
-        self.save_journal_vec_from_bulk()
-
-    def infer_paper(self, paper, alpha=0.05, min_alpha=0.0001, steps=5):
-        """Infer model vector for paper
-        """
-        fields = list(self.paperfields.all().values_list('field', flat='True'))
-
-        pv, _ = PaperVectors.objects.get_or_create(model=self,
-                                                   paper_id=paper)
-        doc_words = paper2tokens(paper, fields=fields)
-        vector = self.doc2vec.infer_vector(doc_words,
-                                           alpha=alpha,
-                                           min_alpha=min_alpha,
-                                           steps=steps)
-        pv.set_vector(vector.tolist())
-        pv.save()
-
-        return vector
-
-    def infer_papers(self, papers, **kwargs):
-        """Infer model vector for all papers in library
-        """
-
-        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=papers.count(), redirect_stderr=True).start()
-        count = 0
-        for paper in papers:
-            self.infer_paper(paper, **kwargs)
-            pbar.update(count)
-            count += 1
-        # close progress bar
-        pbar.finish()
-
-    @classmethod
-    def infer_paper_all_models(cls, paper, **kwargs):
-        """Infer all model vector for paper
-        """
-        model_names = list(cls.objects.all().values_list('name', flat='True'))
-        for model_name in model_names:
-            model = cls.objects.get(name=model_name)
-            model.infer_paper(paper, **kwargs)
-
-    @classmethod
-    def infer_papers_all_models(cls, papers, **kwargs):
-        """Infer all model vector for all papers
-        """
-        model_names = list(cls.objects.all().values_list('name', flat='True'))
-        for model_name in model_names:
-            model = cls.objects.get(name=model_name)
-            model.infer_papers(papers, **kwargs)
-
-    def set_active(self):
-        self.is_active = True
-        self.save_db_only()
 
     def dump(self, papers):
         """Dump papers data to pre-process text files.
@@ -406,12 +291,164 @@ class Model(TimeStampedModel):
         pbar.finish()
         file.close()
 
+    def load_documents(self, phraser=None):
+        """Load text files stored in data_path to documents list
+        """
+        return TaggedDocumentsIterator(self.data_path, phraser=phraser)
+
+    def build_phraser(self, documents, min_count=2, threshold=10.0):
+        """build phraser
+        """
+        phraser = Phrases(map(lambda doc: doc.words, documents),
+                          min_count=min_count, threshold=threshold)
+        return phraser
+
+    def build_vocab(self, documents):
+        """build vocabulary
+        """
+        self.doc2vec.build_vocab(documents)
+
+    def train(self, documents, passes=10, shuffle_=True, alpha=0.025,
+              min_alpha=0.001):
+        """Train model
+
+        Using explicit multiple-pass, alpha-reduction approach as sketched in
+        gensim doc2vec blog post (http://rare-technologies.com/doc2vec-tutorial)
+        """
+
+        # Init
+        alpha_delta = (alpha - min_alpha) / passes
+        if shuffle_:  # load all doc to memory
+            documents = [doc for doc in documents]
+
+        # train
+        for epoch in range(passes):
+            print('Epoch {epoch}/{passes}\n'.format(epoch=epoch, passes=passes))
+            if shuffle_:
+                # shuffling before training is in general a good habit
+                shuffle(documents)
+            self.alpha = alpha
+            self.doc2vec.alpha = alpha
+            self.doc2vec.min_alpha = alpha
+            self.doc2vec.train(documents)
+            alpha -= alpha_delta
+
+    def save_journal_vec_from_bulk(self):
+        """Store inferred journal vector from training in db
+        """
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=len(self.doc2vec.docvecs.doctags),
+                           redirect_stderr=True).start()
+        count = 0
+        # TODO: replace with bulk update / create ?
+        for pk in self.doc2vec.docvecs.doctags:
+            if pk.startwith('j') and not pk == 'j_0':
+                try:
+                    journal = Journal.objects.get(pk=int(pk[2:]))
+                    vector = self.doc2vec.docvecs[pk].tolist()
+                    pv, _ = JournalVectors.objects.get_or_create(model=self,
+                                                                 journal=journal)
+                    pv.vector = vector
+                    pv.save()
+                except Journal.DoesNotExist:
+                    print('Journal {pk} did not match'.format(pk=pk))
+            pbar.update(count)
+            count += 1
+        # close progress bar
+        pbar.finish()
+
+    def save_paper_vec_from_bulk(self):
+        """Store inferred paper vector from training in db
+        """
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=len(self.doc2vec.docvecs.doctags),
+                           redirect_stderr=True).start()
+        count = 0
+        # TODO: replace with bulk update / create ?
+        for pk in self.doc2vec.docvecs.doctags:
+            if not pk.startwith('j'):
+                try:
+                    paper = Paper.objects.get(pk=int(pk))
+                    vector = self.doc2vec.docvecs[pk].tolist()
+                    pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                               paper=paper)
+                    pv.set_vector(vector)
+                    pv.save()
+                except Paper.DoesNotExist:
+                    print('Paper {pk} did not match'.format(pk=pk))
+            pbar.update(count)
+            count += 1
+        # close progress bar
+        pbar.finish()
+
+    def save_all_vec_from_bulk(self):
+        """Store inferred paper and journal vectors from training in db
+        """
+        self.save_paper_vec_from_bulk()
+        self.save_journal_vec_from_bulk()
+
+    def infer_paper(self, paper, alpha=0.05, min_alpha=0.001, passes=5):
+        """Infer model vector for paper
+        """
+        fields = list(self.paperfields.all().values_list('field', flat='True'))
+
+        pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                   paper_id=paper)
+        doc_words = paper2tokens(paper, fields=fields)
+
+        # NB: infer_vector user explicit alpha-reduction with multi-passes
+        vector = self.doc2vec.infer_vector(doc_words,
+                                           alpha=alpha,
+                                           min_alpha=min_alpha,
+                                           steps=passes)
+        pv.set_vector(vector.tolist())
+        pv.save()
+
+        return vector
+
+    def infer_papers(self, papers, **kwargs):
+        """Infer model vector for papers
+        """
+
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=papers.count(), redirect_stderr=True).start()
+        count = 0
+        for paper in papers:
+            self.infer_paper(paper, **kwargs)
+            pbar.update(count)
+            count += 1
+        # close progress bar
+        pbar.finish()
+
+    def set_active(self):
+        self.is_active = True
+        self.save_db_only()
+
     class Meta:
         ordering = ['name', ]
 
+    @classmethod
+    def infer_paper_all_models(cls, paper, **kwargs):
+        """Infer all model vector for paper
+        """
+        model_names = list(cls.objects.all().values_list('name', flat='True'))
+        for model_name in model_names:
+            model = cls.objects.get(name=model_name)
+            model.infer_paper(paper, **kwargs)
+
+    @classmethod
+    def infer_papers_all_models(cls, papers, **kwargs):
+        """Infer all model vector for all papers
+        """
+        model_names = list(cls.objects.all().values_list('name', flat='True'))
+        for model_name in model_names:
+            model = cls.objects.get(name=model_name)
+            model.infer_papers(papers, **kwargs)
+
 
 class FieldUseInModel(TimeStampedModel):
-
+    """Store which fields of paper and related data are used in model training
+    """
     model = models.ForeignKey(Model, related_name='paperfields')
 
     field = models.CharField(max_length=100, choices=FIELDS_FOR_MODEL)
@@ -422,13 +459,15 @@ class FieldUseInModel(TimeStampedModel):
     def __str__(self):
         return '{field}'.format(field=self.field)
 
+
 class PaperVectorsManager(models.Manager):
 
     def create(self, **kwargs):
-        # enforce model is active
-        nlp_model = kwargs.get('model')
-        if not nlp_model.is_active:
-            raise ValueError('model {0} is not active'.format(nlp_model.name))
+        # enforce that model is active
+        if not kwargs.get('model').is_active:
+            raise ValueError('model {0} is not active'
+                             .format(kwargs.get('model').name))
+
         return super(PaperVectorsManager, self).create(**kwargs)
 
 
@@ -457,12 +496,14 @@ class PaperVectors(TimeStampedModel):
         return '{short_title}/{name}'.format(short_title=self.paper.short_title,
                                              name=self.model.name)
 
-    def infer_vector(self, **kwargs):
-        self.set_vector(self.model.infer_paper(self.paper, **kwargs))
+    def infer_paper(self, **kwargs):
+        vector = self.model.infer_paper(self.paper, **kwargs)
+        self.set_vector(vector)
 
     def set_vector(self, vector):
         self.vector = pad_vector(vector)
         self.save()
+
 
 class JournalVectors(TimeStampedModel):
     """Journal - NLP Model relationship
@@ -486,8 +527,8 @@ class JournalVectors(TimeStampedModel):
         unique_together = ('journal', 'model')
 
     def __str__(self):
-        return '{short_title}/{name}'.format(short_title=self.journal.short_title,
-                                             name=self.model.name)
+        return '{short_title}/{name}'\
+            .format(short_title=self.journal.short_title, name=self.model.name)
 
     def set_vector(self, vector):
         self.vector = pad_vector(vector)
