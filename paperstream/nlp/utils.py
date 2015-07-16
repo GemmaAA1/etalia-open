@@ -9,10 +9,6 @@ from bs4 import BeautifulSoup
 from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
 
-from .models import Model
-
-from django.conf import settings
-
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
