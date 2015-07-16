@@ -8,16 +8,29 @@ from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from gensim.models import Doc2Vec, Phrases
 
-from .constants import MODEL_STATES
+from .constants import MODEL_STATES, FIELDS_FOR_MODEL
 from .exceptions import StatusError
+from .utils import paper2tokens
 
 from library.models import Paper, Journal
 # Create your models here.
 
+
 class ModelManager(models.Manager):
     def create(self, **kwargs):
         model = self.model(**kwargs)
+
+        # paper fields used to generate model data
+        if 'fields' in kwargs:
+            if not isinstance(kwargs['fields'], list):
+                raise TypeError('<fields> must be list of field strings')
+        fields = kwargs.get('fields', ['title', 'abstract'])
+        for field in fields:
+            FieldUseInModel.objects.create(model=model, field=field)
+
+        # Init doc2vec from gensim
         model.init_doc2vec()
+
         model.save(using=self._db)
         return model
 
@@ -38,11 +51,10 @@ class Model(TimeStampedModel):
 
     Example of use case for training a new model:
     1) Create model
-    >>> model = Model.objects.create(name='test') # with default parameters
+    >>> model = Model.objects.create(name='test', data_path='nlp/data') # with default parameters
     2) Prepare and dump data.
     >>> papers = Papers.objects.all()
-    >>> dumper = DumpPaperData(to=model.data_path)
-    >>> dumper.dump(papers)
+    >>> model.dump(papers)
     3) Build vocab (with a phraser to join common n-gram word. ie new_york)
     >>> docs_l = WordListIterator('nlp/data')
     >>> phraser = Phrases(docs_l)
@@ -53,11 +65,14 @@ class Model(TimeStampedModel):
     >>> model.save()
     >>> model.set_active()
     5) Populate library is needed
-    >>> model.populate_library()
+    >>> model.infer_library()
     """
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
+
+    data_path = models.CharField(max_length=256,
+                                 default=settings.NLP_DATA_PATH)
 
     doc2vec_path = models.CharField(
         max_length=256,
@@ -222,15 +237,13 @@ class Model(TimeStampedModel):
             dbow_words=self.dbow_words
         )
 
-    def populate_library(self):
-
+    def save_journal_vec_from_bulk(self):
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=len(self.doc2vec.docvecs.doctags),
                            redirect_stderr=True).start()
         count = 0
         # TODO: replace with bulk update / create ?
         for pk in self.doc2vec.docvecs.doctags:
-
             if pk[0] == 'j':
                 try:
                     journal = Journal.objects.get(pk=int(pk[2:]))
@@ -241,7 +254,20 @@ class Model(TimeStampedModel):
                     pv.save()
                 except Journal.DoesNotExist:
                     print('Journal {pk} did not match'.format(pk=pk))
-            else:
+            pbar.update(count)
+            count += 1
+        # close progress bar
+        pbar.finish()
+
+    def save_paper_vec_from_bulk(self):
+
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=len(self.doc2vec.docvecs.doctags),
+                           redirect_stderr=True).start()
+        count = 0
+        # TODO: replace with bulk update / create ?
+        for pk in self.doc2vec.docvecs.doctags:
+            if not pk[0] == 'j':
                 try:
                     paper = Paper.objects.get(pk=int(pk))
                     vector = self.doc2vec.docvecs[pk].tolist()
@@ -256,12 +282,118 @@ class Model(TimeStampedModel):
         # close progress bar
         pbar.finish()
 
+    def save_all_vec_from_bulk(self):
+        """
+        """
+        self.save_paper_vec_from_bulk()
+        self.save_journal_vec_from_bulk()
+
+    def infer_paper(self, paper):
+        """Infer model vector for paper
+        """
+        fields = self.paperfields_set.all().values_list('field', flat='True')
+
+        pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                   paper_id=paper)
+        doc_words = paper2tokens(paper, fields=fields)
+        vector = self.doc2vec.infer_vector(doc_words,
+                                           alpha=0.1,
+                                           min_alpha=0.0001,
+                                           steps=5)
+        pv.vector = vector
+        pv.save()
+
+    def infer_paper_library(self):
+        """Infer model vector for all papers in library
+        """
+        papers = Paper.objects.all()
+
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=papers.count(), redirect_stderr=True).start()
+        count = 0
+        for paper in papers:
+            self.infer_paper(paper)
+            pbar.update(count)
+            count += 1
+        # close progress bar
+        pbar.finish()
+
     def set_active(self):
         self.is_active = True
         self.save_model_only()
 
+    def dump(self, papers):
+        """Dump papers data to pre-process text files.
+        Papers data are separated in multiple file to spare memory when building
+        model. File are composed of N (CHUNK_SIZE) documents. Each line of the
+        files start with the primary key of the document and then the pre-process
+        string corresponding to the document field(s) dumped.
+         ex:
+            123: the title of the document #1 . the abstract of the document .
+            124: the title of the document #2 . the abstract of the document .
+
+        Dump paper date to files.
+        Note: It is useful to order paper randomly (order_by('?')) to avoid bias
+        """
+
+        fields = self.paperfields_set.all().values_list('field', flat='True')
+        tot = papers.count()
+        file_count = 0
+        file = None
+
+        if not os.path.exists(self.data_path):
+            os.makedirs(self.data_path)
+
+        sub_update_step = 20
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=int(tot/sub_update_step),
+                           redirect_stderr=True).start()
+
+        for count, paper in enumerate(papers):
+
+            if not count % settings.NLP_CHUNK_SIZE:
+                if file:
+                    file.close()
+                file = open(os.path.join(self.data_path,
+                                         '{0:06d}.txt'.format(file_count)),
+                            'w+')
+                file_count += 1
+
+            # write header
+            if paper.journal:
+                j_pk = paper.journal.pk
+            else:
+                j_pk = 0
+            file.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
+
+            # line body
+            line_val = paper2tokens(paper, fields=fields)
+
+            # write to file
+            file.write(' '.join(line_val).strip())
+
+            # write new line
+            file.write('\n')
+
+            # update progress bar
+            if not count % sub_update_step:
+                pbar.update(count/sub_update_step)
+        # close progress bar
+        pbar.finish()
+        file.close()
+
     class Meta:
         ordering = ['name', ]
+
+
+class FieldUseInModel(TimeStampedModel):
+
+    model = models.ForeignKey(Model, related_name='paperfields')
+
+    field = models.CharField(max_length=100, choices=FIELDS_FOR_MODEL)
+
+    class Meta:
+        unique_together = [('model', 'field')]
 
 
 class PaperVectors(TimeStampedModel):
