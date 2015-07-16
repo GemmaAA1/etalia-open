@@ -1,6 +1,6 @@
 import os
 from django.core.exceptions import ImproperlyConfigured
-
+from django.conf import settings
 
 def get_env_variable(var_name, default=None):
     """
@@ -33,3 +33,15 @@ def get_celery_worker_status():
     except ImportError as e:
         d = { ERROR_KEY: str(e)}
     return d
+
+def pad_vector(vector):
+    if not isinstance(vector, list):
+        try:
+            vector = list(vector)
+        except TypeError:
+            raise TypeError('<vector> must be a list or a np.array')
+
+    if len(vector) < settings.NLP_MAX_VECTOR_SIZE:
+        vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
+
+    return vector

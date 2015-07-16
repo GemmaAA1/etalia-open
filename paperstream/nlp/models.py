@@ -13,14 +13,14 @@ from .exceptions import StatusError
 from .utils import paper2tokens
 
 from core.models import TimeStampedModel
+from core.utils import pad_vector
 from library.models import Paper, Journal
 
 
 
 class ModelManager(models.Manager):
     def create(self, **kwargs):
-        model = self.model(**kwargs)
-        super(Model, model).save(using=self._db)
+        model = super(ModelManager, self).create(**kwargs)
 
         # paper fields used to generate model data
         if 'fields' in kwargs:
@@ -433,7 +433,7 @@ class PaperVectorsManager(models.Manager):
 
 
 class PaperVectors(TimeStampedModel):
-    """Paper Vector relationship
+    """Paper - NLP Model relationship
 
     Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
     i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
@@ -445,7 +445,8 @@ class PaperVectors(TimeStampedModel):
     model = models.ForeignKey(Model)
 
     vector = ArrayField(models.FloatField(null=True),
-                        size=settings.NLP_MAX_VECTOR_SIZE)
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True)
 
     objects = PaperVectorsManager()
 
@@ -453,28 +454,41 @@ class PaperVectors(TimeStampedModel):
         unique_together = ('paper', 'model')
 
     def __str__(self):
-        return '{pk} with {name}'.format(pk=self.paper.pk, name=self.model.name)
+        return '{short_title}/{name}'.format(short_title=self.paper.short_title,
+                                             name=self.model.name)
 
     def infer_vector(self, **kwargs):
         self.set_vector(self.model.infer_paper(self.paper, **kwargs))
 
     def set_vector(self, vector):
-        if len(vector) < settings.NLP_MAX_VECTOR_SIZE:
-            vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
-        self.vector = vector
+        self.vector = pad_vector(vector)
         self.save()
 
 class JournalVectors(TimeStampedModel):
+    """Journal - NLP Model relationship
+
+    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
+    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
+    Shorter vectors are pad with None.
+
+    Use set_vector() to pad and set vector list
+    """
 
     journal = models.ForeignKey(Journal)
 
     model = models.ForeignKey(Model)
 
-    vector = ArrayField(models.FloatField(null=True), null=True)
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True)
 
     class meta:
         unique_together = ('journal', 'model')
 
     def __str__(self):
-        return '{pk} with {name}'.format(pk=self.journal.pk, name=self.model.name)
+        return '{short_title}/{name}'.format(short_title=self.journal.short_title,
+                                             name=self.model.name)
 
+    def set_vector(self, vector):
+        self.vector = pad_vector(vector)
+        self.save()

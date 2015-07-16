@@ -1,3 +1,4 @@
+from operator import add
 import numpy as np
 from scipy.spatial import distance
 
@@ -7,28 +8,49 @@ from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
 from django.db.models import Q, F
 from django.utils import timezone
+from django.contrib.postgres.fields import ArrayField
 
 from core.models import TimeStampedModel
-from .validators import validate_feed_name
+from core.utils import pad_vector
 from library.models import Paper
 from users.models import UserLibPaper
 from nlp.models import PaperVectors, JournalVectors, Model
 
+from .validators import validate_feed_name
 
 class UserFeedManager(BaseUserManager):
-    def init_userfeed(self, name, user, papers_seed, **kwargs):
-        user_feed = self.model(user=user, name=name, **kwargs)
-        user_feed.save(using=self._db)
-        for paper in papers_seed:
-            user_feed.papers_seed.add(paper)
-        user_feed.save(using=self._db)
+
+    def create(self, **kwargs):
+        if 'name' not in kwargs:
+            raise AssertionError('<name> is not defined')
+        if 'user' not in kwargs:
+            raise AssertionError('<user> is not defined')
+
+        if 'papers_seed' in kwargs:
+            papers_seed = kwargs['papers_seed']
+            kwargs.pop('papers_seed', None)
+        else:
+            papers_seed = None
+        user_feed = super(UserFeedManager, self).create(**kwargs)
+
+        # Init papers_seed
+        user_feed.papers_seed.add(*papers_seed)
+
+        # Init feed vector
+        model_pks = Model.objects.all().values_list('pk', flat='True')
+        for model_pk in model_pks:
+            ufv = UserFeedVector.objects.create(model_id=model_pk,
+                                                feed=user_feed)
+            ufv.update_vector()
         return user_feed
 
-    def init_default_userfeed(self, user, **kwargs):
+    def create_default(self, **kwargs):
         """Populate a userfeed 'main' with all papers in user library
         """
-        papers_seed = user.lib.papers.all()
-        return self.init_userfeed('main', user, papers_seed, **kwargs)
+        if 'user' not in kwargs:
+            raise AssertionError('<user> is not defined')
+        papers = kwargs.get('user').lib.papers.all()
+        return self.create(name='main', papers_seed=papers, **kwargs)
 
 
 class UserFeed(TimeStampedModel):
@@ -40,11 +62,12 @@ class UserFeed(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed')
 
     # cluster of paper that is used in the similarity matching
-    papers_seed = models.ManyToManyField(Paper, related_name='paper_in')
+    papers_seed = models.ManyToManyField(Paper,
+                                         related_name='feed_seed')
 
     # relevant papers matched
     papers_match = models.ManyToManyField(Paper, through='UserFeedPaper',
-                                          related_name='paper_out')
+                                          related_name='feed_match')
 
     status = models.CharField(max_length=3, blank=True, default='',
                               choices=(('', 'Uninitialized'),
@@ -75,13 +98,17 @@ class UserFeed(TimeStampedModel):
     def initialize(self):
         """Initialize a news feed
         """
-        # get papers to look at excluding papers already in user lib
+        # get papers to look at excluding papers already in user lib and none trusted
         from_date = (timezone.now() - timezone.timedelta(days=self.user.settings.time_lapse)).date()
         paper_exclude_pks = self.user.lib.papers.values_list('pk', flat='True')
-        target_papers_pk = Paper.objects.filter(
-            Q(date_ep__gt=from_date) |
-            (Q(date_pp__gt=from_date) & Q(date_ep=None))).exclude(
-            pk__in=paper_exclude_pks).values('pk')
+        target_papers_pk = Paper.objects\
+            .filter(
+                Q(date_ep__gt=from_date) |
+                (Q(date_pp__gt=from_date) & Q(date_ep=None)))\
+            .exclude(
+                pk__in=paper_exclude_pks,
+                is_trusted=False)\
+            .values('pk')
 
         # create related UserFeedPaper objects
         objs_list = [UserFeedPaper(feed=self, paper_id=pk)
@@ -98,10 +125,11 @@ class UserFeed(TimeStampedModel):
                      timezone.timedelta(
                          days=self.user.settings.time_lapse)).date()
         # delete old papers
-        UserFeedPaper.objects.filter(
-            Q(feed=self) &
-            (Q(paper__date_ep__gt=from_date) |
-             (Q(paper__date_pp__gt=from_date) & Q(paper__date_ep=None)))).delete()
+        UserFeedPaper.objects\
+            .filter(Q(feed=self) &
+                    (Q(paper__date_ep__gt=from_date) |
+                    (Q(paper__date_pp__gt=from_date) & Q(paper__date_ep=None))))\
+            .delete()
 
         # get targeted papers excluding papers
         paper_exclude_pks = list(self.user.lib.papers.values_list('pk',
@@ -109,10 +137,15 @@ class UserFeed(TimeStampedModel):
         paper_exclude_pks += list(self.papers_match.values_list('pk',
                                                                 flat='True'))
         paper_exclude_pks = list(set(paper_exclude_pks))
-        target_papers_pk = list(Paper.objects.filter(
-            Q(date_ep__gt=from_date) |
-            (Q(date_pp__gt=from_date) & Q(date_ep=None))).exclude(
-            pk__in=paper_exclude_pks).values_list('pk', flat='True'))
+        target_papers_pk = list(
+            Paper.objects
+                .filter(
+                    Q(date_ep__gt=from_date) |
+                    (Q(date_pp__gt=from_date) & Q(date_ep=None)))
+                .exclude(
+                    pk__in=paper_exclude_pks,
+                    is_trusted=False)
+                .values_list('pk', flat='True'))
 
         # computing scores
         objs_list = []
@@ -260,9 +293,6 @@ class UserFeed(TimeStampedModel):
 
         return baseline + (1-baseline) / (1 + np.exp(- (day_lapse - delay) * k))
 
-    def truc(self):
-        return print('Truc\n')
-
     def score_paper(self, obj):
         """Score a UserFeedPaper relationship (obj)
         """
@@ -325,6 +355,8 @@ class UserFeed(TimeStampedModel):
 
 
 class UserFeedPaper(TimeStampedModel):
+    """Relationship table between model and paper with scoring
+    """
     feed = models.ForeignKey(UserFeed)
 
     paper = models.ForeignKey(Paper)
@@ -340,11 +372,34 @@ class UserFeedPaper(TimeStampedModel):
     class Meta:
         ordering = ['-score']
 
-
 class UserFeedVector(TimeStampedModel):
-
-    feed = models.ForeignKey(UserFeed)
+    """Feature vector for feed is defined as the averaged of paper vectors in
+    feed
+    """
+    feed = models.ForeignKey(UserFeed, related_name='vectors')
 
     model = models.ForeignKey(Model)
 
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True)
+
+    def set_vector(self, vector):
+        self.vector = pad_vector(vector)
+        self.save()
+
+    def update_vector(self):
+        pv_pks = self.feed.papers_seed.all().values('vectors__pk')
+        vectors = list(PaperVectors.objects.filter(id__in=pv_pks)
+                       .values_list('vector', flat='true'))
+        # sum of vectors
+        vector = [sum(x) for x in zip(*vectors)]
+        self.set_vector(vector)
+
+    class Meta:
+        unique_together = [('feed', 'model'), ]
+
+    def __str__(self):
+        return '{feed_name}/{model_name}'.format(feed_name=self.feed.name,
+                                                 model_name=self.model.name)
 
