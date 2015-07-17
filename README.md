@@ -1,47 +1,57 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+PaperStream is a WebApp for researchers and others who are reading scientific articles.
 
-### What is this repository for? ###
+### What is PaperStream ? ###
 
-* Quick summary
-* Version
+* A stream of curated articles 
+* A tool to bring paper alive
+* A way to explore the scientific literature
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
 ### How do I get set up? ###
 
-The steps below will get you up and running with a local development environment. We assume you have the following installed:
+PaperStream is developed with Django/PostgreSQL. Asynch tasks are managed with
+RabbitMQ and Celery.  
 
-pip
-virtualenv
-PostgreSQL
-First make sure to create and activate a virtualenv, then open a terminal at the project root and install the requirements for local development:
+The steps below will get you up and running with a local development environment. 
+Pre-requisites installs are:
+* pip
+* virtualenv
+* PostgreSQL
+* RabbitMQ
+
+Once your virtual environment is created, activate it and:
+
+1. Create a PostgreSQL database and update the database configuration in 
+paperstream/config/settings/base.py with your username and database name
+
+2. Setup the project (dependencies, local files, migrations, initial data):  
+
 ```
 #!bash
 
-$ pip install -r requirements/local.txt
+$ ./scripts/install_local.sh
 ```
 
-Then, create a PostgreSQL database and add the database configuration in the config.settings.base.py setting file
+3. Fire-up the server:
 
-You can now run the usual Django migrate and runserver command:
-```
-#!bash
-
-$ python manage.py migrate
-```
 ```
 #!bash
 
-$ python manage.py runserver
-```
-### Contribution guidelines ###
+$ ./manage.py runserver
+# Start Celery
+$ celery -A config worker --loglevel=info
+# Start RabbitMQ-server
+$ rabbitmq-server
 
-* Writing tests
-* Code review
-* Other guidelines
+```
+
+4. Visit 127.0.0.1:8000
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* Nicolas Pannetier (nicolas.pannetier@gmail.com)
+* Valentine Toulemonde
+
+
