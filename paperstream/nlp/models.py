@@ -7,11 +7,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec, Phrases
-from gensim.models.doc2vec import TaggedDocument
 
 from .constants import MODEL_STATES, FIELDS_FOR_MODEL
-from .exceptions import StatusError
-from .utils import paper2tokens, TaggedDocumentsIterator, WordListIterator
+from .utils import paper2tokens, TaggedDocumentsIterator
 
 from core.models import TimeStampedModel
 from core.utils import pad_vector
@@ -56,11 +54,12 @@ class Model(TimeStampedModel):
 
     Example of use case for training a new model:
     1) Create model
-    >>> model = Model.objects.create(name='test', data_path='nlp/data') # with default parameters
+    >>> model = Model.objects.create(name='test', data_path='nlp/data')
     2) Prepare and dump data.
     >>> papers = Papers.objects.all()
     >>> model.dump(papers)
-    3) Build phraser and vocab (phraser: join common n-gram word. ie new_york, optional)
+    3) Build phraser and vocab (phraser: join common n-gram word. ie new_york,
+    optional)
     >>> docs = model.load_documents()
     >>> phraser = model.build_phraser(docs, min_count=)
     >>> docs = model.load_documents(phraser=phraser)
@@ -97,7 +96,8 @@ class Model(TimeStampedModel):
     # Model parameters
     # ----------------------
     # `dm` defines the training algorithm. By default (`dm=1`), 'distributed
-    # memory' (PV-DM) is used. Otherwise, `distributed bag of words` (PV-DBOW) is employed.
+    # memory' (PV-DM) is used. Otherwise, `distributed bag of words` (PV-DBOW)
+    # is employed.
     dm = models.IntegerField(default=1)
 
     # `size` is the dimensionality of the feature vectors.
@@ -296,7 +296,8 @@ class Model(TimeStampedModel):
         """
         return TaggedDocumentsIterator(self.data_path, phraser=phraser)
 
-    def build_phraser(self, documents, min_count=2, threshold=10.0):
+    @staticmethod
+    def build_phraser(documents, min_count=2, threshold=10.0):
         """build phraser
         """
         phraser = Phrases(map(lambda doc: doc.words, documents),
@@ -477,6 +478,8 @@ class PaperVectors(TimeStampedModel):
     Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
     i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
     Shorter vectors are pad with None
+
+    Use set_vector() to pad and set vector list
     """
 
     paper = models.ForeignKey(Paper, related_name='vectors')

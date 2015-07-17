@@ -80,18 +80,3 @@ class TaggedDocumentsIterator(object):
                     text_l = text.strip().split(' ')
                 yield TaggedDocument(text_l, [pk, j_pk])
 
-class WordListIterator(object):
-
-    def __init__(self, dir_path):
-        self.FILE_FORMAT = '*.txt'
-        self.dir_path = dir_path
-        self.filenames = glob.glob(os.path.join(dir_path, self.FILE_FORMAT))
-
-    def __iter__(self):
-        for filename in self.filenames:
-            for line in open(filename):
-                # print(line)
-                pk, text = re.match(r'([\d]+): (.+)', line).groups()
-                yield text.strip().split(' ')
-
-
