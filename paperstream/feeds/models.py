@@ -45,6 +45,10 @@ class UserFeedManager(BaseUserManager):
             ufv = UserFeedVector.objects.create(model_id=model_pk,
                                                 feed=user_feed)
             ufv.update_vector()
+
+        # update feed
+        user_feed.update()
+
         return user_feed
 
     def create_default(self, **kwargs):
@@ -101,43 +105,6 @@ class UserFeed(TimeStampedModel):
 
     def __str__(self):
         return '{feed}@{username}'.format(feed=self.name, username=self.user.email)
-
-    def initialize(self):
-        """Initialize a news feed:
-
-        - Get all papers in time range excluding untrusted and already in user lib
-        #TODO: Restricted this query to the k-NN to the feed vector
-        - Score papers
-        - Get only the N top scored papers
-        - Create/Update UserFeedPaper
-        """
-
-        # # time range
-        # from_date = (timezone.now() -
-        #              timezone.timedelta(days=self.user.settings.time_lapse))\
-        #     .date()
-        # # get papers to look at excluding user lib + not trusted
-        # paper_exclude_pks = self.user.lib.papers.values_list('pk', flat='True')
-        # target_papers_pk = Paper.objects\
-        #     .filter(
-        #         Q(date_ep__gt=from_date) |
-        #         (Q(date_pp__gt=from_date) & Q(date_ep=None)))\
-        #     .exclude(
-        #         pk__in=paper_exclude_pks,
-        #         is_trusted=False)\
-        #     .values('pk')
-        #
-        # # score papkers
-        #
-        #
-        # # create related UserFeedPaper objects
-        # objs_list = [UserFeedPaper(feed=self, paper_id=pk)
-        #              for pk in target_papers_pk]
-        # objs = UserFeedPaper.objects.bulk_create(objs_list)
-        #
-        # # compute scores
-        # if objs:
-        #     self.score_multi_papers(objs)
 
     def update_feed(self):
         """

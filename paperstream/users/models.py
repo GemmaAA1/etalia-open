@@ -289,10 +289,19 @@ class UserSettings(TimeStampedModel):
     # NLP model to use
     model = models.ForeignKey(Model, verbose_name='NLP Model')
 
+    # scoring method to use
+    method = models.IntegerField(verbose_name='Scoring Algo',
+                                 choices=((1, 'Average'),
+                                          (2, 'Average threshold'),
+                                          (3, 'Average date weighted')),
+                                 default=1)
+
     # in days
     time_lapse = models.IntegerField(default=7,
                                      choices=FEED_TIME_CHOICES,
                                      verbose_name='Feed from the past')
+
+
 
     objects = UserSettingsManager()
 
