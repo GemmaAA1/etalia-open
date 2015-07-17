@@ -4,10 +4,9 @@ PaperStream is a WebApp for researchers and others who are reading scientific ar
 
 ### What is PaperStream ? ###
 
-* A stream of curated articles 
-* A tool to bring paper alive
+* A personalized stream of scientific articles 
+* A commenting tool to bring papers alive
 * A way to explore the scientific literature
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
 ### How do I get set up? ###
 
@@ -23,10 +22,10 @@ Pre-requisites installs are:
 
 Once your virtual environment is created, activate it and:
 
-1. Create a PostgreSQL database and update the database configuration in 
+* Create a PostgreSQL database and update the database configuration in 
 paperstream/config/settings/base.py with your username and database name
 
-2. Setup the project (dependencies, local files, migrations, initial data):  
+* Setup the project (dependencies, local files, migrations, initial data):  
 
 ```
 #!bash
@@ -34,20 +33,20 @@ paperstream/config/settings/base.py with your username and database name
 $ ./scripts/install_local.sh
 ```
 
-3. Fire-up the server:
+* Fire-up the server:
 
 ```
 #!bash
-
-$ ./manage.py runserver
-# Start Celery
-$ celery -A config worker --loglevel=info
 # Start RabbitMQ-server
 $ rabbitmq-server
+# Start Celery
+$ celery -A config worker --loglevel=info
+# Start WebApp
+$ ./manage.py runserver
 
 ```
 
-4. Visit 127.0.0.1:8000
+* Visit 127.0.0.1:8000
 
 ### Who do I talk to? ###
 
