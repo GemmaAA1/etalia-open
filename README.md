@@ -14,13 +14,9 @@ PaperStream is developed with Django/PostgreSQL. Asynch tasks are managed with
 RabbitMQ and Celery.  
 
 The steps below will get you up and running with a local development environment. 
-Pre-requisites installs are:
-* pip
-* virtualenv
-* PostgreSQL
-* RabbitMQ
+Pre-requisites installs are: pip, virtualenv, PostgreSQL, RabbitMQ
 
-Once your virtual environment is created, activate it and:
+From your virtual environment:
 
 * Create a PostgreSQL database and update the database configuration in 
 paperstream/config/settings/base.py with your username and database name
