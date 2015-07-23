@@ -1,5 +1,9 @@
 import os
 from random import shuffle
+import numpy as np
+
+from sklearn.externals import joblib
+
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
@@ -8,8 +12,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec, Phrases
 
-from .constants import MODEL_STATES, FIELDS_FOR_MODEL
-from .utils import paper2tokens, TaggedDocumentsIterator
+from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
+from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest
+from .exceptions import InvalidState
 
 from core.models import TimeStampedModel
 from core.utils import pad_vector
@@ -34,13 +39,13 @@ class ModelManager(models.Manager):
         return model
 
     def get(self, **kwargs):
-        print('Not loading Doc2Vec. Use load() instead')
+        print('Warning: Not loading Doc2Vec. Use load() instead')
         return super(ModelManager, self).get(**kwargs)
 
     def load(self, **kwargs):
         model = super(ModelManager, self).get(**kwargs)
         try:
-            model.doc2vec = Doc2Vec.load(os.path.join(model.doc2vec_path,
+            model.doc2vec = Doc2Vec.load(os.path.join(settings.NLP_DOC2VEC_PATH,
                                                       '{0}.mod'.format(
                                                           model.name)))
         except FileNotFoundError:
@@ -54,14 +59,14 @@ class Model(TimeStampedModel):
 
     Example of use case for training a new model:
     1) Create model
-    >>> model = Model.objects.create(name='test', data_path='nlp/data')
+    >>> model = Model.objects.create(name='test')
     2) Prepare and dump data.
     >>> papers = Papers.objects.all()
     >>> model.dump(papers)
     3) Build phraser and vocab (phraser: join common n-gram word. ie new_york,
     optional)
     >>> docs = model.load_documents()
-    >>> phraser = model.build_phraser(docs, min_count=)
+    >>> phraser = model.build_phraser(docs, min_count=2)
     >>> docs = model.load_documents(phraser=phraser)
     >>> model.build_vocab(docs)
     4) Train, save and set_active
@@ -77,13 +82,6 @@ class Model(TimeStampedModel):
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
-    # path to where data are dump for learning
-    data_path = models.CharField(max_length=256,
-                                 default=settings.NLP_DATA_PATH)
-    # path where to load/save Doc2Vec instance
-    doc2vec_path = models.CharField(
-        max_length=256,
-        default=settings.NLP_DOC2VEC_PATH)
 
     # when trained, model becomes active
     is_active = models.BooleanField(default=False)
@@ -211,15 +209,15 @@ class Model(TimeStampedModel):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Model, self).save(*args, **kwargs)
-        if not os.path.exists(self.doc2vec_path):
-            os.makedirs(self.doc2vec_path)
+        if not os.path.exists(settings.NLP_DOC2VEC_PATH):
+            os.makedirs(settings.NLP_DOC2VEC_PATH)
         self.doc2vec.save(
-            os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
+            os.path.join(settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(self.name)))
 
     def delete(self, *args, **kwargs):
         try:
             os.remove(
-                os.path.join(self.doc2vec_path, '{0}.mod'.format(self.name)))
+                os.path.join(settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(self.name)))
         except FileNotFoundError:
             pass
         super(Model, self).delete(*args, **kwargs)
@@ -250,8 +248,8 @@ class Model(TimeStampedModel):
         file_count = 0
         file = None
 
-        if not os.path.exists(self.data_path):
-            os.makedirs(self.data_path)
+        if not os.path.exists(settings.NLP_DATA_PATH):
+            os.makedirs(settings.NLP_DATA_PATH)
 
         sub_update_step = 20
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
@@ -263,7 +261,7 @@ class Model(TimeStampedModel):
             if not count % settings.NLP_CHUNK_SIZE:
                 if file:
                     file.close()
-                file = open(os.path.join(self.data_path,
+                file = open(os.path.join(settings.NLP_DATA_PATH,
                                          '{0:06d}.txt'.format(file_count)),
                             'w+')
                 file_count += 1
@@ -294,7 +292,7 @@ class Model(TimeStampedModel):
     def load_documents(self, phraser=None):
         """Load text files stored in data_path to documents list
         """
-        return TaggedDocumentsIterator(self.data_path, phraser=phraser)
+        return TaggedDocumentsIterator(settings.NLP_DATA_PATH, phraser=phraser)
 
     @staticmethod
     def build_phraser(documents, min_count=2, threshold=10.0):
@@ -388,13 +386,14 @@ class Model(TimeStampedModel):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper, alpha=0.05, min_alpha=0.001, passes=5):
+    def infer_paper(self, paper_pk, alpha=0.05, min_alpha=0.001, passes=5):
         """Infer model vector for paper
         """
         fields = list(self.paperfields.all().values_list('field', flat='True'))
 
         pv, _ = PaperVectors.objects.get_or_create(model=self,
-                                                   paper_id=paper)
+                                                   paper_id=paper_pk)
+        paper = Paper.objects.get(id=paper_pk)
         doc_words = paper2tokens(paper, fields=fields)
 
         # NB: infer_vector user explicit alpha-reduction with multi-passes
@@ -488,7 +487,9 @@ class PaperVectors(TimeStampedModel):
 
     vector = ArrayField(models.FloatField(null=True),
                         size=settings.NLP_MAX_VECTOR_SIZE,
-                        null=True)
+                        null=True, db_index=True)
+
+    is_in_lsh = models.BooleanField(default=False)
 
     objects = PaperVectorsManager()
 
@@ -524,7 +525,7 @@ class JournalVectors(TimeStampedModel):
 
     vector = ArrayField(models.FloatField(null=True),
                         size=settings.NLP_MAX_VECTOR_SIZE,
-                        null=True)
+                        null=True, db_index=True)
 
     class meta:
         unique_together = ('journal', 'model')
@@ -536,3 +537,122 @@ class JournalVectors(TimeStampedModel):
     def set_vector(self, vector):
         self.vector = pad_vector(vector)
         self.save()
+
+
+class LSHManager(models.Manager):
+
+    def create(self, **kwargs):
+        model = super(LSHManager, self).create(**kwargs)
+        # Init lsh
+        model.init()
+        return model
+
+    def get(self, **kwargs):
+        print('Warning: Not loading LSH object. Use load() instead')
+        return super(LSHManager, self).get(**kwargs)
+
+    def load(self, **kwargs):
+        obj = super(LSHManager, self).get(**kwargs)
+        try:
+            obj.lsh = joblib.load(os.path.join(settings.NLP_LSH_PATH,
+                                       '{0}.lsh'.format(obj.model.name)))
+        except FileNotFoundError:
+            raise FileNotFoundError
+        return obj
+
+
+class LSH(TimeStampedModel):
+    """Local Sensitive Hashing to retrieve approximate k-neighbors
+
+
+    """
+
+    model = models.OneToOneField(Model, related_name='lsh')
+
+    state = models.CharField(default='', choices=LSHF_STATES, max_length=3)
+
+    lsh = MyLSHForest()
+
+    objects = LSHManager()
+
+    def save(self, *args, **kwargs):
+        if not os.path.exists(settings.NLP_LSH_PATH):
+            os.makedirs(settings.NLP_LSHF_PATH)
+        joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
+                                       '{0}.lsh'.format(self.model.name)))
+        # Model is now Idle
+        self.state = 'IDL'
+        super(LSH, self).save(*args, **kwargs)
+
+    def save_db_only(self, *args, **kwargs):
+        super(LSH, self).save(*args, **kwargs)
+
+    def init(self, n_estimators=10, n_candidates=50):
+
+        # Register status as busy
+        self.state = 'BUS'
+        self.save_db_only()
+
+        # Init LSHF
+        self.lsh = MyLSHForest(n_estimators=n_estimators,
+                                n_candidates=n_candidates)
+
+        # Get data
+        data = PaperVectors.objects\
+            .filter(model=self.model)\
+            .values_list('paper__pk', 'vector')
+        vec_size = self.model.size
+
+        # Reshape data
+        X = np.zeros((data.count(), vec_size))
+        for i, dat in enumerate(data):
+            self.lsh.pks.append(data[i][0])
+            X[i, :] = data[i][1][:vec_size]
+
+        # Train
+        self.lsh.fit(X)
+
+        # Save
+        self.save()
+
+    def update(self):
+
+        # Register status as busy
+        self.state = 'BUS'
+        self.save_db_only()
+
+        # Get data
+        data = PaperVectors.objects\
+            .filter(model=self.model, is_in_lsh=False)\
+            .values_list('paper__pk', 'vector')
+        vec_size = self.model.size
+
+        # Reshape data
+        X = np.zeros((data.count(), vec_size))
+        pks = []
+        for i, dat in enumerate(data):
+            pks.append(data[i][0])
+            X[i, :] = data[i][1][:vec_size]
+
+        self.lsh.pks = self.lsh.pks + pks
+
+        # Train
+        self.lsh.partial_fit(X)
+
+        # Save
+        self.save()
+
+    def kneighbors(self, vec, n_neighbors=10000):
+
+        if self.state == 'IDL':
+
+            distances, indices = self.lsh.kneighbors(vec[:self.model.size],
+                                                     n_neighbors=n_neighbors)
+            # convert indices to paper pk
+            for i, index in enumerate(indices):
+                for j, k in enumerate(index):
+                    indices[i][j] = self.lsh.pks[k]
+            return indices
+        else:
+            raise InvalidState('LSH is not Idle. current state is {0}'
+                               .format(self.state))

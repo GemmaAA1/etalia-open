@@ -3,11 +3,11 @@ import os
 import re
 import nltk
 import glob
-from progressbar import ProgressBar, Percentage, Bar, ETA
 from bs4 import BeautifulSoup
 
 from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
+from sklearn.neighbors import LSHForest
 
 import logging
 
@@ -80,3 +80,9 @@ class TaggedDocumentsIterator(object):
                     text_l = text.strip().split(' ')
                 yield TaggedDocument(text_l, [pk, j_pk])
 
+
+class MyLSHForest(LSHForest):
+
+    def __init__(self, *args, **kwargs):
+        super(MyLSHForest, self).__init__(*args, **kwargs)
+        self.pks = []

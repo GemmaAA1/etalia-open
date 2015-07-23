@@ -13,9 +13,8 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 from unipath import Path
-from core.utils import get_env_variable
+from kombu import Queue, Exchange
 from celery.schedules import crontab
-from django.core.exceptions import ImproperlyConfigured
 
 ROOT_DIR = Path(__file__).ancestor(4)  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.child('paperstream')
@@ -257,35 +256,80 @@ CONS_INIT_PAST = 180
 NLP_CHUNK_SIZE = 10000
 NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data')
 NLP_DOC2VEC_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods')
+NLP_LSH_PATH = os.path.join(str(APPS_DIR), 'nlp', 'lshfs')
 NLP_MAX_VECTOR_SIZE = 300
 
+FEED_JOURNAL_VECTOR_RATIO = 0.2
 
 # FEED APP
 # ------------------------------------------------------------------------------
 FEED_SCORE_KEEP_N_PAPERS = 100
-FEED_JOURNAL_VECTOR_RATIO = 0.25
+
 
 # CELERY
 # ------------------------------------------------------------------------------
 
 BROKER_URL = 'amqp://'
-CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_RESULT_BACKEND = 'amqp://'
+CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
+
+CELERY_DEFAULT_QUEUE = 'default'
+# embed_exchange = Exchange('embed', type='topic')
+# consumer_exchange = Exchange('consumer', type='topic')
+CELERY_QUEUES = (
+    Queue('default', routing_key='task.#'),
+    Queue('dbow', routing_key='dbow.#'),
+    Queue('consumers', routing_key='consumers.#'),
+)
+CELERY_DEFAULT_EXCHANGE = 'tasks'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
+CELERY_DEFAULT_ROUTING_KEY = 'task.default'
+
+CELERY_ROUTES = {
+    'nlp.tasks.dbow_embed_paper': {
+        'queue': 'dbow',
+        'routing_key': 'dbow.embed',
+    },
+    'nlp.tasks.dbow_update': {
+        'queue': 'dbow',
+        'routing_key': 'dbow.lsh.update',
+    },
+    'nlp.tasks.dbow_kneighbors': {
+        'queue': 'dbow',
+        'routing_key': 'dbow.lsh.kneighbors',
+    },
+    'consumers.tasks.pubmed_run_all': {
+        'queue': 'consumers',
+        'routing_key': 'consumers.pubmed',
+    },
+    'consumers.tasks.arxiv_run_all': {
+        'queue': 'consumers',
+        'routing_key': 'consumers.arxiv',
+    },
+    'consumers.tasks.elsevier_run_all': {
+        'queue': 'consumers',
+        'routing_key': 'consumers.elsevier',
+    },
+}
+
 CELERYBEAT_SCHEDULE = {
     'pubmed-once-a-day': {
-        'task': 'tasks.pubmed_run_all',
+        'task': 'consumers.tasks.pubmed_run_all',
         'schedule': crontab(minute=0, hour=0),  # daily at midnight
     },
     'arxiv-once-a-day': {
-        'task': 'tasks.arxiv_run_all',
+        'task': 'consumers.tasks.arxiv_run_all',
         'schedule': crontab(minute=0, hour=12),  # daily at 12pm
     },
     'elsevier-once-a-day': {
-        'task': 'tasks.elsevier_run_all',
+        'task': 'consumers.tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at 6pm
     },
-
+    'update-lsh-dbow': {
+        'task': 'nlp.tasks.dbow_update',
+        'schedule': crontab(minute=0, hour='*/6'),  # every 6h
+    },
 }
 
 # LOGGING CONFIGURATION

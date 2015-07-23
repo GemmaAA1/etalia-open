@@ -2,7 +2,6 @@
 
 class ModelError(Exception):
     """Top-level error for model exception.
-
     This exception should normally not be raised, only subclasses of this
     exception."""
 
@@ -10,11 +9,10 @@ class ModelError(Exception):
         return getattr(self, 'message', '')
 
 
-class StatusError(ModelError):
+class InvalidState(ModelError):
     """The state of the model is wrong
-
-    This generally means that the model is currently doing something else
+    This generally means that the object is currently doing something else
     and/or the current task cannot be processed.
     """
 
-    message = 'You can do this in the current model status'
+    message = 'Current state is invalid'

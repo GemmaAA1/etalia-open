@@ -6,5 +6,6 @@ __pycache__
 .coverage
 *.pyc
 logs
+paperstream/nlp/lshfs/
 paperstream/nlp/data
 paperstream/nlp/mods

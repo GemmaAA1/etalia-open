@@ -18,7 +18,7 @@ celery_app = Celery('paperstream')
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
 celery_app.config_from_object('django.conf:settings')
-celery_app.autodiscover_tasks(['library', 'consumers', 'users', 'feeds'])
+celery_app.autodiscover_tasks(['library', 'consumers', 'users', 'feeds', 'nlp'])
 
 @celery_app.task(bind=True)
 def debug_task(self):
