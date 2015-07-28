@@ -548,7 +548,7 @@ class LSHManager(models.Manager):
         return model
 
     def get(self, **kwargs):
-        print('Warning: Not loading LSH object. Use load() instead')
+        # print('Warning: Not loading LSH object. Use load() instead')
         return super(LSHManager, self).get(**kwargs)
 
     def load(self, **kwargs):
@@ -600,20 +600,28 @@ class LSH(TimeStampedModel):
         # Get data
         data = PaperVectors.objects\
             .filter(model=self.model)\
-            .values_list('paper__pk', 'vector')
+            .values_list('pk', 'paper__pk', 'vector')
         vec_size = self.model.size
 
         # Reshape data
+        pv_pks = []
         X = np.zeros((data.count(), vec_size))
         for i, dat in enumerate(data):
-            self.lsh.pks.append(data[i][0])
-            X[i, :] = data[i][1][:vec_size]
+            # store PaperVector pk
+            pv_pks.append(data[i][0])
+            # store paper pk
+            self.lsh.pks.append(data[i][1])
+            # build input matrix for fit
+            X[i, :] = data[i][2][:vec_size]
 
         # Train
         self.lsh.fit(X)
 
         # Save
         self.save()
+
+        # Update PaperVector.is_in_lsh
+        PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_lsh=True)
 
     def update(self):
 
@@ -624,17 +632,19 @@ class LSH(TimeStampedModel):
         # Get data
         data = PaperVectors.objects\
             .filter(model=self.model, is_in_lsh=False)\
-            .values_list('paper__pk', 'vector')
+            .values_list('pk', 'paper__pk', 'vector')
         vec_size = self.model.size
 
         # Reshape data
+        pv_pks = []
         X = np.zeros((data.count(), vec_size))
-        pks = []
         for i, dat in enumerate(data):
-            pks.append(data[i][0])
-            X[i, :] = data[i][1][:vec_size]
-
-        self.lsh.pks = self.lsh.pks + pks
+            # store PaperVector pk
+            pv_pks.append(data[i][0])
+            # store paper pk
+            self.lsh.pks.append(data[i][1])
+            # build input matrix for fit
+            X[i, :] = data[i][2][:vec_size]
 
         # Train
         self.lsh.partial_fit(X)
@@ -642,12 +652,17 @@ class LSH(TimeStampedModel):
         # Save
         self.save()
 
+        # Update PaperVector.is_in_lsh
+        PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_lsh=True)
+
     def kneighbors(self, vec, n_neighbors=10000):
 
         if self.state == 'IDL':
-
+            if isinstance(vec, list):
+                vec = np.array(vec)
             distances, indices = self.lsh.kneighbors(vec[:self.model.size],
-                                                     n_neighbors=n_neighbors)
+                                                     n_neighbors=n_neighbors,
+                                                     return_distance=True)
             # convert indices to paper pk
             for i, index in enumerate(indices):
                 for j, k in enumerate(index):
@@ -656,3 +671,27 @@ class LSH(TimeStampedModel):
         else:
             raise InvalidState('LSH is not Idle. current state is {0}'
                                .format(self.state))
+
+    def mono_task(self, *args, **kwargs):
+        """Use form tasks.py
+        """
+
+        try:
+            task = kwargs['task']
+        except KeyError:
+            raise KeyError('key task must defined')
+
+        if task == 'update':
+            self.update()
+            return 0
+        elif task == 'kneighbors':
+            try:
+                vec = kwargs['vec']
+                n_neighbors = kwargs['n_neighbors']
+            except ValueError as e:
+                raise ValueError(e)
+            pks = self.kneighbors(vec, n_neighbors)
+            return pks
+        else:
+            print(task)
+            raise ValueError('Unknown task action')

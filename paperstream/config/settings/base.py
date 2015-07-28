@@ -248,7 +248,7 @@ CONS_MIN_DELAY = 0
 CONS_MAX_DELAY = 7
 
 # In days, how many day in the past to look at when initializing database
-CONS_INIT_PAST = 180
+CONS_INIT_PAST = 365
 
 
 # NLP APP
@@ -291,13 +291,9 @@ CELERY_ROUTES = {
         'queue': 'dbow',
         'routing_key': 'dbow.embed',
     },
-    'nlp.tasks.dbow_update': {
+    'nlp.tasks.dbow_lsh': {
         'queue': 'dbow',
-        'routing_key': 'dbow.lsh.update',
-    },
-    'nlp.tasks.dbow_kneighbors': {
-        'queue': 'dbow',
-        'routing_key': 'dbow.lsh.kneighbors',
+        'routing_key': 'dbow.lsh',
     },
     'consumers.tasks.pubmed_run_all': {
         'queue': 'consumers',
@@ -325,10 +321,6 @@ CELERYBEAT_SCHEDULE = {
     'elsevier-once-a-day': {
         'task': 'consumers.tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at 6pm
-    },
-    'update-lsh-dbow': {
-        'task': 'nlp.tasks.dbow_update',
-        'schedule': crontab(minute=0, hour='*/6'),  # every 6h
     },
 }
 

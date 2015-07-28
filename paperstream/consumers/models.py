@@ -203,7 +203,7 @@ class Consumer(TimeStampedModel):
             start_date = timezone.now() - timezone.timedelta(self.day0)
         return start_date
 
-    @app.task(filter=task_method, name='tasks.populate_journal')
+    @app.task(filter=task_method)
     def populate_journal(self, journal_pk):
         """Check journal validity, consume api, save stats, parse entries,
         save records to DB

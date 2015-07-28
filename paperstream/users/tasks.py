@@ -57,17 +57,3 @@ def init_default_feed(user_pk):
 
     return user_pk
 
-@app.task()
-def update_feed(user_pk, feed_name):
-
-    # get user
-    user = User.objects.get(pk=user_pk)
-
-    # get user_feed
-    user_feed = user.feed.get(name='feed_name')
-
-    # update
-    user_feed.update()
-
-    return user_pk
-

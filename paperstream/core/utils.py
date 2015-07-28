@@ -1,6 +1,8 @@
 import os
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
+from django.utils import timezone
+from django.db.models import Q
 
 def get_env_variable(var_name, default=None):
     """
@@ -45,3 +47,15 @@ def pad_vector(vector):
         vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
 
     return vector
+
+
+def query_paper_time_lapse(time_lapse, user):
+
+    # time range
+    from_date = (timezone.now() -
+                 timezone.timedelta(
+                 days=user.settings.time_lapse)).date()
+    query = Q(date_ep__gt=from_date) | \
+            (Q(date_pp__gt=from_date) & Q(date_ep=None))
+
+    return query

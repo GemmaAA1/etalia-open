@@ -10,6 +10,8 @@ from core.mixins import ProfileModalFormsMixin
 from library.models import Paper
 from .models import UserFeed, UserFeedPaper
 
+from .tasks import update_feed as async_update_feed
+
 
 class home_feed(LoginRequiredMixin, ProfileModalFormsMixin, ListView):
     model = UserFeedPaper
@@ -23,6 +25,11 @@ class home_feed(LoginRequiredMixin, ProfileModalFormsMixin, ListView):
         return ufp
 
 home = home_feed.as_view()
+
+# @login_required
+def async_update_feed(request, pk):
+    # async_update_feed.apply_async(args=[pk, ], serializer='json')
+    async_update_feed(pk)
 
 
 # @login_required

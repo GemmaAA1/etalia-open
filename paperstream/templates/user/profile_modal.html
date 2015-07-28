@@ -65,6 +65,12 @@
                             </ul>
                         </div>
                         <div class="tab-pane" id="tab4">
+                            <p></p>
+                            <ul class="list-group">
+                                {% for feed in user.feed.all %}
+                                <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.pk %}"> (update)</a></li>
+                                {% endfor %}
+                            </ul>
                         </div>
                         <div class="tab-pane" id="tab5">
                             <p>

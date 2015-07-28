@@ -30,7 +30,7 @@ class LSHTask(app.Task):
     to task
     """
     abstract = True
-    ignore_result = True
+    ignore_result = False
     model_name = None
     _lsh = None
 
@@ -42,6 +42,7 @@ class LSHTask(app.Task):
     def lsh(self):
         if self._lsh is None:
             self._lsh = LSH.objects.load(model__name=self.model_name)
+            return self._lsh
         # if lsh has been modified, reload
         last_modified = LSH.objects.get(model__name=self.model_name).modified
         if not self._lsh.modified == last_modified:
@@ -50,15 +51,13 @@ class LSHTask(app.Task):
 
 # Create embedding task here:
 # embed paper for model dbow
-@app.task(base=EmbedPaperTask, model_name='dbow')
+@app.task(base=EmbedPaperTask, model_name='dbow', bind=True)
 def dbow_embed_paper(paper_pk):
     dbow_embed_paper.model.infer_paper(paper_pk)
 
 # Create lsh related task here:
-# Update lsh for model dbow
-@app.task(base=LSHTask, model_name='dbow')
-def dbow_update():
-    dbow_update.lsh.update()
-@app.task(base=LSHTask, model_name='dbow')
-def dbow_kneighbors(vec, n_neighbors):
-    dbow_kneighbors.lsh.kneighbors(vec, n_neighbors)
+@app.task(base=LSHTask, model_name='dbow', bind=True)
+def dbow_lsh(*args, **kwargs):
+    return dbow_lsh.lsh.mono_task(*args, **kwargs)
+
+

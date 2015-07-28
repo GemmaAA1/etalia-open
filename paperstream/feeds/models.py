@@ -1,4 +1,5 @@
 from operator import add
+
 import numpy as np
 from scipy.spatial import distance
 
@@ -17,6 +18,8 @@ from users.models import UserLibPaper
 from nlp.models import PaperVectors, JournalVectors, Model
 
 from .validators import validate_feed_name
+
+from config.celery import celery_app as app
 
 
 class UserFeedManager(BaseUserManager):
@@ -106,7 +109,7 @@ class UserFeed(TimeStampedModel):
     def __str__(self):
         return '{feed}@{username}'.format(feed=self.name, username=self.user.email)
 
-    def update_feed(self):
+    def update(self):
         """
         - Get all papers in time range excluding untrusted and already in user lib
         #TODO: Restricted this query to the k-NN to the feed vector
@@ -129,9 +132,19 @@ class UserFeed(TimeStampedModel):
             .filter(feed=self)\
             .values_list('pk', flat='True')
 
-        # get target papers excluding user lib + not trusted + empty abstrct
+        # get target papers excluding user lib + not trusted + empty abstract
         paper_exclude_pks = list(self.user.lib.papers
                                  .values_list('pk', flat='True'))
+
+        # Get nearest neighbors of feed vector
+        model_name = self.user.settings.model.name
+        feed_vector = self.vectors.get(model__name=model_name)
+        app.loader.import_default_modules()
+        knn_task = app.tasks['nlp.tasks.{model_name}_lsh'.format(model_name=model_name)]
+
+        # TODO: Reduce query
+        # Reduce query to nearest neighbors of each papers ?
+
         target_papers_pk = list(Paper.objects
                                 .filter(
                                     Q(date_ep__gt=from_date) |
@@ -147,7 +160,9 @@ class UserFeed(TimeStampedModel):
         objs_list = []
         if target_papers_pk:
             # compute scores
-            scores, pks = self.score_multi_papers(target_papers_pk)
+            scores, pks = self.score_multi_papers(
+                target_papers_pk,
+                scoring_method=self.user.settings.scoring_method)
             # sort scores
             ind = np.argsort(scores)[::-1]
             # create/update UserFeedPaper
@@ -166,7 +181,7 @@ class UserFeed(TimeStampedModel):
                         is_score_computed=True))
             UserFeedPaper.objects.bulk_create(objs_list)
 
-    def score_multi_papers(self, target_papers_pk, method=1):
+    def score_multi_papers(self, target_papers_pk, scoring_method=1):
         """Score papers
         """
 
@@ -245,20 +260,20 @@ class UserFeed(TimeStampedModel):
         pks_t = [pd['paper__pk'] for pd in papers_t]
         pks_s = [pd['paper__pk'] for pd in papers_s]
 
-        # method #1: average of cosine similarity of journal weighted vectors)
-        if method == 1:
+        # scoring_method #1: average of cosine similarity of journal weighted vectors)
+        if scoring_method == 1:
             scores = 1. - np.average(distance.cdist(seed_mat, target_mat, 'cosine'),
                                      axis=0)
-        # method #2: only threshold docs are counted in score
-        elif method == 2:
+        # scoring_method #2: only threshold docs are counted in score
+        elif scoring_method == 2:
             threshold = 0.6
             dis = 1. - distance.cdist(seed_mat, target_mat, 'cosine')
             dis = np.where(dis > threshold, 1, 0)
             scores = np.sum(dis, axis=0)
 
-        # method 3: average cosine similarity with date + journal weighted
+        # scoring_method 3: average cosine similarity with date + journal weighted
         # vectors
-        elif method == 3:
+        elif scoring_method == 3:
 
             dis = 1.0 - distance.cdist(seed_mat, target_mat, 'cosine')
             # get date when paper was created in user lib
@@ -297,7 +312,7 @@ class UserFeed(TimeStampedModel):
             scores = np.average(dis, weights=date_weights, axis=0)
 
         else:
-            raise ValueError('Scoring method unknown: {0}'.format(method))
+            raise ValueError('Scoring method unknown: {0}'.format(scoring_method))
 
         return scores, pks_t
 

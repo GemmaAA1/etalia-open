@@ -123,9 +123,10 @@ class UserSettingsForm(forms.ModelForm):
 
     class Meta:
         model = UserSettings
-        fields = ('model', 'time_lapse')
+        fields = ('model', 'time_lapse', 'scoring_method')
         widgets = {
             'model': forms.Select(attrs={'class': 'form-control'}),
             'time_lapse': forms.Select(attrs={'class': 'form-control'}),
+            'scoring_method': forms.Select(attrs={'class': 'form-control'})
         }
 
