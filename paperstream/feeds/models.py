@@ -138,7 +138,6 @@ class UserFeed(TimeStampedModel):
 
         # Get nearest neighbors of feed vector
         model_name = self.user.settings.model.name
-        feed_vector = self.vectors.get(model__name=model_name)
         app.loader.import_default_modules()
         knn_task = app.tasks['nlp.tasks.{model_name}_lsh'.format(model_name=model_name)]
 

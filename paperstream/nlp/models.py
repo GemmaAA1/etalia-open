@@ -515,6 +515,23 @@ class PaperVectors(TimeStampedModel):
         self.save()
 
 
+class PaperNeighbors(TimeStampedModel):
+
+    model = models.ForeignKey(Model)
+
+    paper = models.ForeignKey(Paper)
+
+    neighbor1 = models.ForeignKey(Paper, related_name='neighbor1', null=True)
+
+    neighbor2 = models.ForeignKey(Paper, related_name='neighbor2', null=True)
+
+    neighbor3 = models.ForeignKey(Paper, related_name='neighbor3', null=True)
+
+    neighbor4 = models.ForeignKey(Paper, related_name='neighbor4', null=True)
+
+    neighbor5 = models.ForeignKey(Paper, related_name='neighbor5', null=True)
+
+
 class JournalVectors(TimeStampedModel):
     """Journal - NLP Model relationship
 
@@ -682,7 +699,8 @@ class LSH(TimeStampedModel):
             self.save()
 
             # Update PaperVector.is_in_full_lsh
-            PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_full_lsh=True)
+            PaperVectors.objects.filter(pk__in=pv_pks)\
+                .update(is_in_full_lsh=True)
         else:
             logger.warning('LSH ({id}) attribute time_lapse is not null, '
                            'calling full_update() instead'.format(id=self.id))

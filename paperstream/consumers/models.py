@@ -187,7 +187,7 @@ class Consumer(TimeStampedModel):
                         CorpAuthorPaper.objects.get_or_create(
                             paper=paper,
                             corp_author=corp_author)
-                    return True
+                    return paper
                 else:
                     return False
             return False
@@ -222,7 +222,8 @@ class Consumer(TimeStampedModel):
             # save to database
             for entry in entries:
                 item = self.parser.parse(entry)
-                if self.add_entry(item, journal):
+                paper = self.add_entry(item, journal)
+                if paper:
                     paper_added += 1
 
             # Update consumer_journal
