@@ -1,12 +1,15 @@
 import os
+import logging
 from random import shuffle
 import numpy as np
 
 from sklearn.externals import joblib
 
 from django.db import models
+from django.db.models import Q
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
+from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
@@ -19,6 +22,9 @@ from .exceptions import InvalidState
 from core.models import TimeStampedModel
 from core.utils import pad_vector
 from library.models import Paper, Journal
+from core.constants import TIME_LAPSE_CHOICES
+
+logger = logging.getLogger(__name__)
 
 
 class ModelManager(models.Manager):
@@ -61,7 +67,7 @@ class Model(TimeStampedModel):
     1) Create model
     >>> model = Model.objects.create(name='test')
     2) Prepare and dump data.
-    >>> papers = Papers.objects.all()
+    >>> papers = Paper.objects.all()
     >>> model.dump(papers)
     3) Build phraser and vocab (phraser: join common n-gram word. ie new_york,
     optional)
@@ -133,7 +139,7 @@ class Model(TimeStampedModel):
 
     # `hs` = if 1 (default), hierarchical sampling will be used for model
     # training (else set to 0).
-    hs = models.IntegerField(default=0)
+    hs = models.IntegerField(default=1)
 
     # `negative` = if > 0, negative sampling will be used, the int for negative
     # specifies how many "noise words" should be drawn (usually between 5-20).
@@ -489,7 +495,7 @@ class PaperVectors(TimeStampedModel):
                         size=settings.NLP_MAX_VECTOR_SIZE,
                         null=True, db_index=True)
 
-    is_in_lsh = models.BooleanField(default=False)
+    is_in_full_lsh = models.BooleanField(default=False)
 
     objects = PaperVectorsManager()
 
@@ -544,7 +550,7 @@ class LSHManager(models.Manager):
     def create(self, **kwargs):
         model = super(LSHManager, self).create(**kwargs)
         # Init lsh
-        model.init()
+        model.full_update(**kwargs)
         return model
 
     def get(self, **kwargs):
@@ -563,13 +569,16 @@ class LSHManager(models.Manager):
 
 class LSH(TimeStampedModel):
     """Local Sensitive Hashing to retrieve approximate k-neighbors
-
-
     """
 
     model = models.OneToOneField(Model, related_name='lsh')
 
     state = models.CharField(default='', choices=LSHF_STATES, max_length=3)
+
+    time_lapse = models.IntegerField(default=None,
+                                     null=True, blank=True,
+                                     choices=TIME_LAPSE_CHOICES,
+                                     verbose_name='In the past for')
 
     lsh = MyLSHForest()
 
@@ -587,7 +596,7 @@ class LSH(TimeStampedModel):
     def save_db_only(self, *args, **kwargs):
         super(LSH, self).save(*args, **kwargs)
 
-    def init(self, n_estimators=10, n_candidates=50):
+    def full_update(self, n_estimators=10, n_candidates=50):
 
         # Register status as busy
         self.state = 'BUS'
@@ -595,12 +604,24 @@ class LSH(TimeStampedModel):
 
         # Init LSHF
         self.lsh = MyLSHForest(n_estimators=n_estimators,
-                                n_candidates=n_candidates)
+                               n_candidates=n_candidates)
 
         # Get data
-        data = PaperVectors.objects\
-            .filter(model=self.model)\
-            .values_list('pk', 'paper__pk', 'vector')
+        if self.time_lapse:   # time range
+            from_date = (timezone.now() -
+                         timezone.timedelta(
+                             days=self.time_lapse)).date()
+
+            data = PaperVectors.objects\
+                            .filter(Q(model=self.model) &
+                                    (Q(paper__date_ep__gt=from_date) |
+                                     (Q(paper__date_pp__gt=from_date) &
+                                      Q(paper__date_ep=None))))\
+                            .values_list('pk', 'paper__pk', 'vector')
+        else:
+            data = PaperVectors.objects\
+                .filter(model=self.model)\
+                .values_list('pk', 'paper__pk', 'vector')
         vec_size = self.model.size
 
         # Reshape data
@@ -620,40 +641,52 @@ class LSH(TimeStampedModel):
         # Save
         self.save()
 
-        # Update PaperVector.is_in_lsh
-        PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_lsh=True)
+        # Update PaperVector.is_in_full_lsh
+        if not self.time_lapse:  # this is a the full LSH
+            PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_full_lsh=True)
 
-    def update(self):
+    def partial_update(self):
+        """Only partial update LSH with new incoming papers (i.e. does not remove
+        old ones, valid only if self.time_lapse=None)
 
-        # Register status as busy
-        self.state = 'BUS'
-        self.save_db_only()
+        NB: we can not do partial on time_lapse LSH because paper cannot be removed from
+        training set, only added.
+        """
 
-        # Get data
-        data = PaperVectors.objects\
-            .filter(model=self.model, is_in_lsh=False)\
-            .values_list('pk', 'paper__pk', 'vector')
-        vec_size = self.model.size
+        if not self.time_lapse:
+            # Register status as busy
+            self.state = 'BUS'
+            self.save_db_only()
 
-        # Reshape data
-        pv_pks = []
-        X = np.zeros((data.count(), vec_size))
-        for i, dat in enumerate(data):
-            # store PaperVector pk
-            pv_pks.append(data[i][0])
-            # store paper pk
-            self.lsh.pks.append(data[i][1])
-            # build input matrix for fit
-            X[i, :] = data[i][2][:vec_size]
+            # Get data
+            data = PaperVectors.objects\
+                .filter(model=self.model, is_in_full_lsh=False)\
+                .values_list('pk', 'paper__pk', 'vector')
+            vec_size = self.model.size
 
-        # Train
-        self.lsh.partial_fit(X)
+            # Reshape data
+            pv_pks = []
+            X = np.zeros((data.count(), vec_size))
+            for i, dat in enumerate(data):
+                # store PaperVector pk
+                pv_pks.append(data[i][0])
+                # store paper pk
+                self.lsh.pks.append(data[i][1])
+                # build input matrix for fit
+                X[i, :] = data[i][2][:vec_size]
 
-        # Save
-        self.save()
+            # Train
+            self.lsh.partial_fit(X)
 
-        # Update PaperVector.is_in_lsh
-        PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_lsh=True)
+            # Save
+            self.save()
+
+            # Update PaperVector.is_in_full_lsh
+            PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_full_lsh=True)
+        else:
+            logger.warning('LSH ({id}) attribute time_lapse is not null, '
+                           'calling full_update() instead'.format(id=self.id))
+            self.full_update()
 
     def kneighbors(self, vec, n_neighbors=10000):
 
@@ -682,7 +715,10 @@ class LSH(TimeStampedModel):
             raise KeyError('key task must defined')
 
         if task == 'update':
-            self.update()
+            self.full_update()
+            return 0
+        elif task == 'partial_update':
+            self.partial_update()
             return 0
         elif task == 'kneighbors':
             try:

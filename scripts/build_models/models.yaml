@@ -1,0 +1,17 @@
+- name: dbow-100-with-words
+  dm: 1
+  size: 100
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 1
+
+- name: dbow-100
+  dm: 1
+  size: 100
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
