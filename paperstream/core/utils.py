@@ -48,6 +48,19 @@ def pad_vector(vector):
 
     return vector
 
+def pad_neighbors(vector):
+    if not isinstance(vector, list):
+        try:
+            vector = list(vector)
+        except TypeError:
+            raise TypeError('<vector> must be a list or a np.array')
+
+    if len(vector) < settings.NLP_MAX_KNN_NEIGHBORS:
+        vector += [None] * (settings.NLP_MAX_KNN_NEIGHBORS - len(vector))
+
+    return vector
+
+
 
 def query_paper_time_lapse(time_lapse, user):
 

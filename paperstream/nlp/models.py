@@ -20,7 +20,7 @@ from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest
 from .exceptions import InvalidState
 
 from core.models import TimeStampedModel
-from core.utils import pad_vector
+from core.utils import pad_vector, pad_neighbors
 from library.models import Paper, Journal
 from core.constants import TIME_LAPSE_CHOICES
 
@@ -64,26 +64,7 @@ class Model(TimeStampedModel):
     Model for a doc2vec type of Natural Language Modeling leveraging gensim
 
     Example of use case for training a new model:
-    1) Create model
-    >>> model = Model.objects.create(name='test')
-    2) Prepare and dump data.
-    >>> papers = Paper.objects.all()
-    >>> model.dump(papers)
-    3) Build phraser and vocab (phraser: join common n-gram word. ie new_york,
-    optional)
-    >>> docs = model.load_documents()
-    >>> phraser = model.build_phraser(docs, min_count=2)
-    >>> docs = model.load_documents(phraser=phraser)
-    >>> model.build_vocab(docs)
-    4) Train, save and set_active
-    >>> model.train(docs, passes=10, shuffle_=True)
-    >>> model.save()
-    >>> model.set_active()
-    5) Populate library is needed
-    >>> model.save_journal_vec_from_bulk()
-    >>> model.save_paper_vec_from_bulk()
-    6) Start embedding new paper <paper> as they come in
-    >>> model.infer_paper(paper)
+    refer to scripts/build_models/build_model.py
     """
 
     name = models.CharField(max_length=128, blank=False, null=False,
@@ -410,7 +391,7 @@ class Model(TimeStampedModel):
         pv.set_vector(vector.tolist())
         pv.save()
 
-        return vector
+        return paper_pk
 
     def infer_papers(self, papers, **kwargs):
         """Infer model vector for papers
@@ -506,10 +487,6 @@ class PaperVectors(TimeStampedModel):
         return '{short_title}/{name}'.format(short_title=self.paper.short_title,
                                              name=self.model.name)
 
-    def infer_paper(self, **kwargs):
-        vector = self.model.infer_paper(self.paper, **kwargs)
-        self.set_vector(vector)
-
     def set_vector(self, vector):
         self.vector = pad_vector(vector)
         self.save()
@@ -517,19 +494,21 @@ class PaperVectors(TimeStampedModel):
 
 class PaperNeighbors(TimeStampedModel):
 
-    model = models.ForeignKey(Model)
+    lsh = models.ForeignKey('LSH')
 
     paper = models.ForeignKey(Paper)
 
-    neighbor1 = models.ForeignKey(Paper, related_name='neighbor1', null=True)
+    # Primary keys of the k-nearest neighbors papers
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True)
 
-    neighbor2 = models.ForeignKey(Paper, related_name='neighbor2', null=True)
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
 
-    neighbor3 = models.ForeignKey(Paper, related_name='neighbor3', null=True)
-
-    neighbor4 = models.ForeignKey(Paper, related_name='neighbor4', null=True)
-
-    neighbor5 = models.ForeignKey(Paper, related_name='neighbor5', null=True)
+    class meta:
+        unique_together = ('lsh', 'paper')
 
 
 class JournalVectors(TimeStampedModel):
@@ -706,7 +685,7 @@ class LSH(TimeStampedModel):
                            'calling full_update() instead'.format(id=self.id))
             self.full_update()
 
-    def kneighbors(self, vec, n_neighbors=10000):
+    def kneighbors(self, vec, n_neighbors=10):
 
         if self.state == 'IDL':
             if isinstance(vec, list):
@@ -718,13 +697,28 @@ class LSH(TimeStampedModel):
             for i, index in enumerate(indices):
                 for j, k in enumerate(index):
                     indices[i][j] = self.lsh.pks[k]
+
             return indices
         else:
             raise InvalidState('LSH is not Idle. current state is {0}'
                                .format(self.state))
 
-    def mono_task(self, *args, **kwargs):
-        """Use form tasks.py
+    def populate_neighbors(self, paper_pk):
+
+        vec = PaperVectors.objects.get(paper__pk=paper_pk,
+                                       model=self.model).vector[:self.model.size]
+        pks = self.kneighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS)
+
+        pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
+                                                     paper_id=paper_pk)
+        pn.set_neighbors(pks)
+
+    def tasks(self, *args, **kwargs):
+        """Use for tasks.py. Ok, this is an odd design.
+         It is so because we want to have the lsh object loaded only once.
+          It multiple task are defined, this will required having multiple
+          instance of the lsh object loaded per task and it will be memory
+          expensive ihmo.
         """
 
         try:
@@ -732,20 +726,34 @@ class LSH(TimeStampedModel):
         except KeyError:
             raise KeyError('key task must defined')
 
+        # full update of LSH
         if task == 'update':
             self.full_update()
             return 0
+        # partial update of LSH (use only on full database LSH)
         elif task == 'partial_update':
             self.partial_update()
             return 0
+        # return pk of k nearest neighbors of kwargs['vec']
         elif task == 'kneighbors':
             try:
                 vec = kwargs['vec']
                 n_neighbors = kwargs['n_neighbors']
-            except ValueError as e:
-                raise ValueError(e)
+            except KeyError as e:
+                raise e
             pks = self.kneighbors(vec, n_neighbors)
             return pks
+        # populate the PaperNeighbors for paper_pk
+        elif task == 'populate_neighbors':
+            try:
+                paper_pk = args[0]
+            except KeyError as e:
+                raise e
+
+            self.populate_neighbors(paper_pk)
+
+            return paper_pk
         else:
             print(task)
             raise ValueError('Unknown task action')
+

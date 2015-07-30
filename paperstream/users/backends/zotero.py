@@ -71,7 +71,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                 except Exception as e:
                     logger.exception('Zotero parser failed')
                     continue
-                paper, journal = self.get_or_create_entry(entry)
+                paper, journal = self.add_entry(entry)
 
                 if paper:
                     logger.info(

@@ -120,7 +120,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 except Exception as e:
                     logger.exception('Mendeley parser failed')
                     continue
-                paper, journal = self.get_or_create_entry(entry)
+                paper, journal = self.add_entry(entry)
 
                 if paper:
                     logger.info(

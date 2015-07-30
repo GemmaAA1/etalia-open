@@ -258,6 +258,7 @@ NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data')
 NLP_DOC2VEC_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods')
 NLP_LSH_PATH = os.path.join(str(APPS_DIR), 'nlp', 'lshfs')
 NLP_MAX_VECTOR_SIZE = 300
+NLP_MAX_KNN_NEIGHBORS = 10
 
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 

@@ -25,6 +25,7 @@ from library.models import Journal, AuthorPaper, Paper, Author, CorpAuthor, \
 from core.models import TimeStampedModel
 from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
+from nlp.tasks import all_embeddings_and_neighbors
 
 from library.forms import AuthorForm, PaperFormFillBlanks
 
@@ -189,11 +190,11 @@ class Consumer(TimeStampedModel):
                             corp_author=corp_author)
                     return paper
                 else:
-                    return False
-            return False
+                    return None
+            return None
         # TODO: specify exception
         except Exception as e:
-            return False
+            return None
 
     def get_start_date(self, cj):
         if cj.last_date_cons:
@@ -225,6 +226,9 @@ class Consumer(TimeStampedModel):
                 paper = self.add_entry(item, journal)
                 if paper:
                     paper_added += 1
+
+                    # Embed paper and get closest neighbors
+                    all_embeddings_and_neighbors(paper.pk)
 
             # Update consumer_journal
             cj = self.consumerjournal_set.get(journal=journal)

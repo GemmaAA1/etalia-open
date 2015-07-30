@@ -6,6 +6,8 @@ from library.forms import PaperFormFillBlanks
 
 from ..models import UserLibPaper, UserLibJournal, UserStats
 
+from nlp.tasks import all_embeddings_and_neighbors
+
 class BackendLibMixin(object):
 
     CHUNK_SIZE = 10
@@ -50,7 +52,7 @@ class BackendLibMixin(object):
                     except Journal.DoesNotExist:
                         journal = None
                     paper.journal = journal
-                    paper.is_trusted = False  # we do not trust user based source
+                    paper.is_trusted = False  # we do not trust provider source because they can be user made
                     paper.save()
 
                     # create/get authors
@@ -73,6 +75,15 @@ class BackendLibMixin(object):
             return None, None
         except Exception as e:
             return None, None
+
+    def add_entry(self, entry):
+
+        paper, journal = self.get_or_create_entry(entry)
+
+        if paper:  # Embed paper and get closest neighbors
+            all_embeddings_and_neighbors(paper.pk)
+
+        return paper, journal
 
     @staticmethod
     def associate_paper(paper, user, info):

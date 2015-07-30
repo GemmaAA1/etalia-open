@@ -15,7 +15,7 @@ from core.models import TimeStampedModel
 from core.utils import pad_vector
 from library.models import Paper
 from users.models import UserLibPaper
-from nlp.models import PaperVectors, JournalVectors, Model
+from nlp.models import PaperVectors, JournalVectors, Model, PaperNeighbors, LSH
 
 from .validators import validate_feed_name
 
@@ -133,27 +133,22 @@ class UserFeed(TimeStampedModel):
             .values_list('pk', flat='True')
 
         # get target papers excluding user lib + not trusted + empty abstract
-        paper_exclude_pks = list(self.user.lib.papers
-                                 .values_list('pk', flat='True'))
+        paper_exclude_pks = list(self.user.lib.papers.values_list('pk',
+                                                                  flat='True'))
 
-        # Get nearest neighbors of feed vector
-        model_name = self.user.settings.model.name
-        app.loader.import_default_modules()
-        knn_task = app.tasks['nlp.tasks.{model_name}_lsh'.format(model_name=model_name)]
-
-        # TODO: Reduce query
-        # Reduce query to nearest neighbors of each papers ?
-
-        target_papers_pk = list(Paper.objects
-                                .filter(
-                                    Q(date_ep__gt=from_date) |
-                                    (Q(date_pp__gt=from_date) &
-                                     Q(date_ep=None)))
-                                .exclude(
-                                    pk__in=paper_exclude_pks,
-                                    is_trusted=False,
-                                    abstract='')
-                                .values_list('pk', flat='True'))
+        # Get nearest neighbors of seed papers and retrieve target_paper
+        lsh_pk = LSH.objects.get(model_id=self.user.settings.model.pk,
+                                 time_lapse=self.user.settings.time_lapse)
+        target_papers_pk = PaperNeighbors.objects\
+            .filter(paper__pk__in=self.papers_seed.values('pk'),
+                    lsh_id=lsh_pk)\
+            .exclude(pk__in=paper_exclude_pks,
+                     is_trusted=False,
+                     abstract='')\
+            .values_list('neighbors', flat=True)
+        # de-nest list and make unique
+        target_papers_pk = [a for b in target_papers_pk for a in b]
+        target_papers_pk = list(set(target_papers_pk))
 
         # Match target paper
         objs_list = []
@@ -191,7 +186,7 @@ class UserFeed(TimeStampedModel):
         vector_size = Model.objects.get(id=model_pk).size
 
         # get seed paper pk
-        seed_papers_pk = self.papers_seed.all().values('pk')
+        seed_papers_pk = self.papers_seed.values('pk')
 
         # get seed data
         papers_s = PaperVectors.objects\
