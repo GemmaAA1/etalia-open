@@ -383,6 +383,10 @@ LOGGING = {
             'handlers': ['console', 'populate'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
+        'nlp': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
         'users': {
             'handlers': ['console'],
             'level': 'DEBUG',

@@ -2,6 +2,7 @@ import os
 import logging
 from random import shuffle
 import numpy as np
+from timeit import time
 
 from sklearn.externals import joblib
 
@@ -16,7 +17,8 @@ from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec, Phrases
 
 from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
-from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest
+from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
+    model_attr_getter, model_attr_setter
 from .exceptions import InvalidState
 
 from core.models import TimeStampedModel
@@ -29,20 +31,25 @@ logger = logging.getLogger(__name__)
 
 class ModelManager(models.Manager):
     def create(self, **kwargs):
-        model = super(ModelManager, self).create(**kwargs)
+        obj = self.model(**kwargs)
+        obj.full_clean()
+        obj.save_db_only(using=self.db)
 
-        # paper fields used to generate model data
+        # Add fields used to generate model data
         if 'fields' in kwargs:
             if not isinstance(kwargs['fields'], list):
                 raise TypeError('<fields> must be list of field strings')
         fields = kwargs.get('fields', ['title', 'abstract'])
         for field in fields:
-            FieldUseInModel.objects.create(model=model, field=field)
+            fuim, _ = TextField.objects.get_or_create(text_field=field)
+            obj.text_fields.add(fuim)
 
         # Init doc2vec from gensim
-        model.init_doc2vec()
+        obj.init_doc2vec()
 
-        return model
+        obj.save(using=self.db)
+
+        return obj
 
     def get(self, **kwargs):
         print('Warning: Not loading Doc2Vec. Use load() instead')
@@ -51,7 +58,7 @@ class ModelManager(models.Manager):
     def load(self, **kwargs):
         model = super(ModelManager, self).get(**kwargs)
         try:
-            model.doc2vec = Doc2Vec.load(os.path.join(settings.NLP_DOC2VEC_PATH,
+            model._doc2vec = Doc2Vec.load(os.path.join(settings.NLP_DOC2VEC_PATH,
                                                       '{0}.mod'.format(
                                                           model.name)))
         except FileNotFoundError:
@@ -74,104 +81,123 @@ class Model(TimeStampedModel):
     is_active = models.BooleanField(default=False)
 
     # doc2vec instance from gensim
-    doc2vec = Doc2Vec()
+    _doc2vec = Doc2Vec()
+
+    # fields
+    text_fields = models.ManyToManyField('TextField',
+                                         related_name='text_fields')
 
     objects = ModelManager()
 
-    # Model parameters
+    # Model parameters (mirroring Doc2Vec attributes)
     # ----------------------
     # `dm` defines the training algorithm. By default (`dm=1`), 'distributed
     # memory' (PV-DM) is used. Otherwise, `distributed bag of words` (PV-DBOW)
     # is employed.
-    dm = models.IntegerField(default=1)
+    _dm = models.IntegerField(default=1)
 
     # `size` is the dimensionality of the feature vectors.
-    size = models.IntegerField(default=100,
-           validators=[MaxValueValidator(settings.NLP_MAX_VECTOR_SIZE)])
+    _size = models.IntegerField(default=128,
+            validators=[MaxValueValidator(settings.NLP_MAX_VECTOR_SIZE)])
 
     # `window` is the maximum distance between the predicted word and context
     # words used for prediction within a document.
-    window = models.IntegerField(default=8)
+    _window = models.IntegerField(default=8)
 
     # `alpha` is the initial learning rate (will linearly drop to zero as
     # training progresses).
-    alpha = models.FloatField(default=0.025)
+    _alpha = models.FloatField(default=0.025)
 
     # `seed` = for the random number generator. Only runs with a single worker
     # will be deterministically reproducible because of the ordering randomness
     # in multi-threaded runs.
-    seed = models.IntegerField(default=0)
+    _seed = models.IntegerField(default=0)
 
     # `min_count` = ignore all words with total frequency lower than this.
-    min_count = models.IntegerField(default=2)
+    _min_count = models.IntegerField(default=2)
 
     # `max_vocab_size` = limit RAM during vocabulary building; if there are more
     #  unique words than this, then prune the infrequent ones. Every 10 million
     # word types need about 1GB of RAM. Set to `None` for no limit (default).
-    max_vocab_size = models.IntegerField(default=None, null=True, blank=True)
+    _max_vocab_size = models.IntegerField(default=None, null=True, blank=True)
 
     # `sample` = threshold for configuring which higher-frequency words are
     # randomly downsampled; default is 0 (off), useful value is 1e-5.
-    sample = models.FloatField(default=0.)
+    _sample = models.FloatField(default=0.)
 
     # `workers` = use this many worker threads to train the model
     # (=faster training with multicore machines).
-    workers = models.IntegerField(default=1)
+    _workers = models.IntegerField(default=1)
 
     # `hs` = if 1 (default), hierarchical sampling will be used for model
     # training (else set to 0).
-    hs = models.IntegerField(default=1)
+    _hs = models.IntegerField(default=1)
 
     # `negative` = if > 0, negative sampling will be used, the int for negative
     # specifies how many "noise words" should be drawn (usually between 5-20).
-    negative = models.IntegerField(default=0)
+    _negative = models.IntegerField(default=0)
 
     # `dm_mean` = if 0 (default), use the sum of the context word vectors.
     # If 1, use the mean. Only applies when dm is used in non-concatenative mode.
-    dm_mean = models.IntegerField(default=0)
+    _dm_mean = models.IntegerField(default=0)
 
     # `dm_concat` = if 1, use concatenation of context vectors rather than
     # sum/average; default is 0 (off). Note concatenation results in a
     # much-larger model, as the input is no longer the size of one (sampled or
     # arithmatically combined) word vector, but the size of the tag(s) and all
     # words in the context strung together.
-    dm_concat = models.IntegerField(default=0)
+    _dm_concat = models.IntegerField(default=0)
 
     # `dm_tag_count` = expected constant number of document tags per document,
     # when using dm_concat mode; default is 1.
-    dm_tag_count = models.IntegerField(default=1)
+    _dm_tag_count = models.IntegerField(default=1)
 
     # `dbow_words` if set to 1 trains word-vectors (in skip-gram fashion)
     # simultaneous with DBOW doc-vector training; default is 0 (faster training
     # of doc-vectors only).
-    dbow_words = models.IntegerField(default=0)
+    _dbow_words = models.IntegerField(default=0)
 
-    # use in model clean
-    model_arguments = [
-        ('dm', 'dm'),
-        ('size', 'vector_size'),
-        ('window', 'window'),
-        ('alpha', 'alpha'),
-        ('seed', 'seed'),
-        ('min_count', 'min_count'),
-        ('max_vocab_size', 'max_vocab_size'),
-        ('sample', 'sample'),
-        ('workers', 'workers'),
-        ('hs', 'hs'),
-        ('negative', 'negative'),
-        ('dm_mean', 'cbow_mean'),
-        ('dm_concat', 'dm_concat'),
-        ('dm_tag_count', 'dm_tag_count'),
-        ('dbow_words', 'dbow_words'),
-    ]
+    # corresponding setter/getter
+    dm = property(fset=model_attr_setter('_dm', 'dm'),
+                  fget=model_attr_getter('_dm'))
+    size = property(fset=model_attr_setter('_size', 'vector_size'),
+                    fget=model_attr_getter('_dm'))
+    window = property(fset=model_attr_setter('_window', 'window'),
+                      fget=model_attr_getter('_window'))
+    alpha = property(fset=model_attr_setter('_alpha', 'alpha'),
+                     fget=model_attr_getter('_alpha'))
+    seed = property(fset=model_attr_setter('_seed', 'seed'),
+                    fget=model_attr_getter('_seed'))
+    min_count = property(fset=model_attr_setter('_min_count', 'min_count'),
+                         fget=model_attr_getter('_min_count'))
+    max_vocab_size = property(fset=model_attr_setter('_max_vocab_size',
+                                                     'max_vocab_size'),
+                              fget=model_attr_getter('_max_vocab_size'))
+    sample = property(fset=model_attr_setter('_sample', 'sample'),
+                      fget=model_attr_getter('_sample'))
+    workers = property(fset=model_attr_setter('_workers', 'workers'),
+                       fget=model_attr_getter('_workers'))
+    hs = property(fset=model_attr_setter('_hs', 'workers'),
+                  fget=model_attr_getter('_workers'))
+    negative = property(fset=model_attr_setter('_negative', 'negative'),
+                        fget=model_attr_getter('_negative'))
+    dm_mean = property(fset=model_attr_setter('_dm_mean', 'cbow_mean'),
+                       fget=model_attr_getter('_dm_mean'))
+    dm_concat = property(fset=model_attr_setter('_dm_concat', 'dm_concat'),
+                         fget=model_attr_getter('_dm_concat'))
+    dm_tag_count = property(fset=model_attr_setter('_dm_tag_count',
+                                                   'dm_tag_count'),
+                            fget=model_attr_getter('_dm_tag_count'))
+    dbow_words = property(fset=model_attr_setter('_dbow_words', 'dbow_words'),
+                          fget=model_attr_getter('_dbow_words'))
 
     def __str__(self):
         return self.name
 
     def init_doc2vec(self):
-        """Instantiate new doc2vec with model field attributes
+        """Instantiate new doc2vec with model attributes
         """
-        self.doc2vec = Doc2Vec(
+        self._doc2vec = Doc2Vec(
             dm=self.dm,
             size=self.size,
             window=self.window,
@@ -190,15 +216,13 @@ class Model(TimeStampedModel):
         )
 
     def save_db_only(self, *args, **kwargs):
-        self.full_clean()
         super(Model, self).save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        self.full_clean()
         super(Model, self).save(*args, **kwargs)
         if not os.path.exists(settings.NLP_DOC2VEC_PATH):
             os.makedirs(settings.NLP_DOC2VEC_PATH)
-        self.doc2vec.save(
+        self._doc2vec.save(
             os.path.join(settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(self.name)))
 
     def delete(self, *args, **kwargs):
@@ -208,13 +232,6 @@ class Model(TimeStampedModel):
         except FileNotFoundError:
             pass
         super(Model, self).delete(*args, **kwargs)
-
-    def clean(self):
-        """Check  model field attributes and doc2vec attributes are in agreements
-        """
-        for attr in self.model_arguments:
-            if not getattr(self, attr[0]) == getattr(self.doc2vec, attr[1]):
-                raise ValueError('{attr} does not match'.format(attr=attr[0]))
 
     def dump(self, papers):
         """Dump papers data to pre-process text files.
@@ -292,7 +309,7 @@ class Model(TimeStampedModel):
     def build_vocab(self, documents):
         """build vocabulary
         """
-        self.doc2vec.build_vocab(documents)
+        self._doc2vec.build_vocab(documents)
 
     def train(self, documents, passes=10, shuffle_=True, alpha=0.025,
               min_alpha=0.001):
@@ -314,24 +331,24 @@ class Model(TimeStampedModel):
                 # shuffling before training is in general a good habit
                 shuffle(documents)
             self.alpha = alpha
-            self.doc2vec.alpha = alpha
-            self.doc2vec.min_alpha = alpha
-            self.doc2vec.train(documents)
+            self._doc2vec.alpha = alpha
+            self._doc2vec.min_alpha = alpha
+            self._doc2vec.train(documents)
             alpha -= alpha_delta
 
     def save_journal_vec_from_bulk(self):
         """Store inferred journal vector from training in db
         """
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=len(self.doc2vec.docvecs.doctags),
+                           maxval=len(self._doc2vec.docvecs.doctags),
                            redirect_stderr=True).start()
         count = 0
         # TODO: replace with bulk update / create ?
-        for pk in self.doc2vec.docvecs.doctags:
+        for pk in self._doc2vec.docvecs.doctags:
             if pk.startwith('j') and not pk == 'j_0':
                 try:
                     journal = Journal.objects.get(pk=int(pk[2:]))
-                    vector = self.doc2vec.docvecs[pk].tolist()
+                    vector = self._doc2vec.docvecs[pk].tolist()
                     pv, _ = JournalVectors.objects.get_or_create(model=self,
                                                                  journal=journal)
                     pv.vector = vector
@@ -347,15 +364,15 @@ class Model(TimeStampedModel):
         """Store inferred paper vector from training in db
         """
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=len(self.doc2vec.docvecs.doctags),
+                           maxval=len(self._doc2vec.docvecs.doctags),
                            redirect_stderr=True).start()
         count = 0
         # TODO: replace with bulk update / create ?
-        for pk in self.doc2vec.docvecs.doctags:
+        for pk in self._doc2vec.docvecs.doctags:
             if not pk.startwith('j'):
                 try:
                     paper = Paper.objects.get(pk=int(pk))
-                    vector = self.doc2vec.docvecs[pk].tolist()
+                    vector = self._doc2vec.docvecs[pk].tolist()
                     pv, _ = PaperVectors.objects.get_or_create(model=self,
                                                                paper=paper)
                     pv.set_vector(vector)
@@ -384,7 +401,7 @@ class Model(TimeStampedModel):
         doc_words = paper2tokens(paper, fields=fields)
 
         # NB: infer_vector user explicit alpha-reduction with multi-passes
-        vector = self.doc2vec.infer_vector(doc_words,
+        vector = self._doc2vec.infer_vector(doc_words,
                                            alpha=alpha,
                                            min_alpha=min_alpha,
                                            steps=passes)
@@ -433,15 +450,11 @@ class Model(TimeStampedModel):
             model.infer_papers(papers, **kwargs)
 
 
-class FieldUseInModel(TimeStampedModel):
+class TextField(TimeStampedModel):
     """Store which fields of paper and related data are used in model training
     """
-    model = models.ForeignKey(Model, related_name='paperfields')
 
-    field = models.CharField(max_length=100, choices=FIELDS_FOR_MODEL)
-
-    class Meta:
-        unique_together = [('model', 'field')]
+    text_field = models.CharField(max_length=100, choices=FIELDS_FOR_MODEL)
 
     def __str__(self):
         return '{field}'.format(field=self.field)
@@ -496,7 +509,7 @@ class PaperNeighbors(TimeStampedModel):
 
     lsh = models.ForeignKey('LSH')
 
-    paper = models.ForeignKey(Paper)
+    paper = models.ForeignKey(Paper, related_name='neighbors')
 
     # Primary keys of the k-nearest neighbors papers
     neighbors = ArrayField(models.IntegerField(null=True),
@@ -556,8 +569,11 @@ class LSHManager(models.Manager):
     def load(self, **kwargs):
         obj = super(LSHManager, self).get(**kwargs)
         try:
-            obj.lsh = joblib.load(os.path.join(settings.NLP_LSH_PATH,
-                                       '{0}.lsh'.format(obj.model.name)))
+            obj.lsh = joblib.load(
+                os.path.join(settings.NLP_LSH_PATH,
+                             '{model_name}_{time_lapse}.lsh'.format(
+                                 model_name=obj.model.name,
+                                 time_lapse=obj.time_lapse)))
         except FileNotFoundError:
             raise FileNotFoundError
         return obj
@@ -582,7 +598,7 @@ class LSH(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not os.path.exists(settings.NLP_LSH_PATH):
-            os.makedirs(settings.NLP_LSHF_PATH)
+            os.makedirs(settings.NLP_LSH_PATH)
         joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
                                        '{0}.lsh'.format(self.model.name)))
         # Model is now Idle
@@ -594,11 +610,17 @@ class LSH(TimeStampedModel):
 
     def full_update(self, n_estimators=10, n_candidates=50):
 
+        logger.info(
+            'Starting full update of LSH ({pk}/{model_name}/{time_lapse})'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse))
+        t0 = time.time()
+
         # Register status as busy
         self.state = 'BUS'
         self.save_db_only()
 
-        # Init LSHF
+        # Init LSH
         self.lsh = MyLSHForest(n_estimators=n_estimators,
                                n_candidates=n_candidates)
 
@@ -639,7 +661,18 @@ class LSH(TimeStampedModel):
 
         # Update PaperVector.is_in_full_lsh
         if not self.time_lapse:  # this is a the full LSH
-            PaperVectors.objects.filter(pk__in=pv_pks).update(is_in_full_lsh=True)
+            PaperVectors.objects.filter(pk__in=pv_pks)\
+                .update(is_in_full_lsh=True)
+
+        # Add Neighbors to PaperNeighbors
+        for pk in self.lsh.pks:
+            self.populate_neighbors(pk)
+
+        tend = time.time() - t0
+        logger.info(
+            'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse, time=tend))
 
     def partial_update(self):
         """Only partial update LSH with new incoming papers (i.e. does not remove
@@ -662,14 +695,19 @@ class LSH(TimeStampedModel):
 
             # Reshape data
             pv_pks = []
+            new_pks = []
             X = np.zeros((data.count(), vec_size))
             for i, dat in enumerate(data):
                 # store PaperVector pk
                 pv_pks.append(data[i][0])
                 # store paper pk
-                self.lsh.pks.append(data[i][1])
+                new_pks.append(data[i][1])
                 # build input matrix for fit
                 X[i, :] = data[i][2][:vec_size]
+
+            self.lsh.pks += new_pks
+            # Remove duplicates (just in case)
+            self.lsh.pks = list(set(self.lsh.pks))
 
             # Train
             self.lsh.partial_fit(X)
@@ -680,12 +718,22 @@ class LSH(TimeStampedModel):
             # Update PaperVector.is_in_full_lsh
             PaperVectors.objects.filter(pk__in=pv_pks)\
                 .update(is_in_full_lsh=True)
+
+            # Add Neighbors to PaperNeighbors
+            for pk in new_pks:
+                self.populate_neighbors(pk)
+
         else:
             logger.warning('LSH ({id}) attribute time_lapse is not null, '
                            'calling full_update() instead'.format(id=self.id))
             self.full_update()
 
-    def kneighbors(self, vec, n_neighbors=10):
+    def kneighbors(self, vec, **kwargs):
+
+        if 'n_neighbors' in kwargs:
+            n_neighbors = kwargs['n_neighbors']
+        else:
+            n_neighbors = settings.NLP_MAX_KNN_NEIGHBORS
 
         if self.state == 'IDL':
             if isinstance(vec, list):
@@ -705,9 +753,13 @@ class LSH(TimeStampedModel):
 
     def populate_neighbors(self, paper_pk):
 
-        vec = PaperVectors.objects.get(paper__pk=paper_pk,
-                                       model=self.model).vector[:self.model.size]
+        pv, _ = PaperVectors.objects.get_or_create(
+            paper__pk=paper_pk,
+            model=self.model)
+        vec = pv.vector[:self.model.size]
+
         pks = self.kneighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS)
+        pks = pks.flatten()
 
         pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
                                                      paper_id=paper_pk)
@@ -718,7 +770,7 @@ class LSH(TimeStampedModel):
          It is so because we want to have the lsh object loaded only once.
           It multiple task are defined, this will required having multiple
           instance of the lsh object loaded per task and it will be memory
-          expensive ihmo.
+          expensive imo.
         """
 
         try:

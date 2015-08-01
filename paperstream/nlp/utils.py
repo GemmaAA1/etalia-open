@@ -82,7 +82,24 @@ class TaggedDocumentsIterator(object):
 
 
 class MyLSHForest(LSHForest):
+    """Adding pks attribute to store Paper pk correspondence in LSH
+    """
 
     def __init__(self, *args, **kwargs):
         super(MyLSHForest, self).__init__(*args, **kwargs)
         self.pks = []
+
+
+def model_attr_getter(attr):
+    def get_any(self):
+        return getattr(self, attr)
+    return get_any
+
+def model_attr_setter(attr, attr2):
+    def set_any(self, value):
+        setattr(self, attr, value)
+        if attr2 == 'dm':
+            setattr(self._doc2vec, 'sg',  (value + 1) % 2)
+        else:
+            setattr(self._doc2vec, attr2, value)
+    return set_any

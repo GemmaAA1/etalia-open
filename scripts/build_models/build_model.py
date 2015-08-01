@@ -29,7 +29,9 @@ def build(model_name):
     # Populate library
     model.save_journal_vec_from_bulk()
     model.save_paper_vec_from_bulk()
-    # Build related LSH
+    # Build full LSH
+    LSH.objects.create(model=model, time_lapse=None)
+    # Build time-lapse related LSH
     for (time_lapse, _) in TIME_LAPSE_CHOICES:
         LSH.objects.create(model=model,
                            time_lapse=time_lapse)
