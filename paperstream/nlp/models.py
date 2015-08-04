@@ -667,32 +667,26 @@ class LSH(TimeStampedModel):
     objects = LSHManager()
 
     class Meta:
-
-        unique_together = [('model', 'time_lapse'), ]
+        unique_together = ('model', 'time_lapse')
 
     def save(self, *args, **kwargs):
-        self.set_state('BUS')
-        if not os.path.exists(settings.NLP_LSH_PATH):
-            os.makedirs(settings.NLP_LSH_PATH)
-        joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
-                                           '{model_name}_{time_lapse}.lsh'
-                                           .format(model_name=self.model.name,
-                                                   time_lapse=self.time_lapse)))
-        # Model is now Idle
-        self.set_state('IDL')
+        if not self.state == 'BUS':
+            if not os.path.exists(settings.NLP_LSH_PATH):
+                os.makedirs(settings.NLP_LSH_PATH)
+            joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
+                '{model_name}_{time_lapse}.lsh'.format(
+                    model_name=self.model.name,
+                    time_lapse=self.time_lapse)))
+            self.save_db_only()
+        else:
+            raise ValidationError('LSH state is busy. Cannot save')
 
     def save_db_only(self, *args, **kwargs):
         super(LSH, self).save(*args, **kwargs)
 
     def set_state(self, state):
-        if state == 'BUS' and self.state in ['IDL', 'NON']:
-            self.state = state
-            self.save_db_only()
-        elif state in ['IDL', 'NON'] and self.state == 'BUS':
-            self.state = state
-            self.save_db_only()
-        else:
-            raise ValidationError('current state cannot be changed')
+        self.state = state
+        self.save_db_only()
 
     def get_data(self, partial=False):
         """Get and reshape data for training LSH
@@ -759,7 +753,7 @@ class LSH(TimeStampedModel):
 
     def populate_neighbors(self, paper_pk):
 
-        pv, _ = PaperVectors.objects.get(paper__pk=paper_pk,
+        pv, _ = PaperVectors.objects.get(paper_id=paper_pk,
                                          model=self.model)
         vec = pv.vector[:self.model.size]
 
@@ -812,6 +806,9 @@ class LSH(TimeStampedModel):
         # Train
         self.lsh.fit(data)
 
+        # Register status as idle
+        self.set_state('IDL')
+
         # Save
         self.save()
 
@@ -826,9 +823,6 @@ class LSH(TimeStampedModel):
             'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
                 .format(pk=self.id, model_name=self.model.name,
                         time_lapse=self.time_lapse, time=tend))
-
-        # Register status as idle
-        self.set_state('IDL')
 
     def update(self):
         # Register state as busy
@@ -859,6 +853,9 @@ class LSH(TimeStampedModel):
         # Train
         self.lsh.partial_fit(data)
 
+        # Register status as idle
+        self.set_state('IDL')
+
         # Save
         self.save()
 
@@ -868,8 +865,6 @@ class LSH(TimeStampedModel):
         # Add Neighbors to PaperNeighbors
         self.update_neighbors(new_pks)
 
-        # Register status as idle
-        self.set_state('IDL')
 
     def tasks(self, *args, **kwargs):
         """Use for tasks.py. Ok, this is an odd design.

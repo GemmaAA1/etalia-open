@@ -266,8 +266,7 @@ class LSHModelTest(NLPDataTestCase):
 
     def test_lsh_cannot_have_same_model_and_time_lapse(self):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.save()
+        LSH.objects.create(model=self.model, time_lapse=time_lapse)
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         with self.assertRaises(ValidationError):
             lsh.full_clean()
@@ -300,14 +299,12 @@ class LSHModelTest(NLPDataTestCase):
         lsh.set_state('BUS')
         self.assertEqual(lsh.state, 'BUS')
 
-    def test_lsh_cannot_update_or_save_if_status_is_busy(self):
+    def test_lsh_cannot_save_if_status_is_busy(self):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         lsh.set_state('BUS')
         with self.assertRaises(ValidationError):
             lsh.save()
-        with self.assertRaises(ValidationError):
-            lsh.full_update()
 
     def test_lsh_get_data(self):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
@@ -334,25 +331,24 @@ class LSHModelTest(NLPDataTestCase):
         pv = PaperVectors.objects.get(pk=pv_pks[0])
         self.assertFalse(pv.is_in_full_lsh)
 
-    def test_lsh_can_run_full_update(self):
-        time_lapse = TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.full_update()
+    # def test_lsh_can_run_full_update(self):
+    #     time_lapse = TIME_LAPSE_CHOICES[0][0]
+    #     lsh = LSH(model=self.model, time_lapse=time_lapse)
+    #     lsh.full_update()
+    #
+    # def test_lsh_can_run_partial_update(self):
+    #     time_lapse = None
+    #     lsh = LSH(model=self.model, time_lapse=time_lapse)
+    #     lsh.partial_update()
 
-    def test_lsh_can_run_partial_update(self):
-        time_lapse = None
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.partial_update()
-
-    def test_lsh_can_be_created(self):
-        model = Model.objects.first()
-        LSH.objects.create(model=model,
-                           time_lapse=TIME_LAPSE_CHOICES[0][0])
-
-    def test_lsh_update_neighbors(self):
-        time_lapse = TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        x_data, pv_pks, new_pks = lsh.get_data()
+    # def test_lsh_can_be_created(self):
+    #     LSH.objects.create(model=self.model,
+    #                        time_lapse=TIME_LAPSE_CHOICES[0][0])
+    #
+    # def test_lsh_update_neighbors(self):
+    #     time_lapse = TIME_LAPSE_CHOICES[0][0]
+    #     lsh = LSH(model=self.model, time_lapse=time_lapse)
+    #     x_data, pv_pks, new_pks = lsh.get_data()
 
 
 class PaperNeighborsTest(NLPDataTestCase):
@@ -360,7 +356,6 @@ class PaperNeighborsTest(NLPDataTestCase):
     def setUp(self):
         super(PaperNeighborsTest, self).setUp()
         self.lsh = LSH.objects.create(model=self.model, time_lapse=None)
-
 
     def test_paperneighbors_can_be_instantiated(self):
         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
