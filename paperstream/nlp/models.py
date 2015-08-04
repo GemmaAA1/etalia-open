@@ -12,6 +12,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec, Phrases
@@ -31,18 +32,27 @@ logger = logging.getLogger(__name__)
 
 class ModelManager(models.Manager):
     def create(self, **kwargs):
+        # starting popping text_fields key if any
+        default_text_fields = [field[0] for field in FIELDS_FOR_MODEL]
+        text_fields = kwargs.pop('text_fields', default_text_fields)
+
+        # instantiate object and save to db
         obj = self.model(**kwargs)
-        obj.full_clean()
         obj.save_db_only(using=self.db)
 
-        # Add fields used to generate model data
-        if 'fields' in kwargs:
-            if not isinstance(kwargs['fields'], list):
-                raise TypeError('<fields> must be list of field strings')
-        fields = kwargs.get('fields', ['title', 'abstract'])
-        for field in fields:
-            fuim, _ = TextField.objects.get_or_create(text_field=field)
+        # Add text_fields used to generate model data
+        # First test validity
+        if not isinstance(text_fields, list):
+            raise ValidationError('<text_fields> must be list of field strings')
+        if not set(text_fields).issubset(default_text_fields):
+            raise ValidationError('<text_fields> not subset of FIELDS_FOR_MODEL')
+
+        for text_field in text_fields:
+            fuim, _ = TextField.objects.get_or_create(text_field=text_field)
             obj.text_fields.add(fuim)
+
+        obj.full_clean()
+        obj.save_db_only(using=self.db)
 
         # Init doc2vec from gensim
         obj.init_doc2vec()
@@ -58,9 +68,8 @@ class ModelManager(models.Manager):
     def load(self, **kwargs):
         model = super(ModelManager, self).get(**kwargs)
         try:
-            model._doc2vec = Doc2Vec.load(os.path.join(settings.NLP_DOC2VEC_PATH,
-                                                      '{0}.mod'.format(
-                                                          model.name)))
+            model._doc2vec = Doc2Vec.load(os.path.join(
+                settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(model.name)))
         except FileNotFoundError:
             raise FileNotFoundError
         return model
@@ -157,7 +166,7 @@ class Model(TimeStampedModel):
     # of doc-vectors only).
     _dbow_words = models.IntegerField(default=0)
 
-    # corresponding setter/getter
+    # corresponding setter/getter to sync model attribute and Doc2Vec attributes
     dm = property(fset=model_attr_setter('_dm', 'dm'),
                   fget=model_attr_getter('_dm'))
     size = property(fset=model_attr_setter('_size', 'vector_size'),
@@ -198,21 +207,21 @@ class Model(TimeStampedModel):
         """Instantiate new doc2vec with model attributes
         """
         self._doc2vec = Doc2Vec(
-            dm=self.dm,
-            size=self.size,
-            window=self.window,
-            alpha=self.alpha,
-            seed=self.seed,
-            min_count=self.min_count,
-            max_vocab_size=self.max_vocab_size,
-            sample=self.sample,
-            workers=self.workers,
-            hs=self.hs,
-            negative=self.negative,
-            dm_mean=self.dm_mean,
-            dm_concat=self.dm_concat,
-            dm_tag_count=self.dm_tag_count,
-            dbow_words=self.dbow_words
+            dm=self._dm,
+            size=self._size,
+            window=self._window,
+            alpha=self._alpha,
+            seed=self._seed,
+            min_count=self._min_count,
+            max_vocab_size=self._max_vocab_size,
+            sample=self._sample,
+            workers=self._workers,
+            hs=self._hs,
+            negative=self._negative,
+            dm_mean=self._dm_mean,
+            dm_concat=self._dm_concat,
+            dm_tag_count=self._dm_tag_count,
+            dbow_words=self._dbow_words
         )
 
     def save_db_only(self, *args, **kwargs):
@@ -223,22 +232,24 @@ class Model(TimeStampedModel):
         if not os.path.exists(settings.NLP_DOC2VEC_PATH):
             os.makedirs(settings.NLP_DOC2VEC_PATH)
         self._doc2vec.save(
-            os.path.join(settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(self.name)))
+            os.path.join(settings.NLP_DOC2VEC_PATH,
+                         '{0}.mod'.format(self.name)))
 
     def delete(self, *args, **kwargs):
         try:
             os.remove(
-                os.path.join(settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(self.name)))
+                os.path.join(settings.NLP_DOC2VEC_PATH,
+                             '{0}.mod'.format(self.name)))
         except FileNotFoundError:
             pass
         super(Model, self).delete(*args, **kwargs)
 
-    def dump(self, papers):
+    def dump(self, papers, data_path=None):
         """Dump papers data to pre-process text files.
         Papers data are separated in multiple file to spare memory when building
         model. File are composed of N (CHUNK_SIZE) documents. Each line of the
-        files start with the primary key of the document and then the pre-process
-        string corresponding to the document field(s) dumped.
+        files start with the primary key of the document and then the
+        pre-process string corresponding to the document field(s) dumped.
          ex:
             123: the title of the document #1 . the abstract of the document .
             124: the title of the document #2 . the abstract of the document .
@@ -247,13 +258,15 @@ class Model(TimeStampedModel):
         Note: It is useful to order paper randomly (order_by('?')) to avoid bias
         """
 
-        fields = list(self.paperfields.all().values_list('field', flat='True'))
+        text_fields = [tx.text_field for tx in self.text_fields.all()]
         tot = papers.count()
         file_count = 0
         file = None
 
-        if not os.path.exists(settings.NLP_DATA_PATH):
-            os.makedirs(settings.NLP_DATA_PATH)
+        if not data_path:
+            data_path = settings.NLP_DATA_PATH
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
 
         sub_update_step = 20
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
@@ -265,7 +278,7 @@ class Model(TimeStampedModel):
             if not count % settings.NLP_CHUNK_SIZE:
                 if file:
                     file.close()
-                file = open(os.path.join(settings.NLP_DATA_PATH,
+                file = open(os.path.join(data_path,
                                          '{0:06d}.txt'.format(file_count)),
                             'w+')
                 file_count += 1
@@ -278,7 +291,7 @@ class Model(TimeStampedModel):
             file.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
 
             # line body
-            line_val = paper2tokens(paper, fields=fields)
+            line_val = paper2tokens(paper, fields=text_fields)
 
             # write to file
             file.write(' '.join(line_val).strip())
@@ -293,10 +306,16 @@ class Model(TimeStampedModel):
         pbar.finish()
         file.close()
 
-    def load_documents(self, phraser=None):
+    @staticmethod
+    def load_documents(data_path=None, phraser=None, ):
         """Load text files stored in data_path to documents list
         """
-        return TaggedDocumentsIterator(settings.NLP_DATA_PATH, phraser=phraser)
+        if not data_path:
+            data_path = settings.NLP_DATA_PATH
+        if phraser:
+            return TaggedDocumentsIterator(data_path, phraser=phraser)
+        else:
+            return TaggedDocumentsIterator(data_path)
 
     @staticmethod
     def build_phraser(documents, min_count=2, threshold=10.0):
@@ -309,6 +328,8 @@ class Model(TimeStampedModel):
     def build_vocab(self, documents):
         """build vocabulary
         """
+        self.deactivate()
+
         self._doc2vec.build_vocab(documents)
 
     def train(self, documents, passes=10, shuffle_=True, alpha=0.025,
@@ -318,6 +339,7 @@ class Model(TimeStampedModel):
         Using explicit multiple-pass, alpha-reduction approach as sketched in
         gensim doc2vec blog post (http://rare-technologies.com/doc2vec-tutorial)
         """
+        self.deactivate()
 
         # Init
         alpha_delta = (alpha - min_alpha) / passes
@@ -336,16 +358,28 @@ class Model(TimeStampedModel):
             self._doc2vec.train(documents)
             alpha -= alpha_delta
 
+    def build_vocab_and_train(self, **kwargs):
+        # Build vocabulary and phraser
+        docs = self.load_documents()
+        phraser = self.build_phraser(docs, **kwargs)
+        docs = self.load_documents(phraser=phraser)
+        self.build_vocab(docs)
+        # Train, save and activate
+        self.train(docs, **kwargs)
+        self.save()
+        self.activate()
+
     def save_journal_vec_from_bulk(self):
         """Store inferred journal vector from training in db
         """
+        self.check_active()
+
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=len(self._doc2vec.docvecs.doctags),
                            redirect_stderr=True).start()
         count = 0
-        # TODO: replace with bulk update / create ?
         for pk in self._doc2vec.docvecs.doctags:
-            if pk.startwith('j') and not pk == 'j_0':
+            if pk.startswith('j') and not pk == 'j_0':
                 try:
                     journal = Journal.objects.get(pk=int(pk[2:]))
                     vector = self._doc2vec.docvecs[pk].tolist()
@@ -363,13 +397,14 @@ class Model(TimeStampedModel):
     def save_paper_vec_from_bulk(self):
         """Store inferred paper vector from training in db
         """
+        self.check_active()
+
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=len(self._doc2vec.docvecs.doctags),
                            redirect_stderr=True).start()
         count = 0
-        # TODO: replace with bulk update / create ?
         for pk in self._doc2vec.docvecs.doctags:
-            if not pk.startwith('j'):
+            if not pk.startswith('j'):
                 try:
                     paper = Paper.objects.get(pk=int(pk))
                     vector = self._doc2vec.docvecs[pk].tolist()
@@ -387,24 +422,28 @@ class Model(TimeStampedModel):
     def save_all_vec_from_bulk(self):
         """Store inferred paper and journal vectors from training in db
         """
+        self.check_active()
+
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
     def infer_paper(self, paper_pk, alpha=0.05, min_alpha=0.001, passes=5):
         """Infer model vector for paper
         """
-        fields = list(self.paperfields.all().values_list('field', flat='True'))
+        self.check_active()
+
+        text_fields = [tx.text_field for tx in self.text_fields.all()]
 
         pv, _ = PaperVectors.objects.get_or_create(model=self,
                                                    paper_id=paper_pk)
         paper = Paper.objects.get(id=paper_pk)
-        doc_words = paper2tokens(paper, fields=fields)
+        doc_words = paper2tokens(paper, fields=text_fields)
 
         # NB: infer_vector user explicit alpha-reduction with multi-passes
         vector = self._doc2vec.infer_vector(doc_words,
-                                           alpha=alpha,
-                                           min_alpha=min_alpha,
-                                           steps=passes)
+                                            alpha=alpha,
+                                            min_alpha=min_alpha,
+                                            steps=passes)
         pv.set_vector(vector.tolist())
         pv.save()
 
@@ -413,6 +452,7 @@ class Model(TimeStampedModel):
     def infer_papers(self, papers, **kwargs):
         """Infer model vector for papers
         """
+        self.check_active()
 
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=papers.count(), redirect_stderr=True).start()
@@ -424,9 +464,17 @@ class Model(TimeStampedModel):
         # close progress bar
         pbar.finish()
 
-    def set_active(self):
+    def activate(self):
         self.is_active = True
         self.save_db_only()
+
+    def deactivate(self):
+        self.is_active = False
+        self.save_db_only()
+
+    def check_active(self):
+        if not self.is_active:
+            raise ValidationError('model is not active')
 
     class Meta:
         ordering = ['name', ]
@@ -454,10 +502,11 @@ class TextField(TimeStampedModel):
     """Store which fields of paper and related data are used in model training
     """
 
-    text_field = models.CharField(max_length=100, choices=FIELDS_FOR_MODEL)
+    text_field = models.CharField(max_length=100, choices=FIELDS_FOR_MODEL,
+                                  null=False, blank=False)
 
     def __str__(self):
-        return '{field}'.format(field=self.field)
+        return self.text_field
 
 
 class PaperVectorsManager(models.Manager):
@@ -465,7 +514,7 @@ class PaperVectorsManager(models.Manager):
     def create(self, **kwargs):
         # enforce that model is active
         if not kwargs.get('model').is_active:
-            raise ValueError('model {0} is not active'
+            raise ValidationError('model {0} is not active'
                              .format(kwargs.get('model').name))
 
         return super(PaperVectorsManager, self).create(**kwargs)
@@ -504,6 +553,9 @@ class PaperVectors(TimeStampedModel):
         self.vector = pad_vector(vector)
         self.save()
 
+    def get_vector(self):
+        return self.vector[:self.model.size]
+
 
 class PaperNeighbors(TimeStampedModel):
 
@@ -520,8 +572,22 @@ class PaperNeighbors(TimeStampedModel):
         self.neighbors = pad_neighbors(vector)
         self.save()
 
+    def get_neighbors(self):
+        return self.neighbors[:self.lsh.model.size]
+
     class meta:
         unique_together = ('lsh', 'paper')
+
+
+class JournalVectorsManager(models.Manager):
+
+    def create(self, **kwargs):
+        # enforce that model is active
+        if not kwargs.get('model').is_active:
+            raise ValidationError('model {0} is not active'
+                             .format(kwargs.get('model').name))
+
+        return super(JournalVectorsManager, self).create(**kwargs)
 
 
 class JournalVectors(TimeStampedModel):
@@ -542,6 +608,8 @@ class JournalVectors(TimeStampedModel):
                         size=settings.NLP_MAX_VECTOR_SIZE,
                         null=True, db_index=True)
 
+    objects = JournalVectorsManager()
+
     class meta:
         unique_together = ('journal', 'model')
 
@@ -553,6 +621,8 @@ class JournalVectors(TimeStampedModel):
         self.vector = pad_vector(vector)
         self.save()
 
+    def get_vector(self):
+        return self.vector[:self.model.size]
 
 class LSHManager(models.Manager):
 
@@ -585,7 +655,7 @@ class LSH(TimeStampedModel):
 
     model = models.OneToOneField(Model, related_name='lsh')
 
-    state = models.CharField(default='', choices=LSHF_STATES, max_length=3)
+    state = models.CharField(default='NON', choices=LSHF_STATES, max_length=3)
 
     time_lapse = models.IntegerField(default=None,
                                      null=True, blank=True,
@@ -596,139 +666,111 @@ class LSH(TimeStampedModel):
 
     objects = LSHManager()
 
+    class Meta:
+
+        unique_together = [('model', 'time_lapse'), ]
+
     def save(self, *args, **kwargs):
+        self.set_state('BUS')
         if not os.path.exists(settings.NLP_LSH_PATH):
             os.makedirs(settings.NLP_LSH_PATH)
         joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
-                                       '{0}.lsh'.format(self.model.name)))
+                                           '{model_name}_{time_lapse}.lsh'
+                                           .format(model_name=self.model.name,
+                                                   time_lapse=self.time_lapse)))
         # Model is now Idle
-        self.state = 'IDL'
-        super(LSH, self).save(*args, **kwargs)
+        self.set_state('IDL')
 
     def save_db_only(self, *args, **kwargs):
         super(LSH, self).save(*args, **kwargs)
 
-    def full_update(self, n_estimators=10, n_candidates=50):
+    def set_state(self, state):
+        if state == 'BUS' and self.state in ['IDL', 'NON']:
+            self.state = state
+            self.save_db_only()
+        elif state in ['IDL', 'NON'] and self.state == 'BUS':
+            self.state = state
+            self.save_db_only()
+        else:
+            raise ValidationError('current state cannot be changed')
 
-        logger.info(
-            'Starting full update of LSH ({pk}/{model_name}/{time_lapse})'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse))
-        t0 = time.time()
+    def get_data(self, partial=False):
+        """Get and reshape data for training LSH
 
-        # Register status as busy
-        self.state = 'BUS'
-        self.save_db_only()
+        partial
+        """
 
-        # Init LSH
-        self.lsh = MyLSHForest(n_estimators=n_estimators,
-                               n_candidates=n_candidates)
+        # size of the model space used for truncation of vector
+        vec_size = self.model.size
 
-        # Get data
         if self.time_lapse:   # time range
             from_date = (timezone.now() -
                          timezone.timedelta(
                              days=self.time_lapse)).date()
-
-            data = PaperVectors.objects\
-                            .filter(Q(model=self.model) &
-                                    (Q(paper__date_ep__gt=from_date) |
-                                     (Q(paper__date_pp__gt=from_date) &
-                                      Q(paper__date_ep=None))))\
-                            .values_list('pk', 'paper__pk', 'vector')
+            if not partial:
+                data = PaperVectors.objects\
+                    .filter(Q(model=self.model) &
+                            (Q(paper__date_ep__gt=from_date) |
+                             (Q(paper__date_pp__gt=from_date) &
+                              Q(paper__date_ep=None))))\
+                    .values_list('pk', 'paper__pk', 'vector')
+            else:
+                data = PaperVectors.objects\
+                    .filter(model=self.model, is_in_full_lsh=False)\
+                    .values_list('pk', 'paper__pk', 'vector')
         else:
             data = PaperVectors.objects\
                 .filter(model=self.model)\
                 .values_list('pk', 'paper__pk', 'vector')
-        vec_size = self.model.size
 
         # Reshape data
         pv_pks = []
-        X = np.zeros((data.count(), vec_size))
+        new_pks = []  # use for partial update
+        x_data = np.zeros((data.count(), vec_size))
         for i, dat in enumerate(data):
             # store PaperVector pk
             pv_pks.append(data[i][0])
             # store paper pk
-            self.lsh.pks.append(data[i][1])
+            new_pks.append(data[i][1])
             # build input matrix for fit
-            X[i, :] = data[i][2][:vec_size]
+            x_data[i, :] = data[i][2][:vec_size]
 
-        # Train
-        self.lsh.fit(X)
+        self.lsh.pks += new_pks
+        # Remove duplicates (just in case)
+        self.lsh.pks = list(set(self.lsh.pks))
 
-        # Save
-        self.save()
+        return x_data, pv_pks, new_pks
 
-        # Update PaperVector.is_in_full_lsh
-        if not self.time_lapse:  # this is a the full LSH
+    def update_if_full_lsh(self, pv_pks):
+        # this is a the full LSH
+        if not self.time_lapse:
             PaperVectors.objects.filter(pk__in=pv_pks)\
                 .update(is_in_full_lsh=True)
 
+    def update_neighbors(self, *args):
         # Add Neighbors to PaperNeighbors
+        if not args:  # populate all neighbors associated with LSH
+            pks = self.lsh.pks
+        else:
+            pks = args[0]
+
         for pk in self.lsh.pks:
             self.populate_neighbors(pk)
 
-        tend = time.time() - t0
-        logger.info(
-            'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse, time=tend))
+    def populate_neighbors(self, paper_pk):
 
-    def partial_update(self):
-        """Only partial update LSH with new incoming papers (i.e. does not remove
-        old ones, valid only if self.time_lapse=None)
+        pv, _ = PaperVectors.objects.get(paper__pk=paper_pk,
+                                         model=self.model)
+        vec = pv.vector[:self.model.size]
 
-        NB: we can not do partial on time_lapse LSH because paper cannot be removed from
-        training set, only added.
-        """
+        pks = self.k_neighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS)
+        pks = pks.flatten()
 
-        if not self.time_lapse:
-            # Register status as busy
-            self.state = 'BUS'
-            self.save_db_only()
+        pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
+                                                     paper_id=paper_pk)
+        pn.set_neighbors(pks)
 
-            # Get data
-            data = PaperVectors.objects\
-                .filter(model=self.model, is_in_full_lsh=False)\
-                .values_list('pk', 'paper__pk', 'vector')
-            vec_size = self.model.size
-
-            # Reshape data
-            pv_pks = []
-            new_pks = []
-            X = np.zeros((data.count(), vec_size))
-            for i, dat in enumerate(data):
-                # store PaperVector pk
-                pv_pks.append(data[i][0])
-                # store paper pk
-                new_pks.append(data[i][1])
-                # build input matrix for fit
-                X[i, :] = data[i][2][:vec_size]
-
-            self.lsh.pks += new_pks
-            # Remove duplicates (just in case)
-            self.lsh.pks = list(set(self.lsh.pks))
-
-            # Train
-            self.lsh.partial_fit(X)
-
-            # Save
-            self.save()
-
-            # Update PaperVector.is_in_full_lsh
-            PaperVectors.objects.filter(pk__in=pv_pks)\
-                .update(is_in_full_lsh=True)
-
-            # Add Neighbors to PaperNeighbors
-            for pk in new_pks:
-                self.populate_neighbors(pk)
-
-        else:
-            logger.warning('LSH ({id}) attribute time_lapse is not null, '
-                           'calling full_update() instead'.format(id=self.id))
-            self.full_update()
-
-    def kneighbors(self, vec, **kwargs):
+    def k_neighbors(self, vec, **kwargs):
 
         if 'n_neighbors' in kwargs:
             n_neighbors = kwargs['n_neighbors']
@@ -751,19 +793,83 @@ class LSH(TimeStampedModel):
             raise InvalidState('LSH is not Idle. current state is {0}'
                                .format(self.state))
 
-    def populate_neighbors(self, paper_pk):
+    def full_update(self, n_estimators=10, n_candidates=50, **kwargs):
+        # Register status as busy
+        self.set_state('BUS')
 
-        pv, _ = PaperVectors.objects.get_or_create(
-            paper__pk=paper_pk,
-            model=self.model)
-        vec = pv.vector[:self.model.size]
+        logger.info(
+            'Starting full update of LSH ({pk}/{model_name}/{time_lapse})'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse))
+        t0 = time.time()
 
-        pks = self.kneighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS)
-        pks = pks.flatten()
+        # Init LSH
+        self.lsh = MyLSHForest(n_estimators=n_estimators,
+                               n_candidates=n_candidates)
+        # Get data
+        data, pv_pks, _ = self.get_data()
 
-        pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
-                                                     paper_id=paper_pk)
-        pn.set_neighbors(pks)
+        # Train
+        self.lsh.fit(data)
+
+        # Save
+        self.save()
+
+        # Update PaperVector
+        self.update_if_full_lsh(pv_pks)
+
+        # Update neighbors
+        self.update_neighbors()
+
+        tend = time.time() - t0
+        logger.info(
+            'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse, time=tend))
+
+        # Register status as idle
+        self.set_state('IDL')
+
+    def update(self):
+        # Register state as busy
+        self.set_state('BUS')
+
+        if not self.time_lapse:  # Only valid for full LSH
+            self.partial_update()
+        else:
+            self.full_update()
+
+        # Register state as busy
+        self.set_state('IDL')
+
+    def partial_update(self):
+        """Only partial update LSH with new incoming papers (i.e. does not remove
+        old ones, valid only if self.time_lapse=None)
+
+        NB: we can not do partial on time_lapse LSH because paper cannot be removed from
+        training set, only added.
+        """
+
+        # Register status as busy
+        self.set_state('BUS')
+
+        # Get data
+        data, pv_pks, new_pks = self.get_data(partial=True)
+
+        # Train
+        self.lsh.partial_fit(data)
+
+        # Save
+        self.save()
+
+        # Update PaperVector.is_in_full_lsh
+        self.update_if_full_lsh(pv_pks)
+
+        # Add Neighbors to PaperNeighbors
+        self.update_neighbors(new_pks)
+
+        # Register status as idle
+        self.set_state('IDL')
 
     def tasks(self, *args, **kwargs):
         """Use for tasks.py. Ok, this is an odd design.
@@ -793,7 +899,7 @@ class LSH(TimeStampedModel):
                 n_neighbors = kwargs['n_neighbors']
             except KeyError as e:
                 raise e
-            pks = self.kneighbors(vec, n_neighbors)
+            pks = self.k_neighbors(vec, n_neighbors)
             return pks
         # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':

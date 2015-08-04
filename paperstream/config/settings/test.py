@@ -1,8 +1,6 @@
 from .base import *
 from core.utils import get_env_variable
 
-# APPLICATION
-INSTALLED_APPS += ('django_nose', )
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -40,6 +38,12 @@ PUBMED_EMAIL = get_env_variable('PUBMED_EMAIL')
 ELSEVIER_API_KEY = get_env_variable('ELSEVIER_API_KEY')
 
 
+# NLP PATHS CHANGE
+NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data_test')
+NLP_DOC2VEC_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods_test')
+NLP_LSH_PATH = os.path.join(str(APPS_DIR), 'nlp', 'lshfs_test')
+NLP_CHUNK_SIZE = 2
+
 # LOGGING
 LOGGING = {}
 
@@ -48,26 +52,7 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
 )
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'paperstream',
-#         'USER': 'nicolaspannetier',
-#         'PASSWORD': '',
-#         'HOST': 'localhost',
-#         'PORT': '',
-#         'ATOMIC_REQUESTS': False,
-#         # NB: True conflicts with the use of python-social-auth (whose entire
-#         # pipeline is atomic while celery needs to know user during the pipeline
-#         # authentication process TODO: find a fix ?
-#     }
-# }
-
-
 # CELERY
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 BROKER_BACKEND = 'memory'
-
-# Django Nose
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

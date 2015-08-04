@@ -17,15 +17,7 @@ def build(model_name):
     # dump papers data
     papers = Paper.objects.all()
     model.dump(papers)
-    # Build vocabulary and phraser
-    docs = model.load_documents()
-    phraser = model.build_phraser(docs, min_count=2)
-    docs = model.load_documents(phraser=phraser)
-    model.build_vocab(docs)
-    # Train, save and set_active
-    model.train(docs, passes=10, shuffle_=True)
-    model.save()
-    model.set_active()
+    model.build_vocab_and_train()
     # Populate library
     model.save_journal_vec_from_bulk()
     model.save_paper_vec_from_bulk()

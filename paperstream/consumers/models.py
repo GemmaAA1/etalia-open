@@ -8,11 +8,9 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q, F
-from django.db.models.query import QuerySet
 
 from config.celery import celery_app as app
 from celery.contrib.methods import task_method
-from celery.utils.log import get_task_logger
 
 
 from Bio import Entrez

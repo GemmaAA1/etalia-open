@@ -20,7 +20,9 @@ def paper2tokens(paper, **kwargs):
     if 'fields' in kwargs:
         if not isinstance(kwargs['fields'], list):
             raise TypeError('<fields> must be list of field strings')
-    fields = kwargs.get('fields', ['title', 'abstract'])
+        fields = kwargs['fields']
+    else:
+        raise ValueError('<fields> must be in kwargs')
 
     tokens_list = []
     for j, field in enumerate(fields):

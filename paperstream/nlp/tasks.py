@@ -66,9 +66,37 @@ class LSHTask(app.Task):
     def run(self, *args, **kwargs):
         return self.lsh.tasks(*args, **kwargs)
 
+# # The register_task belows produces error:
+#  'to django.db.utils.ProgrammingError: relation "nlp_model" does not exist'
+# during testing.
+#
+# def register_tasks():
+#     # Create embedding task from model
+#     model_names = Model.objects.all().values_list('name', flat=True)
+#
+#     for model_name in model_names:
+#         cls = EmbedPaperTask(model_name=model_name, bind=True)
+#         app.task(cls, name='nlp.tasks.embed_paper_{model_name}'.format(
+#             model_name=model_name))
+#
+#     # Create lsh related tasks
+#     for model_name in model_names:
+#         # Full LSH
+#         cls = LSHTask(model_name=model_name, bind=True)
+#         app.task(cls, name='nlp.tasks.lsh_{model_name}_full'
+#                  .format(model_name=model_name, time_lapse=None))
+#         # time_lapse dependant LSHs
+#         for time_lapse in TIME_LAPSE_CHOICES:
+#             cls = LSHTask(model_name=model_name, bind=True)
+#             app.task(cls, name='nlp.tasks.lsh_{model_name}_{time_lapse}'
+#                      .format(model_name=model_name,
+#                              time_lapse=time_lapse[0]))
+# register_tasks()
+
+model_names = ['dbow']
 def register_tasks():
     # Create embedding task from model
-    model_names = Model.objects.all().values_list('name', flat=True)
+    # model_names = Model.objects.all().values_list('name', flat=True)
 
     for model_name in model_names:
         cls = EmbedPaperTask(model_name=model_name, bind=True)
@@ -87,8 +115,8 @@ def register_tasks():
             app.task(cls, name='nlp.tasks.lsh_{model_name}_{time_lapse}'
                      .format(model_name=model_name,
                              time_lapse=time_lapse[0]))
-
 register_tasks()
+
 
 def all_embedings_paper(paper_pk):
     """Apply all possible embedding from model for paper_pk

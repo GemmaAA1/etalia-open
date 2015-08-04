@@ -21,6 +21,3 @@ celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 @celery_app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
-
-# import all default tasks
-# celery_app.loader.import_default_modules()
