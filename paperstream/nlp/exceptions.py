@@ -16,3 +16,7 @@ class InvalidState(ModelError):
     """
 
     message = 'Current state is invalid'
+
+    def __init__(self, message):
+        super(InvalidState, self).__init__(message)
+        self.message = message

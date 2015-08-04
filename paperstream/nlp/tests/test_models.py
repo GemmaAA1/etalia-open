@@ -5,15 +5,14 @@ import numpy as np
 
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django.utils import timezone
 
 from ..models import LSH, Model, TextField, JournalVectors, PaperVectors, \
     PaperNeighbors
 
 from ..constants import FIELDS_FOR_MODEL
+from ..exceptions import InvalidState
 from core.constants import TIME_LAPSE_CHOICES
 from .base import NLPTestCase, NLPDataTestCase
-from library.models import Paper, Journal
 
 
 class ModelModelTest(NLPTestCase):
@@ -303,7 +302,7 @@ class LSHModelTest(NLPDataTestCase):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         lsh.set_state('BUS')
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(InvalidState):
             lsh.save()
 
     def test_lsh_get_data(self):
@@ -331,37 +330,69 @@ class LSHModelTest(NLPDataTestCase):
         pv = PaperVectors.objects.get(pk=pv_pks[0])
         self.assertFalse(pv.is_in_full_lsh)
 
-    # def test_lsh_can_run_full_update(self):
-    #     time_lapse = TIME_LAPSE_CHOICES[0][0]
-    #     lsh = LSH(model=self.model, time_lapse=time_lapse)
-    #     lsh.full_update()
-    #
-    # def test_lsh_can_run_partial_update(self):
-    #     time_lapse = None
-    #     lsh = LSH(model=self.model, time_lapse=time_lapse)
-    #     lsh.partial_update()
+    def test_lsh_can_run_full_update(self):
+        time_lapse = TIME_LAPSE_CHOICES[0][0]
+        lsh = LSH(model=self.model, time_lapse=time_lapse)
+        lsh.full_update()
 
-    # def test_lsh_can_be_created(self):
-    #     LSH.objects.create(model=self.model,
-    #                        time_lapse=TIME_LAPSE_CHOICES[0][0])
-    #
-    # def test_lsh_update_neighbors(self):
-    #     time_lapse = TIME_LAPSE_CHOICES[0][0]
-    #     lsh = LSH(model=self.model, time_lapse=time_lapse)
-    #     x_data, pv_pks, new_pks = lsh.get_data()
+    def test_lsh_can_run_partial_update(self):
+        time_lapse = None
+        lsh = LSH(model=self.model, time_lapse=time_lapse)
+        lsh.partial_update()
+
+    def test_lsh_can_be_created(self):
+        LSH.objects.create(model=self.model,
+                           time_lapse=TIME_LAPSE_CHOICES[0][0])
+
+    def test_lsh_can_search_for_kneighbors(self):
+        lsh = LSH(model=self.model, time_lapse=TIME_LAPSE_CHOICES[0][0])
+        lsh.set_state('IDL')
+        vec = np.zeros(lsh.model.size)
+        indices = lsh.k_neighbors(vec)
+        self.assertTrue(len(indices) > 0)
+
+    def test_lsh_kneighbors_raises_if_state_not_idle(self):
+        lsh = LSH(model=self.model, time_lapse=TIME_LAPSE_CHOICES[0][0])
+        vec = np.zeros(lsh.model.size)
+        with self.assertRaises(InvalidState):
+            lsh.k_neighbors(vec)
+
+    def test_lsh_kneighbors_raises_with_wrong_vec_size(self):
+        lsh = LSH(model=self.model, time_lapse=TIME_LAPSE_CHOICES[0][0])
+        lsh.set_state('IDL')
+        vec = np.zeros(lsh.model.size+1)
+        with self.assertRaises(ValueError):
+            lsh.k_neighbors(vec)
+
+
 
 
 class PaperNeighborsTest(NLPDataTestCase):
 
     def setUp(self):
         super(PaperNeighborsTest, self).setUp()
-        self.lsh = LSH.objects.create(model=self.model, time_lapse=None)
+        self.pv = PaperVectors.objects.create(model=self.model,
+                                              paper=self.paper)
+        self.pv2 = PaperVectors.objects.create(model=self.model,
+                                               paper=self.paper2)
+        self.pv.set_vector([0.0, 0.0])
+        self.pv2.set_vector([0.0, 0.0])
+        self.lsh = LSH.objects.create(model=self.model,
+                                      time_lapse=None)
 
     def test_paperneighbors_can_be_instantiated(self):
         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
 
     def test_paperneighbors_can_NOT_have_same_lsh_and_paper(self):
         PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
-        pn = PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
+        pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
         with self.assertRaises(ValidationError):
             pn.full_clean()
+
+    def test_paperneighbors_can_set_neighbors(self):
+        pn = PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
+        neigh = [1, 2, 3, 4]
+        pn.set_neighbors(neigh)
+        pn2 = PaperNeighbors.objects.get(pk=pn.id)
+        self.assertTrue(pn2.get_neighbors() == pn.get_neighbors())
+

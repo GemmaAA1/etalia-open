@@ -566,7 +566,7 @@ class PaperNeighbors(TimeStampedModel):
     # Primary keys of the k-nearest neighbors papers
     neighbors = ArrayField(models.IntegerField(null=True),
                            size=settings.NLP_MAX_KNN_NEIGHBORS,
-                           null=True)
+                           null=True, blank=True)
 
     def set_neighbors(self, vector):
         self.neighbors = pad_neighbors(vector)
@@ -575,7 +575,7 @@ class PaperNeighbors(TimeStampedModel):
     def get_neighbors(self):
         return self.neighbors[:self.lsh.model.size]
 
-    class meta:
+    class Meta:
         unique_together = ('lsh', 'paper')
 
 
@@ -679,7 +679,7 @@ class LSH(TimeStampedModel):
                     time_lapse=self.time_lapse)))
             self.save_db_only()
         else:
-            raise ValidationError('LSH state is busy. Cannot save')
+            raise InvalidState('LSH state is {0}'.format(self.state))
 
     def save_db_only(self, *args, **kwargs):
         super(LSH, self).save(*args, **kwargs)
@@ -748,12 +748,12 @@ class LSH(TimeStampedModel):
         else:
             pks = args[0]
 
-        for pk in self.lsh.pks:
+        for pk in pks:
             self.populate_neighbors(pk)
 
     def populate_neighbors(self, paper_pk):
 
-        pv, _ = PaperVectors.objects.get(paper_id=paper_pk,
+        pv = PaperVectors.objects.get(paper_id=paper_pk,
                                          model=self.model)
         vec = pv.vector[:self.model.size]
 
@@ -774,7 +774,10 @@ class LSH(TimeStampedModel):
         if self.state == 'IDL':
             if isinstance(vec, list):
                 vec = np.array(vec)
-            distances, indices = self.lsh.kneighbors(vec[:self.model.size],
+            if not len(vec) == self.model.size:
+                raise ValueError('vector must have same size than model.size')
+
+            distances, indices = self.lsh.kneighbors(vec,
                                                      n_neighbors=n_neighbors,
                                                      return_distance=True)
             # convert indices to paper pk
@@ -865,13 +868,13 @@ class LSH(TimeStampedModel):
         # Add Neighbors to PaperNeighbors
         self.update_neighbors(new_pks)
 
-
     def tasks(self, *args, **kwargs):
-        """Use for tasks.py. Ok, this is an odd design.
-         It is so because we want to have the lsh object loaded only once.
-          It multiple task are defined, this will required having multiple
-          instance of the lsh object loaded per task and it will be memory
-          expensive imo.
+        """Use for tasks.py. This is an odd design.
+          method tasks dispatch possible tasks that can be run from LSH
+          It is so because we want to have the lsh object instantiate only once
+          on the worker to avoid overhead.
+          If multiple task were defined instead, this will required having
+          an instance of the LSH object loaded per task
         """
 
         try:

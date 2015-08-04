@@ -1,5 +1,6 @@
 import os
 from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
@@ -45,6 +46,8 @@ def pad_vector(vector):
 
     if len(vector) < settings.NLP_MAX_VECTOR_SIZE:
         vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
+    else:
+        raise ValidationError('vector is larger than NLP_MAX_VECTOR_SIZE')
 
     return vector
 
@@ -57,7 +60,8 @@ def pad_neighbors(vector):
 
     if len(vector) < settings.NLP_MAX_KNN_NEIGHBORS:
         vector += [None] * (settings.NLP_MAX_KNN_NEIGHBORS - len(vector))
-
+    else:
+        raise ValidationError('vector is larger than NLP_MAX_KNN_NEIGHBORS')
     return vector
 
 

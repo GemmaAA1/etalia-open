@@ -466,7 +466,7 @@ class ConsumerElsevier(Consumer):
             logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception as e:
             ok = False
-            entries - []
+            entries = []
             logger.warning('consuming {0}: FAILED'.format(journal.title))
 
         return entries, ok

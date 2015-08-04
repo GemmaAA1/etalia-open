@@ -2,6 +2,7 @@ import numpy as np
 
 from django.test import TestCase
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from ..utils import pad_vector, pad_neighbors
 
@@ -29,6 +30,11 @@ class PaddingTest(TestCase):
         self.assertTrue((vec_pad[0:5] == vec[0:5]).all())
         self.assertTrue(vec_pad[5:] == [None, None])
 
+    def test_vector_can_be_larger_than_maximum(self):
+        vec = np.zeros((settings.NLP_MAX_VECTOR_SIZE+1, ))
+        with self.assertRaises(ValidationError):
+            pad_vector(vec)
+
     def test_padding_neighbors(self):
         vec = [1., 2., 3., 4., 5.]
         vec_pad = pad_neighbors(vec)
@@ -47,3 +53,7 @@ class PaddingTest(TestCase):
         self.assertTrue((vec_pad[0:5] == vec[0:5]).all())
         self.assertTrue(vec_pad[5:] == [None])
 
+    def test_vector_can_be_larger_than_maximum(self):
+        vec = np.zeros((settings.NLP_MAX_KNN_NEIGHBORS + 1, ))
+        with self.assertRaises(ValidationError):
+            pad_neighbors(vec)

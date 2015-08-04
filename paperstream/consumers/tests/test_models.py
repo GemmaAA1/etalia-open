@@ -60,15 +60,6 @@ class ConsumerTest(TestCase):
         with self.assertRaises(ValueError):
             consumer.deactivate_journal(journal)
 
-    def tests_can_update_last_date_cons(self):
-        consumer, journal, cj = self.return_utils()
-        last1 = cj.last_date_cons
-        consumer.day0 = 10
-        consumer.update_last_date_cons(journal)
-        cj = consumer.consumerjournal_set.get(journal=journal)
-        last2 = cj.last_date_cons
-        self.assertTrue(last2 > last1)
-
 
 class ConsumerPubmedTest(TestCase):
 
@@ -93,11 +84,11 @@ class ConsumerPubmedTest(TestCase):
     @patch('consumers.models.ConsumerPubmed.consume_journal')
     def test_consume_update_journal(self, mock_consume_journal):
         # setup mock object
-        mock_consume_journal.return_value = self.entries
+        mock_consume_journal.return_value = self.entries, True
 
         journal = Journal.objects.first()
         consumer = ConsumerPubmed.objects.first()
-        consumer.populate_journal(journal)
+        consumer.populate_journal(journal.id)
 
         self.assertIsNotNone(consumer.consumerjournal_set.first().last_date_cons)
         self.assertTrue(
@@ -108,14 +99,14 @@ class ConsumerPubmedTest(TestCase):
     @patch('consumers.models.ConsumerPubmed.consume_journal')
     def test_populate_journal(self, mock_consume_journal):
         # setup mock object
-        mock_consume_journal.return_value = self.entries
+        mock_consume_journal.return_value = self.entries, True
 
         journal = Journal.objects.first()
         consumer = ConsumerPubmed.objects.first()
 
         papers = Paper.objects.filter(journal=journal)
         self.assertTrue(papers.count() == 0)
-        consumer.populate_journal(journal)
+        consumer.populate_journal(journal.id)
         papers = Paper.objects.filter(journal=journal)
         self.assertEqual(papers.count(), 10)
 
@@ -144,11 +135,11 @@ class ConsumerElsevierTest(TestCase):
     @patch('consumers.models.ConsumerElsevier.consume_journal')
     def test_consume_update_journal(self, mock_consume_journal):
         # setup mock object
-        mock_consume_journal.return_value = self.entries
+        mock_consume_journal.return_value = self.entries, True
 
         journal = Journal.objects.first()
         consumer = ConsumerElsevier.objects.first()
-        consumer.populate_journal(journal)
+        consumer.populate_journal(journal.pk)
 
         self.assertIsNotNone(consumer.consumerjournal_set.first().last_date_cons)
         self.assertTrue(
@@ -159,14 +150,14 @@ class ConsumerElsevierTest(TestCase):
     @patch('consumers.models.ConsumerElsevier.consume_journal')
     def test_populate_journal(self, mock_consume_journal):
         # setup mock object
-        mock_consume_journal.return_value = self.entries
+        mock_consume_journal.return_value = self.entries, True
 
         journal = Journal.objects.first()
         consumer = ConsumerElsevier.objects.first()
 
         papers = Paper.objects.filter(journal=journal)
         self.assertTrue(papers.count() == 0)
-        consumer.populate_journal(journal)
+        consumer.populate_journal(journal.pk)
         papers = Paper.objects.filter(journal=journal)
         self.assertEqual(papers.count(), 10)
 
