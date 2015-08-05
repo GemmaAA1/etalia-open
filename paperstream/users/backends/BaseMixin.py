@@ -100,10 +100,7 @@ class BackendLibMixin(object):
 
     @staticmethod
     def associate_journal(journal, user):
-        ulj, new = UserLibJournal.objects.get_or_create(userlib=user.lib,
-                                                        journal=journal)
-        ulj.papers_in_journal += 1
-        ulj.save()
+        UserLibJournal.objects.add(userlib=user.lib, journal=journal)
 
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')

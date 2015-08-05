@@ -37,12 +37,12 @@ CACHES = {
 PUBMED_EMAIL = get_env_variable('PUBMED_EMAIL')
 ELSEVIER_API_KEY = get_env_variable('ELSEVIER_API_KEY')
 
-
 # NLP PATHS CHANGE
 NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data_test')
 NLP_DOC2VEC_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods_test')
 NLP_LSH_PATH = os.path.join(str(APPS_DIR), 'nlp', 'lshfs_test')
 NLP_CHUNK_SIZE = 2
+NLP_MAX_VECTOR_SIZE = 300
 
 # LOGGING
 LOGGING = {}

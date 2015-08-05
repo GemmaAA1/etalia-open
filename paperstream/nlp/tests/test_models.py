@@ -15,7 +15,7 @@ from core.constants import TIME_LAPSE_CHOICES
 from .base import NLPTestCase, NLPDataTestCase
 
 
-class ModelModelTest(NLPTestCase):
+class ModelTest(NLPTestCase):
 
     def test_config_folders_have_been_created(self):
         self.assertTrue(os.path.isdir(settings.NLP_DOC2VEC_PATH))
@@ -85,6 +85,15 @@ class ModelModelTest(NLPTestCase):
     def test_model_can_have_different_fields(self):
         model = Model.objects.create(name='test', text_fields=['title'])
         model.full_clean()
+
+    def test_model_can_have_different_size(self):
+        model = Model(name='test', size=20)
+        self.assertEqual(model.size, 20)
+
+    def test_model_size_cannot_be_larger_than_NLP_MAX_VECTOR_SIZE(self):
+        model = Model(name='test', size=settings.NLP_MAX_VECTOR_SIZE+1)
+        with self.assertRaises(ValidationError):
+            model.full_clean()
 
 
 class ModelDumpTest(NLPDataTestCase):
@@ -206,7 +215,7 @@ class PaperVectorTest(NLPDataTestCase):
     def test_papervector_can_get_and_save_vector(self):
         pv = PaperVectors.objects.create(paper=self.paper, model=self.model)
 
-        vector = np.random.randn(5)
+        vector = np.random.randn(self.model.size)
         pv.set_vector(vector)
 
         pv2 = PaperVectors.objects.get(pk=pv.pk)
@@ -230,7 +239,7 @@ class JournalVectorTest(NLPDataTestCase):
     def test_journalvector_can_get_and_save_vector(self):
         jv = JournalVectors.objects.create(journal=self.journal,
                                            model=self.model)
-        vector = np.random.randn(5)
+        vector = np.random.randn(self.model.size)
         jv.set_vector(vector)
 
         jv2 = JournalVectors.objects.get(pk=jv.pk)
@@ -249,8 +258,8 @@ class LSHModelTest(NLPDataTestCase):
                                               paper=self.paper)
         self.pv2 = PaperVectors.objects.create(model=self.model,
                                                paper=self.paper2)
-        self.pv.set_vector([0.0, 0.0])
-        self.pv2.set_vector([0.0, 0.0])
+        self.pv.set_vector(np.zeros(self.model.size))
+        self.pv2.set_vector(np.zeros(self.model.size))
 
     def test_lsh_can_be_instantiated(self):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
@@ -311,7 +320,7 @@ class LSHModelTest(NLPDataTestCase):
         x_data, pv_pks, new_pks = lsh.get_data()
         self.assertEqual(pv_pks, [self.pv.pk, self.pv2.pk])
         self.assertEqual(new_pks, [self.paper.pk, self.paper2.pk])
-        self.assertTrue((x_data[0,:] == np.array([[0.0, 0.0]])).all())
+        self.assertTrue((x_data[0, :] == 0).all())
 
     def test_lsh_update_is_in_full_lsh_flag_if_full(self):
         time_lapse = None
@@ -365,8 +374,6 @@ class LSHModelTest(NLPDataTestCase):
             lsh.k_neighbors(vec)
 
 
-
-
 class PaperNeighborsTest(NLPDataTestCase):
 
     def setUp(self):
@@ -375,8 +382,8 @@ class PaperNeighborsTest(NLPDataTestCase):
                                               paper=self.paper)
         self.pv2 = PaperVectors.objects.create(model=self.model,
                                                paper=self.paper2)
-        self.pv.set_vector([0.0, 0.0])
-        self.pv2.set_vector([0.0, 0.0])
+        self.pv.set_vector(np.random.randn(self.model.size))
+        self.pv2.set_vector(np.random.randn(self.model.size))
         self.lsh = LSH.objects.create(model=self.model,
                                       time_lapse=None)
 

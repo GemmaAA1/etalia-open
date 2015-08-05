@@ -1,8 +1,9 @@
+from nameparser import HumanName
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
-from datetime import date
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -48,7 +49,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         UserLib.objects.create(user=user)
-        UserStats.objects.create_user_init(user, '')
+        UserStats.objects.log_user_init(user, '')
         UserSettings.objects.create(user=user)
         return user
 
@@ -101,15 +102,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.is_staff
 
     def get_short_name(self):
+        name = HumanName(self.first_name + ' ' + self.last_name)
         if self.first_name:
-            return '{0}. {1}'.format(self.first_name[0].capitalize(),
-                                     self.last_name.capitalize())
+            first_names_cap = '{0}{1}'.format(name.first.capitalize()[0],
+                                              name.middle.capitalize()[0])
+            return '{0} {1}'.format(first_names_cap,
+                                    name.last.capitalize())
         else:
-            return '{0}'.format(self.last_name.capitalize())
+            return '{0}'.format(name.last.capitalize())
 
     def get_full_name(self):
-        return '{0} {1}'.format(self.first_name.capitalize(),
-                                self.last_name.capitalize())
+        name = HumanName(self.first_name + ' ' + self.last_name)
+        first_names = '{0} {1}'.format(name.first.capitalize(),
+                                       name.middle.capitalize())
+        last_name = name.last.capitalize()
+        return '{0} {1}'.format(first_names, last_name)
 
     def get_absolute_url(self):
         return '/users/{0}'.format(self.pk)
@@ -133,8 +140,8 @@ class UserLib(TimeStampedModel):
 
     journals = models.ManyToManyField(Journal, through='UserLibJournal')
 
-    status = models.CharField(max_length=3, blank=True, default='',
-        choices=(('', 'Uninitialized'),
+    state = models.CharField(max_length=3, blank=True, default='NON',
+        choices=(('NON', 'Uninitialized'),
                  ('IDL', 'Idle'),
                  ('ING', 'Syncing')))
 
@@ -146,59 +153,116 @@ class UserLib(TimeStampedModel):
     def count_journals(self):
         return self.journals.all().count()
 
-    def set_lib_syncing(self):
-        self.status = 'ING'
+    def set_state(self, state):
+        if state in ['NON', 'IDL', 'ING']:
+            self.state = state
+            self.save()
+            return self
+        else:
+            raise ValueError('Cannot set state. State value not allowed')
+
+
+class UserLibPaper(TimeStampedModel):
+    """Intermediate model to user - paper
+    """
+    userlib = models.ForeignKey(UserLib)
+
+    paper = models.ForeignKey(Paper)
+
+    date_created = models.DateField(default=None, null=True)
+
+    date_last_modified = models.DateField(default=None, null=True)
+
+    authored = models.NullBooleanField(default=None, null=True, blank=True)
+
+    starred = models.NullBooleanField(default=None, null=True, blank=True)
+
+    scored = models.FloatField(default=0.)
+
+    class Meta:
+        ordering = ['-date_created']
+
+    def __str__(self):
+        return '{0}@{1}'.format(self.paper.short_title(),
+                                self.userlib.user.email)
+
+
+class UserLibJournalManager(models.Manager):
+
+    def add(self, **kwargs):
+        obj, new = self.get_or_create(**kwargs)
+        obj.papers_in_journal += 1
+        obj.save()
+        return obj
+
+class UserLibJournal(TimeStampedModel):
+    """Intermediate model to user - journal
+    """
+    userlib = models.ForeignKey(UserLib)
+
+    journal = models.ForeignKey(Journal)
+
+    # number of paper link to that journal for this user
+    papers_in_journal = models.IntegerField(default=0, null=False)
+
+    objects = UserLibJournalManager()
+
+    class Meta:
+        unique_together = ('userlib', 'journal')
+
+    def update_papers_in_journal(self):
+        self.papers_in_journal = self.userlib.papers.filter(
+            journal=self.journal).count()
         self.save()
 
-    def set_lib_idle(self):
-        self.status = 'IDL'
-        self.save()
+    def __str__(self):
+        return '%s@%s' % (self.userlib.user.email, self.journal.short_title)
 
 
 class UserStatsManager(models.Manager):
-    def create_lib_starts_sync(self, user, options=''):
+    def log_lib_starts_sync(self, user, options=''):
         stats = self.model(user=user, state='LSS')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_lib_ends_sync(self, user, options=''):
+    def log_lib_ends_sync(self, user, options=''):
         stats = self.model(user=user, state='LES')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_feed_starts_sync(self, user, options=''):
+    def log_feed_starts_sync(self, user, options=''):
         stats = self.model(user=user, state='FSS')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_feed_ends_sync(self, user, options=''):
-        stats = self.model(user=user, state='FSS')
+    def log_feed_ends_sync(self, user, options=''):
+        stats = self.model(user=user, state='FES')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_init(self, user, options=''):
-        stats = self.model(user=user, state='CRE')
+    def log_user_init(self, user, options=''):
+        stats = self.model(user=user, state='INI')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_email_valid(self, user, options=''):
+    def log_user_email_valid(self, user, options=''):
         stats = self.model(user=user, state='EMA')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_log_in(self, user, options=''):
+    def log_user_log_in(self, user, options=''):
         stats = self.model(user=user, state='LIN')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def create_user_log_out(self, user, options=''):
+    def log_user_log_out(self, user, options=''):
         stats = self.model(user=user, state='LOU')
         stats.options = options
         stats.save(using=self._db)
@@ -226,59 +290,16 @@ class UserStats(models.Model):
     objects = UserStatsManager()
 
 
-class UserLibPaper(TimeStampedModel):
-    """Intermediate model to user - paper
-    """
-    userlib = models.ForeignKey(UserLib)
-
-    paper = models.ForeignKey(Paper)
-
-    date_created = models.DateField(default=None, null=True)
-
-    date_last_modified = models.DateField(default=None, null=True)
-
-    authored = models.NullBooleanField(default=None, null=True, blank=True)
-
-    starred = models.NullBooleanField(default=None, null=True, blank=True)
-
-    scored = models.FloatField(default=0.)
-
-    class Meta:
-        ordering = ['-date_created']
-
-    def __str__(self):
-        return '{0}@{1}'.format(self.paper.short_title(),
-                                self.userlib.user.email)
-
-class UserLibJournal(TimeStampedModel):
-    """Intermediate model to user - journal
-    """
-    userlib = models.ForeignKey(UserLib)
-
-    journal = models.ForeignKey(Journal)
-
-    # number of paper link to that journal for this user
-    papers_in_journal = models.IntegerField(default=0, null=False)
-
-    def __str__(self):
-        return '%s@%s' % (self.userlib.user.email, self.journal.short_title)
-
-    def update_papers_in_journal(self):
-        self.papers_in_journal = self.userlib.papers.filter(
-            journal=self.journal).count()
-        self.save()
-
-
 class UserSettingsManager(models.Manager):
 
     def create(self, **kwargs):
-        # if nlp_model not defined, defaut to first nlp_model
+        # if nlp_model not defined, default to first nlp_model
         if 'model' not in kwargs:
-            nlp_model = Model.objects.first()
-            kwargs['model'] = nlp_model
-        model = self.model(**kwargs)
-        model.save(using=self._db)
-        return model
+            model = Model.objects.first()
+            kwargs['model'] = model
+        obj = self.model(**kwargs)
+        obj.save(using=self._db)
+        return obj
 
 
 class UserSettings(TimeStampedModel):

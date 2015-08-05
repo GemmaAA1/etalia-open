@@ -102,8 +102,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         not_new_stack_count = 0
 
         # update db state
-        user.stats.create_lib_starts_sync(user)
-        user.lib.set_lib_syncing()
+        user.stats.log_lib_starts_sync(user)
+        user.lib.set_state('SYN')
 
         # retrieve list of documents per page
         page = mendeley_session.documents.list(
@@ -152,8 +152,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 break
 
         # update UserLib and Stats
-        user.stats.create_lib_ends_sync(user, count)
-        user.lib.set_lib_idle()
+        user.stats.log_lib_ends_sync(user, count)
+        user.lib.set_state('IDL')
         return count
 
 

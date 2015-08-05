@@ -41,7 +41,8 @@ class NLPDataTestCase(NLPTestCase):
             abstract='Hi. Hi, <p>hi</p> {mu}\n',
             journal=self.journal,
             date_ep=timezone.now().date())
-        self.model = Model.objects.create(name='test')
+        self.model = Model.objects.create(name='test',
+                                          size=128)
         self.model.activate()
         self.model.save_db_only()
         self.papers = Paper.objects.all()

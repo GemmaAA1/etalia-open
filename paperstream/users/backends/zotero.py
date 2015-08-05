@@ -59,8 +59,8 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         not_new_stack_count = 0
 
         # update db states
-        user.stats.create_lib_starts_sync(user)
-        user.lib.set_lib_syncing()
+        user.stats.log_lib_starts_sync(user)
+        user.lib.set_state('SYN')
 
         items = session.top(limit=self.CHUNK_SIZE)
 
@@ -101,6 +101,6 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                 break
 
         # update UserLib and Stats
-        user.stats.create_lib_ends_sync(user, count)
-        user.lib.set_lib_idle()
+        user.stats.log_lib_ends_sync(user, count)
+        user.lib.set_state('IDL')
         return count

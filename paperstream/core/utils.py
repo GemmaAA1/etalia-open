@@ -44,7 +44,7 @@ def pad_vector(vector):
         except TypeError:
             raise TypeError('<vector> must be a list or a np.array')
 
-    if len(vector) < settings.NLP_MAX_VECTOR_SIZE:
+    if len(vector) <= settings.NLP_MAX_VECTOR_SIZE:
         vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
     else:
         raise ValidationError('vector is larger than NLP_MAX_VECTOR_SIZE')
@@ -58,7 +58,7 @@ def pad_neighbors(vector):
         except TypeError:
             raise TypeError('<vector> must be a list or a np.array')
 
-    if len(vector) < settings.NLP_MAX_KNN_NEIGHBORS:
+    if len(vector) <= settings.NLP_MAX_KNN_NEIGHBORS:
         vector += [None] * (settings.NLP_MAX_KNN_NEIGHBORS - len(vector))
     else:
         raise ValidationError('vector is larger than NLP_MAX_KNN_NEIGHBORS')

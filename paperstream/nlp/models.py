@@ -170,7 +170,7 @@ class Model(TimeStampedModel):
     dm = property(fset=model_attr_setter('_dm', 'dm'),
                   fget=model_attr_getter('_dm'))
     size = property(fset=model_attr_setter('_size', 'vector_size'),
-                    fget=model_attr_getter('_dm'))
+                    fget=model_attr_getter('_size'))
     window = property(fset=model_attr_setter('_window', 'window'),
                       fget=model_attr_getter('_window'))
     alpha = property(fset=model_attr_setter('_alpha', 'alpha'),
@@ -186,8 +186,8 @@ class Model(TimeStampedModel):
                       fget=model_attr_getter('_sample'))
     workers = property(fset=model_attr_setter('_workers', 'workers'),
                        fget=model_attr_getter('_workers'))
-    hs = property(fset=model_attr_setter('_hs', 'workers'),
-                  fget=model_attr_getter('_workers'))
+    hs = property(fset=model_attr_setter('_hs', 'hs'),
+                  fget=model_attr_getter('_hs'))
     negative = property(fset=model_attr_setter('_negative', 'negative'),
                         fget=model_attr_getter('_negative'))
     dm_mean = property(fset=model_attr_setter('_dm_mean', 'cbow_mean'),

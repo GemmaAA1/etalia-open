@@ -3,6 +3,8 @@ from django.conf import settings
 from django.apps import AppConfig
 
 class NLPConfig(AppConfig):
+    """Use to create default folders that stores nlp models and data
+    """
 
     name = 'nlp'
     
