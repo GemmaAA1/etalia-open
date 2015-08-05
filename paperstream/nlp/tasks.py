@@ -58,10 +58,28 @@ class LSHTask(app.Task):
     _lsh = None
 
     def __init__(self, *args, **kwargs):
-        if 'model_name' in kwargs:
-            self.model_name = kwargs['model_name']
-        if 'time_lapse' in kwargs:
-            self.time_lapse = kwargs['time_lapse']
+        if ('model_name' in kwargs) and ('time_lapse' in kwargs):
+            model_name = kwargs['model_name']
+            time_lapse = kwargs['time_lapse']
+
+            # check if model_name is known
+            choices = [model['name'] for model in
+                       Model.objects.all().values('name')]
+            if model_name in choices:
+                self.model_name = model_name
+            else:
+                raise ValueError('<model_name> unknown, choices are: {0}'
+                                 .format(choices))
+            # check if time_lapse allowed
+            choices = [time_lapse[0] for time_lapse in TIME_LAPSE_CHOICES] + \
+                      [None]
+            if time_lapse in choices:
+                self.time_lapse = time_lapse
+            else:
+                raise ValueError('<{0}> not in possible time_lapse choices'
+                                 .format(time_lapse))
+        else:
+            raise TypeError('<model_name> and <time_lapse> must be defined')
 
     @property
     def lsh(self):
@@ -93,12 +111,13 @@ def register_model_tasks():
     # Create lsh related tasks
     for model_name in model_names:
         # Full LSH
-        cls = LSHTask(model_name=model_name, bind=True)
+        cls = LSHTask(model_name=model_name, time_lapse=None, bind=True)
         app.task(cls, name='nlp.tasks.lsh_{model_name}_full'
                  .format(model_name=model_name, time_lapse=None))
         # time_lapse dependant LSHs
         for time_lapse in TIME_LAPSE_CHOICES:
-            cls = LSHTask(model_name=model_name, bind=True)
+            cls = LSHTask(model_name=model_name, time_lapse=time_lapse[0],
+                          bind=True)
             app.task(cls, name='nlp.tasks.lsh_{model_name}_{time_lapse}'
                      .format(model_name=model_name,
                              time_lapse=time_lapse[0]))
@@ -123,7 +142,7 @@ def all_embedings_paper(paper_pk):
 def all_embeddings_and_neighbors(paper_pk):
     model_names = Model.objects.all().values_list('name', flat=True)
     for model_name in model_names:
-        # Send task for LSH full
+        # Send task for embedding
         try:
             embed_task = app.tasks['nlp.tasks.embed_paper_{model_name}'.format(
                 model_name=model_name)]
@@ -131,6 +150,8 @@ def all_embeddings_and_neighbors(paper_pk):
             logger.error('Embeding task for {model_name} not defined'.format(
                 model_name=model_name))
             continue
+
+        # Send task for LSH full
         try:
             lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
                 model_name=model_name)]
@@ -148,11 +169,11 @@ def all_embeddings_and_neighbors(paper_pk):
             try:
                 lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
                     model_name=model_name,
-                    time_lapse=time_lapse)]
+                    time_lapse=time_lapse[0])]
             except KeyError:
                 logger.error('LSH task for {model_name}/{time_lapse} not defined'
                              .format(model_name=model_name,
-                                     time_lapse=time_lapse))
+                                     time_lapse=time_lapse[0]))
                 continue
 
             chain(embed_task.s(),

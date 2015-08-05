@@ -1,5 +1,6 @@
 import os
 import shutil
+import numpy as np
 from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
@@ -46,3 +47,17 @@ class NLPDataTestCase(NLPTestCase):
         self.model.activate()
         self.model.save_db_only()
         self.papers = Paper.objects.all()
+
+
+class NLPDataExtendedTestCase(NLPDataTestCase):
+
+    def setUp(self):
+        super(NLPDataExtendedTestCase, self).setUp()
+        self.pv = PaperVectors.objects.create(model=self.model,
+                                              paper=self.paper)
+        self.pv2 = PaperVectors.objects.create(model=self.model,
+                                               paper=self.paper2)
+        self.pv.set_vector(np.random.randn(self.model.size))
+        self.pv2.set_vector(np.random.randn(self.model.size))
+        self.lsh = LSH.objects.create(model=self.model,
+                                      time_lapse=None)

@@ -12,7 +12,7 @@ from ..models import LSH, Model, TextField, JournalVectors, PaperVectors, \
 from ..constants import FIELDS_FOR_MODEL
 from ..exceptions import InvalidState
 from core.constants import TIME_LAPSE_CHOICES
-from .base import NLPTestCase, NLPDataTestCase
+from .base import NLPTestCase, NLPDataTestCase, NLPDataExtendedTestCase
 
 
 class ModelTest(NLPTestCase):
@@ -263,8 +263,12 @@ class LSHModelTest(NLPDataTestCase):
 
     def test_lsh_can_be_instantiated(self):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.full_clean()
+        lsh = LSH.objects.create(model=self.model, time_lapse=time_lapse)
+
+    def test_different_lsh_can_link_to_same_model(self):
+        time_lapse = TIME_LAPSE_CHOICES[0][0]
+        lsh = LSH.objects.create(model=self.model, time_lapse=time_lapse)
+        lsh = LSH.objects.create(model=self.model, time_lapse=None)
 
     def test_lsh_default_state_is_none(self):
         model = Model.objects.first()
@@ -374,18 +378,7 @@ class LSHModelTest(NLPDataTestCase):
             lsh.k_neighbors(vec)
 
 
-class PaperNeighborsTest(NLPDataTestCase):
-
-    def setUp(self):
-        super(PaperNeighborsTest, self).setUp()
-        self.pv = PaperVectors.objects.create(model=self.model,
-                                              paper=self.paper)
-        self.pv2 = PaperVectors.objects.create(model=self.model,
-                                               paper=self.paper2)
-        self.pv.set_vector(np.random.randn(self.model.size))
-        self.pv2.set_vector(np.random.randn(self.model.size))
-        self.lsh = LSH.objects.create(model=self.model,
-                                      time_lapse=None)
+class PaperNeighborsTest(NLPDataExtendedTestCase):
 
     def test_paperneighbors_can_be_instantiated(self):
         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)

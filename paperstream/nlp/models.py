@@ -653,7 +653,7 @@ class LSH(TimeStampedModel):
     """Local Sensitive Hashing to retrieve approximate k-neighbors
     """
 
-    model = models.OneToOneField(Model, related_name='lsh')
+    model = models.ForeignKey(Model, related_name='lsh')
 
     state = models.CharField(default='NON', choices=LSHF_STATES, max_length=3)
 
