@@ -17,15 +17,29 @@ class EmbedPaperTask(app.Task):
     _model = None
 
     def __init__(self, *args, **kwargs):
-        # super(EmbedPaperTask, self).__init__(*args, **kwargs)
         if 'model_name' in kwargs:
-            self.model_name=kwargs['model_name']
+            model_name = kwargs['model_name']
+            # check in model_name is known
+            choices = [model['name'] for model in
+                       Model.objects.all().values('name')]
+            if model_name in choices:
+                self.model_name = model_name
+            else:
+                raise ValueError('<model_name> unknown, choices are: {0}'
+                                 .format(choices))
+        else:
+            raise TypeError('missing <model_name> argument')
 
     @property
     def model(self):
         if self._model is None:
-            # self._model = Model.objects.load(name='dbow')
             self._model = Model.objects.load(name=self.model_name)
+            return self._model
+
+        last_modified = Model.objects.get(name=self.model_name).modified
+        if not self._model.modified == last_modified:
+            self._model = Model.objects.load(name=self.model_name)
+
         return self._model
 
     def run(self, paper_pk):
