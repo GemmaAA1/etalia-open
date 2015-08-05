@@ -4,9 +4,9 @@ from .base import FunctionalTest
 from django.conf import settings
 from library.models import Journal, Paper
 
+@skip
 class LibraryTest(FunctionalTest):
 
-    @skip
     def test_browse_library_anonymous(self):
 
         # Paper stream is already loaded with some papers and journals

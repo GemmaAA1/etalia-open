@@ -391,13 +391,12 @@ class PaperNeighborsTest(NLPDataTestCase):
         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
 
     def test_paperneighbors_can_NOT_have_same_lsh_and_paper(self):
-        PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
         with self.assertRaises(ValidationError):
             pn.full_clean()
 
     def test_paperneighbors_can_set_neighbors(self):
-        pn = PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
+        pn = PaperNeighbors.objects.get(lsh=self.lsh, paper=self.paper)
         neigh = [1, 2, 3, 4]
         pn.set_neighbors(neigh)
         pn2 = PaperNeighbors.objects.get(pk=pn.id)

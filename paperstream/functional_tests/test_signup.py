@@ -6,9 +6,9 @@ MENDELEY_PASSWORD = 'qwerty123'
 ZOTERO_EMAIL = 'trucfortest@gmail.com'
 ZOTERO_PASSWORD = 'qwerty123'
 
+@skip
 class AuthenticateWithZoteroTest(FunctionalTest):
 
-    @skip
     def test_signup_with_zotero(self):
 
         # X lands on paperstream home page and notice mendeley login
@@ -32,7 +32,6 @@ class AuthenticateWithZoteroTest(FunctionalTest):
 
         # X entered affiliation
 
-    @skip
     def test_signup_with_mendeley(self):
 
         # X lands on paperstream home page and notice mendeley login
