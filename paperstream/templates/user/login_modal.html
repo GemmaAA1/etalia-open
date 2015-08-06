@@ -18,7 +18,7 @@
             <div class="form-group">
                 <label for="{{ form.password.id_for_label }}" class="control-label">Password:</label>
                 <input type="password" name="password" class="form-control input-lg {% if form.password.errors %} alert alert-danger {% endif %}" placeholder="Password"
-                       value={{ form.password.value|default_if_none:"" }}>
+                       value="">
             </div>
             <div class="modal-footer center">
                 <button type="submit" class="btn btn-primary btn-lg">Sign-in</button>

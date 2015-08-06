@@ -1,10 +1,12 @@
 from .base import FunctionalTest
+from unittest import skip
 
 MENDELEY_EMAIL = 'trucfortest@gmail.com'
 MENDELEY_PASSWORD = 'qwerty123'
 ZOTERO_EMAIL = 'trucfortest@gmail.com'
 ZOTERO_PASSWORD = 'qwerty123'
 
+@skip
 class AuthenticateWithZoteroTest(FunctionalTest):
 
     def test_signup_with_zotero(self):
@@ -29,10 +31,6 @@ class AuthenticateWithZoteroTest(FunctionalTest):
         # X is redirected to the affiliation page
 
         # X entered affiliation
-
-
-
-
 
     def test_signup_with_mendeley(self):
 

@@ -35,8 +35,13 @@ $ ./scripts/install_local.sh
 #!bash
 # Start RabbitMQ-server
 $ rabbitmq-server
-# Start Celery
-$ celery -A config worker --loglevel=info
+
+# Start Celery queues, and beat
+$ celery -A config worker -Q default --loglevel=info
+$ celery -A config worker -Q dbow --concurrency=1 --loglevel=info
+$ celery -A config worker -Q consumers --loglevel=info
+$ celery -A config beat -s ../logs/celerybeat-schedule
+
 # Start WebApp
 $ ./manage.py runserver
 

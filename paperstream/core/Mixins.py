@@ -1,4 +1,7 @@
 from django.http import JsonResponse
+from users.forms import UpdateUserBasicForm, UserAffiliationForm, \
+    UserSettingsForm
+from django.views.generic.base import ContextMixin
 
 class AjaxableResponseMixin(object):
     """
@@ -26,3 +29,17 @@ class AjaxableResponseMixin(object):
 
     def get_ajax_data(self):
         raise NotImplementedError
+
+
+class ProfileModalFormsMixin(ContextMixin):
+    """Mixin to manage form in profile modal
+    """
+    def get_context_data(self, **kwargs):
+        context = super(ProfileModalFormsMixin, self).get_context_data(**kwargs)
+        context['form_userbasic'] = \
+            UpdateUserBasicForm(instance=self.request.user)
+        context['form_affiliation'] = \
+            UserAffiliationForm(instance=self.request.user.affiliation)
+        context['form_settings'] = \
+            UserSettingsForm(instance=self.request.user.settings)
+        return context

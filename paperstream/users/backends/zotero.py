@@ -2,9 +2,6 @@ from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
 import logging
 
-from config.celery import celery_app as app
-from celery.contrib.methods import task_method
-
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserZotero
 
@@ -12,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
-
     """Zotero OAuth authorization mechanism"""
 
     # library specific
@@ -28,10 +24,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
     ACCESS_TOKEN_URL = 'https://www.zotero.org/oauth/access'
 
     def get_user_id(self, details, response):
-        """
-        Return user unique id provided by service. For Ubuntu One
-        the nickname should be original.
-        """
+        """Return user unique id provided by service"""
         return details['userID']
 
     def get_user_details(self, response):
@@ -43,7 +36,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         }
 
     def get_session(self, social, user, *args, **kwargs):
-
+        """Return OAuth session"""
         # Authenticate to zotero
         uid = social.tokens['userID']
         token = social.tokens['oauth_token']
@@ -52,15 +45,23 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         return session
 
     def update_lib(self, user, session):
+        """Update User Lib
 
+        Args:
+            user (User): A User instance
+            session: An OAuth session as provided by get_session()
+
+        Returns:
+            (int): Number of papers added
+        """
         # Init
         new = True
         count = 0
         not_new_stack_count = 0
 
         # update db states
-        user.stats.create_lib_starts_sync(user)
-        user.lib.set_lib_syncing()
+        user.stats.log_lib_starts_sync(user)
+        user.lib.set_state('ING')
 
         items = session.top(limit=self.CHUNK_SIZE)
 
@@ -71,7 +72,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                 except Exception as e:
                     logger.exception('Zotero parser failed')
                     continue
-                paper, journal = self.get_or_create_entry(entry)
+                paper, journal = self.add_entry(entry)
 
                 if paper:
                     logger.info(
@@ -101,6 +102,6 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                 break
 
         # update UserLib and Stats
-        user.stats.create_lib_ends_sync(user, count)
-        user.lib.set_lib_idle()
+        user.stats.log_lib_ends_sync(user, count)
+        user.lib.set_state('IDL')
         return count

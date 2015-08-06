@@ -1,10 +1,22 @@
 import abc
-from .models import Paper, Journal, Author, CorpAuthor
-from .forms import PaperForm, JournalForm, AuthorForm, CorpAuthorForm
+from library.models import Paper, Journal, Author, CorpAuthor
+from library.forms import PaperForm, JournalForm, AuthorForm, CorpAuthorForm
 from abc import ABCMeta, abstractmethod
 
 
 class Parser(metaclass=ABCMeta):
+    """Abstract Parser class
+
+    Parser is used to parse entry in journal, paper, authors and corp_author
+    so that it library database can be populated. This abstract class initialize
+    several attribute based on their Model fields.
+
+    Attributes:
+        paper_template: Template for Paper
+        journal_template: Template for Journal
+        author_template: Template for Author
+        corp_author_tempalte: Template for CorpAuthor
+    """
 
     __metaclass__ = abc.ABCMeta
 
@@ -38,6 +50,16 @@ class Parser(metaclass=ABCMeta):
         return NotImplementedError
 
     def parse(self, entry):
+        """Parse entry
+
+        Args:
+            entry (dict): A dictionary of keys/values
+
+        Returns:
+            (dict): A dictionary with keys: 'journal', 'authors', 'paper',
+                'corp_authors' and values as defined by class attributes
+                (*_template)
+        """
         journal = self.parse_journal(entry)
         paper = self.parse_paper(entry)
         authors = self.parse_authors(entry)

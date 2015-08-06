@@ -2,10 +2,11 @@ import re
 from dateutil.parser import parse
 
 from .constants import PUBMED_PT
-from library.parsers import Parser
+from core.parsers import Parser
 
 
 class ParserPubmed(Parser):
+    """Pubmed Parser"""
 
     TEMPLATE_IDS = {'id_doi': r'(.+)\s\[doi\]',
                     'id_pii': r'(.+)\s\[pii\]'}
@@ -142,7 +143,7 @@ class ParserPubmed(Parser):
 
 
 class ParserArxiv(Parser):
-
+    """Arxiv Parser"""
     def parse_authors(self, entry):
         authors = []
 
@@ -203,7 +204,7 @@ class ParserArxiv(Parser):
 
 
 class ParserElsevier(Parser):
-
+    """Elsevier Parser"""
     def parse_authors(self, entry):
         authors = []
 
@@ -271,7 +272,6 @@ class ParserElsevier(Parser):
         paper['abstract'] = entry.get('dc:description', '')
 
         paper['title'] = entry.get('dc:title', '')
-
 
         return paper
 

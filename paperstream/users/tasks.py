@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-@app.task(name='tasks.init_user')
+@app.task()
 def init_user(user_pk, provider_name):
     # chain user library update, and default feed initialization
     chain(update_lib.s(user_pk, provider_name),
@@ -20,7 +20,7 @@ def init_user(user_pk, provider_name):
 
     return user_pk
 
-@app.task(name='tasks.update_lib')
+@app.task()
 def update_lib(user_pk, provider_name):
 
     # get user
@@ -43,7 +43,7 @@ def update_lib(user_pk, provider_name):
 
 # The following task may be moved to feeds.tasks
 
-@app.task(name='tasks.init_default_feed')
+@app.task()
 def init_default_feed(user_pk):
 
     # get user
@@ -53,21 +53,7 @@ def init_default_feed(user_pk):
     user_feed = UserFeed.objects.init_default_userfeed(user)
 
     # update
-    user_feed.update()
-
-    return user_pk
-
-@app.task(name='tasks.update_feed')
-def update_feed(user_pk, feed_name):
-
-    # get user
-    user = User.objects.get(pk=user_pk)
-
-    # get user_feed
-    user_feed = user.feed.get(name='feed_name')
-
-    # update
-    user_feed.update()
+    user_feed.initialize()
 
     return user_pk
 

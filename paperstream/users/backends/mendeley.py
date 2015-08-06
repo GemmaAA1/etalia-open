@@ -102,8 +102,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         not_new_stack_count = 0
 
         # update db state
-        user.stats.create_lib_starts_sync(user)
-        user.lib.set_lib_syncing()
+        user.stats.log_lib_starts_sync(user)
+        user.lib.set_state('ING')
 
         # retrieve list of documents per page
         page = mendeley_session.documents.list(
@@ -120,7 +120,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 except Exception as e:
                     logger.exception('Mendeley parser failed')
                     continue
-                paper, journal = self.get_or_create_entry(entry)
+                paper, journal = self.add_entry(entry)
 
                 if paper:
                     logger.info(
@@ -152,8 +152,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 break
 
         # update UserLib and Stats
-        user.stats.create_lib_ends_sync(user, count)
-        user.lib.set_lib_idle()
+        user.stats.log_lib_ends_sync(user, count)
+        user.lib.set_state('IDL')
         return count
 
 

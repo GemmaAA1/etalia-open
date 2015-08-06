@@ -1,8 +1,10 @@
 import time
+from unittest import skip
 from .base import FunctionalTest
 from django.conf import settings
 from library.models import Journal, Paper
 
+@skip
 class LibraryTest(FunctionalTest):
 
     def test_browse_library_anonymous(self):

@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Affiliation
+from .models import Affiliation, UserSettings
 from .validators import validate_first_name, validate_last_name
+
+from nlp.models import Model
 
 User = get_user_model()
 
@@ -21,11 +23,13 @@ class UserBasicForm(forms.ModelForm):
         'password_mismatch': "The two password fields didn't match.",
     }
 
-    password1 = forms.CharField(label="Password",
+    password1 = forms.CharField(
+        label="Password",
         widget=forms.PasswordInput,
         initial='')
 
-    password2 = forms.CharField(label="Password confirmation",
+    password2 = forms.CharField(
+        label="Password confirmation",
         widget=forms.PasswordInput,
         help_text="Enter the same password as above, for verification.",
         initial='')
@@ -58,6 +62,7 @@ class UserBasicForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'email')
 
 
+
 class UpdateUserBasicForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -76,6 +81,14 @@ class UpdateUserBasicForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name')
+        widgets = {
+            'first_name':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'First Name'}),
+            'last_name':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Last Name'}),
+        }
 
 
 class UserAffiliationForm(forms.ModelForm):
@@ -83,10 +96,40 @@ class UserAffiliationForm(forms.ModelForm):
     class Meta:
         model = Affiliation
         fields = ('department', 'institution', 'city', 'state', 'country')
+        widgets = {
+            'department':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Department'}),
+            'institution':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Institution'}),
+            'city':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'City'}),
+            'state':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'State'}),
+            'country':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Institution'}),
+        }
 
 
-class UserProfileForm(forms.ModelForm):
+class UserSettingsForm(forms.ModelForm):
+
+    # model = forms.ModelChoiceField(queryset=Model.objects.all(),
+    #                                to_field_name='name')
+
+    def __init__(self, *args, **kwargs):
+        super(UserSettingsForm, self).__init__(*args, **kwargs)
+        self.fields['model'].choices = [(mod.pk, mod.name) for mod in Model.objects.all()]
 
     class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email', 'affiliation')
+        model = UserSettings
+        fields = ('model', 'time_lapse', 'scoring_method')
+        widgets = {
+            'model': forms.Select(attrs={'class': 'form-control'}),
+            'time_lapse': forms.Select(attrs={'class': 'form-control'}),
+            'scoring_method': forms.Select(attrs={'class': 'form-control'})
+        }
+

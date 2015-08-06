@@ -1,8 +1,7 @@
 from django.test import TestCase
-from library.models import Paper, Journal, Author, Publisher, AuthorPaper
+from ..models import Paper, Journal, Author, Publisher, AuthorPaper
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from ..constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
 
 class PublisherModelTest(TestCase):
 
@@ -77,10 +76,7 @@ class PaperModelTest(TestCase):
         self.assertIn('PMID: pubmed id', disp_str)
 
 
-
-
 class JournalModelTest(TestCase):
-
 
     def setUp(self):
         Journal.objects.get_or_create(title='Journal X', id_issn='1053-8119')
@@ -102,8 +98,6 @@ class JournalModelTest(TestCase):
             journal = Journal.objects.first()
             journal_same = Journal(title='Journal Y', id_issn=journal.id_issn)
             journal_same.full_clean()
-
-
 
     def test_journals_ordered_by_title(self):
         titles = [journal.title for journal in Journal.objects.all()]

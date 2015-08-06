@@ -6,12 +6,15 @@ from django.db.models import Q
 
 from braces.views import LoginRequiredMixin
 
+from core.mixins import ProfileModalFormsMixin
 from library.models import Paper
 from .models import UserFeed, UserFeedPaper
 
-class home_feed(LoginRequiredMixin, ListView):
+from .tasks import update_feed as async_update_feed
+
+
+class home_feed(LoginRequiredMixin, ProfileModalFormsMixin, ListView):
     model = UserFeedPaper
-    # paginate_by = settings.ITEMS_PER_PAGE
     paginate_by = 10
     template_name = 'feeds/feed.html'
 
@@ -22,6 +25,11 @@ class home_feed(LoginRequiredMixin, ListView):
         return ufp
 
 home = home_feed.as_view()
+
+# @login_required
+def async_update_feed(request, pk):
+    # async_update_feed.apply_async(args=[pk, ], serializer='json')
+    async_update_feed(pk)
 
 
 # @login_required
