@@ -27,6 +27,7 @@ from core.utils import pad_vector, pad_neighbors
 from library.models import Paper, Journal
 from core.constants import TIME_LAPSE_CHOICES
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -76,12 +77,11 @@ class ModelManager(models.Manager):
 
 
 class Model(TimeStampedModel):
-    """
-    Model for a doc2vec type of Natural Language Modeling leveraging gensim
+    """Natural Language Processing Class based on Doc2Vec from Gensim
 
-    Example of use case for training a new model:
-    refer to scripts/build_models/build_model.py
+    To train a new model
     """
+
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
@@ -369,6 +369,18 @@ class Model(TimeStampedModel):
         self.save()
         self.activate()
 
+    def build_lshs(self):
+        LSH.objects.create(model=self, time_lapse=None)
+        # Build time-lapse related LSH
+        for time_lapse, _ in TIME_LAPSE_CHOICES:
+            LSH.objects.create(model=self,
+                               time_lapse=time_lapse)
+
+    def propagate(self):
+        self.save_journal_vec_from_bulk()
+        self.save_paper_vec_from_bulk()
+        self.build_lshs()
+
     def save_journal_vec_from_bulk(self):
         """Store inferred journal vector from training in db
         """
@@ -542,7 +554,7 @@ class PaperVectors(TimeStampedModel):
 
     objects = PaperVectorsManager()
 
-    class meta:
+    class Meta:
         unique_together = ('paper', 'model')
 
     def __str__(self):
@@ -610,7 +622,7 @@ class JournalVectors(TimeStampedModel):
 
     objects = JournalVectorsManager()
 
-    class meta:
+    class Meta:
         unique_together = ('journal', 'model')
 
     def __str__(self):
@@ -627,10 +639,10 @@ class JournalVectors(TimeStampedModel):
 class LSHManager(models.Manager):
 
     def create(self, **kwargs):
-        model = super(LSHManager, self).create(**kwargs)
+        obj = super(LSHManager, self).create(**kwargs)
         # Init lsh
-        model.full_update(**kwargs)
-        return model
+        obj.full_update(**kwargs)
+        return obj
 
     def get(self, **kwargs):
         # print('Warning: Not loading LSH object. Use load() instead')
@@ -691,7 +703,10 @@ class LSH(TimeStampedModel):
     def get_data(self, partial=False):
         """Get and reshape data for training LSH
 
-        partial
+        Args:
+
+        Returns:
+
         """
 
         # size of the model space used for truncation of vector
@@ -735,11 +750,87 @@ class LSH(TimeStampedModel):
 
         return x_data, pv_pks, new_pks
 
-    def update_if_full_lsh(self, pv_pks):
+    def update_if_full_lsh_flag(self, pv_pks):
         # this is a the full LSH
         if not self.time_lapse:
             PaperVectors.objects.filter(pk__in=pv_pks)\
                 .update(is_in_full_lsh=True)
+
+    def _update(self, partial=False, n_estimators=10, n_candidates=50, **kwargs):
+        """Only partial update LSH with new incoming papers (i.e. does not remove
+        old ones, valid only if self.time_lapse=None)
+
+        NB: we can not do partial on time_lapse LSH because paper cannot be removed from
+        training set, only added.
+        """
+
+        # Register status as busy
+        self.set_state('BUS')
+
+        logger.info(
+            'Starting full update of LSH ({pk}/{model_name}/{time_lapse})'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse))
+        t0 = time.time()
+
+        if not partial:         # Init LSH
+            self.lsh = MyLSHForest(n_estimators=n_estimators,
+                                   n_candidates=n_candidates)
+
+        # Get data
+        data, pv_pks, new_pks = self.get_data(partial=partial)
+
+        # Train
+        if partial:
+            self.lsh.partial_fit(data)
+        else:
+            self.lsh.fit(data)
+
+        # Register status as idle
+        self.set_state('IDL')
+
+        # Save
+        self.save()
+
+        # Update PaperVector.is_in_full_lsh
+        self.update_if_full_lsh_flag(pv_pks)
+
+        # Update neighbors
+        if partial:
+            self.update_neighbors(new_pks)
+        else:
+            self.update_neighbors()
+
+        tend = time.time() - t0
+        logger.info(
+            'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse, time=tend))
+
+    def update(self, **kwargs):
+        # Register state as busy
+        self.set_state('BUS')
+
+        if 'partial' in kwargs and kwargs['partial']:
+            if not self.time_lapse:
+                self._update(**kwargs)
+            else:
+                raise ValueError('partial can be true with lsh time_lapse defined')
+        else:
+            if not self.time_lapse:
+                self._update(partial=True, **kwargs)
+            else:
+                self._update(partial=False, **kwargs)
+
+        # Register state as busy
+        self.set_state('IDL')
+
+    def full_update(self, **kwargs):
+        # Register state as busy
+        self.set_state('BUS')
+        self._update(partial=False, **kwargs)
+        # Register state as busy
+        self.set_state('IDL')
 
     def update_neighbors(self, *args):
         # Add Neighbors to PaperNeighbors
@@ -753,9 +844,8 @@ class LSH(TimeStampedModel):
 
     def populate_neighbors(self, paper_pk):
 
-        pv = PaperVectors.objects.get(paper_id=paper_pk,
-                                         model=self.model)
-        vec = pv.vector[:self.model.size]
+        pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
+        vec = pv.get_vector()
 
         pks = self.k_neighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS)
         pks = pks.flatten()
@@ -765,6 +855,18 @@ class LSH(TimeStampedModel):
         pn.set_neighbors(pks)
 
     def k_neighbors(self, vec, **kwargs):
+        """Return k nearest neighbors
+
+        Arguments:
+            vec (np.array or list): An array of size matching the model size
+
+            Optional:
+            n_neighbors (int): number of neighbors
+
+        Returns:
+
+
+        """
 
         if 'n_neighbors' in kwargs:
             n_neighbors = kwargs['n_neighbors']
@@ -781,6 +883,10 @@ class LSH(TimeStampedModel):
                                                      n_neighbors=n_neighbors,
                                                      return_distance=True)
             # convert indices to paper pk
+            print(self.lsh.pks)
+            print(indices)
+            print(self.lsh._fit_X.shape)
+            print(Paper.objects.count())
             for i, index in enumerate(indices):
                 for j, k in enumerate(index):
                     indices[i][j] = self.lsh.pks[k]
@@ -790,119 +896,56 @@ class LSH(TimeStampedModel):
             raise InvalidState('LSH is not Idle. current state is {0}'
                                .format(self.state))
 
-    def full_update(self, n_estimators=10, n_candidates=50, **kwargs):
-        # Register status as busy
-        self.set_state('BUS')
+    def tasks(self, task=None, **kwargs):
+        """Use from tasks.py for calling task while object remains in-memory
 
-        logger.info(
-            'Starting full update of LSH ({pk}/{model_name}/{time_lapse})'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse))
-        t0 = time.time()
+        This is an odd design. This method dispatches tasks that can be run
+        from LSH. It is so because we want to have the lsh object in-memory
+        to avoid over-head of loading from file. Given the Task class of Celery
+        the work-around I found is to define a BIG task that dispatches to
+        smaller tasks. Therefore the instance of the tasks is associated to
+        one single thread/worker and everything is 'fast'
 
-        # Init LSH
-        self.lsh = MyLSHForest(n_estimators=n_estimators,
-                               n_candidates=n_candidates)
-        # Get data
-        data, pv_pks, _ = self.get_data()
+        Args:
+            task (string): A string defining the task. Either 'update',
+                'full_update', 'k_neighbors', 'populate_neighbors'
 
-        # Train
-        self.lsh.fit(data)
+            Optional Kwargs for:
+            'k_neighbors':
+                vec (np.array or list): An array corresponding to vector
+                n_neighbors (int): An int defining the number of neighbors to
+                    search
+            'populate_neighbors':
+                paper_pk (int): The primary key of a Paper
 
-        # Register status as idle
-        self.set_state('IDL')
-
-        # Save
-        self.save()
-
-        # Update PaperVector
-        self.update_if_full_lsh(pv_pks)
-
-        # Update neighbors
-        self.update_neighbors()
-
-        tend = time.time() - t0
-        logger.info(
-            'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse, time=tend))
-
-    def update(self):
-        # Register state as busy
-        self.set_state('BUS')
-
-        if not self.time_lapse:  # Only valid for full LSH
-            self.partial_update()
-        else:
-            self.full_update()
-
-        # Register state as busy
-        self.set_state('IDL')
-
-    def partial_update(self):
-        """Only partial update LSH with new incoming papers (i.e. does not remove
-        old ones, valid only if self.time_lapse=None)
-
-        NB: we can not do partial on time_lapse LSH because paper cannot be removed from
-        training set, only added.
+        Returns:
+            Depends on the task
         """
 
-        # Register status as busy
-        self.set_state('BUS')
+        if not task:
+            raise KeyError('task not defined')
 
-        # Get data
-        data, pv_pks, new_pks = self.get_data(partial=True)
-
-        # Train
-        self.lsh.partial_fit(data)
-
-        # Register status as idle
-        self.set_state('IDL')
-
-        # Save
-        self.save()
-
-        # Update PaperVector.is_in_full_lsh
-        self.update_if_full_lsh(pv_pks)
-
-        # Add Neighbors to PaperNeighbors
-        self.update_neighbors(new_pks)
-
-    def tasks(self, *args, **kwargs):
-        """Use for tasks.py. This is an odd design.
-          method tasks dispatch possible tasks that can be run from LSH
-          It is so because we want to have the lsh object instantiate only once
-          on the worker to avoid overhead.
-          If multiple task were defined instead, this will required having
-          an instance of the LSH object loaded per task
-        """
-
-        try:
-            task = kwargs['task']
-        except KeyError:
-            raise KeyError('key task must defined')
-
-        # full update of LSH
+        # update of LSH (partial or not)
         if task == 'update':
-            self.full_update()
+            self.update()
             return 0
-        # partial update of LSH (use only on full database LSH)
-        elif task == 'partial_update':
-            self.partial_update()
+        # full update of LSH
+        elif task == 'full_update':
+            self.full_update()
             return 0
         # return pk of k nearest neighbors of kwargs['vec']
-        elif task == 'kneighbors':
+        elif task == 'k_neighbors':
             try:
                 vec = kwargs['vec']
-                n_neighbors = kwargs['n_neighbors']
+                k = kwargs['k']
             except KeyError as e:
                 raise e
-            pks = self.k_neighbors(vec, n_neighbors)
+            pks = self.k_neighbors(vec, n_neighbors=k)
             return pks
         # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':
             try:
-                paper_pk = args[0]
+                paper_pk = kwargs['paper_pk']
             except KeyError as e:
                 raise e
 

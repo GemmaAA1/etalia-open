@@ -53,6 +53,8 @@ class NLPDataExtendedTestCase(NLPDataTestCase):
 
     def setUp(self):
         super(NLPDataExtendedTestCase, self).setUp()
+        self.model.dump(self.papers.all())
+        self.model.build_vocab_and_train()
         self.pv = PaperVectors.objects.create(model=self.model,
                                               paper=self.paper)
         self.pv2 = PaperVectors.objects.create(model=self.model,

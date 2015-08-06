@@ -23,7 +23,7 @@ from library.models import Journal, AuthorPaper, Paper, Author, CorpAuthor, \
 from core.models import TimeStampedModel
 from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
-from nlp.tasks import all_embeddings_and_neighbors
+from nlp.tasks import embed_all_models_and_find_neighbors
 
 from library.forms import AuthorForm, PaperFormFillBlanks
 
@@ -226,7 +226,7 @@ class Consumer(TimeStampedModel):
                     paper_added += 1
 
                     # Embed paper and get closest neighbors
-                    all_embeddings_and_neighbors(paper.pk)
+                    embed_all_models_and_find_neighbors(paper.pk)
 
             # Update consumer_journal
             cj = self.consumerjournal_set.get(journal=journal)

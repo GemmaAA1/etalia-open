@@ -1,13 +1,16 @@
+import numpy as np
 from django.test import TestCase
-
+from django.utils import timezone
+from config.celery import celery_app as app
 from core.constants import TIME_LAPSE_CHOICES
+from library.models import Paper
 
-from ..tasks import EmbedPaperTask, LSHTask, all_embeddings_and_neighbors, \
-    all_embedings_paper
+from ..tasks import EmbedPaperTask, LSHTask, embed_all_models_and_find_neighbors, \
+    embed_all_models, register_all_models_and_lshs_tasks
 from ..models import Model, LSH
-from .base import NLPDataTestCase, NLPDataExtendedTestCase
+from .base import NLPDataExtendedTestCase
 
-class EmbedPaperTaskTest(TestCase):
+class EmbedPaperTaskClassTest(TestCase):
 
     def setUp(self):
         self.model = Model.objects.create(name='test')
@@ -43,10 +46,10 @@ class EmbedPaperTaskTest(TestCase):
         self.assertNotEqual(self.model.size, ept.model.size)
 
 
-class LSHTaskTest(NLPDataExtendedTestCase):
+class LSHTaskClassTest(NLPDataExtendedTestCase):
 
     def setUp(self):
-        super(LSHTaskTest, self).setUp()
+        super(LSHTaskClassTest, self).setUp()
         self.lsh = LSH.objects.create(model=self.model,
                                       time_lapse=TIME_LAPSE_CHOICES[0][0])
 
@@ -77,3 +80,106 @@ class LSHTaskTest(NLPDataExtendedTestCase):
         with self.assertRaises(ValueError):
             LSHTask(model_name='test', time_lapse=12312143431)
 
+    def test_lsh_task_reload_lsh_if_modified(self):
+        lsht = LSHTask(model_name=self.model.name,
+               time_lapse=TIME_LAPSE_CHOICES[0][0])
+        # load model
+        state0 = lsht.lsh.state
+        # modified lsh
+        self.lsh.set_state('BUS')
+        # test reload works
+        self.assertEqual(self.lsh.state, lsht.lsh.state)
+        # Test Not reload if model modification not saved
+        self.lsh.state = 'IDL'
+        self.assertNotEqual(self.lsh.state, lsht.lsh.state)
+        # restore lsh state to idle
+        self.lsh.set_state('IDL')
+
+
+class EmbedTaskTest(NLPDataExtendedTestCase):
+
+    def setUp(self):
+        super(EmbedTaskTest, self).setUp()
+        self.new_paper = Paper.objects.create(
+            title='A New paper',
+            abstract='Hi. Hi, <p>hi</p> {mu}\n',
+            date_ep=timezone.now().date())
+        # train new model
+        self.model2 = Model.objects.create(name='test2', size=32)
+        self.model2.dump(self.papers)
+        self.model2.build_vocab_and_train()
+        register_all_models_and_lshs_tasks()
+
+    def test_can_run_embed_paper_task(self):
+        embed_task = app.tasks['nlp.tasks.embed_paper_{model_name}'
+            .format(model_name=self.model.name)]
+        self.assertIsNone(self.new_paper.vectors.first())
+        rst = embed_task.delay(self.new_paper.pk)
+        self.assertTrue(rst.successful())
+        self.assertEqual(self.new_paper.vectors.count(), 1)
+        self.assertIsNotNone(self.new_paper.vectors.first().get_vector())
+
+    def test_can_run_all_embeddings_paper(self):
+        embed_all_models(self.new_paper.pk)
+        print(Model.objects.all().values_list('name', flat=True))
+        self.assertEqual(self.new_paper.vectors.count(), 2)
+
+    def test_vectors_have_correct_size(self):
+        embed_all_models(self.new_paper.pk)
+        vector_len = set([len(vec.get_vector())
+                          for vec in self.new_paper.vectors.all()])
+        size_len = set([model.size for model in Model.objects.all()])
+        self.assertEqual(vector_len, size_len)
+
+
+class LSHTaskTest(NLPDataExtendedTestCase):
+
+    def setUp(self):
+        super(LSHTaskTest, self).setUp()
+        self.new_paper = Paper.objects.create(
+            title='A New paper',
+            abstract='Hi. Hi, <p>hi</p> {mu}\n',
+            date_ep=timezone.now().date())
+        self.model.build_lshs()
+        # train new model
+        self.model2 = Model.objects.create(name='test2', size=32)
+        self.model2.dump(self.papers.all())
+        self.model2.build_vocab_and_train()
+        self.model2.propagate()
+        register_all_models_and_lshs_tasks()
+
+    def test_update_task(self):
+        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_{time_lapse}'.format(
+            model_name=self.model.name, time_lapse=TIME_LAPSE_CHOICES[0][0])]
+        res = lsh_task.delay(task='update')
+        self.assertTrue(res.successful())
+
+    def test_update_partial_task(self):
+        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
+            model_name=self.model.name)]
+        res = lsh_task.delay(task='update')
+        self.assertTrue(res.successful())
+
+    def test_full_update_task(self):
+        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
+            model_name=self.model.name)]
+        res = lsh_task.delay(task='full_update')
+        self.assertTrue(res.successful())
+
+    def test_populate_neighbors_task(self):
+        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
+            model_name=self.model.name)]
+        res = lsh_task.delay(task='populate_neighbors', paper_pk=self.paper.pk)
+        self.assertTrue(res.successful())
+
+    def test_k_neighbors_task(self):
+        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
+            model_name=self.model.name)]
+        vec = np.random.randn(self.model.size)
+        res = lsh_task.delay(task='k_neighbors', vec=vec, k=4)
+        self.assertTrue(res.successful())
+
+    # def test_embed_all_models_and_find_neighbors(self):
+    #     embed_all_models_and_find_neighbors(self.new_paper.pk)
+    #     self.assertEqual(self.new_paper.vectors.count(), 2)
+    #     self.assertEqual(self.new_paper.neighbors.count(), 2)

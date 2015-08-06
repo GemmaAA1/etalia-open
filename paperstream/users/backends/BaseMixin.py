@@ -6,7 +6,7 @@ from library.forms import PaperFormFillBlanks
 
 from ..models import UserLibPaper, UserLibJournal, UserStats
 
-from nlp.tasks import all_embeddings_and_neighbors
+from nlp.tasks import embed_all_models_and_find_neighbors
 
 class BackendLibMixin(object):
 
@@ -81,7 +81,7 @@ class BackendLibMixin(object):
         paper, journal = self.get_or_create_entry(entry)
 
         if paper:  # Embed paper and get closest neighbors
-            all_embeddings_and_neighbors(paper.pk)
+            embed_all_models_and_find_neighbors(paper.pk)
 
         return paper, journal
 

@@ -179,6 +179,11 @@ class TestModelSavingStack(NLPDataTestCase):
         pv = PaperVectors.objects.get(paper=self.paper, model=self.model)
         self.assertIsNotNone(pv.vector)
 
+    def test_papervector_get_vector_length_match_model_size(self):
+        self.model.infer_paper(paper_pk=self.paper.pk)
+        pv = PaperVectors.objects.get(paper=self.paper, model=self.model)
+        self.assertEqual(len(pv.get_vector()), self.model.size)
+
 
 class TextFieldTest(NLPTestCase):
 
@@ -211,6 +216,12 @@ class PaperVectorTest(NLPDataTestCase):
 
     def test_papervector_can_be_created_if_model_active(self):
         PaperVectors.objects.create(paper=self.paper, model=self.model)
+
+    def test_papervector_must_be_unique_together_model_paper_pk(self):
+        PaperVectors.objects.create(paper=self.paper, model=self.model)
+        pv = PaperVectors(paper=self.paper, model=self.model)
+        with self.assertRaises(ValidationError):
+            pv.full_clean()
 
     def test_papervector_can_get_and_save_vector(self):
         pv = PaperVectors.objects.create(paper=self.paper, model=self.model)
@@ -248,6 +259,12 @@ class JournalVectorTest(NLPDataTestCase):
                           np.array(jv2.get_vector()))
 
         self.assertAlmostEqual(vec_diff, 0)
+
+    def test_journalvector_must_be_unique_together_model_paper_pk(self):
+        JournalVectors.objects.create(journal=self.journal, model=self.model)
+        jv = JournalVectors(journal=self.journal, model=self.model)
+        with self.assertRaises(ValidationError):
+            jv.full_clean()
 
 
 class LSHModelTest(NLPDataTestCase):
@@ -330,7 +347,7 @@ class LSHModelTest(NLPDataTestCase):
         time_lapse = None
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         x_data, pv_pks, new_pks = lsh.get_data()
-        lsh.update_if_full_lsh(pv_pks)
+        lsh.update_if_full_lsh_flag(pv_pks)
         pv = PaperVectors.objects.get(pk=pv_pks[0])
         self.assertTrue(pv.is_in_full_lsh)
 
@@ -338,20 +355,31 @@ class LSHModelTest(NLPDataTestCase):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         x_data, pv_pks, new_pks = lsh.get_data()
-        lsh.update_if_full_lsh(pv_pks)
+        lsh.update_if_full_lsh_flag(pv_pks)
         print(pv_pks)
         pv = PaperVectors.objects.get(pk=pv_pks[0])
         self.assertFalse(pv.is_in_full_lsh)
+
+    def test_lsh_can_run_update(self):
+        time_lapse = TIME_LAPSE_CHOICES[0][0]
+        lsh = LSH(model=self.model, time_lapse=time_lapse)
+        lsh.update()
+
+    def test_lsh_can_run_partial_update(self):
+        time_lapse = None
+        lsh = LSH(model=self.model, time_lapse=time_lapse)
+        lsh.update(partial=True)
+
+    def test_lsh_canNOT_run_partial_update_on_lsh_with_time_lapse(self):
+        time_lapse = TIME_LAPSE_CHOICES[0][0]
+        lsh = LSH(model=self.model, time_lapse=time_lapse)
+        with self.assertRaises(ValueError):
+            lsh.update(partial=True)
 
     def test_lsh_can_run_full_update(self):
         time_lapse = TIME_LAPSE_CHOICES[0][0]
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         lsh.full_update()
-
-    def test_lsh_can_run_partial_update(self):
-        time_lapse = None
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.partial_update()
 
     def test_lsh_can_be_created(self):
         LSH.objects.create(model=self.model,
@@ -395,3 +423,20 @@ class PaperNeighborsTest(NLPDataExtendedTestCase):
         pn2 = PaperNeighbors.objects.get(pk=pn.id)
         self.assertTrue(pn2.get_neighbors() == pn.get_neighbors())
 
+
+class LSHModelTest(NLPDataExtendedTestCase):
+
+    def setUp(self):
+        super(LSHModelTest, self).setUp()
+
+    def test_can_build_all_lshs(self):
+        self.model.build_lshs()
+
+    def test_can_propagate(self):
+        self.model.propagate()
+
+    def test_can_build_full_stack(self):
+        model2 = Model.objects.create(name='test2', size=32)
+        model2.dump(self.papers.all())
+        model2.build_vocab_and_train()
+        model2.propagate()

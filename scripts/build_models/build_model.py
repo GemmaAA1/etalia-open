@@ -18,15 +18,8 @@ def build(model_name):
     papers = Paper.objects.all()
     model.dump(papers)
     model.build_vocab_and_train()
-    # Populate library
-    model.save_journal_vec_from_bulk()
-    model.save_paper_vec_from_bulk()
-    # Build full LSH
-    LSH.objects.create(model=model, time_lapse=None)
-    # Build time-lapse related LSH
-    for (time_lapse, _) in TIME_LAPSE_CHOICES:
-        LSH.objects.create(model=model,
-                           time_lapse=time_lapse)
+    # Propagate to LSH, journalvector, papervector
+    model.propagate()
 
 
 def check_unique_name(models):
