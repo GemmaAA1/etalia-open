@@ -680,6 +680,9 @@ class LSH(TimeStampedModel):
     class Meta:
         unique_together = ('model', 'time_lapse')
 
+    def __str__(self):
+        return '{0}/{1}/{2}'.format(self.id, self.model.name, self.time_lapse)
+
     def save(self, *args, **kwargs):
         if not self.state == 'BUS':
             if not os.path.exists(settings.NLP_LSH_PATH):
