@@ -30,8 +30,9 @@ from library.forms import AuthorForm, PaperFormFillBlanks
 logger = logging.getLogger(__name__)
 
 class Consumer(TimeStampedModel):
-    """Kind of abstract Consumer class (kind of only because I cannot make
-    it abstract with the manytomany field
+    """ Abstract Consumer Table
+
+    Consumers consumes papers from the web and populate library
     """
     #TODO: How to make this class abstract? See comment below
 
@@ -58,10 +59,7 @@ class Consumer(TimeStampedModel):
     #     abstract = True
 
     def add_journal(self, journal):
-        """Link journal to consumer
-        :param: journal (Journal)
-        :return: (ConsumerJournal)
-        """
+        """Add journal to consumer"""
         cj, new = ConsumerJournal.objects.get_or_create(
             journal=journal,
             consumer=self,
@@ -69,13 +67,12 @@ class Consumer(TimeStampedModel):
         return cj
 
     def add_journals(self, journals):
+        """Add journals to consumer"""
         for journal in journals:
             self.add_journal(journal)
 
     def activate_journal(self, journal):
-        """Activate row in ConsumerJournal table is feasible
-        :param: journal (Journal): journal instance
-        """
+        """Activate journal if possible"""
         try:
             self.consumerjournal_set.get(journal=journal).activate()
         except Journal.DoesNotExist:
@@ -84,9 +81,7 @@ class Consumer(TimeStampedModel):
             raise ValueError(msg)
 
     def deactivate_journal(self, journal):
-        """Deactivate row in ConsumerJournal table is feasible
-        :param: journal (Journal): journal instance
-        """
+        """Deactivate journal"""
         try:
             self.consumerjournal_set.get(journal=journal).deactivate()
         except Journal.DoesNotExist:
@@ -95,7 +90,7 @@ class Consumer(TimeStampedModel):
             raise ValueError(msg)
 
     def deactivate_all(self):
-        """Deactivate all journals in ConsumerJournal table when feasible"""
+        """Deactivate all journals when possible"""
         errors = []
         for journal in self.journals.all():
             try:
@@ -105,7 +100,7 @@ class Consumer(TimeStampedModel):
                 pass
 
     def activate_all(self):
-        """Deactivate all journals in ConsumerJournal table when feasible"""
+        """Activate all journals when possible"""
         errors = []
         for journal in self.journals.all():
             try:
@@ -115,18 +110,24 @@ class Consumer(TimeStampedModel):
                 pass
 
     def reset_last_date_cons(self, journal):
+        """Reset last date of consumption to default"""
         q = self.consumerjournal_set.filter(journal=journal)
-        q.update(last_date_cons=
-                 timezone.now() - timezone.timedelta(days=self.day0))
+        q.update(last_date_cons=timezone.now() -
+                                timezone.timedelta(days=self.day0))
 
     def reset_all_last_date_cons(self):
+        """Reset all last date of consumption to default"""
         ConsumerJournal.objects.filter(consumer=self).update(
             last_date_cons=timezone.now() - timezone.timedelta(days=self.day0))
 
     def journal_is_valid(self, journal):
         """ Check if journal is valid
-        :param journal (Journal): journal instance
-        :return: (Bool)
+
+        Args:
+            journal: Journal instance
+
+        Returns:
+            (Bool): True if valid
         """
         # exist in ConsumerJournal
         try:
@@ -142,12 +143,28 @@ class Consumer(TimeStampedModel):
     def consume_journal(self, journal):
         """ Consume Consumer API and update stats
 
-        :param: journal (Journal): journal instance
-        :return: list of entries
+        Args:
+            journal: Journal instance
+
+        Returns:
+            (list): List of consumed entries
         """
         raise NotImplemented
 
     def add_entry(self, entry, journal):
+        """Add entry to database library
+
+        Entry is a dictionary structure parsed by consumer Parser.
+        If corresponding paper is already in library (based on paper ids), the
+        entry tried to consolidate the library paper
+
+        Args:
+            entry (dict): Entry to be added coming from consumer parser
+            journal: Journal instance
+
+        Returns:
+            (Paper instance): Paper instance created
+        """
         try:
             # minimum to be a paper: have a title and an author
             if entry['paper'].get('title', '') and entry['authors']:
@@ -204,10 +221,16 @@ class Consumer(TimeStampedModel):
 
     @app.task(filter=task_method)
     def populate_journal(self, journal_pk):
-        """Check journal validity, consume api, save stats, parse entries,
-        save records to DB
+        """Consume data from journal
 
-        :param: journal_pk (Journal): pk of journal instance
+        Check journal validity, consume api, save stats, parse entries,
+        and save records to database.
+
+        Args:
+            journal_pk (Journal): pk of journal instance
+
+        Returns:
+            (int): Number of papers added
         """
 
         journal = Journal.objects.get(pk=journal_pk)
@@ -236,19 +259,21 @@ class Consumer(TimeStampedModel):
         return paper_added
 
     def run_once_per_period(self):
-        """
-        This works as follows: run_once_per_period is designed to run
-        periodically by a scheduler. To avoid consuming a bench of not
-        very active journals (journals that published only every 3 months or
-        so and there are a lot), we use a dynamic counter (<base_coundown_period>
-        in [settings.CONS_MIN_DELAY, settings.CONS_MAX_DELAY]) that is updated
-        at evry new consumption (increase if no paper fetched, decrease if
-        paper fetched). After each consumption <coundown_period> is reset to
-        <base_countdown_period>. Each new call to run_once_per_period decreases
-        <coundown_period> by 1 and queue the ConsumerJournal instance for
-        consumption is <countdown_period> < 1.
+        """Run Consumer: Consumes active Journal associated with consumer.
 
-        :return:
+        It works as follows: run_once_per_period beats periodically (every
+        <period>). To avoid consuming a bench of not very active journals, time
+        between 2 consumptions is dynamically adapted per journal.
+
+        <base_countdown_period> defined the period between two consumptions
+        (in <period> unit).It take values in range [settings.CONS_MIN_DELAY,
+        settings.CONS_MAX_DELAY].
+        <countdown_period> is init to <base_countdown_period> after journal
+        has been consumed. It is decreased by 1 at each run_once_per_period call
+        journal is queued for consumption if <countdown_period> = 1
+
+        After consumption, <base_counter_period> is increased by 1 if no paper
+        was fetched, decreased by 1 if papers were fetched.
         """
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,
@@ -275,8 +300,7 @@ class Consumer(TimeStampedModel):
 
 
 class ConsumerPubmed(Consumer):
-    """Pubmed consumer subclass
-    """
+    """Pubmed Consumer"""
 
     def __init__(self, *args, **kwargs):
         super(ConsumerPubmed, self).__init__(*args, **kwargs)
@@ -295,11 +319,7 @@ class ConsumerPubmed(Consumer):
         return False
 
     def consume_journal(self, journal):
-        """Consumes Pubmed API for journal
-
-        :param journal (Journal):
-        :return: (list) of entry
-        """
+        """Consumes Pubmed API for journal"""
 
         entries = []
         ok = True
@@ -368,6 +388,7 @@ class ConsumerPubmed(Consumer):
 
 
 class ConsumerElsevier(Consumer):
+    """Pubmed Consumer"""
 
     parser = ParserElsevier()
 
@@ -389,7 +410,7 @@ class ConsumerElsevier(Consumer):
         return False
 
     def consume_journal(self, journal):
-        # TODO: Volume is not fetched (
+        # TODO: Volume is not fetched
         """Consumes Elsevier API for journal
 
         ELSEVIER is a pain. I cannot make their API sorts the results by date
@@ -473,7 +494,7 @@ class ConsumerElsevier(Consumer):
 
 
 class ConsumerArxiv(Consumer):
-
+    """Arxiv Consumer"""
     def __init__(self, *args, **kwargs):
         super(ConsumerArxiv, self).__init__(*args, **kwargs)
         self.type = 'ARX'
@@ -490,7 +511,7 @@ class ConsumerArxiv(Consumer):
         return False
 
     def consume_journal(self, journal):
-
+        """Consume Arxiv 'journal'"""
         entries = []
         ok = True
 
@@ -549,8 +570,8 @@ class ConsumerArxiv(Consumer):
 
 
 class ConsumerJournal(models.Model):
+    """Table for Consumer-Journal relationship"""
 
-    #
     STATUS = Choices('inactive', 'idle', 'in_queue', 'consuming', 'error')
 
     # journal
@@ -605,9 +626,10 @@ class ConsumerJournal(models.Model):
     def update_stats(self, success, n_fet, n_rec):
         """Update attributes and ConsumerJournalStats
 
-        :param success (bool):
-        :param n_ret (int): number of papers fetched from API
-        :param n_rec (int): number of papers recorded in db
+        Args:
+            success (bool): True if comsumption was a success
+            n_ret (int): number of papers fetched from API
+            n_rec (int): number of papers recorded in db
         """
         if success:
             self.status = 'idle'
@@ -644,7 +666,7 @@ class ConsumerJournal(models.Model):
 
 
 class ConsumerJournalStat(models.Model):
-
+    """Table for ConsumerJournal stats"""
     consumer_journal = models.ForeignKey(ConsumerJournal, related_name='stats')
 
     # date of consumption
