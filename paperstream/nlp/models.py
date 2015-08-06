@@ -82,7 +82,6 @@ class Model(TimeStampedModel):
     To train a new model
     """
 
-
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
 
@@ -807,9 +806,10 @@ class LSH(TimeStampedModel):
         if pv_pks:      # if data
 
             logger.info(
-            'Updating LSH ({pk}/{model_name}/{time_lapse}) - fitting...'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse))
+                'Updating LSH ({pk}/{model_name}/{time_lapse}) - fitting...'
+                    .format(pk=self.id,
+                            model_name=self.model.name,
+                            time_lapse=self.time_lapse))
 
             if partial:
                 self.lsh.partial_fit(data)
@@ -850,7 +850,8 @@ class LSH(TimeStampedModel):
             if self.time_lapse < 0:
                 self._update(**kwargs)
             else:
-                raise ValueError('partial can be true with lsh time_lapse defined')
+                raise ValueError('partial can be true with lsh time_lapse '
+                                 'defined')
         else:
             if self.time_lapse < 0:
                 self._update(partial=True, **kwargs)
@@ -886,10 +887,12 @@ class LSH(TimeStampedModel):
 
             if not count % np.ceil(len(pks)/10):
                 logger.info(
-                'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating neighbors ({perc}%)...'
-                    .format(pk=self.id, model_name=self.model.name,
-                            time_lapse=self.time_lapse,
-                            perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
+                    'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating '
+                    'neighbors ({perc:%d}%)...'.format(
+                        pk=self.id,
+                        model_name=self.model.name,
+                        time_lapse=self.time_lapse,
+                        perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
 
             self.populate_neighbors(pk)
 

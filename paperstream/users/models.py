@@ -16,8 +16,9 @@ from core.models import TimeStampedModel
 
 
 class Affiliation(TimeStampedModel):
-    """Affiliations
-    """
+    """Table for Affiliations"""
+    # TODO: Implement prepopulate table
+
     department = models.CharField(max_length=200, blank=True, default='')
 
     institution = models.CharField(max_length=200, blank=True, default='')
@@ -60,8 +61,8 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
 class User(AbstractBaseUser, PermissionsMixin):
+    """Table - PaperStream User"""
 
     # completely useless but required by python-social-auth
     username = models.CharField(_('username (UNUSED)'), max_length=255,
@@ -132,7 +133,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class UserLib(TimeStampedModel):
-    """Library data of user"""
+    """Table - User Library"""
 
     user = models.OneToOneField(User, primary_key=True, related_name='lib')
 
@@ -163,8 +164,8 @@ class UserLib(TimeStampedModel):
 
 
 class UserLibPaper(TimeStampedModel):
-    """Intermediate model to user - paper
-    """
+    """Table - User/Paper relationship"""
+
     userlib = models.ForeignKey(UserLib)
 
     paper = models.ForeignKey(Paper)
@@ -196,8 +197,8 @@ class UserLibJournalManager(models.Manager):
         return obj
 
 class UserLibJournal(TimeStampedModel):
-    """Intermediate model to user - journal
-    """
+    """Table - User/Journal relationship"""
+
     userlib = models.ForeignKey(UserLib)
 
     journal = models.ForeignKey(Journal)
@@ -269,8 +270,8 @@ class UserStatsManager(models.Manager):
         return stats
 
 class UserStats(models.Model):
-    """Trace of user library/feed activity
-    """
+    """Table - Log of UserLib and Feed activity"""
+
     user = models.ForeignKey(User, related_name='stats')
 
     state = models.CharField(max_length=3,
@@ -303,6 +304,7 @@ class UserSettingsManager(models.Manager):
 
 
 class UserSettings(TimeStampedModel):
+    """Table - User Settings"""
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=True,
                                 related_name='settings')
