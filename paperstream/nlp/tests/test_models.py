@@ -322,6 +322,17 @@ class LSHModelTest(NLPDataTestCase):
         lsh2 = LSH.objects.load(model=self.model, time_lapse=time_lapse)
         self.assertTrue(lsh, lsh2)
 
+    def test_lsh_can_be_deleted(self):
+        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+        lsh = LSH(model=self.model, time_lapse=time_lapse)
+        lsh.save()
+        save_path = os.path.join(settings.NLP_LSH_PATH,
+                                 '{model_name}_{time_lapse}.lsh'
+                                 .format(model_name=lsh.model.name,
+                                         time_lapse=lsh.time_lapse))
+        lsh.delete()
+        self.assertFalse(os.path.isfile(save_path))
+
     def test_lsh_can_change_state(self):
         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
         lsh = LSH(model=self.model, time_lapse=time_lapse)
