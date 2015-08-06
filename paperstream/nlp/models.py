@@ -876,11 +876,6 @@ class LSH(TimeStampedModel):
             args: list or query set of paper primary keys to update
         """
 
-        logger.info(
-            'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating neighbors (0%)...'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse))
-
         # Add Neighbors to PaperNeighbors
         if not args:  # populate all neighbors associated with LSH
             pks = self.lsh.pks
@@ -889,12 +884,12 @@ class LSH(TimeStampedModel):
 
         for count, pk in enumerate(pks):
 
-            if count % int(len(pks)/10):
+            if not count % np.ceil(len(pks)/10):
                 logger.info(
                 'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating neighbors ({perc}%)...'
                     .format(pk=self.id, model_name=self.model.name,
                             time_lapse=self.time_lapse,
-                            perc=int(count / int(len(pks)/10)) * 10))
+                            perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
 
             self.populate_neighbors(pk)
 
