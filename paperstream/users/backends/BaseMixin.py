@@ -1,10 +1,10 @@
 from django.db.models import Q
-from django.utils import timezone
+
 from library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
     CorpAuthorPaper
 from library.forms import PaperFormFillBlanks
 
-from ..models import UserLibPaper, UserLibJournal, UserStats
+from ..models import UserLibPaper, UserLibJournal
 
 from nlp.tasks import embed_all_models_and_find_neighbors
 

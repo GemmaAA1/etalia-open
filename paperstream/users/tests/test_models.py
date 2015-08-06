@@ -133,6 +133,34 @@ class UserLibTest(LibDataTestCase):
         self.assertTrue(ul.papers.count(), 2)
 
 
+class UserLibJournalTest(LibDataTestCase):
+
+    def setUp(self):
+        super(UserLibJournalTest, self).setUp()
+        self.user = User(email='test@test.com')
+        self.user.save()
+        self.userlib = UserLib.objects.create(user=self.user)
+
+    def test_userlibjournal_can_be_created(self):
+        UserLibJournal.objects.create(userlib=self.userlib,
+                                      journal=self.journal)
+
+    def test_userlibjournal_canNOT_have_same_journal_and_userlib(self):
+        UserLibJournal.objects.create(userlib=self.userlib,
+                                      journal=self.journal)
+        ulj = UserLibJournal(userlib=self.userlib, journal=self.journal)
+        with self.assertRaises(ValidationError):
+            ulj.full_clean()
+
+    def test_update_paper_in_journal(self):
+        ulj = UserLibJournal.objects.create(userlib=self.userlib,
+                                            journal=self.journal)
+        self.assertTrue(ulj.full_clean, 0)
+        UserLibPaper.objects.create(userlib=self.userlib, paper=self.paper3)
+        ulj.update_papers_in_journal()
+        self.assertTrue(ulj.full_clean, 1)
+
+
 class UserStatsModelTest(TestCase):
 
     def setUp(self):

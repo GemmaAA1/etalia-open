@@ -893,7 +893,7 @@ class LSH(TimeStampedModel):
             if not count % np.ceil(len(pks)/10):
                 logger.info(
                     'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating '
-                    'neighbors ({perc:%d}%)...'.format(
+                    'neighbors ({perc:.0f}%)...'.format(
                         pk=self.id,
                         model_name=self.model.name,
                         time_lapse=self.time_lapse,

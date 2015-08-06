@@ -59,8 +59,8 @@ class UserBasicForm(forms.ModelForm):
 
     class Meta:
         model = User
-        # fields = ('first_name', 'last_name', 'email')
-        fields = ('full_name', 'email')
+        fields = ('first_name', 'last_name', 'email')
+
 
 
 class UpdateUserBasicForm(forms.ModelForm):
