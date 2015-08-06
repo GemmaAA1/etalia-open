@@ -721,6 +721,11 @@ class LSH(TimeStampedModel):
 
         """
 
+        logger.info(
+            'Updating LSH ({pk}/{model_name}/{time_lapse}) - getting data...'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse))
+
         # size of the model space used for truncation of vector
         vec_size = self.model.size
 
@@ -786,7 +791,7 @@ class LSH(TimeStampedModel):
         self.set_state('BUS')
 
         logger.info(
-            'Starting full update of LSH ({pk}/{model_name}/{time_lapse})'
+            'Updating LSH ({pk}/{model_name}/{time_lapse}) - starting...'
                 .format(pk=self.id, model_name=self.model.name,
                         time_lapse=self.time_lapse))
         t0 = time.time()
@@ -800,6 +805,12 @@ class LSH(TimeStampedModel):
 
         # Train
         if pv_pks:      # if data
+
+            logger.info(
+            'Updating LSH ({pk}/{model_name}/{time_lapse}) - fitting...'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse))
+
             if partial:
                 self.lsh.partial_fit(data)
             else:
@@ -864,13 +875,27 @@ class LSH(TimeStampedModel):
             Optional:
             args: list or query set of paper primary keys to update
         """
+
+        logger.info(
+            'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating neighbors (0%)...'
+                .format(pk=self.id, model_name=self.model.name,
+                        time_lapse=self.time_lapse))
+
         # Add Neighbors to PaperNeighbors
         if not args:  # populate all neighbors associated with LSH
             pks = self.lsh.pks
         else:
             pks = args[0]
 
-        for pk in pks:
+        for count, pk in enumerate(pks):
+
+            if count % int(len(pks)/10):
+                logger.info(
+                'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating neighbors ({perc}%)...'
+                    .format(pk=self.id, model_name=self.model.name,
+                            time_lapse=self.time_lapse,
+                            perc=int(count / int(len(pks)/10)) * 10))
+
             self.populate_neighbors(pk)
 
     def populate_neighbors(self, paper_pk):
