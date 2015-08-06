@@ -370,6 +370,7 @@ class Model(TimeStampedModel):
         self.activate()
 
     def build_lshs(self):
+        LSH.objects.filter(model=self).delete()
         # Build time-lapse related LSH
         for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
             LSH.objects.create(model=self,
@@ -693,6 +694,17 @@ class LSH(TimeStampedModel):
         else:
             raise InvalidState('LSH state is {0}'.format(self.state))
 
+    def delete(self, *args, **kwargs):
+        try:
+            os.remove(
+                os.path.join(settings.NLP_LSH_PATH,
+                             '{model_name}_{time_lapse}.lsh'.format(
+                                model_name=self.model.name,
+                                time_lapse=self.time_lapse)))
+        except FileNotFoundError:
+            pass
+        super(LSH, self).delete(*args, **kwargs)
+
     def save_db_only(self, *args, **kwargs):
         super(LSH, self).save(*args, **kwargs)
 
@@ -902,10 +914,6 @@ class LSH(TimeStampedModel):
                                                      n_neighbors=n_neighbors,
                                                      return_distance=True)
             # convert indices to paper pk
-            print(self.lsh.pks)
-            print(indices)
-            print(self.lsh._fit_X.shape)
-            print(Paper.objects.count())
             for i, index in enumerate(indices):
                 for j, k in enumerate(index):
                     indices[i][j] = self.lsh.pks[k]
