@@ -60,7 +60,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         # update db states
         user.stats.log_lib_starts_sync(user)
-        user.lib.set_state('SYN')
+        user.lib.set_state('ING')
 
         items = session.top(limit=self.CHUNK_SIZE)
 
