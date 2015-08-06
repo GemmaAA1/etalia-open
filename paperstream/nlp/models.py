@@ -663,8 +663,7 @@ class LSHManager(models.Manager):
 
 
 class LSH(TimeStampedModel):
-    """Local Sensitive Hashing to retrieve approximate k-neighbors
-    """
+    """Local Sensitive Hashing to retrieve approximate k-neighbors"""
 
     model = models.ForeignKey(Model, related_name='lsh')
 
@@ -715,8 +714,12 @@ class LSH(TimeStampedModel):
         """Get and reshape data for training LSH
 
         Args:
+            partial (bool): If true, perform partial fit of LSH (default=False)
 
         Returns:
+            (np.array): 2D array (sample x vector size) of paper vector
+            (list): List of PaperVectos primary keys
+            (list): List of corresponding Paper primary keys
 
         """
 
@@ -750,7 +753,7 @@ class LSH(TimeStampedModel):
 
         # Reshape data
         pv_pks = []
-        new_pks = []  # use for partial update
+        new_pks = []    # use for partial update
         x_data = np.zeros((data.count(), vec_size))
         for i, dat in enumerate(data):
             # store PaperVector pk
@@ -767,6 +770,7 @@ class LSH(TimeStampedModel):
         return x_data, pv_pks, new_pks
 
     def update_if_full_lsh_flag(self, pv_pks):
+        """Update is_in_full_lsh flag of PaperVectors"""
         # this is a the full LSH
         if self.time_lapse < 0:
             PaperVectors.objects.filter(pk__in=pv_pks)\
@@ -782,8 +786,9 @@ class LSH(TimeStampedModel):
 
         Args:
             partial (bool): if True, do partial update
-            n_estimators (int):
-            n_candidates (int):
+            n_estimators (int): Number of trees in the LSH Forest
+            n_candidates (int): Minimum number of candidates evaluated per
+                estimator
         """
 
         # Register status as busy

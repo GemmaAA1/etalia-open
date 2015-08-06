@@ -40,41 +40,60 @@ class UserTest(TestCase):
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_admin)
 
-# TODO: use python-nameparser instead
-@skip
 class UserTestNames(TestCase):
 
     def setUp(self):
         self.user = User(email='test@test.com',
-                         first_name='James Douglas',
+                         first_name='James',
                          last_name='Morrison')
+        self.user1 = User(email='test@test.com',
+                          first_name='James Douglas',
+                          last_name='Morrison')
         self.user2 = User(email='test@test.com',
-                          first_name='James d.',
+                          first_name='James D.',
                           last_name='Morrison')
         self.user3 = User(email='test@test.com',
-                          first_name='j. D.',
-                          last_name='Morrison')
+                          first_name='James D.',
+                          last_name='Morrison-McCarthy')
         self.user4 = User(email='test@test.com',
-                          first_name='J.D.',
+                          first_name='JD',
                           last_name='Morrison')
         self.user5 = User(email='test@test.com',
-                          first_name='JD',
-                          last_name='Morrison-McCarthy')
+                          first_name='J.D.',
+                          last_name='Morrison')
+        self.user.clean()
+        self.user1.clean()
+        self.user2.clean()
+        self.user3.clean()
+        self.user4.clean()
+        self.user5.clean()
 
     def test_user_can_display_short_name(self):
         self.assertEqual(self.user.get_short_name(),
+                         'Morrison J')
+        self.assertEqual(self.user1.get_short_name(),
                          'Morrison JD')
         self.assertEqual(self.user2.get_short_name(),
                          'Morrison JD')
         self.assertEqual(self.user3.get_short_name(),
+                         'Morrison-McCarthy JD')
+        self.assertEqual(self.user4.get_short_name(),
+                         'Morrison J')
+        self.assertEqual(self.user5.get_short_name(),
                          'Morrison JD')
 
     def test_user_can_display_full_name(self):
         self.assertEqual(self.user.get_full_name(),
+                         'James Morrison')
+        self.assertEqual(self.user1.get_full_name(),
                          'James Douglas Morrison')
         self.assertEqual(self.user2.get_full_name(),
                          'James D. Morrison')
         self.assertEqual(self.user3.get_full_name(),
+                         'James D. Morrison-McCarthy')
+        self.assertEqual(self.user4.get_full_name(),
+                         'Jd Morrison')
+        self.assertEqual(self.user5.get_full_name(),
                          'J. D. Morrison')
 
 class EmailUserTest(TestCase):

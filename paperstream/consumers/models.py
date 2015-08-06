@@ -238,6 +238,12 @@ class Consumer(TimeStampedModel):
         paper_added = 0
 
         if self.journal_is_valid(journal):
+
+            logger.info('Consuming {type}/{consumer}/{title} - starting...'
+                .format(type=self.type,
+                        consumer=self.name,
+                        title=journal.title))
+
             # retrieve new entries from journal
             entries, success = self.consume_journal(journal)
 
@@ -255,7 +261,11 @@ class Consumer(TimeStampedModel):
             cj = self.consumerjournal_set.get(journal=journal)
             cj.update_stats(success, len(entries), paper_added)
 
-            logger.info('populating {0}: ok'.format(journal.title))
+            logger.info('Consuming {type}/{consumer}/{title} - DONE'.format(
+                type=self.type,
+                consumer=self.name,
+                title=journal.title))
+
         return paper_added
 
     def run_once_per_period(self):

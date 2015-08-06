@@ -98,26 +98,41 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    def clean(self):
+        self.clean_first_name()
+        self.clean_last_name()
+
+    def clean_first_name(self):
+        name = self.first_name
+        name = name.replace('.', ' ').strip()
+        self.first_name = ' '.join([n.capitalize() for n in name.split(' ')])
+
+    def clean_last_name(self):
+        Hname = HumanName(' '.join([self.first_name, self.last_name]))
+        Hname.capitalize()
+        self.last_name = Hname.last
+
     @property
     def is_admin(self):
         return self.is_staff
 
     def get_short_name(self):
-        name = HumanName(self.first_name + ' ' + self.last_name)
         if self.first_name:
-            first_names_cap = '{0}{1}'.format(name.first.capitalize()[0],
-                                              name.middle.capitalize()[0])
-            return '{0} {1}'.format(first_names_cap,
-                                    name.last.capitalize())
+            first_names_cap = ''.join([n[0] for n in self.first_name.split(' ')])
+            return '{0} {1}'.format(self.last_name, first_names_cap)
         else:
-            return '{0}'.format(name.last.capitalize())
+            return '{0}'.format(self.last_name)
 
     def get_full_name(self):
-        name = HumanName(self.first_name + ' ' + self.last_name)
-        first_names = '{0} {1}'.format(name.first.capitalize(),
-                                       name.middle.capitalize())
-        last_name = name.last.capitalize()
-        return '{0} {1}'.format(first_names, last_name)
+        first_name = []
+        for f in self.first_name.split(' '):
+            if len(f) == 1:
+                first_name.append('{0}.'.format(f))
+            else:
+                first_name.append(f)
+        first = ' '.join(first_name)
+
+        return '{0} {1}'.format(first, self.last_name)
 
     def get_absolute_url(self):
         return '/users/{0}'.format(self.pk)

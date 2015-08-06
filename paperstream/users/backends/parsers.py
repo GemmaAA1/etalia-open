@@ -5,11 +5,17 @@ from dateutil.parser import parse
 import datetime
 
 from ..constants import MENDELEY_PT, ZOTERO_PT
-from library.parsers import Parser
+from core.parsers import Parser
 
 
 class ParserBackend(Parser):
+    """Backend Parser
 
+    Attributes:
+        user_info_template: A dictionary that stores data on how paper
+            is related to user based on provider info
+
+    """
     user_info_template = {
         'created': None,
         'last_modified': None,
@@ -26,10 +32,12 @@ class ParserBackend(Parser):
 
     @staticmethod
     def id_oth_generator(size=10, chars=string.ascii_uppercase + string.digits):
+        """Return a random ID"""
         return ''.join(random.choice(chars) for _ in range(size))
 
 
 class ParserMendeley(ParserBackend):
+    """Mendeley Parser"""
 
     def parse_journal(self, entry):
 
@@ -158,6 +166,7 @@ class ParserMendeley(ParserBackend):
 
 
 class ParserZotero(ParserBackend):
+    """Zotero Parser"""
 
     def parse_journal(self, entry):
 
@@ -270,8 +279,8 @@ class ParserZotero(ParserBackend):
 
     @staticmethod
     def process_arxiv(entry, return_what):
-        """Retrieve arxiv specific fields
-        """
+        """Retrieve arxiv specific fields"""
+
         paper_id_arx = ''
         journal_id_arx = ''
         if entry.get('libraryCatalog', '') == 'arXiv.org':

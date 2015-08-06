@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
-
     """Zotero OAuth authorization mechanism"""
 
     # library specific
@@ -25,10 +24,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
     ACCESS_TOKEN_URL = 'https://www.zotero.org/oauth/access'
 
     def get_user_id(self, details, response):
-        """
-        Return user unique id provided by service. For Ubuntu One
-        the nickname should be original.
-        """
+        """Return user unique id provided by service"""
         return details['userID']
 
     def get_user_details(self, response):
@@ -40,7 +36,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         }
 
     def get_session(self, social, user, *args, **kwargs):
-
+        """Return OAuth session"""
         # Authenticate to zotero
         uid = social.tokens['userID']
         token = social.tokens['oauth_token']
@@ -49,7 +45,15 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         return session
 
     def update_lib(self, user, session):
+        """Update User Lib
 
+        Args:
+            user (User): A User instance
+            session: An OAuth session as provided by get_session()
+
+        Returns:
+            (int): Number of papers added
+        """
         # Init
         new = True
         count = 0

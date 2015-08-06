@@ -23,11 +23,13 @@ class UserBasicForm(forms.ModelForm):
         'password_mismatch': "The two password fields didn't match.",
     }
 
-    password1 = forms.CharField(label="Password",
+    password1 = forms.CharField(
+        label="Password",
         widget=forms.PasswordInput,
         initial='')
 
-    password2 = forms.CharField(label="Password confirmation",
+    password2 = forms.CharField(
+        label="Password confirmation",
         widget=forms.PasswordInput,
         help_text="Enter the same password as above, for verification.",
         initial='')
@@ -57,7 +59,8 @@ class UserBasicForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email')
+        # fields = ('first_name', 'last_name', 'email')
+        fields = ('full_name', 'email')
 
 
 class UpdateUserBasicForm(forms.ModelForm):

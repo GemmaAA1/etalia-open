@@ -9,12 +9,28 @@ from ..models import UserLibPaper, UserLibJournal, UserStats
 from nlp.tasks import embed_all_models_and_find_neighbors
 
 class BackendLibMixin(object):
+    """Mixin for provider backend"""
 
     CHUNK_SIZE = 10
     _type = None
     parser = None
 
     def get_or_create_entry(self, entry):
+        """Get or Create entry from/in Library
+
+        Entry is a dictionary structure parsed by provider Parser.
+        If corresponding paper is already in library (based on paper ids), the
+        entry tried to consolidate the library
+
+        Args:
+            entry (dict): Entry to be added coming from consumer parser
+
+        Returns:
+            (Paper instance): Paper instance created
+            (Journal instance): Corresponding Journal instance if found
+
+        Raises:
+        """
         try:
             # minimum to be a paper: have a title and an author and be a
             # supported paper type
@@ -77,16 +93,28 @@ class BackendLibMixin(object):
             return None, None
 
     def add_entry(self, entry):
+        """Add or Retrieve entry and Update NLP Models and LSHs"""
 
         paper, journal = self.get_or_create_entry(entry)
 
-        if paper:  # Embed paper and get closest neighbors
+        if paper:       # Embed paper and get closest neighbors
             embed_all_models_and_find_neighbors(paper.pk)
 
         return paper, journal
 
     @staticmethod
     def associate_paper(paper, user, info):
+        """Update Paper/User.Lib relationship
+
+        Args:
+            paper: Paper instance
+            user: User instance
+            info (dict): Information from provider about e.g when the paper
+                was added by user in library
+
+        Returns:
+            (bool): True if association did not exist previously
+        """
 
         ulp, new = UserLibPaper.objects.get_or_create(userlib=user.lib,
                                                       paper=paper)
@@ -100,6 +128,8 @@ class BackendLibMixin(object):
 
     @staticmethod
     def associate_journal(journal, user):
+        """Update Paper/User.Lib relationship"""
+
         UserLibJournal.objects.add(userlib=user.lib, journal=journal)
 
     def get_session(self, social, user, *args, **kwargs):

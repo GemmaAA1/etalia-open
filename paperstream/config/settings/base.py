@@ -332,8 +332,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s.%(msecs)03d] %(levelname)s (%(name)s:%(funcName)s) %(message)s",
+            'datefmt': "%Y-%m-%d %H:%M:%S",
         },
         'simple': {
             'format': '%(levelname)s %(module)s %(message)s'
@@ -373,6 +373,12 @@ LOGGING = {
             'filename': os.path.join(ROOT_DIR.child('logs'), 'users.log'),
             'formatter': 'verbose'
         },
+        'consumers': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'consumers.log'),
+            'formatter': 'verbose'
+        },
         'celery': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -393,6 +399,11 @@ LOGGING = {
         # },
         'populate': {
             'handlers': ['console', 'populate'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'consumers': {
+            'handlers': ['console', 'consumers'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
