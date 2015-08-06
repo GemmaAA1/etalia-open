@@ -332,8 +332,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
             'format': '%(levelname)s %(module)s %(message)s'
@@ -350,19 +350,31 @@ LOGGING = {
             'formatter': 'verbose'
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': os.path.join(ROOT_DIR.child('logs'), 'paperstream.log'),
             'formatter': 'verbose'
         },
         'populate': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': os.path.join(ROOT_DIR.child('logs'), 'populate.log'),
             'formatter': 'verbose'
         },
+        'nlp': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'nlp.log'),
+            'formatter': 'verbose'
+        },
+        'users': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'users.log'),
+            'formatter': 'verbose'
+        },
         'celery': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(ROOT_DIR.child('logs'), 'celery.log'),
             'formatter': 'verbose',
@@ -370,11 +382,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['null'],
-            'propagate': True,
-            'level': 'INFO',
-        },
+        # 'django': {
+        #     'handlers': ['null'],
+        #     'propagate': True,
+        #     'level': 'INFO',
+        # },
         # 'paperstream': {
         #     'handlers': ['console', 'file'],
         #     'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
@@ -382,18 +394,22 @@ LOGGING = {
         'populate': {
             'handlers': ['console', 'populate'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
         'nlp': {
-            'handlers': ['console'],
+            'handlers': ['console', 'nlp'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
         'users': {
-            'handlers': ['console'],
+            'handlers': ['console', 'users'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'celery': {
             'handlers': ['celery', 'console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
     }
 }
