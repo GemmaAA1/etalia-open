@@ -1,7 +1,7 @@
 import yaml
 from nlp.models import Model, LSH
 from library.models import Paper
-from core.constants import TIME_LAPSE_CHOICES
+from core.constants import NLP_TIME_LAPSE_CHOICES
 
 path_to_model_file = 'scripts/build_models/models.yaml'
 with open(path_to_model_file) as stream:

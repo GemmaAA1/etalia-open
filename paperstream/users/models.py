@@ -9,7 +9,7 @@ from django.conf import settings
 
 from library.models import Paper, Journal
 from nlp.models import Model
-from core.constants import TIME_LAPSE_CHOICES
+from core.constants import NLP_TIME_LAPSE_CHOICES
 
 from .validators import validate_first_name, validate_last_name
 from core.models import TimeStampedModel
@@ -319,7 +319,7 @@ class UserSettings(TimeStampedModel):
 
     # in days
     time_lapse = models.IntegerField(default=61,
-                                     choices=TIME_LAPSE_CHOICES,
+                                     choices=NLP_TIME_LAPSE_CHOICES,
                                      verbose_name='In the past for')
 
     objects = UserSettingsManager()

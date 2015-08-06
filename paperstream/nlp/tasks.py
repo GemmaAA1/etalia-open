@@ -2,7 +2,7 @@ import logging
 from config.celery import celery_app as app
 from celery import chain, Task
 from nlp.models import Model, LSH
-from core.constants import TIME_LAPSE_CHOICES
+from core.constants import NLP_TIME_LAPSE_CHOICES
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class LSHTask(Task):
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
             # check if time_lapse allowed
-            choices = [time_lapse for time_lapse, _ in TIME_LAPSE_CHOICES] + \
+            choices = [time_lapse for time_lapse, _ in NLP_TIME_LAPSE_CHOICES] + \
                       [None]
             if time_lapse in choices:
                 self.time_lapse = time_lapse
@@ -106,12 +106,7 @@ def register_all_models_and_lshs_tasks():
 
     # Create lsh related tasks
     for model_name in model_names:
-        # Full LSH
-        cls = LSHTask(model_name=model_name, time_lapse=None)
-        app.task(cls, name='nlp.tasks.lsh_{model_name}_full'
-                 .format(model_name=model_name, time_lapse=None))
-        # time_lapse dependant LSHs
-        for time_lapse, _ in TIME_LAPSE_CHOICES:
+        for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
             cls = LSHTask(model_name=model_name, time_lapse=time_lapse,
                           bind=True)
             app.task(cls, name='nlp.tasks.lsh_{model_name}_{time_lapse}'
@@ -148,20 +143,8 @@ def embed_all_models_and_find_neighbors(paper_pk):
                 model_name=model_name))
             continue
 
-        # Send task for LSH full
-        try:
-            lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
-                model_name=model_name)]
-        except KeyError:
-            logger.error('LSH task for {model_name}/full not defined'.format(
-                model_name=model_name))
-            continue
-
-        chain(embed_task.s(paper_pk),
-              lsh_task.s(kwargs={'task': 'populate_neighbors'}))
-
         # Send task for time_lapse related LSHs
-        for time_lapse, _ in TIME_LAPSE_CHOICES:
+        for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
             try:
                 lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_full'.format(
                     model_name=model_name,

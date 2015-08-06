@@ -25,7 +25,7 @@ from .exceptions import InvalidState
 from core.models import TimeStampedModel
 from core.utils import pad_vector, pad_neighbors
 from library.models import Paper, Journal
-from core.constants import TIME_LAPSE_CHOICES
+from core.constants import NLP_TIME_LAPSE_CHOICES
 
 
 logger = logging.getLogger(__name__)
@@ -370,9 +370,8 @@ class Model(TimeStampedModel):
         self.activate()
 
     def build_lshs(self):
-        LSH.objects.create(model=self, time_lapse=None)
         # Build time-lapse related LSH
-        for time_lapse, _ in TIME_LAPSE_CHOICES:
+        for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
             LSH.objects.create(model=self,
                                time_lapse=time_lapse)
 
@@ -533,7 +532,7 @@ class PaperVectorsManager(models.Manager):
 
 
 class PaperVectors(TimeStampedModel):
-    """Paper - NLP Model relationship
+    """ Table Paper - NLP Model relationship
 
     Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
     i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
@@ -570,7 +569,7 @@ class PaperVectors(TimeStampedModel):
 
 
 class PaperNeighbors(TimeStampedModel):
-
+    """ Table of papers nearest neighbors"""
     lsh = models.ForeignKey('LSH')
 
     paper = models.ForeignKey(Paper, related_name='neighbors')
@@ -603,7 +602,7 @@ class JournalVectorsManager(models.Manager):
 
 
 class JournalVectors(TimeStampedModel):
-    """Journal - NLP Model relationship
+    """ Table Journal - NLP Model relationship
 
     Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
     i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
@@ -639,6 +638,7 @@ class JournalVectors(TimeStampedModel):
 class LSHManager(models.Manager):
 
     def create(self, **kwargs):
+        """Return LSH instance, updated"""
         obj = super(LSHManager, self).create(**kwargs)
         # Init lsh
         obj.full_update(**kwargs)
@@ -649,6 +649,7 @@ class LSHManager(models.Manager):
         return super(LSHManager, self).get(**kwargs)
 
     def load(self, **kwargs):
+        """Return LSH instance loaded from file"""
         obj = super(LSHManager, self).get(**kwargs)
         try:
             obj.lsh = joblib.load(
@@ -669,10 +670,9 @@ class LSH(TimeStampedModel):
 
     state = models.CharField(default='NON', choices=LSHF_STATES, max_length=3)
 
-    time_lapse = models.IntegerField(default=None,
-                                     null=True, blank=True,
-                                     choices=TIME_LAPSE_CHOICES,
-                                     verbose_name='In the past for')
+    time_lapse = models.IntegerField(default=-1,
+                                     choices=NLP_TIME_LAPSE_CHOICES,
+                                     verbose_name='Days from right now')
 
     lsh = MyLSHForest()
 
@@ -712,25 +712,25 @@ class LSH(TimeStampedModel):
         # size of the model space used for truncation of vector
         vec_size = self.model.size
 
-        if self.time_lapse:   # time range
+        if self.time_lapse > 0:
             from_date = (timezone.now() -
                          timezone.timedelta(
                              days=self.time_lapse)).date()
-            if not partial:
-                data = PaperVectors.objects\
+            data = PaperVectors.objects\
                     .filter(Q(model=self.model) &
                             (Q(paper__date_ep__gt=from_date) |
                              (Q(paper__date_pp__gt=from_date) &
                               Q(paper__date_ep=None))))\
                     .values_list('pk', 'paper__pk', 'vector')
-            else:
+        else:
+            if partial:
                 data = PaperVectors.objects\
                     .filter(model=self.model, is_in_full_lsh=False)\
                     .values_list('pk', 'paper__pk', 'vector')
-        else:
-            data = PaperVectors.objects\
-                .filter(model=self.model)\
-                .values_list('pk', 'paper__pk', 'vector')
+            else:
+                data = PaperVectors.objects\
+                    .filter(model=self.model)\
+                    .values_list('pk', 'paper__pk', 'vector')
 
         # Reshape data
         pv_pks = []
@@ -752,16 +752,22 @@ class LSH(TimeStampedModel):
 
     def update_if_full_lsh_flag(self, pv_pks):
         # this is a the full LSH
-        if not self.time_lapse:
+        if self.time_lapse < 0:
             PaperVectors.objects.filter(pk__in=pv_pks)\
                 .update(is_in_full_lsh=True)
 
     def _update(self, partial=False, n_estimators=10, n_candidates=50, **kwargs):
-        """Only partial update LSH with new incoming papers (i.e. does not remove
-        old ones, valid only if self.time_lapse=None)
+        # TODO: Complete docstring
+        """Update LSH with new data and fit
 
-        NB: we can not do partial on time_lapse LSH because paper cannot be removed from
-        training set, only added.
+        Partial update is allowed only for LSH with time_lapse=-1. Partial fit
+        cannot be performed on LSH with time_lapse > 0 because samples cannot
+        be removed from LSH, only added.
+
+        Args:
+            partial (bool): if True, do partial update
+            n_estimators (int):
+            n_candidates (int):
         """
 
         # Register status as busy
@@ -781,25 +787,26 @@ class LSH(TimeStampedModel):
         data, pv_pks, new_pks = self.get_data(partial=partial)
 
         # Train
-        if partial:
-            self.lsh.partial_fit(data)
-        else:
-            self.lsh.fit(data)
+        if pv_pks:      # if data
+            if partial:
+                self.lsh.partial_fit(data)
+            else:
+                self.lsh.fit(data)
 
-        # Register status as idle
-        self.set_state('IDL')
+            # Register status as idle
+            self.set_state('IDL')
 
-        # Save
-        self.save()
+            # Save
+            self.save()
 
-        # Update PaperVector.is_in_full_lsh
-        self.update_if_full_lsh_flag(pv_pks)
+            # Update PaperVector.is_in_full_lsh
+            self.update_if_full_lsh_flag(pv_pks)
 
-        # Update neighbors
-        if partial:
-            self.update_neighbors(new_pks)
-        else:
-            self.update_neighbors()
+            # Update neighbors
+            if partial:
+                self.update_neighbors(new_pks)
+            else:
+                self.update_neighbors()
 
         tend = time.time() - t0
         logger.info(
@@ -808,16 +815,21 @@ class LSH(TimeStampedModel):
                         time_lapse=self.time_lapse, time=tend))
 
     def update(self, **kwargs):
+        """Update dispatcher for LSH
+
+        Depending on time_lapse, update is routed to partial udpate or
+        full_update
+        """
         # Register state as busy
         self.set_state('BUS')
 
         if 'partial' in kwargs and kwargs['partial']:
-            if not self.time_lapse:
+            if self.time_lapse < 0:
                 self._update(**kwargs)
             else:
                 raise ValueError('partial can be true with lsh time_lapse defined')
         else:
-            if not self.time_lapse:
+            if self.time_lapse < 0:
                 self._update(partial=True, **kwargs)
             else:
                 self._update(partial=False, **kwargs)
@@ -826,6 +838,7 @@ class LSH(TimeStampedModel):
         self.set_state('IDL')
 
     def full_update(self, **kwargs):
+        """Full update of LSH"""
         # Register state as busy
         self.set_state('BUS')
         self._update(partial=False, **kwargs)
@@ -833,6 +846,12 @@ class LSH(TimeStampedModel):
         self.set_state('IDL')
 
     def update_neighbors(self, *args):
+        """Update neighbors of papers
+
+        Args:
+            Optional:
+            args: list or query set of paper primary keys to update
+        """
         # Add Neighbors to PaperNeighbors
         if not args:  # populate all neighbors associated with LSH
             pks = self.lsh.pks
