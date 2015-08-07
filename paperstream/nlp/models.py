@@ -15,14 +15,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
-# from gensim.models import Doc2Vec
+from gensim.models import Doc2Vec
 from gensim.models import Phrases
-
 
 from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
 from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
     model_attr_getter, model_attr_setter
-from .utils import MyDoc2Vec as Doc2Vec
 from .exceptions import InvalidState
 
 from core.models import TimeStampedModel
@@ -441,7 +439,8 @@ class Model(TimeStampedModel):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper_pk, alpha=0.05, min_alpha=0.001, passes=5):
+    def infer_paper(self, paper_pk, alpha=0.05, min_alpha=0.001, passes=5,
+                    seed=False):
         """Infer model vector for paper
         """
         self.check_active()
@@ -453,26 +452,31 @@ class Model(TimeStampedModel):
         paper = Paper.objects.get(id=paper_pk)
         doc_words = paper2tokens(paper, fields=text_fields)
 
+        if seed:        # inference vector is initialize from Journal vector
+            seed = JournalVectors.objects.get(model=self, journal=paper.journal)\
+                .get_vector()
+
         # NB: infer_vector user explicit alpha-reduction with multi-passes
         vector = self._doc2vec.infer_vector(doc_words,
                                             alpha=alpha,
                                             min_alpha=min_alpha,
-                                            steps=passes)
+                                            steps=passes,
+                                            seed=seed)
         pv.set_vector(vector.tolist())
         pv.save()
 
         return paper_pk
 
-    def infer_papers(self, papers, **kwargs):
+    def infer_papers(self, paper_pks, **kwargs):
         """Infer model vector for papers
         """
         self.check_active()
 
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=papers.count(), redirect_stderr=True).start()
+                           maxval=len(paper_pks), redirect_stderr=True).start()
         count = 0
-        for paper in papers:
-            self.infer_paper(paper, **kwargs)
+        for paper_pk in paper_pks:
+            self.infer_paper(paper_pk, **kwargs)
             pbar.update(count)
             count += 1
         # close progress bar
