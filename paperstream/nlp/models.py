@@ -579,6 +579,11 @@ class PaperNeighbors(TimeStampedModel):
                            size=settings.NLP_MAX_KNN_NEIGHBORS,
                            null=True, blank=True)
 
+    def __str__(self):
+        return '{model_name}/{time_lapse}'.format(
+            model_name=self.lsh.model.name,
+            time_lapse=self.lsh.time_lapse)
+
     def set_neighbors(self, vector):
         self.neighbors = pad_neighbors(vector)
         self.save()
