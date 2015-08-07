@@ -123,6 +123,7 @@ TEMPLATE_LOADERS = (
 )
 
 ITEMS_PER_PAGE = 15
+NUMBER_OF_NEIGHBORS = 5
 
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------
