@@ -15,11 +15,14 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
-from gensim.models import Doc2Vec, Phrases
+# from gensim.models import Doc2Vec
+from gensim.models import Phrases
+
 
 from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
 from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
     model_attr_getter, model_attr_setter
+from .utils import MyDoc2Vec as Doc2Vec
 from .exceptions import InvalidState
 
 from core.models import TimeStampedModel

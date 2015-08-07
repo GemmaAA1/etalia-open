@@ -5,6 +5,7 @@ import nltk
 import glob
 from bs4 import BeautifulSoup
 
+from gensim.models import Doc2Vec
 from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
 from sklearn.neighbors import LSHForest
@@ -105,3 +106,41 @@ def model_attr_setter(attr, attr2):
         else:
             setattr(self._doc2vec, attr2, value)
     return set_any
+
+
+class MyDoc2Vec(Doc2Vec):
+
+    def infer_vector_with_seed(self, doc_words, alpha=0.1, min_alpha=0.0001,
+                               steps=5, seed=None):
+        """Infer a vector for given post-bulk training document.
+
+        Document should be a list of (word) tokens.
+        And seed an array of size vector_size
+        """
+
+        doctag_vectors = empty((1, self.vector_size), dtype=REAL)
+        # doctag_vectors[0] = self.seeded_vector(' '.join(doc_words))
+        doctag_vectors[0] = seed
+        doctag_locks = ones(1, dtype=REAL)
+        doctag_indexes = [0]
+
+        work = zeros(self.layer1_size, dtype=REAL)
+        if not self.sg:
+            neu1 = matutils.zeros_aligned(self.layer1_size, dtype=REAL)
+
+        for i in range(steps):
+            if self.sg:
+                train_document_dbow(self, doc_words, doctag_indexes, alpha, work,
+                                    learn_words=False, learn_hidden=False,
+                                    doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
+            elif self.dm_concat:
+                train_document_dm_concat(self, doc_words, doctag_indexes, alpha, work, neu1,
+                                         learn_words=False, learn_hidden=False,
+                                         doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
+            else:
+                train_document_dm(self, doc_words, doctag_indexes, alpha, work, neu1,
+                                  learn_words=False, learn_hidden=False,
+                                  doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
+            alpha = ((alpha - min_alpha) / (steps - i)) + min_alpha
+
+        return doctag_vectors[0]
