@@ -744,19 +744,22 @@ class LSH(TimeStampedModel):
                          timezone.timedelta(
                              days=self.time_lapse)).date()
             data = PaperVectors.objects\
-                    .filter(Q(model=self.model) &
-                            (Q(paper__date_ep__gt=from_date) |
-                             (Q(paper__date_pp__gt=from_date) &
-                              Q(paper__date_ep=None))))\
-                    .values_list('pk', 'paper__pk', 'vector')
+                .filter(Q(model=self.model) &
+                        (Q(paper__date_ep__gt=from_date) |
+                         (Q(paper__date_pp__gt=from_date) &
+                          Q(paper__date_ep=None))))\
+                .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
+                .values_list('pk', 'paper__pk', 'vector')
         else:
             if partial:
                 data = PaperVectors.objects\
                     .filter(model=self.model, is_in_full_lsh=False)\
+                    .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
                     .values_list('pk', 'paper__pk', 'vector')
             else:
                 data = PaperVectors.objects\
                     .filter(model=self.model)\
+                    .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
                     .values_list('pk', 'paper__pk', 'vector')
 
         # Reshape data

@@ -20,5 +20,8 @@
             <h5>{{ paper.print_journal_title }}, {{ paper.print_date }}, {{ paper.print_ids }}</h5>
             <h5>{{ paper.abstract }}</h5>
         </div>
+        {% for neighbor in neighbors %}
+            <h5><a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a></h5>
+        {% endfor %}
     </div>
 {% endblock content %}
