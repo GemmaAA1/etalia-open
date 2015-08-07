@@ -142,9 +142,9 @@ class UserFeed(TimeStampedModel):
         target_papers_pk = PaperNeighbors.objects\
             .filter(paper__pk__in=self.papers_seed.values('pk'),
                     lsh_id=lsh_pk)\
-            .exclude(pk__in=paper_exclude_pks,
-                     is_trusted=False,
-                     abstract='')\
+            .exclude(Q(pk__in=paper_exclude_pks) |
+                     Q(is_trusted=False) |
+                     Q(abstract=''))\
             .values_list('neighbors', flat=True)
         # de-nest list and make unique
         target_papers_pk = [a for b in target_papers_pk for a in b]
