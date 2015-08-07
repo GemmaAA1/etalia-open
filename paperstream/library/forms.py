@@ -147,6 +147,11 @@ class PaperForm(forms.ModelForm):
         self.fields['source'] = \
             forms.ChoiceField(choices=SOURCE_TYPE)
 
+    def clean_title(self):
+        title = self.cleaned_data['title']
+        if (title[0], title[-1]) == ('[', ']'):
+            return title[1:-1]
+
     def clean(self):
         cleaned_data = super(PaperForm, self).clean()
 
@@ -181,6 +186,7 @@ class PaperFormClean(FillBlanksMixin, PaperForm):
                 return ''
 
     def clean_id_doi(self):
+        """Check if doi exist of doi.org"""
         # format
         id_doi = self.cleaned_data['id_doi'].lower()
 
@@ -215,14 +221,14 @@ class PaperFormClean(FillBlanksMixin, PaperForm):
     def clean(self):
         cleaned_data = super(PaperForm, self).clean()
 
-        # language
+        # Detect language
         if not self.cleaned_data['language']:
             text = ' '.join([self.cleaned_data['abstract'],
                              self.cleaned_data['title']])
             self.cleaned_data['language'] = \
                 self.Meta.model.detect_language(text)
 
-        # URL
+        # Test URL
         # try with id_doi
         if not cleaned_data['url']:
             id_doi = cleaned_data.get('id_doi', '')
