@@ -3,6 +3,8 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+
 from .models import Journal, Paper
 from .constants import PAPER_TYPE
 
@@ -10,8 +12,7 @@ from .constants import PAPER_TYPE
 def library(request):
 
     context = {'journal_count': Journal.objects.count(),
-               'paper_count': Paper.objects.count(),
-    }
+               'paper_count': Paper.objects.count()}
     return render(request, 'library/library.html', context)
 
 
@@ -48,6 +49,20 @@ class PaperView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
+        paper_ = kwargs['object']
+        model = self.request.user.settings.model
+
+        # Get neighbors papers
+        neigh = paper_.neighbors.get(lsh__model=model, lsh__time_lapse=-1)
+        if neigh.neighbors:
+            neigh_pk = neigh.neighbors[:settings.NUMBER_OF_NEIGHBORS]
+            neigh_fetched_d = dict(
+                [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
+            context['neighbors'] = \
+                [neigh_fetched_d[key] for key in neigh_pk]
+        else:
+            context['neighbors'] = []
+
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         return context
 
