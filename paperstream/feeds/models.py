@@ -133,8 +133,8 @@ class UserFeed(TimeStampedModel):
             .values_list('pk', flat='True')
 
         # get target papers excluding user lib + not trusted + empty abstract
-        paper_exclude_pks = list(self.user.lib.papers.values_list('pk',
-                                                                  flat='True'))
+        paper_exclude_pks = list(
+            self.user.lib.papers.values_list('pk', flat='True'))
 
         # Get nearest neighbors of seed papers and retrieve target_paper
         lsh_pk = LSH.objects.get(model_id=self.user.settings.model.pk,
