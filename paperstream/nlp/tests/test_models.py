@@ -179,6 +179,19 @@ class TestModelSavingStack(NLPDataTestCase):
         pv = PaperVectors.objects.get(paper=self.paper, model=self.model)
         self.assertIsNotNone(pv.vector)
 
+    def test_can_infer_new_paper_with_seed(self):
+        self.model.infer_paper(paper_pk=self.paper.pk, seed=True)
+        pv = PaperVectors.objects.get(paper=self.paper, model=self.model)
+        self.assertIsNotNone(pv.vector)
+
+    def test_can_infer_multiple_new_paper(self):
+        pks = [self.paper.pk, self.paper2.pk]
+        self.model.infer_papers(pks)
+        pv = PaperVectors.objects.get(paper=self.paper, model=self.model)
+        self.assertIsNotNone(pv.vector)
+        pv = PaperVectors.objects.get(paper=self.paper2, model=self.model)
+        self.assertIsNotNone(pv.vector)
+
     def test_papervector_get_vector_length_match_model_size(self):
         self.model.infer_paper(paper_pk=self.paper.pk)
         pv = PaperVectors.objects.get(paper=self.paper, model=self.model)

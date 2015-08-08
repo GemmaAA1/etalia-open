@@ -432,17 +432,16 @@ class Model(TimeStampedModel):
         pbar.finish()
 
     def save_all_vec_from_bulk(self):
-        """Store inferred paper and journal vectors from training in db
-        """
+        """Store inferred paper and journal vectors from training in db"""
         self.check_active()
 
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper_pk, alpha=0.05, min_alpha=0.001, passes=5,
+    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=5,
                     seed=False):
-        """Infer model vector for paper
-        """
+        """Infer model vector for paper"""
+
         self.check_active()
 
         text_fields = [tx.text_field for tx in self.text_fields.all()]
