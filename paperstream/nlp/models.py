@@ -780,9 +780,7 @@ class LSH(TimeStampedModel):
             # build input matrix for fit
             x_data[i, :] = data[i][2][:vec_size]
 
-        self.lsh.pks += new_pks
-        # Remove duplicates (just in case)
-        self.lsh.pks = list(set(self.lsh.pks))
+        self.lsh.pks.append(new_pks)
 
         return x_data, pv_pks, new_pks
 
