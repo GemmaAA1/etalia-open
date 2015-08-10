@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from .models import Journal, Paper
+from nlp.models import PaperNeighbors
 from .constants import PAPER_TYPE
 
 
@@ -53,14 +54,17 @@ class PaperView(DetailView):
         model = self.request.user.settings.model
 
         # Get neighbors papers
-        neigh = paper_.neighbors.get(lsh__model=model, lsh__time_lapse=-1)
-        if neigh.neighbors:
-            neigh_pk = neigh.neighbors[:settings.NUMBER_OF_NEIGHBORS]
-            neigh_fetched_d = dict(
-                [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
-            context['neighbors'] = \
-                [neigh_fetched_d[key] for key in neigh_pk]
-        else:
+        try:
+            neigh = paper_.neighbors.get(lsh__model=model, lsh__time_lapse=-1)
+            if neigh.neighbors:
+                neigh_pk = neigh.neighbors[:settings.NUMBER_OF_NEIGHBORS]
+                neigh_fetched_d = dict(
+                    [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
+                context['neighbors'] = \
+                    [neigh_fetched_d[key] for key in neigh_pk]
+            else:
+                context['neighbors'] = []
+        except PaperNeighbors.DoesNotExist:
             context['neighbors'] = []
 
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]

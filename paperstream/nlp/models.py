@@ -934,8 +934,9 @@ class LSH(TimeStampedModel):
         pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
         vec = pv.get_vector()
 
-        pks = self.k_neighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS)
-        pks = pks.flatten()
+        pks = self.k_neighbors(vec, n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS
+                                                + 1)
+        pks = pks.flatten()[1:]   # remove self
 
         pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
                                                      paper_id=paper_pk)
