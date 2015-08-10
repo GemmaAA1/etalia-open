@@ -32,17 +32,33 @@ class NLPDataTestCase(NLPTestCase):
             title='Bla bla.',
             abstract='Hi. Hi, <p>hi</p> {mu}\n',
             journal=self.journal,
-            date_ep=timezone.now().date())
+            date_ep=timezone.now().date(),
+            is_trusted=True)
         self.paper2 = Paper.objects.create(
             title='Blo blo.',
             abstract='Hi. Hi, <p>hi</p> {mu}\n',
             journal=self.journal,
-            date_ep=timezone.now().date())
+            date_ep=timezone.now().date(),
+            is_trusted=True)
         self.paper3 = Paper.objects.create(
             title='Bli bli.',
             abstract='Hi. Hi, <p>hi</p> {mu}\n',
             journal=self.journal,
-            date_ep=timezone.now().date())
+            date_ep=timezone.now().date(),
+            is_trusted=True)
+        self.paper4 = Paper.objects.create(
+            title='Bli bli.',
+            abstract='Hi. Hi, <p>hi</p> {mu}\n',
+            journal=self.journal,
+            date_ep=timezone.now().date(),
+            is_trusted=False)
+        self.paper5 = Paper.objects.create(
+            title='Bli bli.',
+            abstract='',
+            journal=self.journal,
+            date_ep=timezone.now().date(),
+            is_trusted=True)
+
         self.model = Model.objects.create(name='test',
                                           size=128)
         self.model.activate()

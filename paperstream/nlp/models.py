@@ -7,7 +7,7 @@ from timeit import time
 from sklearn.externals import joblib
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 from django.utils import timezone
@@ -259,7 +259,10 @@ class Model(TimeStampedModel):
         """
 
         text_fields = [tx.text_field for tx in self.text_fields.all()]
-        tot = papers.count()
+        if isinstance(papers, QuerySet):
+            tot = papers.count()
+        else:
+            tot = len(papers)
         file_count = 0
         file = None
 
@@ -274,6 +277,11 @@ class Model(TimeStampedModel):
                            redirect_stderr=True).start()
 
         for count, paper in enumerate(papers):
+
+            if not paper.abstract or not paper.is_trusted:
+                logger.warning('DISCARDING paper {pk} (is_trusted=False or '
+                               'empty abstract)'.format(pk=paper.id))
+                continue
 
             if not count % settings.NLP_CHUNK_SIZE:
                 if file:
@@ -304,7 +312,8 @@ class Model(TimeStampedModel):
                 pbar.update(count/sub_update_step)
         # close progress bar
         pbar.finish()
-        file.close()
+        if file:
+            file.close()
 
     @staticmethod
     def load_documents(data_path=None, phraser=None, ):
@@ -452,8 +461,11 @@ class Model(TimeStampedModel):
         doc_words = paper2tokens(paper, fields=text_fields)
 
         if seed:        # inference vector is initialize from Journal vector
-            seed = JournalVectors.objects.get(model=self, journal=paper.journal)\
-                .get_vector()
+            try:
+                seed = JournalVectors.objects.get(model=self, journal=paper.journal)\
+                    .get_vector()
+            except JournalVectors.DoesNotExist:
+                seed = None
 
         # NB: infer_vector user explicit alpha-reduction with multi-passes
         vector = self._doc2vec.infer_vector(doc_words,
@@ -780,7 +792,8 @@ class LSH(TimeStampedModel):
             # build input matrix for fit
             x_data[i, :] = data[i][2][:vec_size]
 
-        self.lsh.pks.append(new_pks)
+        # store paper pks in lsh
+        self.lsh.pks += new_pks
 
         return x_data, pv_pks, new_pks
 

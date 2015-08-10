@@ -56,22 +56,6 @@ class ModelTest(NLPTestCase):
             '{0}.mod'.format(model.name))
         self.assertTrue(os.path.isfile(path_to_be_save_to))
 
-    def test_model_can_be_load_with_doc2vec(self):
-        model = Model(name='test')
-        model.save()
-        model2 = Model.objects.load(name='test')
-        self.assertTrue(model == model2)
-
-    def test_model_can_be_delete_with_doc2vec(self):
-        model = Model(name='test')
-        model.save()
-        model.delete()
-        path_to_be_save_to = os.path.join(
-            settings.NLP_DOC2VEC_PATH,
-            '{0}.mod'.format(model.name))
-        self.assertFalse(os.path.isfile(path_to_be_save_to))
-        self.assertEqual(Model.objects.count(), 0)
-
     def test_model_cannot_have_empty_text_field(self):
         with self.assertRaises(ValidationError):
             Model.objects.create(name='test', text_fields=[''])
@@ -130,6 +114,28 @@ class ModelDumpTest(NLPDataTestCase):
         # removing all file in there
         shutil.rmtree(data_path)
 
+    def test_dump_file_is_trusted_false_discarded(self):
+        self.model.dump([self.paper4])
+        docs = self.model.load_documents()
+        for count, _ in enumerate(docs):
+            continue
+        self.assertFalse('count' in locals())
+
+    def test_dump_file_abstract_empty_discarded(self):
+        self.model.dump([self.paper5])
+        docs = self.model.load_documents()
+        for count, _ in enumerate(docs):
+            continue
+        self.assertFalse('count' in locals())
+
+    def test_dump_one_single_paper(self):
+        self.model.dump([self.paper3])
+        docs = self.model.load_documents()
+        for count, _ in enumerate(docs):
+            continue
+        self.assertTrue('count' in locals())
+
+
 class TestModelTrainingStack(NLPDataTestCase):
 
     def setUp(self):
@@ -154,6 +160,23 @@ class TestModelTrainingStack(NLPDataTestCase):
         self.model.save()
         self.model.activate()
         self.assertTrue(self.model.is_active)
+
+    def test_model_can_be_load_with_doc2vec(self):
+        docs = self.model.load_documents()
+        self.model.build_vocab_and_train()
+        model2 = Model.objects.load(name='test')
+        self.assertTrue(self.model == model2)
+
+    def test_model_can_be_delete_with_doc2vec(self):
+        docs = self.model.load_documents()
+        self.model.build_vocab_and_train()
+        self.model.save()
+        self.model.delete()
+        path_to_be_save_to = os.path.join(
+            settings.NLP_DOC2VEC_PATH,
+            '{0}.mod'.format(self.model.name))
+        self.assertFalse(os.path.isfile(path_to_be_save_to))
+        self.assertEqual(Model.objects.count(), 0)
 
 
 class TestModelSavingStack(NLPDataTestCase):
@@ -363,8 +386,8 @@ class LSHModelTest(NLPDataTestCase):
         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         x_data, pv_pks, new_pks = lsh.get_data()
-        self.assertEqual(pv_pks, [self.pv.pk, self.pv2.pk])
-        self.assertEqual(new_pks, [self.paper.pk, self.paper2.pk])
+        self.assertEqual(set(pv_pks), set([self.pv.pk, self.pv2.pk]))
+        self.assertEqual(set(new_pks), set([self.paper.pk, self.paper2.pk]))
         self.assertTrue((x_data[0, :] == 0).all())
 
     def test_lsh_update_is_in_full_lsh_flag_if_full(self):
@@ -375,12 +398,11 @@ class LSHModelTest(NLPDataTestCase):
         pv = PaperVectors.objects.get(pk=pv_pks[0])
         self.assertTrue(pv.is_in_full_lsh)
 
-    def test_lsh_DOESNOT_update_is_in_full_lsh_flag_if_NOT_full(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+    def test_lsh_DOESNOT_update_is_in_full_lsh_flag_if_lsh_NOT_full(self):
+        time_lapse = 61
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         x_data, pv_pks, new_pks = lsh.get_data()
         lsh.update_if_full_lsh_flag(pv_pks)
-        print(pv_pks)
         pv = PaperVectors.objects.get(pk=pv_pks[0])
         self.assertFalse(pv.is_in_full_lsh)
 

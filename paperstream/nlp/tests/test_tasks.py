@@ -8,12 +8,15 @@ from library.models import Paper
 from ..tasks import EmbedPaperTask, LSHTask, embed_all_models_and_find_neighbors, \
     embed_all_models, register_all_models_and_lshs_tasks
 from ..models import Model, LSH
-from .base import NLPDataExtendedTestCase
+from .base import NLPDataExtendedTestCase, NLPDataTestCase
 
-class EmbedPaperTaskClassTest(TestCase):
+class EmbedPaperTaskClassTest(NLPDataTestCase):
 
     def setUp(self):
-        self.model = Model.objects.create(name='test')
+        super(EmbedPaperTaskClassTest, self).setUp()
+        self.model.dump(self.papers.all())
+        self.model.build_vocab_and_train()
+        self.model.propagate()
 
     def test_embed_paper_task_can_be_instantiated(self):
         ept = EmbedPaperTask(model_name=self.model.name, bind=True)

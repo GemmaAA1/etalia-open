@@ -148,9 +148,12 @@ class PaperForm(forms.ModelForm):
             forms.ChoiceField(choices=SOURCE_TYPE)
 
     def clean_title(self):
+        """Removing trailling/heading brackets found in some title
+        """
         title = self.cleaned_data['title']
         if (title[0], title[-1]) == ('[', ']'):
-            return title[1:-1]
+            title = title[1:-1]
+        return title
 
     def clean(self):
         cleaned_data = super(PaperForm, self).clean()
