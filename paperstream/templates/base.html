@@ -11,7 +11,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+        <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
 
         <title>Paperstream: {% block title %}{% endblock %}</title>
 
@@ -23,7 +23,7 @@
         {% block css %}
         <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
         <link rel="stylesheet" href="{% static 'css/7-three-bounce.css' %}" type="text/css" >
-        {% endblock css%}
+        {% endblock css %}
 
         <!-- Custom Fonts -->
         <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
@@ -87,8 +87,6 @@
         </div>
     </div>
     {% endif %}
-
-
 
     <!-- Footer -->
     {% block footer %}

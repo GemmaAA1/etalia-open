@@ -448,8 +448,15 @@ class LSHModelTest(NLPDataTestCase):
         lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
         lsh.set_state('IDL')
         vec = np.zeros(lsh.model.size+1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             lsh.k_neighbors(vec)
+
+    def test_lsh_kneighbors_can_take_2d_array_in_input(self):
+        lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
+        lsh.set_state('IDL')
+        mat = np.random.randn(10, lsh.model.size)
+        indices = lsh.k_neighbors(mat, n_neighbors=2)
+        self.assertEqual(indices.shape, (10, 2))
 
 
 class PaperNeighborsTest(NLPDataTestCase):

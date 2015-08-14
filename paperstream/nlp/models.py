@@ -930,6 +930,9 @@ class LSH(TimeStampedModel):
             self.populate_neighbors(pk)
 
     def populate_neighbors(self, paper_pk):
+        """Populate neighbors of paper
+
+        """
 
         pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
         vec = pv.get_vector()
@@ -963,9 +966,11 @@ class LSH(TimeStampedModel):
 
         if self.state == 'IDL':
             if isinstance(vec, list):
-                vec = np.array(vec)
-            if not len(vec) == self.model.size:
-                raise ValueError('vector must have same size than model.size')
+                vec = np.array(vec).squeeze()
+            if vec.ndim == 1:
+                assert len(vec) == self.model.size
+            else:
+                assert vec.shape[1] == self.model.size
 
             distances, indices = self.lsh.kneighbors(vec,
                                                      n_neighbors=n_neighbors,
