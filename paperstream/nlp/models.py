@@ -945,7 +945,7 @@ class LSH(TimeStampedModel):
                                                      paper_id=paper_pk)
         pn.set_neighbors(pks)
 
-    def k_neighbors(self, vec, **kwargs):
+    def k_neighbors(self, seed, **kwargs):
         """Return k nearest neighbors
 
         Arguments:
@@ -965,8 +965,8 @@ class LSH(TimeStampedModel):
             n_neighbors = settings.NLP_MAX_KNN_NEIGHBORS
 
         if self.state == 'IDL':
-            if isinstance(vec, list):
-                vec = np.array(vec).squeeze()
+            if isinstance(seed, list):
+                vec = np.array(seed).squeeze()
             if vec.ndim == 1:
                 assert len(vec) == self.model.size
             else:
@@ -1025,11 +1025,11 @@ class LSH(TimeStampedModel):
         # return pk of k nearest neighbors of kwargs['vec']
         elif task == 'k_neighbors':
             try:
-                vec = kwargs['vec']
+                seed = kwargs['seed']
                 k = kwargs['k']
             except KeyError as e:
                 raise e
-            pks = self.k_neighbors(vec, n_neighbors=k)
+            pks = self.k_neighbors(seed, n_neighbors=k)
             return pks
         # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':

@@ -13,11 +13,13 @@ from core.utils import pad_vector
 from library.models import Paper
 from users.models import UserLibPaper
 from nlp.models import PaperVectors, JournalVectors, Model, PaperNeighbors, LSH
+from config.celery import celery_app as capp
 
 from .validators import validate_feed_name
 from .constants import FEED_STATUS_CHOICES
-from .scoring import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
+from .scoring import Scoring, SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage
+
 
 
 class UserFeedManager(BaseUserManager):
@@ -126,31 +128,47 @@ class UserFeed(TimeStampedModel):
         ufp_pks_to_update = self.papers_match.all().values_list('pk',
                                                                 flat='True')
 
+        # instantiate scoring
+        scoring = WeightedJournalCreatedDateAverage(
+            model=self.user.settings.model,
+            user=self.user)
+
         # get target papers (excluding userlib + not trusted + empty abstract)
         # from LSH
+        # Get corresponding LSH task:
+        try:
+            lsh_task = capp.tasks['nlp.tasks.lsh_{name}_{time_lapse}'.format(
+                name=self.user.settings.model.name,
+                time_lapse=self.user.settings.time_lapse)]
+        except KeyError:
+            raise KeyError
 
-        #
-        lsh_pk = LSH.objects.get(model_id=self.user.settings.model.pk,
-                                 time_lapse=self.user.settings.time_lapse)
-        target_papers_pk = PaperNeighbors.objects\
-            .filter(paper__pk__in=self.papers_seed.values('pk'),
-                    lsh_id=lsh_pk)\
+        # get seed 2D array
+        seed_pks = self.papers_seed.all().values('pk')
+        seed_data = scoring.get_data(seed_pks)
+        seed_mat = scoring.build_mat(seed_data)
+        # Submit Celery Task to get k_neighbors
+        res = lsh_task.delay(task='k_neighbors', seed=seed_mat, k=10)
+        # Wait for Results
+        target_seed_pks = res.get(timeout=5).flatten().tolist()
+
+        # Filter exclude corresponding papers
+        target_pks = Paper.objects\
+            .filter(pk__in=target_seed_pks)\
             .exclude(Q(pk__in=self.user.lib.papers.values('pk')) |
                      Q(is_trusted=False) |
                      Q(abstract=''))\
-            .values_list('neighbors', flat=True)
+            .values_list('pk', flat=True)
 
-        # de-nest list and make unique
-        target_papers_pk = [a for b in target_papers_pk for a in b]
-        target_papers_pk = list(set(target_papers_pk))
+        # make unique
+        target_pks = list(set(target_pks + ufp_pks_to_update))
 
         # Match target paper
         objs_list = []
-        if target_papers_pk:
+        if target_pks:
             # compute scores
-            scores, pks = self.score_multi_papers(
-                target_papers_pk,
-                scoring_method=self.user.settings.scoring_method)
+            scoring.prepare(seed_pks, target_pks)
+            scores, pks = scoring.score()
             # sort scores
             ind = np.argsort(scores)[::-1]
             # create/update UserFeedPaper

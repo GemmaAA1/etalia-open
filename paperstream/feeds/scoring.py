@@ -6,6 +6,7 @@ from django.utils import timezone
 from nlp.models import PaperVectors, JournalVectors
 from users.models import UserLibPaper
 
+
 class Scoring(object):
     """Scoring abstract class"""
     def __init__(self, model, user, **kwargs):
@@ -37,7 +38,8 @@ class Scoring(object):
         self.seed_pks = seed
         self.target_pks = target
         # get_data
-        self.get_data()
+        self.seed_data = self.get_data(self.seed_pks)
+        self.target_data = self.get_data(self.target_pks)
         self.is_ready = True
 
     def score(self):
@@ -54,26 +56,17 @@ class Scoring(object):
         assert self.is_ready
         return self._run()
 
-    def get_data(self):
-        """Get useful Paper data"""
-        self.seed_data = PaperVectors.objects\
+    def get_data(self, pks):
+        data = PaperVectors.objects\
             .filter(
-                paper__pk__in=self.seed_pks,
+                paper__pk__in=pks,
                 model=self.model)\
             .values('vector',
                     'paper__pk',
                     'paper__date_ep',
                     'paper__date_pp',
                     'paper__journal__pk')
-        self.target_data = PaperVectors.objects\
-            .filter(
-                paper__pk__in=self.target_pks,
-                model=self.model)\
-            .values('vector',
-                    'paper__pk',
-                    'paper__date_ep',
-                    'paper__date_pp',
-                    'paper__journal__pk')
+        return data
 
     def build_mat(self, data):
         """Return 2D array of seed paper vectors (papers x vector)"""
