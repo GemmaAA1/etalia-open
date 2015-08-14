@@ -3,3 +3,11 @@ FEED_STATUS_CHOICES = (
     ('IDL', 'Idle'),
     ('ING', 'Syncing'),
 )
+
+
+FEED_SCORING_CHOICES = (
+    (1, 'Average'),
+    (2, 'Average Threshold binary'),
+    (3, 'Average weighted journal'),
+    (4, 'Average weighted journal-date'),
+)

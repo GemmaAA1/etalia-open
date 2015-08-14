@@ -96,8 +96,8 @@ class UserFeed(TimeStampedModel):
     def update_userfeed_vector(self):
         model_pks = Model.objects.all().values_list('pk', flat='True')
         for model_pk in model_pks:
-            ufv = UserFeedVector.objects.create(model_id=model_pk,
-                                                feed=self)
+            ufv, _ = UserFeedVector.objects.get_or_create(model_id=model_pk,
+                                                          feed=self)
             ufv.update_vector()
 
     def clean_old_papers(self):
@@ -127,9 +127,18 @@ class UserFeed(TimeStampedModel):
         # get paper that remain and need to be updated
         ufp_pks_to_update = self.papers_match.all().values_list('pk',
                                                                 flat='True')
-
         # instantiate scoring
-        scoring = WeightedJournalCreatedDateAverage(
+        if self.user.settings.scoring_method == 1:
+            Score = SimpleAverage
+        elif self.user.settings.scoring_method == 2:
+            Score = ThresholdAverage
+        elif self.user.settings.scoring_method == 3:
+            Score = WeightedJournalAverage
+        elif self.user.settings.scoring_method == 2:
+            Score = WeightedJournalCreatedDateAverage
+        else:
+            raise ValueError
+        scoring = Score(
             model=self.user.settings.model,
             user=self.user)
 
@@ -154,14 +163,12 @@ class UserFeed(TimeStampedModel):
 
         # Filter exclude corresponding papers
         target_pks = Paper.objects\
-            .filter(pk__in=target_seed_pks)\
+            .filter(Q(pk__in=target_seed_pks) |
+                    Q(pk__in=ufp_pks_to_update))\
             .exclude(Q(pk__in=self.user.lib.papers.values('pk')) |
                      Q(is_trusted=False) |
                      Q(abstract=''))\
             .values_list('pk', flat=True)
-
-        # make unique
-        target_pks = list(set(target_pks + ufp_pks_to_update))
 
         # Match target paper
         objs_list = []
@@ -225,15 +232,18 @@ class UserFeedVector(TimeStampedModel):
         self.save()
 
     def get_vector(self):
-        return self.vector[:self.model.size]
+        if self.vector:
+            return self.vector[:self.model.size]
+        else:
+            return None
 
     def update_vector(self):
-        pv_pks = self.feed.papers_seed.all().values('vectors__pk')
-        vectors = list(PaperVectors.objects.filter(id__in=pv_pks)
-                       .values_list('vector', flat='true'))
+        vectors = self.feed.papers_seed\
+            .filter(vectors__model=self.model)\
+            .values_list('vectors__vector', flat=True)
 
         # sum of vectors
-        vector = [sum(x) for x in zip(*vectors)]
+        vector = [sum(x) for x in zip(*vectors) if x[0]]  # not considering None
         self.set_vector(vector)
 
     class Meta:

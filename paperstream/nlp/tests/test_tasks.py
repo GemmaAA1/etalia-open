@@ -166,7 +166,7 @@ class LSHTaskTest(NLPDataExtendedTestCase):
         lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
         vec = np.random.randn(self.model.size)
-        res = lsh_task.delay(task='k_neighbors', vec=vec, k=4)
+        res = lsh_task.delay(task='k_neighbors', seed=vec, k=4)
         self.assertTrue(res.successful())
 
     # def test_embed_all_models_and_find_neighbors(self):

@@ -132,6 +132,12 @@ class UserLibTest(LibDataTestCase):
         UserLibPaper.objects.create(userlib=ul, paper=self.paper2)
         self.assertTrue(ul.papers.count(), 2)
 
+    def test_lib_canNOT_have_twice_the_same_paper(self):
+        ul = UserLib.objects.create(user=self.user)
+        UserLibPaper.objects.create(userlib=ul, paper=self.paper)
+        ul = UserLibPaper(userlib=ul, paper=self.paper)
+        with self.assertRaises(ValidationError):
+            ul.full_clean()
 
 class UserLibJournalTest(LibDataTestCase):
 

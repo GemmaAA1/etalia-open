@@ -10,6 +10,7 @@ from django.conf import settings
 from library.models import Paper, Journal
 from nlp.models import Model
 from core.constants import NLP_TIME_LAPSE_CHOICES
+from feeds.constants import FEED_SCORING_CHOICES
 
 from .validators import validate_first_name, validate_last_name
 from core.models import TimeStampedModel
@@ -197,6 +198,7 @@ class UserLibPaper(TimeStampedModel):
 
     class Meta:
         ordering = ['-date_created']
+        unique_together = [('userlib', 'paper')]
 
     def __str__(self):
         return '{0}@{1}'.format(self.paper.short_title(),
@@ -329,9 +331,7 @@ class UserSettings(TimeStampedModel):
 
     # scoring method to use
     scoring_method = models.IntegerField(verbose_name='Scoring Algo',
-                                         choices=((1, 'Average'),
-                                                  (2, 'Average threshold'),
-                                                  (3, 'Average date weighted')),
+                                         choices=FEED_SCORING_CHOICES,
                                          default=1)
 
     # in days

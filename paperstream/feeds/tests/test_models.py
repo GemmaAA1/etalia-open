@@ -34,6 +34,12 @@ class UserFeedBasicTest(UserFeedTestCase):
         with self.assertRaises(ValidationError):
             uf.full_clean()
 
+    def test_userfeed_can_add_seed_paper(self):
+        uf = UserFeed(name='test', user=self.user)
+        uf.save()
+        uf.add_seed_papers(self.papers)
+        self.assertTrue(uf.papers_seed.count(), self.papers.count())
+
 
 class UserFeedPaperTest(UserFeedTestCase):
 
@@ -105,22 +111,35 @@ class UserFeedVectorTestCase(UserFeedTestCase):
         vector2 = ufv.get_vector()
         self.assertEqual(list(vector), vector2)
 
-#
-# class UserFeedTest(UserFeedTestCase):
-#
-#     def setUp(self):
-#         super(UserFeedTest, self).setUp()
-#         self.userfeed = UserFeed(name='test', user=self.user)
-#         self.userfeed.save()
-#
-#     def test_userfeed_can_add_seed_paper(self):
-#         self.userfeed.add_seed_papers(self.papers)
-#         self.assertTrue(self.userfeed..papers_seed.count(), self.papers.count())
-#
-#     def test_userfeed_can_update_seedvector(self):
-#         self.userfeed.add_seed_papers(self.papers)
-#         self.userfeed.update_userfeed_vector()
+    def test_userfeedvector_vector_default_is_zero(self):
+        uf = UserFeedVector.objects.create(model=self.model,
+                                           feed=self.userfeed)
+        vector = uf.get_vector()
+        self.assertEqual(vector, None)
 
+    def test_userfeedvector_can_update_vector(self):
+        self.userfeed.add_seed_papers(self.papers)
+        ufv = UserFeedVector.objects.create(model=self.model,
+                                            feed=self.userfeed)
+        ufv.update_vector()
+
+
+class UserFeedTest(UserFeedTestCase):
+
+    def setUp(self):
+        super(UserFeedTest, self).setUp()
+        self.userfeed = UserFeed(name='test', user=self.user)
+        self.userfeed.save()
+
+    def test_userfeed_can_update_seedvector(self):
+        self.userfeed.add_seed_papers(self.papers)
+        self.userfeed.update_userfeed_vector()
+        self.assertTrue(self.userfeed.vectors.count() > 0)
+
+    def test_userfeed_can_update(self):
+        self.userfeed.add_seed_papers(self.user.lib.papers.all())
+        self.user.settings.scoring_method = 1
+        self.userfeed.update()
 
     # def test_userfeed_can_be_created(self):
     #     UserFeed.objects.create(name='test', user=self.user)

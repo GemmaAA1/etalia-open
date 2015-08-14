@@ -79,8 +79,6 @@ class ModelManager(models.Manager):
 
 class Model(TimeStampedModel):
     """Natural Language Processing Class based on Doc2Vec from Gensim
-
-    To train a new model
     """
 
     name = models.CharField(max_length=128, blank=False, null=False,
@@ -634,7 +632,7 @@ class JournalVectors(TimeStampedModel):
     Use set_vector() to pad and set vector list
     """
 
-    journal = models.ForeignKey(Journal)
+    journal = models.ForeignKey(Journal, related_name='vectors')
 
     model = models.ForeignKey(Model)
 
@@ -966,13 +964,13 @@ class LSH(TimeStampedModel):
 
         if self.state == 'IDL':
             if isinstance(seed, list):
-                vec = np.array(seed).squeeze()
-            if vec.ndim == 1:
-                assert len(vec) == self.model.size
+                seed = np.array(seed).squeeze()
+            if seed.ndim == 1:
+                assert len(seed) == self.model.size
             else:
-                assert vec.shape[1] == self.model.size
+                assert seed.shape[1] == self.model.size
 
-            distances, indices = self.lsh.kneighbors(vec,
+            distances, indices = self.lsh.kneighbors(seed,
                                                      n_neighbors=n_neighbors,
                                                      return_distance=True)
             # convert indices to paper pk
@@ -1022,7 +1020,7 @@ class LSH(TimeStampedModel):
         elif task == 'full_update':
             self.full_update()
             return 0
-        # return pk of k nearest neighbors of kwargs['vec']
+        # return pk of k nearest neighbors of kwargs['seed']
         elif task == 'k_neighbors':
             try:
                 seed = kwargs['seed']

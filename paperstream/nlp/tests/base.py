@@ -1,12 +1,11 @@
 import os
 import shutil
-import numpy as np
 from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
 
 from library.models import Journal, Paper
-from ..models import LSH, Model, PaperVectors
+from ..models import Model
 from ..tasks import register_all_models_and_lshs_tasks
 
 class NLPTestCase(TestCase):

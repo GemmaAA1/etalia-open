@@ -80,13 +80,14 @@ class Scoring(object):
     @staticmethod
     def convert_date(date):
         """Convert date into lapse of time from now in days"""
-        return (date - timezone.datetime.today().date()).days()
+        return (date - timezone.datetime.today().date()).days
 
     @staticmethod
     def logist_weight(day_lapse, baseline=0.5, k=0.1, delay=-60.0):
         """Logistic function with constant baseline term
 
         Args:
+            day_lapse (int, float): time in days (in the past form now i.e. <0)
             baseline (float): baseline
             k (float): steepness
             delay (float): logistic function kicks off at that time from now
@@ -108,14 +109,14 @@ class Scoring(object):
                 .filter(
                     userlib=self.user.lib,
                     paper_id__in=self.seed_pks)\
-                .values('paper__pk',
-                        'date_created')
+                .values_list('paper__pk',
+                             'date_created')
 
             # Convert date into lapse of time from now in days
-            created_date_dict = {k: self.convert_date(v)
+            created_date_d = {k: self.convert_date(v)
                                  for k, v in created_date}
 
-            self._created_date_dict = created_date_dict
+            self._created_date_dict = created_date_d
         return self._created_date_dict
 
     def build_created_date_vec(self, data):
@@ -139,6 +140,7 @@ class Scoring(object):
                 .filter(journal__pk__in=jpk, model=self.model)\
                 .values_list('journal__pk', 'vector')
             journal_dict = dict(journal_data)
+
             self._journal_dict = journal_dict
 
         return self._journal_dict
@@ -148,7 +150,7 @@ class Scoring(object):
         journal_mat = np.zeros((data.count(), self.model.size), dtype=np.float)
         for i, entry in enumerate(data):
             journal_mat[i] = np.array(
-                self.journal_dict[entry['paper__journal__pk']])
+                self.journal_dict[entry['paper__journal__pk']][:self.model.size])
         return journal_mat
 
     def weight_with_journal(self, data, mat):
@@ -165,7 +167,7 @@ class SimpleAverage(Scoring):
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
-        targ_mat = self.build_mat(self.targ_data)
+        targ_mat = self.build_mat(self.target_data)
         scores = 1. - np.average(distance.cdist(seed_mat, targ_mat, 'cosine'),
                                  axis=0)
         return self.target_pks, scores
@@ -174,12 +176,12 @@ class SimpleAverage(Scoring):
 class ThresholdAverage(Scoring):
 
     def __init__(self, **kwargs):
-        super(ThresholdAverage, self).__init__()
+        super(ThresholdAverage, self).__init__(**kwargs)
         self.threshold = kwargs.get('threshold', 0.6)
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
-        targ_mat = self.build_mat(self.targ_data)
+        targ_mat = self.build_mat(self.target_data)
         dis = 1. - distance.cdist(seed_mat, targ_mat, 'cosine')
         dis = np.where(dis > self.threshold, 1, 0)
         scores = np.sum(dis, axis=0)
@@ -191,7 +193,7 @@ class WeightedJournalAverage(Scoring):
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
-        targ_mat = self.build_mat(self.targ_data)
+        targ_mat = self.build_mat(self.target_data)
         # weight with journal
         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
         scores = 1. - np.average(distance.cdist(seed_mat, targ_mat, 'cosine'),
@@ -203,7 +205,7 @@ class WeightedJournalCreatedDateAverage(Scoring):
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
-        targ_mat = self.build_mat(self.targ_data)
+        targ_mat = self.build_mat(self.target_data)
         # weight with journal
         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
         date_vec = self.build_created_date_vec(self.seed_data)
