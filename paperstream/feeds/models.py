@@ -17,7 +17,7 @@ from config.celery import celery_app as capp
 
 from .validators import validate_feed_name
 from .constants import FEED_STATUS_CHOICES
-from .scoring import Scoring, SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
+from .utils import Scoring, SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage
 
 
