@@ -15,9 +15,8 @@ from users.models import UserLibPaper
 from nlp.models import PaperVectors, JournalVectors, Model, PaperNeighbors, LSH
 from config.celery import celery_app as capp
 
-from .validators import validate_feed_name
 from .constants import FEED_STATUS_CHOICES
-from .utils import Scoring, SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
+from .utils import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage
 
 logger = logging.getLogger(__name__)
@@ -62,8 +61,7 @@ class UserFeedManager(BaseUserManager):
 class UserFeed(TimeStampedModel):
     """User Feed model"""
 
-    name = models.CharField(max_length=100, default='main',
-                            validators=[validate_feed_name])
+    name = models.CharField(max_length=100, default='main')
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed')
 
