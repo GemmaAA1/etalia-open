@@ -1012,7 +1012,7 @@ class LSH(TimeStampedModel):
         # the following check is awkward but it is related to
         # https://github.com/celery/celery/issues/2695 and the fact that
         # passing kwargs argument into chain is buggy currently
-        if len(args) > 1:
+        if len(args) > 1:  # case: task = 'populate_neighbors'
             task = args[1]
             paper_pk = args[0]
         else:

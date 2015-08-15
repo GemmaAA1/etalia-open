@@ -6,6 +6,7 @@ from django.utils import timezone
 from .base import UserFeedTestCase
 from ..models import UserFeed, UserFeedVector, UserFeedPaper
 from library.models import Paper
+from nlp.models import PaperVectors
 from nlp.tasks import embed_all_models_and_find_neighbors
 
 class UserFeedBasicTest(UserFeedTestCase):
@@ -156,16 +157,22 @@ class UserFeedTest(UserFeedTestCase):
     def test_userfeed_can_create_and_then_update(self):
         ul = UserFeed.objects.create(user=self.user, papers_seed=self.papers)
         count1 = ul.papers_match.count()
-        paper = Paper.objects.create(
+        # a new paper is coming
+        new_paper = Paper.objects.create(
             title='Bla bla bla.',
             abstract='Hi. Hi, <p>hi</p> {mu}\n',
             journal=self.journal,
             date_ep=timezone.now().date(),
             is_trusted=True)
-        embed_all_models_and_find_neighbors(paper.pk)
+        pv = PaperVectors.objects.create(paper=new_paper, model=self.model)
+        vec = np.random.randn(self.model.size)
+        pv.set_vector(vec)
+        # rebuild LSHs
+        self.model.build_lshs()
         ul.update()
         count2 = ul.papers_match.count()
         self.assertTrue(count1 + 1 == count2)
+
 
 
 

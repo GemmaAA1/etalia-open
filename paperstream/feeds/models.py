@@ -163,7 +163,7 @@ class UserFeed(TimeStampedModel):
         seed_data = scoring.get_data(seed_pks)
         seed_mat = scoring.build_mat(seed_data)
         # Submit Celery Task to get k_neighbors
-        res = lsh_task.delay(task='k_neighbors', seed=seed_mat, k=10)
+        res = lsh_task.delay('k_neighbors', seed=seed_mat, k=10)
         # Wait for Results
         target_seed_pks = res.get(timeout=5).flatten().tolist()
 
