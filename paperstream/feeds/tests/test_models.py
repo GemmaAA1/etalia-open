@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 from .base import UserFeedTestCase
 from ..models import UserFeed, UserFeedVector, UserFeedPaper
-
+from library.models import Paper
 
 class UserFeedBasicTest(UserFeedTestCase):
 
@@ -138,8 +138,31 @@ class UserFeedTest(UserFeedTestCase):
 
     def test_userfeed_can_update(self):
         self.userfeed.add_seed_papers(self.user.lib.papers.all())
-        self.user.settings.scoring_method = 1
+        self.user.settings.scoring_method = 4
+        self.assertEqual(self.userfeed.papers_match.count(), 0)
         self.userfeed.update()
+        self.assertTrue(self.userfeed.papers_match.count() > 0)
 
-    # def test_userfeed_can_be_created(self):
-    #     UserFeed.objects.create(name='test', user=self.user)
+    def test_userfeed_can_be_created(self):
+        ul = UserFeed.objects.create(user=self.user, papers_seed=self.papers)
+        self.assertTrue(ul.papers_match.count() > 0)
+
+    def test_userfeed_can_create_default(self):
+        ul = UserFeed.objects.create_default(user=self.user)
+        self.assertTrue(ul.papers_match.count() > 0)
+
+    def test_userfeed_can_create_and_then_update(self):
+        ul = UserFeed.objects.create(user=self.user, papers_seed=self.papers)
+        count1 = ul.papers_match.count()
+        Paper.objects.create(
+            title='Bla bla bla.',
+            abstract='Hi. Hi, <p>hi</p> {mu}\n',
+            journal=self.journal,
+            date_ep=timezone.now().date(),
+            is_trusted=True)
+        ul.update()
+        count2 = ul.papers_match.count()
+        self.assertTrue(count1 + 1 == count2)
+
+
+

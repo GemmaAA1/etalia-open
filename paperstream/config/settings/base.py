@@ -368,6 +368,12 @@ LOGGING = {
             'filename': os.path.join(ROOT_DIR.child('logs'), 'nlp.log'),
             'formatter': 'verbose'
         },
+        'feeds': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(ROOT_DIR.child('logs'), 'feeds.log'),
+            'formatter': 'verbose'
+        },
         'users': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
@@ -410,6 +416,11 @@ LOGGING = {
         },
         'nlp': {
             'handlers': ['console', 'nlp'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'feeds': {
+            'handlers': ['console', 'feeds'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },

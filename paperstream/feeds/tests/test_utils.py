@@ -1,5 +1,6 @@
 from .base import UserFeedTestCase
-from ..utils import Scoring
+from ..utils import Scoring, SimpleAverage, ThresholdAverage, \
+    WeightedJournalAverage, WeightedJournalCreatedDateAverage
 from django.utils import timezone
 
 class ScoringTest(UserFeedTestCase):
@@ -64,6 +65,13 @@ class ScoringTest(UserFeedTestCase):
         self.assertIsNotNone(scoring._created_date_dict)
         self.assertEqual(ddict[self.paper4.pk], -10)
 
+    def test_create_date_vec(self):
+        seed_pks = [p.id for p in self.user.lib.papers.all()]
+        targ_pks = [p.id for p in [self.paper, self.paper2]]
+        scoring = Scoring(model=self.model, user=self.user)
+        scoring.prepare(seed_pks, targ_pks)
+        vec = scoring.build_created_date_vec
+
     def test_journal_dict(self):
         seed_pks = [p.id for p in self.user.lib.papers.all()]
         targ_pks = [p.id for p in [self.paper, self.paper2]]
@@ -83,3 +91,43 @@ class ScoringTest(UserFeedTestCase):
         scoring.prepare(seed_pks, targ_pks)
         j_mat = scoring.build_journal_mat(scoring.seed_data)
         self.assertEqual(j_mat.shape, (len(seed_pks), self.model.size))
+
+
+class SubScoringTest(UserFeedTestCase):
+
+    def test_simple_average_run(self):
+        seed_pks = [p.id for p in self.user.lib.papers.all()]
+        targ_pks = [p.id for p in [self.paper, self.paper2]]
+        scoring = SimpleAverage(model=self.model, user=self.user)
+        scoring.prepare(seed_pks, targ_pks)
+        scores, pks = scoring.score()
+        self.assertEqual(len(pks), len(targ_pks))
+        self.assertEqual(len(scores), len(targ_pks))
+
+    def test_threshold_average_run(self):
+        seed_pks = [p.id for p in self.user.lib.papers.all()]
+        targ_pks = [p.id for p in [self.paper, self.paper2]]
+        scoring = ThresholdAverage(model=self.model, user=self.user)
+        scoring.prepare(seed_pks, targ_pks)
+        scores, pks = scoring.score()
+        self.assertEqual(len(pks), len(targ_pks))
+        self.assertEqual(len(scores), len(targ_pks))
+
+    def test_journal_weighted_average_run(self):
+        seed_pks = [p.id for p in self.user.lib.papers.all()]
+        targ_pks = [p.id for p in [self.paper, self.paper2]]
+        scoring = WeightedJournalAverage(model=self.model, user=self.user)
+        scoring.prepare(seed_pks, targ_pks)
+        scores, pks = scoring.score()
+        self.assertEqual(len(pks), len(targ_pks))
+        self.assertEqual(len(scores), len(targ_pks))
+
+    def test_date_and_journal_weighted_average_run(self):
+        seed_pks = [p.id for p in self.user.lib.papers.all()]
+        targ_pks = [p.id for p in [self.paper, self.paper2]]
+        scoring = WeightedJournalCreatedDateAverage(model=self.model,
+                                                    user=self.user)
+        scoring.prepare(seed_pks, targ_pks)
+        scores, pks = scoring.score()
+        self.assertEqual(len(pks), len(targ_pks))
+        self.assertEqual(len(scores), len(targ_pks))

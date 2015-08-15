@@ -125,7 +125,7 @@ class Scoring(object):
         date_vec = np.zeros(data.count(), dtype=np.float)
         for i, entry in enumerate(data):
             date_vec[i] = self.logist_weight(
-                self.created_date_dict[entry['paper_pk']])
+                self.created_date_dict[entry['paper__pk']])
         return date_vec
 
     @property

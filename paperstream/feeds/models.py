@@ -1,5 +1,5 @@
 import numpy as np
-
+import logging
 from django.db import models
 
 from django.conf import settings
@@ -20,6 +20,7 @@ from .constants import FEED_STATUS_CHOICES
 from .utils import Scoring, SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage
 
+logger = logging.getLogger(__name__)
 
 
 class UserFeedManager(BaseUserManager):
@@ -121,6 +122,11 @@ class UserFeed(TimeStampedModel):
         - Get only the N top scored papers
         - Create/Update UserFeedPaper
         """
+        logger.info('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- starting...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
+
+        self.set_state('ING')
 
         self.clean_old_papers()
 
@@ -134,7 +140,7 @@ class UserFeed(TimeStampedModel):
             Score = ThresholdAverage
         elif self.user.settings.scoring_method == 3:
             Score = WeightedJournalAverage
-        elif self.user.settings.scoring_method == 2:
+        elif self.user.settings.scoring_method == 4:
             Score = WeightedJournalCreatedDateAverage
         else:
             raise ValueError
@@ -175,14 +181,16 @@ class UserFeed(TimeStampedModel):
         if target_pks:
             # compute scores
             scoring.prepare(seed_pks, target_pks)
-            scores, pks = scoring.score()
+            pks, scores = scoring.score()
             # sort scores
-            ind = np.argsort(scores)[::-1]
+            ind = np.argsort(scores)[::-1].tolist()
             # create/update UserFeedPaper
-            for i in range(settings.FEED_SCORE_KEEP_N_PAPERS):
+            for i in range(min([settings.FEED_SCORE_KEEP_N_PAPERS, len(pks)])):
                 # update
                 if pks[ind[i]] in ufp_pks_to_update:
-                    ufp = UserFeedPaper(feed=self, paper_id=pks[ind[i]])
+                    ufp, _ = UserFeedPaper.objects.get_or_create(
+                        feed=self,
+                        paper_id=pks[ind[i]])
                     ufp.score = scores[ind[i]]
                     ufp.is_score_computed = True
                     ufp.save()
@@ -194,7 +202,11 @@ class UserFeed(TimeStampedModel):
                         is_score_computed=True))
             UserFeedPaper.objects.bulk_create(objs_list)
 
+        self.set_state('IDL')
 
+        logger.info('Updating UserFeed ({pk}/{feed_name}@{user_email}) - DONE'
+                    .format(pk=self.id, feed_name=self.name,
+                            user_email=self.user.email))
 
 class UserFeedPaper(TimeStampedModel):
     """Relationship table between model and paper with scoring

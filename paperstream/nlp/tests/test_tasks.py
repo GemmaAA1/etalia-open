@@ -1,5 +1,4 @@
 import numpy as np
-from django.test import TestCase
 from django.utils import timezone
 from config.celery import celery_app as app
 from core.constants import NLP_TIME_LAPSE_CHOICES
