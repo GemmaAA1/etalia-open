@@ -1,10 +1,12 @@
 import numpy as np
 
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .base import UserFeedTestCase
 from ..models import UserFeed, UserFeedVector, UserFeedPaper
 from library.models import Paper
+from nlp.tasks import embed_all_models_and_find_neighbors
 
 class UserFeedBasicTest(UserFeedTestCase):
 
@@ -154,12 +156,13 @@ class UserFeedTest(UserFeedTestCase):
     def test_userfeed_can_create_and_then_update(self):
         ul = UserFeed.objects.create(user=self.user, papers_seed=self.papers)
         count1 = ul.papers_match.count()
-        Paper.objects.create(
+        paper = Paper.objects.create(
             title='Bla bla bla.',
             abstract='Hi. Hi, <p>hi</p> {mu}\n',
             journal=self.journal,
             date_ep=timezone.now().date(),
             is_trusted=True)
+        embed_all_models_and_find_neighbors(paper.pk)
         ul.update()
         count2 = ul.papers_match.count()
         self.assertTrue(count1 + 1 == count2)

@@ -983,7 +983,7 @@ class LSH(TimeStampedModel):
             raise InvalidState('LSH is not Idle. current state is {0}'
                                .format(self.state))
 
-    def tasks(self, task=None, **kwargs):
+    def tasks(self, *args, **kwargs):
         """Use from tasks.py for calling task while object remains in-memory
 
         This is an odd design. This method dispatches tasks that can be run
@@ -1009,8 +1009,14 @@ class LSH(TimeStampedModel):
             Depends on the task
         """
 
-        if not task:
-            raise KeyError('task not defined')
+        # the following check is awkward but it is related to
+        # https://github.com/celery/celery/issues/2695 and the fact that
+        # passing kwargs argument into chain is buggy currently
+        if len(args) > 1:
+            task = args[1]
+            paper_pk = args[0]
+        else:
+            task = args[0]
 
         # update of LSH (partial or not)
         if task == 'update':
@@ -1031,11 +1037,6 @@ class LSH(TimeStampedModel):
             return pks
         # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':
-            try:
-                paper_pk = kwargs['paper_pk']
-            except KeyError as e:
-                raise e
-
             self.populate_neighbors(paper_pk)
 
             return paper_pk

@@ -140,35 +140,36 @@ class LSHTaskTest(NLPDataExtendedTestCase):
     def test_update_task(self):
         lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_{time_lapse}'.format(
             model_name=self.model.name, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])]
-        res = lsh_task.delay(task='update')
+        res = lsh_task.delay('update')
         self.assertTrue(res.successful())
 
     def test_update_partial_task(self):
         lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
-        res = lsh_task.delay(task='update')
+        res = lsh_task.delay('update')
         self.assertTrue(res.successful())
 
     def test_full_update_task(self):
         lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
-        res = lsh_task.delay(task='full_update')
+        res = lsh_task.delay('full_update')
         self.assertTrue(res.successful())
 
     def test_populate_neighbors_task(self):
         lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
-        res = lsh_task.delay(task='populate_neighbors', paper_pk=self.paper.pk)
+        res = lsh_task.delay(self.paper.pk, 'populate_neighbors')
         self.assertTrue(res.successful())
 
     def test_k_neighbors_task(self):
         lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
         vec = np.random.randn(self.model.size)
-        res = lsh_task.delay(task='k_neighbors', seed=vec, k=4)
+        res = lsh_task.delay('k_neighbors', seed=vec, k=4)
         self.assertTrue(res.successful())
 
-    # def test_embed_all_models_and_find_neighbors(self):
-    #     embed_all_models_and_find_neighbors(self.new_paper.pk)
-    #     self.assertEqual(self.new_paper.vectors.count(), 2)
-    #     self.assertEqual(self.new_paper.neighbors.count(), 2)
+    def test_embed_all_models_and_find_neighbors(self):
+        embed_all_models_and_find_neighbors(self.new_paper.pk)
+        self.assertEqual(self.new_paper.vectors.count(), 2)
+        self.assertEqual(self.new_paper.neighbors.count(),
+                         2 * len(NLP_TIME_LAPSE_CHOICES))
