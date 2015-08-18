@@ -26,7 +26,6 @@ def logout(request):
     auth_logout(request)
     return redirect('/')
 
-
 def done(request):
     redirect('landing')
 

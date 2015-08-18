@@ -83,15 +83,19 @@ class ScoringTest(UserFeedTestCase):
         self.assertEqual(jdict[self.journal1.pk],
                          self.journal1.vectors.get(model=self.model)
                          .vector)
+        self.assertEqual(jdict[self.journal.pk],
+                         self.journal.vectors.get(model=self.model)
+                         .vector)
 
     def test_build_journal_mat(self):
         seed_pks = [p.id for p in self.user.lib.papers.all()]
         targ_pks = [p.id for p in [self.paper, self.paper2]]
         scoring = Scoring(model=self.model, user=self.user)
         scoring.prepare(seed_pks, targ_pks)
-        j_mat = scoring.build_journal_mat(scoring.seed_data)
+        j_mat, ratio = scoring.build_journal_mat(scoring.seed_data)
         self.assertEqual(j_mat.shape, (len(seed_pks), self.model.size))
-
+        self.assertEqual(len(ratio), len(seed_pks))
+        self.assertIn(0, ratio.tolist())
 
 class SubScoringTest(UserFeedTestCase):
 

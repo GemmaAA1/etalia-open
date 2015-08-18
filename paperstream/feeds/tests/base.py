@@ -42,13 +42,13 @@ class UserFeedTestCase(TestCase):
         self.paper5 = Paper.objects.create(
             title='Bli bli.',
             abstract='',
-            journal=self.journal,
+            journal=self.journal1,
             date_ep=timezone.now().date(),
             is_trusted=True)
         self.paper6 = Paper.objects.create(
             title='Bli bli.',
             abstract='',
-            journal=self.journal1,
+            journal=None,
             date_ep=timezone.now().date(),
             is_trusted=True)
 

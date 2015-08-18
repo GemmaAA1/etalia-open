@@ -134,7 +134,8 @@ class Scoring(object):
         """
         if not self._journal_dict:
             # get journal of seed papers
-            jpk = [sd['paper__journal__pk'] for sd in self.seed_data]
+            jpk = [sd['paper__journal__pk'] for sd in self.seed_data
+                   if sd['paper__journal__pk']]
             jpk = list(set(jpk))
             journal_data = JournalVectors.objects\
                 .filter(journal__pk__in=jpk, model=self.model)\
