@@ -265,7 +265,8 @@ FEED_JOURNAL_VECTOR_RATIO = 0.2
 
 # FEED APP
 # ------------------------------------------------------------------------------
-FEED_SCORE_KEEP_N_PAPERS = 100
+FEEDS_SCORE_KEEP_N_PAPERS = 100
+FEEDS_DISPLAY_N_PAPERS = 100
 
 
 # CELERY
@@ -273,6 +274,8 @@ FEED_SCORE_KEEP_N_PAPERS = 100
 
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
+# BROKER_URL = 'pyamqp://'
+# CELERY_RESULT_BACKEND = 'pyamqp://'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
 

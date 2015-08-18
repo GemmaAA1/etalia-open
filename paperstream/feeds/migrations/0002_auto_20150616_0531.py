@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import feeds.validators
 
 
 class Migration(migrations.Migration):
@@ -24,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userfeed',
             name='name',
-            field=models.CharField(default='Main', max_length=100, validators=[feeds.validators.validate_feed_name]),
+            field=models.CharField(default='Main', max_length=100),
         ),
         migrations.AddField(
             model_name='userfeed',

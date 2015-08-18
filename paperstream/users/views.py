@@ -1,12 +1,8 @@
-import json
-from django.contrib import messages
-from django.shortcuts import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
-from django.contrib.auth import logout as auth_logout, login, \
-    REDIRECT_FIELD_NAME
+from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView
 from django.views.generic.list import ListView
 from django.conf import settings
@@ -52,7 +48,7 @@ class UserLoginView(AjaxableResponseMixin, FormView):
             return response
 
     def get_success_url(self):
-        return reverse('feeds:home')
+        return reverse('feeds:feed')
 
     def get_ajax_data(self):
         data = {'email': self.request.user.email,

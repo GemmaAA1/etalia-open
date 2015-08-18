@@ -39,6 +39,11 @@ class PaddingTest(TestCase):
         vec = np.zeros((settings.NLP_MAX_VECTOR_SIZE, ))
         pad_vector(vec)
 
+    def test_vector_is_empty(self):
+        vec = []
+        vec2 = pad_vector(vec)
+        self.assertEqual(vec2, [None for _ in range(settings.NLP_MAX_VECTOR_SIZE)])
+
     def test_padding_neighbors(self):
         vec = np.random.rand(self.size)
         vec_pad = pad_neighbors(vec)

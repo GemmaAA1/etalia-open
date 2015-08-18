@@ -148,15 +148,21 @@ class Scoring(object):
     def build_journal_mat(self, data):
         """Return 2D array matching elements of data"""
         journal_mat = np.zeros((data.count(), self.model.size), dtype=np.float)
+        ratio = np.ones(data.count()) * self.journal_ratio
         for i, entry in enumerate(data):
-            journal_mat[i] = np.array(
-                self.journal_dict[entry['paper__journal__pk']][:self.model.size])
-        return journal_mat
+            try:
+                journal_mat[i] = \
+                    np.array(self.journal_dict[entry['paper__journal__pk']]
+                             [:self.model.size])
+            except KeyError:
+                ratio[i] = 0.0
+
+        return journal_mat, ratio
 
     def weight_with_journal(self, data, mat):
         """Return the weights 2D array of journal and mat"""
-        journal_mat = self.build_journal_mat(data)
-        return (1. - self.journal_ratio) * mat + self.journal_ratio*journal_mat
+        journal_mat, ratio = self.build_journal_mat(data)
+        return ((1. - ratio) * mat.T).T + (ratio * journal_mat.T).T
 
     def _run(self):
         """Returns a subset of target primary key and corresponding score"""

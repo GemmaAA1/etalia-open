@@ -573,8 +573,8 @@ class PaperVectors(TimeStampedModel):
         unique_together = ('paper', 'model')
 
     def __str__(self):
-        return '{short_title}/{name}'.format(short_title=self.paper.short_title,
-                                             name=self.model.name)
+        return '{paper_pk}/{name}'.format(paper_pk=self.paper.pk,
+                                          name=self.model.name)
 
     def set_vector(self, vector):
         self.vector = pad_vector(vector)
@@ -947,13 +947,13 @@ class LSH(TimeStampedModel):
         """Return k nearest neighbors
 
         Arguments:
-            vec (np.array or list): An array of size matching the model size
+            seed (np.array or list): A 1d or 2d array (N samples x model.size)
 
             Optional:
             n_neighbors (int): number of neighbors
 
         Returns:
-
+            (np.array): A 2d array of indices of the k-nearest neighbors
 
         """
 
@@ -982,6 +982,37 @@ class LSH(TimeStampedModel):
         else:
             raise InvalidState('LSH is not Idle. current state is {0}'
                                .format(self.state))
+
+    def k_neighbors_pks(self, seed_pks, model_pk, **kwargs):
+        """Return k nearest neighbors
+
+        This method duplicates k_neighbors method because it is used for
+        asynchronous task so that only list of PaperVector keys is serialized
+        and not the entire 2D array (that by the way crashes celery in my test)
+
+        Arguments:
+            seed (list): list of primary PaperVector keys
+
+            Optional:
+            n_neighbors (int): number of neighbors
+
+        Returns:
+            (list): A nested list of indices of the k-nearest neighbors
+        """
+
+        data = PaperVectors.objects\
+            .filter(paper__pk__in=seed_pks,
+                    model__pk=model_pk)\
+            .values('vector')
+        model_size = Model.objects.get(pk=model_pk).size
+
+        mat = np.zeros((len(data), model_size), dtype=np.float)
+        # populate
+        for i, entry in enumerate(data):
+            mat[i] = np.array(entry['vector'][:model_size])
+
+        indices = self.k_neighbors(mat, **kwargs)
+        return indices.tolist()
 
     def tasks(self, *args, **kwargs):
         """Use from tasks.py for calling task while object remains in-memory
@@ -1026,19 +1057,18 @@ class LSH(TimeStampedModel):
         elif task == 'full_update':
             self.full_update()
             return 0
-        # return pk of k nearest neighbors of kwargs['seed']
-        elif task == 'k_neighbors':
+        elif task == 'k_neighbors_pks':
             try:
-                seed = kwargs['seed']
+                seed_pks = kwargs['seed_pks']
+                model_pk = kwargs['model_pk']
                 k = kwargs['k']
             except KeyError as e:
                 raise e
-            pks = self.k_neighbors(seed, n_neighbors=k)
+            pks = self.k_neighbors_pks(seed_pks, model_pk, n_neighbors=k)
             return pks
         # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':
             self.populate_neighbors(paper_pk)
-
             return paper_pk
         else:
             print(task)

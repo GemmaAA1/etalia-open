@@ -54,7 +54,8 @@ class UserFeedManager(BaseUserManager):
         """
         if 'user' not in kwargs:
             raise AssertionError('<user> is not defined')
-        papers = kwargs.get('user').lib.papers.all()
+        user = kwargs.get('user')
+        papers = user.lib.papers.all()
         return self.create(name='main', papers_seed=papers, **kwargs)
 
 
@@ -63,7 +64,7 @@ class UserFeed(TimeStampedModel):
 
     name = models.CharField(max_length=100, default='main')
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feeds')
 
     # Papers that are used in the similarity matching
     papers_seed = models.ManyToManyField(Paper,
@@ -142,6 +143,7 @@ class UserFeed(TimeStampedModel):
             Score = WeightedJournalCreatedDateAverage
         else:
             raise ValueError
+
         scoring = Score(
             model=self.user.settings.model,
             user=self.user)
@@ -156,14 +158,19 @@ class UserFeed(TimeStampedModel):
         except KeyError:
             raise KeyError
 
-        # get seed 2D array
+
+        #TODO: Celery is failing when seed_pks is large
         seed_pks = self.papers_seed.all().values('pk')
-        seed_data = scoring.get_data(seed_pks)
-        seed_mat = scoring.build_mat(seed_data)
-        # Submit Celery Task to get k_neighbors
-        res = lsh_task.delay('k_neighbors', seed=seed_mat, k=10)
-        # Wait for Results
-        target_seed_pks = res.get(timeout=5).flatten().tolist()
+        # # Submit Celery Task to get k_neighbors
+        # res = lsh_task.delay('k_neighbors_pks',
+        #                      seed_pks=seed_pks,
+        #                      model_pk=self.user.settings.model.pk,
+        #                      k=10)
+        # # Wait for Results
+        # target_seed_pks = res.get(timeout=5).flatten().tolist()
+        target_seed_pks = LSH.objects.load(
+            model=self.user.settings.model,
+            time_lapse=self.user.settings.time_lapse).lsh.pks
 
         # Filter exclude corresponding papers
         target_pks = Paper.objects\
@@ -183,7 +190,7 @@ class UserFeed(TimeStampedModel):
             # sort scores
             ind = np.argsort(scores)[::-1].tolist()
             # create/update UserFeedPaper
-            for i in range(min([settings.FEED_SCORE_KEEP_N_PAPERS, len(pks)])):
+            for i in range(min([settings.FEEDS_SCORE_KEEP_N_PAPERS, len(pks)])):
                 # update
                 if pks[ind[i]] in ufp_pks_to_update:
                     ufp, _ = UserFeedPaper.objects.get_or_create(
@@ -224,6 +231,10 @@ class UserFeedPaper(TimeStampedModel):
     class Meta:
         ordering = ['-score']
         unique_together = [('feed', 'paper')]
+
+    def __str__(self):
+        return '{paper}/{score}'.format(paper=self.paper.short_title,
+                                        score=self.score)
 
 class UserFeedVector(TimeStampedModel):
     """Feature vector for feed is defined as the averaged of paper vectors in

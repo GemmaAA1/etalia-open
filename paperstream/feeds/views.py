@@ -1,35 +1,40 @@
-from django.conf import settings
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
-from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from braces.views import LoginRequiredMixin
 
 from core.mixins import ProfileModalFormsMixin
-from library.models import Paper
 from .models import UserFeed, UserFeedPaper
 
 from .tasks import update_feed as async_update_feed
 
+class Feed(LoginRequiredMixin, ProfileModalFormsMixin, ListView):
 
-class home_feed(LoginRequiredMixin, ProfileModalFormsMixin, ListView):
     model = UserFeedPaper
     paginate_by = 10
     template_name = 'feeds/feed.html'
 
     def get_queryset(self):
-        ufp = UserFeedPaper.objects.filter(
-            Q(feed=self.request.user.feed.first()),
-            Q(is_disliked=False))[:100]
-        return ufp
+        super(Feed, self).get_queryset()
+        feed_name = self.kwargs.get('feed_name', 'main') or 'main'
+        self.userfeed = get_object_or_404(UserFeed, user=self.request.user,
+                                          name=feed_name)
+        ufp = UserFeedPaper.objects.filter(feed=self.userfeed,
+                                           is_disliked=False)
+        return ufp[:settings.FEEDS_DISPLAY_N_PAPERS]
 
-home = home_feed.as_view()
+    def get_context_data(self, **kwargs):
+        context = super(Feed, self).get_context_data(**kwargs)
+        context['userfeed'] = self.userfeed
+        return context
 
-# @login_required
+feed_view = Feed.as_view()
+
+@login_required
 def async_update_feed(request, pk):
-    # async_update_feed.apply_async(args=[pk, ], serializer='json')
-    async_update_feed(pk)
+    async_update_feed.delay(pk)
 
 
 # @login_required
