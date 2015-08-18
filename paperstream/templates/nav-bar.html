@@ -16,15 +16,25 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand topnav" href="{% url 'core:home' %}"><strong>PaperStream.io</strong></a>
+            <a class="navbar-brand topnav" href="{% url 'core:home' %}">
+                <strong>PaperStream.io</strong>
+            </a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         {% if user.is_authenticated %}
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
 
-                    <li id="nav-bar-feed" class="{% active request 'feed.+' %}">
-                        <a href="{% url 'feeds:feed' %}">Feed</a>
+                    <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
+{#                        <a href="{% url 'feeds:feed' %}">Feeds</a>#}
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Feeds<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for feed in user.feeds.all %}
+                                <li><a href="{% url 'feeds:feed' %}">{{ feed.name }}</a></li>
+                            {% endfor %}
+                          <li class="divider"></li>
+                          <li><a href="#">+ Create New</a></li>
+                        </ul>
                     </li>
                     <li id="nav-bar-library" class="{% active request 'library.+' %}">
                         <a href="{% url 'user:library' %}">Library</a>
@@ -38,10 +48,7 @@
                     <li class="{% active request 'search.+' %}">
                         <a href=""><span class="glyphicon glyphicon-search"></span></a>
                     </li>
-                    <li class="{% active request 'message.+' %}">
-                        <a href=""><span class="glyphicon glyphicon-envelope"></span></a>
-                    </li>
-                    <li class="dropdown {% active request 'library.+|accounts.+' %}">
+                    <li class="dropdown {% active request 'accounts.+' %}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
                         <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
