@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from .base import UserFeedTestCase
 
 from ..models import UserFeed
-from ..views import feed_view
+from ..views import feed_view, update_feed
 
 class FeedViewTestCase(UserFeedTestCase):
 
@@ -73,3 +73,18 @@ class FeedViewTestCase(UserFeedTestCase):
                          min(self.feed2.papers_match.count(),
                              settings.FEEDS_DISPLAY_N_PAPERS))
 
+class FeedUpdateTest(UserFeedTestCase):
+
+    def setUp(self):
+        super(FeedViewTestCase, self).setUp()
+        self.factory = RequestFactory()
+        self.feed_default = UserFeed.objects.create_default(user=self.user)
+        self.feed2 = UserFeed.objects.create(user=self.user, name='test',
+                                             papers_seed=self.papers)
+
+    def test_user_can_run_update_feed(self):
+        feed_pk = self.feed2.pk
+        request = self.factory.get('/feed/update-feed/{feed_pk}/'
+                                   .format(feed_pk=feed_pk))
+        request.user = self.user
+        response = update_feed(request)

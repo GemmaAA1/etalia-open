@@ -33,7 +33,10 @@ class Feed(LoginRequiredMixin, ProfileModalFormsMixin, ListView):
 feed_view = Feed.as_view()
 
 @login_required
-def async_update_feed(request, pk):
+def update_feed(request, pk):
+    # check if user is owner of feed
+    user = UserFeed.objects.get(pk=pk).user
+    assert user == request.user
     async_update_feed.delay(pk)
 
 

@@ -26,8 +26,8 @@
                     <li id="nav-bar-feed" class="{% active request 'feed.+' %}">
                         <a href="{% url 'feeds:feed' %}">Feed</a>
                     </li>
-                    <li id="nav-bar-discover" class="{% active request 'discover.+' %}">
-                        <a href="#">Discover</a>
+                    <li id="nav-bar-library" class="{% active request 'library.+' %}">
+                        <a href="{% url 'user:library' %}">Library</a>
                     </li>
                     <li id="nav-bar-connect" class="{% active request 'connect.+' %}">
                         <a href="#">Connect</a>
@@ -45,7 +45,6 @@
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
                         <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
-                          <li class="{% active request 'library.+' %}"><a href="{% url 'user:library' %}">Library</a></li>
                           <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Profile</a></li>
                           <li><a href="#">Help</a></li>
                           <li class="divider"></li>

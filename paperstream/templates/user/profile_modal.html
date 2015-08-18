@@ -7,7 +7,7 @@
                 <h4 class="modal-title"> <code>{{ user.email }}</code></h4>
             </div>
             <div class="modal-body">
-                <div class="tabbable">
+                <div class="table">
                     <!-- Only required for left/right tabs -->
                     <ul class="nav nav-tabs">
                         <li class="active"><a href="#tab1" data-toggle="tab">Info</a></li>
@@ -67,8 +67,8 @@
                         <div class="tab-pane" id="tab4">
                             <p></p>
                             <ul class="list-group">
-                                {% for feed in user.feed.all %}
-                                <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.pk %}"> (update)</a></li>
+                                {% for feed in user.feeds.all %}
+                                    <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.pk %}"> (update)</a></li>
                                 {% endfor %}
                             </ul>
                         </div>

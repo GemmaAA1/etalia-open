@@ -256,5 +256,5 @@ def async_update_user_lib(request):
     provider_name = user.social_auth.first().provider
     async_update_lib.apply_async(args=[user.pk, provider_name],
                                  serializer='json')
-    return redirect('feeds:home')
+    return redirect('feeds:main')
 
