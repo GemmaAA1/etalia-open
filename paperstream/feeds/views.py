@@ -82,6 +82,15 @@ class UpdateFeedView(LoginRequiredMixin, ModalMixin, UpdateView):
 
     model = UserFeed
     form_class = UpdateUserFeedForm
+    template_name = 'feeds/update_feed.html'
+
+    def get_object(self, queryset=None):
+        return UserFeed.objects.get(user=self.request.user,
+                                    name=self.kwargs['feed_name'])
+
+    def get_success_url(self):
+        return reverse('feeds:feed', kwargs={'feed_name': self.object.name})
+
 
 modify_feed_view = UpdateFeedView.as_view()
 

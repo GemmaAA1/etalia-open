@@ -18,44 +18,26 @@
                 <div class="col-lg-1"></div>
                 <div class="col-lg-10">
                     <ul class="list-group">
-                        <h3>{{ userfeed.name }} <a href="#">(edit)</a></h3>
-                        {% for ufp in object_list %}
-                            <li id="{{ ufp.id }}" class="list-group-item">
-                                <div class="btn-group pull-right" role="group" aria-label="...">
-                                    <span class="btn-group dislikes"  id="dislikes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-minus"></span></button>
-                                    </span>
-                                    <span class="btn-group likes" id="likes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                        <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-plus"></span></button>
-                                    </span>
-                                </div>
-
-                                <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">
-                                    <a class="list-group-item-heading" href="{{ ufp.paper.url }}" target="_blank"> <strong>{{ ufp.paper.title }}</strong></a>
-                                </span>
-                                <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
-                                <p>{{ ufp.paper.print_journal_title }}, {{ ufp.paper.print_date }}, {{ ufp.paper.print_ids }}</p>
-                                <p><span>(score: {{ufp.score}})</span></p>
-                                <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>
-                            </li>
+                        <h3>{{ object.name }} <a href="#">(edit)</a></h3>
+                        {% for paper in object.papers_seed.all %}
+                            <tr id={{ seed_paper.pk }}>
+                                <td>{{ paper.print_compact_first_author }}</td>
+                                <td id="paper_title">{{ paper.short_title }}</td>
+                                <td>{{ paper.print_date }}</td>
+                            </tr>
+                            <br>
+                        {% endfor %}
+                        <br>
+                        <br>
+                        {% for paper in object.user.lib.papers.all %}
+                            <tr id={{ seed_paper.pk }}>
+                                <td>{{ paper.print_compact_first_author }}</td>
+                                <td id="paper_title">{{ paper.short_title }}</td>
+                                <td>{{ paper.print_date }}</td>
+                            </tr>
                             <br>
                         {% endfor %}
                     </ul>
-
-                    <!-- Pagination bar -->
-                    {% if is_paginated %}
-                        <ul class="pager">
-                            {% if page_obj.has_previous %}
-                                <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
-                            {% endif %}
-                            <span class="page-current">
-                          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                          </span>
-                            {% if page_obj.has_next %}
-                                <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
-                            {% endif %}
-                        </ul>
-                    {% endif %}
                 </div>
                 <div class="col-lg-1"></div>
             </div>
