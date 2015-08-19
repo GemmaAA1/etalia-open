@@ -158,8 +158,7 @@ class UserFeed(TimeStampedModel):
         except KeyError:
             raise KeyError
 
-
-        #TODO: Celery is failing when seed_pks is large
+        #TODO: Celery is failing when seed_pks is large -> Test on a toy example
         seed_pks = self.papers_seed.all().values('pk')
         # # Submit Celery Task to get k_neighbors
         # res = lsh_task.delay('k_neighbors_pks',

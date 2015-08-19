@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from .base import UserFeedTestCase
 
 from ..models import UserFeed
-from ..views import feed_view, update_feed
+from ..views import feed_view, update_feed_view, create_feed_view
 
 class FeedViewTestCase(UserFeedTestCase):
 
@@ -76,7 +76,7 @@ class FeedViewTestCase(UserFeedTestCase):
 class FeedUpdateTest(UserFeedTestCase):
 
     def setUp(self):
-        super(FeedViewTestCase, self).setUp()
+        super(FeedUpdateTest, self).setUp()
         self.factory = RequestFactory()
         self.feed_default = UserFeed.objects.create_default(user=self.user)
         self.feed2 = UserFeed.objects.create(user=self.user, name='test',
@@ -87,4 +87,16 @@ class FeedUpdateTest(UserFeedTestCase):
         request = self.factory.get('/feed/update-feed/{feed_pk}/'
                                    .format(feed_pk=feed_pk))
         request.user = self.user
-        response = update_feed(request)
+        response = update_feed_view(request)
+
+
+class CreateFeedTest(UserFeedTestCase):
+
+    def test_create_feed_create_new_feed(self):
+        request = self.factory.get('/feed/create-feed')
+        feed_name = 'test'
+        request.POST['name'] = feed_name
+        request.user = self.user
+        create_feed_view(request)
+        feed_names = UserFeed.objects.filter(user=self.user).values_list('name')
+        self.assertIn(feed_name, feed_names)

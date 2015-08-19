@@ -66,10 +66,11 @@
 
     {% endblock content %}
 
-    <!-- modal -->
+    <!-- modals -->
     {% block modal %}
         {% if user.is_authenticated %}
             {% include "user/profile_modal.html" %}
+            {% include "feeds/create_new_modal.html" %}
         {% else %}
             {% include "user/login_modal.html" %}
         {% endif %}

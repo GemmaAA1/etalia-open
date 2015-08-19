@@ -1,7 +1,7 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-
+from django.db.models import Q
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView
 from django.views.generic.list import ListView
@@ -147,8 +147,21 @@ class UserLibraryView(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        papers = self.request.user.lib.papers.all()
-        return papers
+        query_set = self.request.user.lib.papers.all()
+        return self.filter_queryset(query_set)
+
+    def filter_queryset(self, queryset):
+        # Get the q GET parameter
+        q = self.request.GET.get("query")
+        if q:
+            # return a filtered queryset
+            return queryset.filter(Q(title__icontains=q) |
+                                   Q(abstract__icontains=q) |
+                                   Q(journal__title__icontains=q) |
+                                   Q(authors__last_name__icontains=q) |
+                                   Q(authors__first_name__icontains=q))
+        # No q is specified so we return queryset
+        return queryset
 
 library = UserLibraryView.as_view()
 

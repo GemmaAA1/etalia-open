@@ -117,9 +117,6 @@ class UserAffiliationForm(forms.ModelForm):
 
 class UserSettingsForm(forms.ModelForm):
 
-    # model = forms.ModelChoiceField(queryset=Model.objects.all(),
-    #                                to_field_name='name')
-
     def __init__(self, *args, **kwargs):
         super(UserSettingsForm, self).__init__(*args, **kwargs)
         self.fields['model'].choices = [(mod.pk, mod.name) for mod in Model.objects.all()]

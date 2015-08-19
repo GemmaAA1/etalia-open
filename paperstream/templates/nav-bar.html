@@ -23,17 +23,22 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         {% if user.is_authenticated %}
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <form class="navbar-form navbar-left" role="search">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" name="query" value="">
+                    </div>
+                    <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+                </form>
                 <ul class="nav navbar-nav navbar-right">
-
                     <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
 {#                        <a href="{% url 'feeds:feed' %}">Feeds</a>#}
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Feeds<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             {% for feed in user.feeds.all %}
-                                <li><a href="{% url 'feeds:feed' %}">{{ feed.name }}</a></li>
+                                <li><a href="{% url 'feeds:feed' feed.name %}">{{ feed.name }}</a></li>
                             {% endfor %}
                           <li class="divider"></li>
-                          <li><a href="#">+ Create New</a></li>
+                          <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>
                         </ul>
                     </li>
                     <li id="nav-bar-library" class="{% active request 'library.+' %}">
@@ -44,9 +49,6 @@
                     </li>
                     <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
                         <a href="#">Comment</a>
-                    </li>
-                    <li class="{% active request 'search.+' %}">
-                        <a href=""><span class="glyphicon glyphicon-search"></span></a>
                     </li>
                     <li class="dropdown {% active request 'accounts.+' %}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
