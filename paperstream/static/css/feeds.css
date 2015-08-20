@@ -11,7 +11,8 @@
 
 .feeds .feed {
     padding-top: 50px;
-    font-family: "martel",Georgia,"Times New Roman",Times,serif;
+    /*font-family: "martel",Georgia,"Times New Roman",Times,serif;*/
+    font-family: 'OpenSansRegular',sans-serif;
 }
 
 .feeds .abstract {
