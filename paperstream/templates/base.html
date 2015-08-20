@@ -65,7 +65,6 @@
 
     <!-- body -->
     {% block content %}
-
     {% endblock content %}
 
     <!-- modals -->
@@ -73,23 +72,18 @@
         {% if user.is_authenticated %}
             {% include "user/profile_modal.html" %}
             {% include "feeds/create_new_modal.html" %}
+            {% if user.lib.status == 'ING' %}
+                {% include "users/sync_lib_modal.html" %}
+            {% endif %}
+            {% if userfeed.state == 'ING' %}
+                {% include "feeds/update_feed_modal.html" %}
+            {% endif %}
+
         {% else %}
             {% include "user/login_modal.html" %}
         {% endif %}
     {% endblock modal %}
 
-    <!-- library loading modal view -->
-    {% if user.is_authenticated and user.lib.status == 'ING'%}
-        <div class="syncing" id="syncing-lib-block">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    {% include "core/sync_lib_modal.html" %}
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- Footer -->
     {% block footer %}
