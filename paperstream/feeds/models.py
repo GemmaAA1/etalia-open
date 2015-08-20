@@ -268,6 +268,9 @@ class UserFeedMatchPaper(TimeStampedModel):
         ordering = ['-score']
         unique_together = [('feed', 'paper')]
 
+    def print_score(self):
+        return '{0:.1f}'.format(self.score * 100)
+
     def __str__(self):
         return '{paper}/{score}'.format(paper=self.paper.short_title,
                                         score=self.score)

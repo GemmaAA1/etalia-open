@@ -1,3 +1,21 @@
+.topnav {
+  background-color: #39b3d7;
+  color: #f8f8f8;
+}
+
+.navbar-default .navbar-nav>li>a {
+    color: #f8f8f8;
+}
+
+.navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
+    color: #555;
+    background-color: #f8f8f8;
+}
+
+.navbar-default .navbar-brand {
+    color: #f8f8f8;
+}
+
 .spinner {
   margin: 14px auto;
   width: 20px;

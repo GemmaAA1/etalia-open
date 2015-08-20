@@ -1,14 +1,20 @@
 /* CSS for feed app*/
 
-.feed {
-    padding-top:60px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+.feeds {
+    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 50px;
     text-align: left;
     color: #000000;
     background: #ffffff;
+    margin-bottom: 100px;
 }
 
-.abstract {
+.feeds .feed {
+    padding-top: 50px;
+    font-family: "martel",Georgia,"Times New Roman",Times,serif;
+}
+
+.feeds .abstract {
     /*width: auto;*/
     /*height: auto;*/
     display: block;
@@ -25,4 +31,57 @@
     .abstract.active {
         max-height: 500px;
     }
+}
+
+
+.feed .title {
+    color: #000;
+    font-size: 30px;
+    line-height: 1.4;
+}
+
+.paper .authors {
+    font-size: 20px;
+    line-height: 1.4;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 10px;
+}
+
+.paper .journal {
+    font-size: 12px;
+    text-transform: uppercase;
+    line-height: 1.4;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.paper .date {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.paper .abstract {
+    margin-bottom:50px;
+}
+
+.paper .abstract-title {
+    margin-top: 20px;
+    font-size: 20px;
+}
+.paper .abstract-body {
+    margin-top: 10px;
+}
+
+.neighbors {
+    padding-top: 50px;
+    font-size: 20px;
+    font-family: "martel",Georgia,"Times New Roman",Times,serif;
+}
+
+.neighbors .neighbor {
+    margin-top: 5px;
+    font-size: 14px;
 }

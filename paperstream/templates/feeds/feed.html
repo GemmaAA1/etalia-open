@@ -3,8 +3,8 @@
 {% load staticfiles %}
 
 {% block css %}
-    {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
+    {{ block.super }}
 {% endblock css %}
 
 {% block title %}
@@ -13,17 +13,20 @@
 
 {% block content %}
     <div class="container">
-        <div class="feed">
-            <div class="row">
+        <div class="feeds">
+            <div class="row feed">
                 <div class="col-lg-1"></div>
                 <div class="col-lg-10">
                     <ul class="list-group">
-                        <h3>{{ userfeed.name }}</h3>
-                        <a href="{% url 'feeds:modify-feed' userfeed.pk %}">(Settings)</a>
-                        {% if not userfeed.name == 'main' %}
-                            <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>
-                        {% endif %}
-                        <a href="{% url 'feeds:update-feed' userfeed.pk %}">(Update)</a>
+                        <div>
+                            <span  class="title">{{ userfeed.name }}</span>
+                            <a href="{% url 'feeds:modify-feed' userfeed.pk %}">(Settings)</a>
+                            {% if not userfeed.name == 'main' %}
+                                <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>
+                            {% endif %}
+                            <a href="{% url 'feeds:update-feed' userfeed.pk %}">(Update)</a>
+                        </div>
+
                         {% for ufp in object_list %}
                             <li id="{{ ufp.id }}" class="list-group-item">
                                 <div class="btn-group pull-right" role="group" aria-label="...">
@@ -36,12 +39,13 @@
                                 </div>
 
                                 <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">
-                                    <a class="list-group-item-heading" href="{% url 'library:paper' ufp.paper.pk %}"> <strong>{{ ufp.paper.title }}</strong></a>
+                                    <a id="paper-title{{ ufp.id }}" class="list-group-item-heading" href="{% url 'library:paper' ufp.paper.pk %}"> <strong>{{ ufp.paper.title }}</strong></a>
                                     <a href="{{ ufp.paper.url }}" target="_blank"><strong>(link)</strong></a>
+                                    <span>(score: {{ufp.print_score}})</span>
                                 </span>
                                 <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
-                                <p>{{ ufp.paper.print_journal_title }}, {{ ufp.paper.print_date }}, {{ ufp.paper.print_ids }}</p>
-                                <p><span>(score: {{ufp.score}})</span></p>
+                                <p>{{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }} - {{ ufp.paper.print_ids }}</p>
+
                                 <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>
                             </li>
                             <br>
@@ -74,7 +78,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    {% include "core/update-feed-modal.html" %}
+                    {% include "core/update_feed_modal.html" %}
                 </div>
             </div>
         </div>

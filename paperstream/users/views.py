@@ -35,7 +35,6 @@ class UserLoginView(AjaxableResponseMixin, FormView):
 
     form_class = UserAuthenticationForm
     redirect_field_name = settings.LOGIN_REDIRECT_URL
-    template_name = 'user/signin.html'
 
     def form_valid(self, form):
         login(self.request, form.get_user())
@@ -47,7 +46,7 @@ class UserLoginView(AjaxableResponseMixin, FormView):
             return response
 
     def get_success_url(self):
-        return reverse('feeds:feed')
+        return reverse('feeds:main')
 
     def get_ajax_data(self):
         data = {'email': self.request.user.email,

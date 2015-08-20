@@ -310,6 +310,24 @@ class Paper(TimeStampedModel):
             return 'Unknown Date'
 
     @property
+    def print_month_year(self):
+        if self.date_pp:
+            return self.date_pp.strftime('%B %Y')
+        elif self.date_ep:
+            return '{date} (online)'.format(date=self.date_ep.strftime('%B %Y'))
+        else:
+            return 'Unknown Date'
+
+    @property
+    def print_year(self):
+        if self.date_pp:
+            return self.date_pp.strftime('%Y')
+        elif self.date_ep:
+            return '{date} (online)'.format(date=self.date_ep.strftime('%Y'))
+        else:
+            return 'Unknown Date'
+
+    @property
     def print_journal_title(self):
         if self.journal:
             return self.journal.short_title or self.journal.title

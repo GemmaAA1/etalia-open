@@ -12,18 +12,53 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container">
+    <div class="container"  style="margin-bottom:100px">
         <div class="library">
-            <h3>{{ paper_type }}</h3>
-            <h4><a href="{{ paper.url }}" target="_blank">{{ paper.title }}</a></h4>
-            <h5>{{ paper.print_full_authors }}</h5>
-            <h5>{{ paper.print_journal_title }}, {{ paper.print_date }}, {{ paper.print_ids }}</h5>
-            <h5>{{ paper.abstract }}</h5>
-
-            <h4>Similar Papers:</h4>
-            {% for neighbor in neighbors %}
-                <h5><a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a></h5>
-            {% endfor %}
+            <div class="col-lg-1"></div>
+            <div class="col-lg-10">
+                <div class="row">
+                    <div class="col-lg-9">
+                        <div class="paper">
+                            <div class="title">{{ paper.title }}
+                                <a href="{{ paper.url }}" target="_blank">(link)</a>
+                            </div>
+                            <div>
+                                <i>By</i>
+                                <span class="authors">
+                                    {{ paper.print_full_authors }}
+                                </span>
+                            </div>
+                            <div>
+                                <i>In</i>
+                                <span class="journal">
+                                    {{ paper.print_journal_title }}
+                                </span>
+                                <i>-</i>
+                                <span class="date">
+                                    {{ paper.print_month_year }}
+                                </span>
+                            </div>
+                            <div class="abstract-title">Abstract:</div>
+                            <div class="abstract-body">
+                                {{ paper.abstract }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="neighbors">
+                            <div>Similar Papers:</div>
+                            {% for neighbor in neighbors %}
+                                <div class="neighbor">
+                                    <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
+                                    <br>
+                                    <i>in</i> {{ neighbor.journal.short_title }}, {{ neighbor.print_year }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-1"></div>
         </div>
     </div>
 {% endblock content %}

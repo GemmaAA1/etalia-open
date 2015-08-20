@@ -2,8 +2,6 @@
 
 {% load navbar_extra %}
 
-<link href="{% static '/static/css/nav-bar.css' %}" rel="stylesheet">
-
 {% block navbar %}
 <!-- Navigation -->
 <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
@@ -41,14 +39,14 @@
                           <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>
                         </ul>
                     </li>
-                    <li id="nav-bar-library" class="{% active request 'library.+' %}">
-                        <a href="{% url 'user:library' %}">Library</a>
+                    <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
+                        <a href="#">Comment</a>
                     </li>
                     <li id="nav-bar-connect" class="{% active request 'connect.+' %}">
                         <a href="#">Connect</a>
                     </li>
-                    <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
-                        <a href="#">Comment</a>
+                    <li id="nav-bar-library" class="{% active request 'library.+' %}">
+                        <a href="{% url 'user:library' %}">Library</a>
                     </li>
                     <li class="dropdown {% active request 'accounts.+' %}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>

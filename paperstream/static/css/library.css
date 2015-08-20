@@ -6,4 +6,67 @@
     text-align: left;
     color: #000000;
     background: #ffffff;
+    margin-bottom: 100px;
+}
+
+
+.paper, .userlib {
+    padding-top: 50px;
+    font-family: "martel",Georgia,"Times New Roman",Times,serif;
+}
+
+.userlib .header-column {
+    font-weight: bold;
+}
+
+.paper .title, .userlib .title {
+    color: #000;
+    font-size: 30px;
+    line-height: 1.4;
+}
+
+.paper .authors {
+    font-size: 20px;
+    line-height: 1.4;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 10px;
+}
+
+.paper .journal {
+    font-size: 12px;
+    text-transform: uppercase;
+    line-height: 1.4;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.paper .date {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.paper .abstract {
+    margin-bottom:50px;
+}
+
+.paper .abstract-title {
+    margin-top: 20px;
+    font-size: 20px;
+}
+.paper .abstract-body {
+    margin-top: 10px;
+}
+
+.neighbors {
+    padding-top: 50px;
+    font-size: 20px;
+    font-family: "martel",Georgia,"Times New Roman",Times,serif;
+}
+
+.neighbors .neighbor {
+    margin-top: 5px;
+    font-size: 14px;
 }
