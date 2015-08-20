@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from .base import UserFeedTestCase
-from ..models import UserFeed, UserFeedVector, UserFeedPaper
+from ..models import UserFeed, UserFeedVector, UserFeedMatchPaper
 from library.models import Paper
 from nlp.models import PaperVectors
 from nlp.tasks import embed_all_models_and_find_neighbors
@@ -52,32 +52,32 @@ class UserFeedPaperTest(UserFeedTestCase):
         self.userfeed.save()
 
     def test_userfeedpaper_can_be_created(self):
-        UserFeedPaper.objects.create(paper=self.paper, feed=self.userfeed)
+        UserFeedMatchPaper.objects.create(paper=self.paper, feed=self.userfeed)
 
     def test_userfeedpaper_defaults_are_0_or_none(self):
-        ufp = UserFeedPaper(paper=self.paper, feed=self.userfeed)
+        ufp = UserFeedMatchPaper(paper=self.paper, feed=self.userfeed)
         self.assertFalse(ufp.is_score_computed)
         self.assertFalse(ufp.is_disliked)
         self.assertFalse(ufp.is_liked)
         self.assertEqual(ufp.score, 0.0)
 
     def test_userfeedpaper_canNOT_have_same_paper_and_feed(self):
-        UserFeedPaper.objects.create(paper=self.paper, feed=self.userfeed)
-        ufp = UserFeedPaper(paper=self.paper, feed=self.userfeed)
+        UserFeedMatchPaper.objects.create(paper=self.paper, feed=self.userfeed)
+        ufp = UserFeedMatchPaper(paper=self.paper, feed=self.userfeed)
         with self.assertRaises(ValidationError):
             ufp.full_clean()
 
     def test_userfeedpaper_are_ordered_by_score(self):
-        ufp1 = UserFeedPaper.objects.create(paper=self.paper,
+        ufp1 = UserFeedMatchPaper.objects.create(paper=self.paper,
                                            feed=self.userfeed,
                                            score=1.0)
-        ufp2 = UserFeedPaper.objects.create(paper=self.paper2,
+        ufp2 = UserFeedMatchPaper.objects.create(paper=self.paper2,
                                            feed=self.userfeed,
                                            score=2.0)
-        ufp3 = UserFeedPaper.objects.create(paper=self.paper3,
+        ufp3 = UserFeedMatchPaper.objects.create(paper=self.paper3,
                                            feed=self.userfeed,
                                            score=3.0)
-        ufps = UserFeedPaper.objects.all()
+        ufps = UserFeedMatchPaper.objects.all()
         self.assertEqual(list(ufps), [ufp3, ufp2, ufp1])
 
 

@@ -6,7 +6,6 @@ from core.views import test
 urlpatterns = [
     # Examples:
     url(r'^$', include('core.urls', namespace='core')),
-    url(r'^test/$', test, name='test'),
     url(r'^library/', include('library.urls', namespace='library')),
     url(r'^feed/', include('feeds.urls', namespace='feeds')),
     url(r'^user/', include('users.urls', namespace='user')),

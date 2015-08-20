@@ -201,7 +201,7 @@ class UserLibPaper(TimeStampedModel):
         unique_together = [('userlib', 'paper')]
 
     def __str__(self):
-        return '{0}@{1}'.format(self.paper.short_title(),
+        return '{0}@{1}'.format(self.paper.short_title,
                                 self.userlib.user.email)
 
 

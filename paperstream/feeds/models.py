@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from django.db import models
-
+from django.utils.text import slugify
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
 from django.db.models import Q, F
@@ -35,6 +35,7 @@ class UserFeedManager(BaseUserManager):
             kwargs.pop('papers_seed', None)
         else:
             papers_seed = None
+
         obj = super(UserFeedManager, self).create(**kwargs)
 
         # Init papers_seed
@@ -62,20 +63,23 @@ class UserFeedManager(BaseUserManager):
 class UserFeed(TimeStampedModel):
     """User Feed model"""
 
+    # feed name
     name = models.CharField(max_length=100, default='main')
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feeds')
 
     # Papers that are used in the similarity matching
-    papers_seed = models.ManyToManyField(Paper,
+    papers_seed = models.ManyToManyField(Paper, through='UserFeedSeedPaper',
                                          related_name='feed_seed')
 
     # relevant papers matched
-    papers_match = models.ManyToManyField(Paper, through='UserFeedPaper',
+    papers_match = models.ManyToManyField(Paper, through='UserFeedMatchPaper',
                                           related_name='feed_match')
 
     state = models.CharField(max_length=3, blank=True, default='NON',
                              choices=FEED_STATUS_CHOICES)
+
+    message = models.CharField(max_length=127, blank=True, default='')
 
     objects = UserFeedManager()
 
@@ -84,14 +88,25 @@ class UserFeed(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
+        if state == 'IDL':
+            self.set_message('')
+        self.save()
+
+    def set_message(self, message):
+        self.message = message
         self.save()
 
     def __str__(self):
         return '{feed}@{username}'.format(feed=self.name, username=self.user.email)
 
     def add_seed_papers(self, papers):
+
         if papers:
-            self.papers_seed.add(*papers)
+            objs = []
+            for paper in papers:
+                objs.append(UserFeedSeedPaper(feed=self,
+                                              paper=paper))
+            UserFeedSeedPaper.objects.bulk_create(objs)
 
     def update_userfeed_vector(self):
         model_pks = Model.objects.all().values_list('pk', flat='True')
@@ -106,7 +121,7 @@ class UserFeed(TimeStampedModel):
             days=self.user.settings.time_lapse)).date()
 
         # clean old papers
-        UserFeedPaper.objects\
+        UserFeedMatchPaper.objects\
             .filter(Q(feed=self) &
                     (Q(paper__date_ep__lt=from_date) |
                     (Q(paper__date_pp__lt=from_date) & Q(paper__date_ep=None))))\
@@ -126,10 +141,12 @@ class UserFeed(TimeStampedModel):
                                            user_email=self.user.email))
 
         self.set_state('ING')
+        self.set_message('Cleaning')
 
         self.clean_old_papers()
 
         # get paper that remain and need to be updated
+        self.set_message('Fetching data')
         ufp_pks_to_update = self.papers_match.all().values_list('pk',
                                                                 flat='True')
         # instantiate scoring
@@ -184,27 +201,32 @@ class UserFeed(TimeStampedModel):
         objs_list = []
         if target_pks:
             # compute scores
+            self.set_message('Init scoring')
             scoring.prepare(seed_pks, target_pks)
+            self.set_message('Scoring {0} papers'.format(len(target_pks)))
             pks, scores = scoring.score()
             # sort scores
             ind = np.argsort(scores)[::-1].tolist()
             # create/update UserFeedPaper
+            self.set_message('Storing')
             for i in range(min([settings.FEEDS_SCORE_KEEP_N_PAPERS, len(pks)])):
                 # update
+                self.set_message('Constructing {0}'.format(i))
                 if pks[ind[i]] in ufp_pks_to_update:
-                    ufp, _ = UserFeedPaper.objects.get_or_create(
+                    ufp, _ = UserFeedMatchPaper.objects.get_or_create(
                         feed=self,
                         paper_id=pks[ind[i]])
                     ufp.score = scores[ind[i]]
                     ufp.is_score_computed = True
                     ufp.save()
                 else:  # create in bulk
-                    objs_list.append(UserFeedPaper(
+                    objs_list.append(UserFeedMatchPaper(
                         feed=self,
                         paper_id=pks[ind[i]],
                         score=scores[ind[i]],
                         is_score_computed=True))
-            UserFeedPaper.objects.bulk_create(objs_list)
+            self.set_message('Bulking')
+            UserFeedMatchPaper.objects.bulk_create(objs_list)
 
         self.set_state('IDL')
 
@@ -212,9 +234,24 @@ class UserFeed(TimeStampedModel):
                     .format(pk=self.id, feed_name=self.name,
                             user_email=self.user.email))
 
-class UserFeedPaper(TimeStampedModel):
-    """Relationship table between model and paper with scoring
-    """
+class UserFeedSeedPaper(TimeStampedModel):
+    """Relationship table between feed and seed papers"""
+
+    feed = models.ForeignKey(UserFeed)
+
+    paper = models.ForeignKey(Paper)
+
+    class Meta:
+        unique_together = [('feed', 'paper')]
+
+    def clean(self):
+        """check if paper is in user.lib"""
+        assert self.paper.pk in \
+            self.feed.user.lib.papers.values_list('pk', flat=True)
+
+
+class UserFeedMatchPaper(TimeStampedModel):
+    """Relationship table between feed and matched papers with scoring"""
     feed = models.ForeignKey(UserFeed)
 
     paper = models.ForeignKey(Paper)

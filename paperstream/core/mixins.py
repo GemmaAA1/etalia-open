@@ -26,7 +26,6 @@ class AjaxableResponseMixin(object):
         else:
             return response
 
-
     def get_ajax_data(self):
         raise NotImplementedError
 

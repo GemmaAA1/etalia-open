@@ -19,6 +19,11 @@
                 <div class="col-lg-10">
                     <ul class="list-group">
                         <h3>{{ userfeed.name }}</h3>
+                        <a href="{% url 'feeds:modify-feed' userfeed.pk %}">(Settings)</a>
+                        {% if not userfeed.name == 'main' %}
+                            <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>
+                        {% endif %}
+                        <a href="{% url 'feeds:update-feed' userfeed.pk %}">(Update)</a>
                         {% for ufp in object_list %}
                             <li id="{{ ufp.id }}" class="list-group-item">
                                 <div class="btn-group pull-right" role="group" aria-label="...">
@@ -61,4 +66,18 @@
             </div>
         </div>
     </div>
+
+    <!-- feed syncing modal view -->
+    {% if user.is_authenticated and userfeed.state == 'ING' %}
+        <div class="syncing" id="updating-feed-block">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    {% include "core/update-feed-modal.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 {% endblock content %}

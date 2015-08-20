@@ -35,7 +35,7 @@
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Feeds<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             {% for feed in user.feeds.all %}
-                                <li><a href="{% url 'feeds:feed' feed.name %}">{{ feed.name }}</a></li>
+                                <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>
                             {% endfor %}
                           <li class="divider"></li>
                           <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>

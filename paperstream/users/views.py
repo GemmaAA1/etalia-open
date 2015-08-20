@@ -256,11 +256,10 @@ ajax_update_settings = UserSettingsUpdateView.as_view()
 def ajax_user_lib_count_papers(request):
     if request.method == 'GET':
         if request.user.lib.status == 'IDL':
-            data = {'done': True,
-                    'redirect': reverse('feeds:home')}
+            data = {'done': True}
         else:
             data = {'done': False,
-                    'count_papers': request.user.lib.count_papers}
+                    'message': request.user.lib.count_papers}
         return JsonResponse(data)
 
 @login_required

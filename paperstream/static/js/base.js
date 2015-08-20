@@ -1,8 +1,12 @@
 $(document).ready(function() {
-    applyWhenElementExists('#user-lib-count-papers', '#loading-lib-block', update_lib_count, 1000);
+    applyWhenElementExists('#user-lib-count-papers', '#syncing-lib-block',
+        '/user/user-lib-count-papers/', update_message, 1000);
+    console.log($(location).attr('href') + 'user-feed-message');
+    applyWhenElementExists('#user-feed-message', '#updating-feed-block',
+        $(location).attr('href')+'user-feed-message', update_message, 2000);
 });
 
-function applyWhenElementExists(sel_to_up, sel_to_hide, myFunction, intervalTime) {
+function applyWhenElementExists(sel_to_up, sel_to_hide, url, myFunction, intervalTime) {
 
     var obj_up = jQuery(sel_to_up);
     var obj_hide = jQuery(sel_to_hide);
@@ -15,23 +19,24 @@ function applyWhenElementExists(sel_to_up, sel_to_hide, myFunction, intervalTime
     // set interval
     var interval = setInterval(function() {
         if (obj_up.length > 0) {
-            myFunction(obj_up, obj_hide);
+            myFunction(obj_up, obj_hide, url);
         }
     }, intervalTime);
     // store interval in object for latter clearing in myFunction
     obj_up.data('interval', interval);
 }
 
-function update_lib_count(obj_up, obj_hide) {
-    $.getJSON('/user/user-lib-count-papers/', function (json) {
+function update_message(obj_up, obj_hide, url) {
+    $.getJSON(url, function (json) {
         if (json.done) {
             var libInterval = obj_up.data('interval');
             clearInterval(libInterval);
             obj_up.removeData('interval');
             obj_hide.hide();
+            $(location).href = json.url;
         }
         else {
-            obj_up.html(json.count_papers);
+            obj_up.html(json.message);
         }
     });
 }

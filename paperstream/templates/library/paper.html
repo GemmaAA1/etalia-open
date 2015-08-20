@@ -19,9 +19,11 @@
             <h5>{{ paper.print_full_authors }}</h5>
             <h5>{{ paper.print_journal_title }}, {{ paper.print_date }}, {{ paper.print_ids }}</h5>
             <h5>{{ paper.abstract }}</h5>
+
+            <h4>Similar Papers:</h4>
+            {% for neighbor in neighbors %}
+                <h5><a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a></h5>
+            {% endfor %}
         </div>
-        {% for neighbor in neighbors %}
-            <h5><a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a></h5>
-        {% endfor %}
     </div>
 {% endblock content %}

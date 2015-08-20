@@ -1,24 +1,30 @@
 {% extends 'base.html' %}
 
+{% load render_table from django_tables2 %}
 {% load staticfiles %}
 
 {% block css %}
     {{ block.super }}
-    <link href="{% static 'css/library.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
 {% endblock css %}
 
 {% block title %}
-    User Library
+    User Feed
 {% endblock title %}
-
 
 {% block content %}
     <div class="container">
-        <div class="library">
+        <div class="feed">
             <div class="row">
                 <div class="col-lg-1"></div>
                 <div class="col-lg-10">
-                    <h3>Library</h3>
+                    <h3> Pick papers from your library to seed feed: <code>{{ userfeed.name }}</code></h3>
+                    {% if not userfeed.name == 'main' %}
+                        <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>
+                    {% endif %}
+                    <a href="">(Change Name)</a>
+                    <a href="{% url 'feeds:feed' userfeed.pk %}"><button>Save</button></a>
+                    {{ userfeed.papers_seed.count }} papers selected
                     <table id="papers_table_id" class="table table-hover">
                         <tr>
                             <td><h5>Authors</h5></td>
@@ -26,16 +32,15 @@
                             <td><h5>Published</h5></td>
                             <td><h5>Added</h5></td>
                         </tr>
-                        {% for paper in paper_list %}
-                            <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'library:paper' paper.pk %}'">
+                        {% for paper in object_list %}
+                            <tr id="{{ paper.pk }}" seed-paper {% if paper.pk in seed_pks %} class="success" {% endif %}>
                                 <td>{{ paper.print_compact_first_author }}</td>
                                 <td id="paper_title">{{ paper.short_title }}</td>
                                 <td>{{ paper.print_date }}</td>
                             </tr>
                         {% endfor %}
                     </table>
-
-                   <!-- Pagination bar -->
+                    <!-- Pagination bar -->
                     {% if is_paginated %}
                         <ul class="pager">
                             {% if page_obj.has_previous %}
@@ -49,7 +54,6 @@
                             {% endif %}
                         </ul>
                     {% endif %}
-
                 </div>
                 <div class="col-lg-1"></div>
             </div>

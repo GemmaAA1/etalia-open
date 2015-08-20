@@ -42,6 +42,7 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
+    'django_tables2',
 )
 
 LOCAL_APPS = (
@@ -266,7 +267,7 @@ FEED_JOURNAL_VECTOR_RATIO = 0.2
 # FEED APP
 # ------------------------------------------------------------------------------
 FEEDS_SCORE_KEEP_N_PAPERS = 100
-FEEDS_DISPLAY_N_PAPERS = 100
+FEEDS_DISPLAY_N_PAPERS = 50
 
 
 # CELERY

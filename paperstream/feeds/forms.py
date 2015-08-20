@@ -27,22 +27,7 @@ class CreateUserFeedForm(forms.ModelForm):
         return cleaned_data
 
 
-class UpdateUserFeedForm(forms.ModelForm):
+class CheckedForm(forms.Form):
 
-    class Meta:
-        model = UserFeed
-        fields = ('papers_seed', )
-        widgets = {
-            'name':
-                forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Name'}),
-        }
+    checked = forms.BooleanField()
 
-    def __init__(self, *args, **kwargs):
-        super(UpdateUserFeedForm, self).__init__(*args, **kwargs)
-
-    def clean(self):
-        cleaned_data = self.cleaned_data
-        if self.request:
-            cleaned_data['user'] = self.request.user
-        return cleaned_data
