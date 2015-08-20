@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from .models import Journal, Paper
-from nlp.models import PaperNeighbors
+from nlp.models import PaperNeighbors, Model
 from .constants import PAPER_TYPE
 
 
@@ -51,7 +51,10 @@ class PaperView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
-        model = self.request.user.settings.model
+        if self.request.user.is_authenticated():
+            model = self.request.user.settings.model
+        else:
+            model = Model.objects.first()
 
         # Get neighbors papers
         try:
