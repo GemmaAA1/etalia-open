@@ -201,12 +201,12 @@ def ajax_user_feed_message(request, pk):
                                      pk=pk,
                                      user=request.user)
         if userfeed.state == 'IDL':
-            data = {'done': True}
+            data = {'done': True,
+                    'url': str(reverse_lazy('feeds:feed',
+                                        kwargs={'pk': userfeed.id}))}
         else:
             data = {'done': False,
-                    'message': userfeed.message,
-                    'url': reverse_lazy('feeds:feed',
-                                        kwargs={'pk': userfeed.id})}
+                    'message': userfeed.message}
         return JsonResponse(data)
 
 # @login_required

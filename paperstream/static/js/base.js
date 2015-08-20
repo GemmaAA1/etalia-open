@@ -1,7 +1,6 @@
 $(document).ready(function() {
     applyWhenElementExists('#user-lib-count-papers', '#syncing-lib-block',
         '/user/user-lib-count-papers/', update_message, 1000);
-    console.log($(location).attr('href') + 'user-feed-message');
     applyWhenElementExists('#user-feed-message', '#updating-feed-block',
         $(location).attr('href')+'user-feed-message', update_message, 2000);
 });
@@ -33,7 +32,7 @@ function update_message(obj_up, obj_hide, url) {
             clearInterval(libInterval);
             obj_up.removeData('interval');
             obj_hide.hide();
-            $(location).href = json.url;
+            window.location.replace(json.url);
         }
         else {
             obj_up.html(json.message);
