@@ -42,7 +42,7 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
-    'django_tables2',
+    'disqus',
 )
 
 LOCAL_APPS = (
@@ -230,9 +230,11 @@ SOCIAL_AUTH_PIPELINE = (
     'users.pipeline.require_affiliation',
 )
 
+# TODO:
 # ****
 # API KEY TO MOVE IN ENV VARIABLE LATER
 # ****
+
 # Mendeley
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = '1678'
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = 'caOrLU0DqOUC4wdD'
@@ -240,6 +242,13 @@ SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = 'caOrLU0DqOUC4wdD'
 SOCIAL_AUTH_CUSTOM_ZOTERO_KEY = 'a7ecbff3d0bbe59abc4b'
 SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = 'c5d0c178d9196e62bdbf'
 
+
+# DISQUS
+DISQUS_API_KEY = ''
+DISQUS_WEBSITE_SHORTNAME = 'paperstream'
+# TODO: Move to var env
+DISQUS_SECRET_KEY = 'eMWsm6qeNkDHzdvLViScWPldyDVnmvAz4U79YjsCelOu58XnRPelrUimqTrhGrRw'
+DISQUS_PUBLIC_KEY = 'w2W0iBEJwGE49PjupwQxDnfzC9ayliEvctiGwbmVb63uHIXNTZLgreJDNRvvBOap'
 
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------

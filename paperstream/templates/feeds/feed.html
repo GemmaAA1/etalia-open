@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load staticfiles %}
+{% load disqus_tags %}
 
 {% block css %}
     <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
@@ -47,6 +48,9 @@
                                 </span>
                                 <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
                                 <p>{{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }} - {{ ufp.paper.print_ids }}</p>
+
+                                <a href="{% url 'library:paper' ufp.paper.pk %}#disqus_thread" data-disqus-identifier="{{ ufp.paper.pk }}">View Comments</a>
+                                {% disqus_num_replies %}
 
                                 <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>
                             </li>
