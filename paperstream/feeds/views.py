@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
 from django.views.generic import FormView, DeleteView, RedirectView
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
 from django.db.models import Q
 
@@ -66,6 +66,22 @@ class FeedView(LoginRequiredMixin, ModalMixin, ListView):
         return super(FeedView, self).get(request, *args, **kwargs)
 
 feed_view = FeedView.as_view()
+
+
+class FeedMainView(LoginRequiredMixin, RedirectView):
+    """Redirect to main feed"""
+
+    pattern_name = 'feeds:feed'
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        # Check if userfeed pk matched db and current logged user
+        userfeed = get_object_or_404(UserFeed, name='main',
+                                     user=self.request.user)
+        pk = userfeed.id
+        return super(FeedMainView, self).get_redirect_url(pk=pk)
+
+feed_main = FeedMainView.as_view()
 
 
 class CreateFeedView(LoginRequiredMixin, ModalMixin, FormView):
@@ -210,9 +226,10 @@ def ajax_user_feed_message(request, pk):
         return JsonResponse(data)
 
 @login_required
-def like(request, pk):
-    if request.method == 'GET':
-        ufmp = get_object_or_404(UserFeedMatchPaper, pk=pk)
+def feed_like_view(request, pk):
+    if request.method == 'POST':
+        ufp_pk = int(request.POST.get('pk'))
+        ufmp = get_object_or_404(UserFeedMatchPaper, pk=ufp_pk)
         assert ufmp.feed.user == request.user
         if ufmp.is_liked:
             ufmp.is_liked = False
@@ -223,12 +240,15 @@ def like(request, pk):
         data = {'is_liked': ufmp.is_liked,
                 'is_disliked': ufmp.is_disliked}
         return JsonResponse(data)
+    else:
+        redirect('feeds:feed', kwargs={'pk': pk})
 
 
 @login_required
-def dislike(request, pk):
-    if request.method == 'GET':
-        ufmp = get_object_or_404(UserFeedMatchPaper, pk=pk)
+def feed_dislike_view(request, pk):
+    if request.method == 'POST':
+        ufp_pk = int(request.POST.get('pk'))
+        ufmp = get_object_or_404(UserFeedMatchPaper, pk=ufp_pk)
         assert ufmp.feed.user == request.user
         if ufmp.is_disliked:
             ufmp.is_disliked = False
@@ -239,4 +259,6 @@ def dislike(request, pk):
         data = {'is_liked': ufmp.is_liked,
                 'is_disliked': ufmp.is_disliked}
         return JsonResponse(data)
+    else:
+        redirect('feeds:feed', kwargs={'pk': pk})
 

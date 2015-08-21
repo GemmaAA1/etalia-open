@@ -30,10 +30,12 @@
                         {% for ufp in object_list %}
                             <li id="{{ ufp.id }}" class="list-group-item">
                                 <div class="btn-group pull-right" role="group" aria-label="...">
-                                    <span class="btn-group dislikes"  id="dislikes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
-                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-minus"></span></button>
+                                    <span class="btn-group dislike"  role="group">
+                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button">
+                                            <span class="glyphicon glyphicon-minus"></span>
+                                        </button>
                                     </span>
-                                    <span class="btn-group likes" id="likes{{ ufp.id }}" data-ufpid="{{ ufp.id }}" role="group">
+                                    <span class="btn-group like" role="group">
                                         <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-plus"></span></button>
                                     </span>
                                 </div>
