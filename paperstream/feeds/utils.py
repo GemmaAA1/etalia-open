@@ -71,11 +71,8 @@ class Scoring(object):
     def build_mat(self, data):
         """Return 2D array of seed paper vectors (papers x vector)"""
         # init seed-mat
-        mat = np.zeros((len(data), self.model.size), dtype=np.float)
-        # populate
-        for i, entry in enumerate(data):
-            mat[i] = np.array(entry['vector'][:self.model.size])
-        return mat
+        vectors = [d['vector'][:self.model.size] for d in data]
+        return np.array(vectors)
 
     @staticmethod
     def convert_date(date):
@@ -148,17 +145,18 @@ class Scoring(object):
 
     def build_journal_mat(self, data):
         """Return 2D array matching elements of data"""
-        journal_mat = np.zeros((data.count(), self.model.size), dtype=np.float)
-        ratio = np.ones(data.count()) * self.journal_ratio
-        for i, entry in enumerate(data):
-            try:
-                journal_mat[i] = \
-                    np.array(self.journal_dict[entry['paper__journal__pk']]
-                             [:self.model.size])
-            except KeyError:
-                ratio[i] = 0.0
+        vectors = []
+        null_vector = np.zeros((self.model.size, ))
+        ratio = []
+        for d in data:
+            if d['paper_journal_pk']:
+                vectors.append(self.journal_dict[d['paper__journal__pk']][:self.model.size])
+                ratio.append(self.journal_ratio)
+            else:
+                vectors.append(null_vector)
+                ratio.append(0.0)
 
-        return journal_mat, ratio
+        return np.array(vectors), np.array(ratio)
 
     def weight_with_journal(self, data, mat):
         """Return the weights 2D array of journal and mat"""

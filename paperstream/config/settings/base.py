@@ -244,11 +244,12 @@ SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = 'c5d0c178d9196e62bdbf'
 
 
 # DISQUS
-DISQUS_API_KEY = ''
+# TODO: I think DISQUS_API_KEY is not needed but only DISQUS_PUBLIC_KEY should be defined
+DISQUS_API_KEY = 'w2W0iBEJwGE49PjupwQxDnfzC9ayliEvctiGwbmVb63uHIXNTZLgreJDNRvvBOap'
 DISQUS_WEBSITE_SHORTNAME = 'paperstream'
 # TODO: Move to var env
-DISQUS_SECRET_KEY = 'eMWsm6qeNkDHzdvLViScWPldyDVnmvAz4U79YjsCelOu58XnRPelrUimqTrhGrRw'
 DISQUS_PUBLIC_KEY = 'w2W0iBEJwGE49PjupwQxDnfzC9ayliEvctiGwbmVb63uHIXNTZLgreJDNRvvBOap'
+DISQUS_SECRET_KEY = 'eMWsm6qeNkDHzdvLViScWPldyDVnmvAz4U79YjsCelOu58XnRPelrUimqTrhGrRw'
 
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
