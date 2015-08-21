@@ -54,6 +54,10 @@
     margin-bottom:50px;
 }
 
+.paper .ids {
+    padding-left: 10px;
+}
+
 .paper .abstract-title {
     margin-top: 20px;
     font-size: 20px;
