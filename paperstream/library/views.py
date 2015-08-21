@@ -8,6 +8,7 @@ from django.conf import settings
 from .models import Journal, Paper
 from nlp.models import PaperNeighbors, Model
 from .constants import PAPER_TYPE
+from core.mixins import ModalMixin
 
 
 def library(request):
@@ -17,7 +18,7 @@ def library(request):
     return render(request, 'library/library.html', context)
 
 
-class JournalsListView(ListView):
+class JournalsListView(ModalMixin, ListView):
     model = Journal
     template_name = 'library/journals.html'
     paginate_by = settings.ITEMS_PER_PAGE
@@ -25,7 +26,7 @@ class JournalsListView(ListView):
 journals = JournalsListView.as_view()
 
 
-class JournalView(ListView):
+class JournalView(ModalMixin, ListView):
     # Journal view display a list of papers from the journal
     model = Paper
     template_name = 'library/journal.html'
@@ -43,7 +44,7 @@ class JournalView(ListView):
 journal = JournalView.as_view()
 
 
-class PaperView(DetailView):
+class PaperView(ModalMixin, DetailView):
 
     model = Paper
     template_name = 'library/paper.html'
@@ -76,7 +77,7 @@ class PaperView(DetailView):
 paper = PaperView.as_view()
 
 
-class PapersListView(ListView):
+class PapersListView(ModalMixin, ListView):
     model = Paper
     template_name = 'library/papers.html'
     paginate_by = settings.ITEMS_PER_PAGE

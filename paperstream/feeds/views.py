@@ -209,21 +209,34 @@ def ajax_user_feed_message(request, pk):
                     'message': userfeed.message}
         return JsonResponse(data)
 
-# @login_required
-# def dislikes(request):
-#
-#     fnp_id = None
-#     if request.method == 'GET':
-#         fnp_id = request.GET['feednewpaper_id']
-#
-#     if fnp_id:
-#         fnp = FeedNewPaper.objects.get(id=int(fnp_id))
-#         if fnp:
-#             fnp.is_disliked = not fnp.is_disliked
-#             if fnp.is_disliked:
-#                 fnp.is_liked = False
-#             fnp.save()
-#
-#         return HttpResponse(json.dumps({'is_disliked': fnp.is_disliked,
-#                                         'fnp_id': fnp_id}),
-#                             content_type="application/json")
+@login_required
+def like(request, pk):
+    if request.method == 'GET':
+        ufmp = get_object_or_404(UserFeedMatchPaper, pk=pk)
+        assert ufmp.feed.user == request.user
+        if ufmp.is_liked:
+            ufmp.is_liked = False
+        else:
+            ufmp.is_liked = True
+            ufmp.is_disliked = False
+        ufmp.save()
+        data = {'is_liked': ufmp.is_liked,
+                'is_disliked': ufmp.is_disliked}
+        return JsonResponse(data)
+
+
+@login_required
+def dislike(request, pk):
+    if request.method == 'GET':
+        ufmp = get_object_or_404(UserFeedMatchPaper, pk=pk)
+        assert ufmp.feed.user == request.user
+        if ufmp.is_disliked:
+            ufmp.is_disliked = False
+        else:
+            ufmp.is_liked = False
+            ufmp.is_disliked = True
+        ufmp.save()
+        data = {'is_liked': ufmp.is_liked,
+                'is_disliked': ufmp.is_disliked}
+        return JsonResponse(data)
+

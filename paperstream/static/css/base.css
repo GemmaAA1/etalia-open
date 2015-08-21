@@ -42,6 +42,10 @@ h6 {
     background-size: cover;
 }
 
+.paperstream :before {
+    background: url(../img/paperstream.png);
+}
+
 .banner h2 {
     margin: 0;
     text-shadow: 2px 2px 3px rgba(0,0,0,0.6);

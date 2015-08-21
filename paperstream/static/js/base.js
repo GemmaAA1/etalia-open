@@ -1,6 +1,8 @@
 $(document).ready(function() {
+    //Modal message for lib syncing
     applyWhenElementExists('#user-lib-count-papers', '#syncing-lib-block',
         '/user/user-lib-count-papers/', update_message, 1000);
+    //Modal message for feed updating
     applyWhenElementExists('#user-feed-message', '#updating-feed-block',
         $(location).attr('href')+'user-feed-message', update_message, 2000);
 });

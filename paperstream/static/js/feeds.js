@@ -31,4 +31,22 @@ $(document).ready(function() {
         event.preventDefault();
     });
 
+    // Send Like/dislike ajax call
+    $('#dislikes').on('click', function (event) {
+        var id = $(this).attr('data-ufpid');
+        //console.log('form submitted!');
+        $.ajax({
+            type: "POST",
+            url: $(location).attr('href') + '/likes/' + id,
+            data: {pk: $tr.attr('id')},
+            success: function (json) {
+                $.each(json, function (key, value) {
+                    var $tr2 = $('#' + key);
+                    $tr2.removeClass();
+                    $tr2.addClass(value);
+                });
+            }
+        });
+        event.preventDefault();
+    });
 });

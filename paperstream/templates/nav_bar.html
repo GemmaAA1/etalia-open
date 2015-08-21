@@ -15,7 +15,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand topnav" href="{% url 'core:home' %}">
-                <strong>PaperStream.io</strong>
+                <span class="paperstream">::before</span>
             </a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -33,7 +33,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
 {#                        <a href="{% url 'feeds:feed' %}">Feeds</a>#}
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Feeds<span class="caret"></span></a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Streams<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             {% for feed in user.feeds.all %}
                                 <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>
@@ -42,14 +42,14 @@
                           <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>
                         </ul>
                     </li>
-                    <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
-                        <a href="#">Comment</a>
-                    </li>
                     <li id="nav-bar-connect" class="{% active request 'connect.+' %}">
-                        <a href="#">Connect</a>
+                        <a href="#">People</a>
                     </li>
                     <li id="nav-bar-library" class="{% active request 'user/library.+' %}">
-                        <a href="{% url 'user:library' %}">Library</a>
+                        <a href="{% url 'user:library' %}">Your Library</a>
+                    </li>
+                    <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
+                        <a href="#">Notifications</a>
                     </li>
                     <li class="dropdown {% active request 'accounts.+' %}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
