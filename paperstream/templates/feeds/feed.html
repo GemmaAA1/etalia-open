@@ -71,18 +71,4 @@
             </div>
         </div>
     </div>
-
-    <!-- feed syncing modal view -->
-    {% if user.is_authenticated and userfeed.state == 'ING' %}
-        <div class="syncing" id="updating-feed-block">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    {% include "core/update_feed_modal.html" %}
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
 {% endblock content %}

@@ -24,12 +24,11 @@
                             <tr class="header-column">
                                 <td>Authors</td>
                                 <td>Title</td>
-                                <td>Published</td>
-                                <td>Added</td>
+                                <td>Date</td>
                             </tr>
                             {% for paper in paper_list %}
                                 <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'library:paper' paper.pk %}'">
-                                    <td>{{ paper.print_compact_first_author }}</td>
+                                    <td >{{ paper.print_compact_first_author }}</td>
                                     <td id="paper_title">{{ paper.short_title }}</td>
                                     <td>{{ paper.print_date }}</td>
                                 </tr>
