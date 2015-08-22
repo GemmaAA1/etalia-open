@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load disqus_tags %}
+{% load disqus %}
 {% load staticfiles %}
 
 {% block css %}
@@ -51,7 +52,8 @@
                         <div class="comment">
                             <div id="disqus_thread"></div>
                                 <!-- use sso for disqus -->
-                                {% disqus_sso %}
+{#                                {% disqus_sso %}#}
+                                {% get_disqus_sso request %}
                                 <!-- comments -->
                                 {% disqus_show_comments %}
                         </div>
