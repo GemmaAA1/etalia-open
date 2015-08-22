@@ -56,7 +56,7 @@ class UserFeedTestCase(TestCase):
                                           size=128)
         self.model.is_active = True
         self.model.save_db_only()
-        self.user = User(email='test@paperstream.com')
+        self.user = User(email='test@paperstream.com', password='test')
         self.user.save()
         UserSettings.objects.create(user=self.user)
         self.papers = Paper.objects.all()

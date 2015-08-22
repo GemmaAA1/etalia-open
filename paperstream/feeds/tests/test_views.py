@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.test import RequestFactory
+from django.test import RequestFactory, Client
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from .base import UserFeedTestCase
@@ -24,12 +24,12 @@ class FeedViewTestCase(UserFeedTestCase):
         self.assertTrue(response.url.startswith(settings.LOGIN_REDIRECT_URL))
 
     def test_feed_page_returns_404_if_feed_name_is_unknown(self):
-        feed_name = 'truc'
-        request = self.factory.get('/feed/{feed_name}'
-                                   .format(feed_name=feed_name))
+        pk_fake = 23143124123413241324
+        request = self.factory.get('/feed/{pk}'
+                                   .format(pk=pk_fake))
         request.user = self.user
         with self.assertRaises(Http404):
-            feed_view(request, feed_name=feed_name)
+            feed_view(request, pk=pk_fake)
 
     def test_default_feed_page_renders_feed_template(self):
         request = self.factory.get('/feed')
@@ -40,35 +40,31 @@ class FeedViewTestCase(UserFeedTestCase):
         self.assertEqual(response.context_data['userfeed'], self.feed_default)
 
     def test_feed_page_return_200(self):
-        feed_name = self.feed2.name
-        request = self.factory.get('/feed/{feed_name}'
-                                   .format(feed_name=feed_name))
+        request = self.factory.get('/feed/{pk}'
+                                   .format(pk=self.feed2.pk))
         request.user = self.user
         response = feed_view(request)
         self.assertEqual(response.status_code, 200)
 
     def test_feed_page_return(self):
-        feed_name = self.feed2.name
-        request = self.factory.get('/feed/{feed_name}'
-                                   .format(feed_name=feed_name))
+        request = self.factory.get('/feed/{pk}'
+                                   .format(pk=self.feed2.pk))
         request.user = self.user
         response = feed_view(request)
         self.assertEqual(response.status_code, 200)
 
     def test_feed_page_return_correct_userfeed(self):
-        feed_name = self.feed2.name
-        request = self.factory.get('/feed/{feed_name}'
-                                   .format(feed_name=feed_name))
+        request = self.factory.get('/feed/{pk}'
+                                   .format(pk=self.feed2.pk))
         request.user = self.user
-        response = feed_view(request, feed_name=feed_name)
+        response = feed_view(request, pk=self.feed2.pk)
         self.assertEqual(response.context_data['userfeed'], self.feed2)
 
     def test_feed_page_list_object(self):
-        feed_name = self.feed2.name
-        request = self.factory.get('/feed/{feed_name}'
-                                   .format(feed_name=feed_name))
+        request = self.factory.get('/feed/{pk}'
+                                   .format(pk=self.feed2.pk))
         request.user = self.user
-        response = feed_view(request, feed_name=feed_name)
+        response = feed_view(request, pk=self.feed2.pk)
         self.assertEqual(response.context_data['object_list'].count(),
                          min(self.feed2.papers_match.count(),
                              settings.FEEDS_DISPLAY_N_PAPERS))
@@ -84,19 +80,33 @@ class FeedUpdateTest(UserFeedTestCase):
 
     def test_user_can_run_update_feed(self):
         feed_pk = self.feed2.pk
-        request = self.factory.get('/feed/update-feed/{feed_pk}/'
+        request = self.factory.get('/feed/{feed_pk}/update'
                                    .format(feed_pk=feed_pk))
         request.user = self.user
-        response = update_feed_view(request)
+        update_feed_view(request, pk=feed_pk)
 
 
 class CreateFeedTest(UserFeedTestCase):
 
+    def setUp(self):
+        super(CreateFeedTest, self).setUp()
+        self.factory = RequestFactory()
+
     def test_create_feed_create_new_feed(self):
-        request = self.factory.get('/feed/create-feed')
         feed_name = 'test'
-        request.POST['name'] = feed_name
+        request = self.factory.post('/feed/create-feed',
+                                    data={'name': feed_name})
         request.user = self.user
         create_feed_view(request)
-        feed_names = UserFeed.objects.filter(user=self.user).values_list('name')
+        feed_names = UserFeed.objects.filter(user=self.user).values_list('name', flat=True)
         self.assertIn(feed_name, feed_names)
+
+    def test_create_feed_cannot_create_feed_that_already_have_same_name(self):
+        UserFeed.objects.create(user=self.user, name='test',
+                                papers_seed=self.papers)
+        feed_name = 'test'
+        request = self.factory.post('/feed/create-feed',
+                                    data={'name': feed_name})
+        request.user = self.user
+        response = create_feed_view(request)
+        print('')

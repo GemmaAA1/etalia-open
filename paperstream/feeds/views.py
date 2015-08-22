@@ -2,10 +2,11 @@ from django.http import JsonResponse
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
-from django.views.generic import FormView, DeleteView, RedirectView
+from django.views.generic import FormView, DeleteView, RedirectView, CreateView
 from django.shortcuts import get_object_or_404, redirect
-from django.conf import settings
 from django.db.models import Q
+from django.forms.utils import ErrorList
+from django.core.exceptions import ValidationError
 
 from braces.views import LoginRequiredMixin
 
@@ -13,7 +14,7 @@ from core.mixins import ModalMixin, AjaxableResponseMixin
 from library.models import Paper
 
 from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper
-from .forms import CreateUserFeedForm, CheckedForm
+from .forms import CreateUserFeedForm
 from .tasks import update_feed as async_update_feed
 
 
@@ -84,34 +85,42 @@ class FeedMainView(LoginRequiredMixin, RedirectView):
 feed_main = FeedMainView.as_view()
 
 
-class CreateFeedView(LoginRequiredMixin, ModalMixin, FormView):
+class CreateFeedView(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
     """ClassView to create a new UserFeed instance"""
     model = UserFeed
     form_class = CreateUserFeedForm
+    template_name = 'feeds/feed.html'
 
     def get_success_url(self):
         return reverse('feeds:modify-feed',
                        kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
-        self.object = self.model(**form.cleaned_data)
-        self.object.save()
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        try:
+            self.object.full_clean()
+        except ValidationError:
+            form._errors['name'] = \
+                ErrorList(['You already have a feed name like this'])
+            return super(CreateFeedView, self).form_invalid(form)
+
         return super(CreateFeedView, self).form_valid(form)
 
     def form_invalid(self, form):
         return super(CreateFeedView, self).form_invalid(form)
 
-    def get_form_kwargs(self):
-        """Return kwarg to be passed to Form (used to get user from Form)"""
-        kwargs = super(CreateFeedView, self).get_form_kwargs()
-        kwargs['request'] = self.request
-        return kwargs
+    def get_ajax_data(self):
+        data = {'redirect':
+                reverse('feeds:modify-feed', kwargs={'pk': self.object.pk})
+                }
+        return data
 
 create_feed_view = CreateFeedView.as_view()
 
 
 class ModifyFeedView(LoginRequiredMixin, ModalMixin, ListView):
-
+    """ClassView to modify paper seed of user feed"""
     model = Paper
     template_name = 'feeds/feed_settings.html'
     paginate_by = 50

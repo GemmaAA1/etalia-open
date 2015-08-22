@@ -8,6 +8,7 @@ class CreateFeedModalMixin(ContextMixin):
 
     def get_context_data(self, **kwargs):
         context = super(CreateFeedModalMixin, self).get_context_data(**kwargs)
-        context['form_create_feed'] = CreateUserFeedForm()  #             initial={'user': self.request.user}
-
+        # data = self.request.POST.copy()
+        # data['user'] = self.request.user
+        context['form_create_feed'] = CreateUserFeedForm()
         return context

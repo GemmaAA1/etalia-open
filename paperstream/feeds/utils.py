@@ -144,16 +144,20 @@ class Scoring(object):
         return self._journal_dict
 
     def build_journal_mat(self, data):
-        """Return 2D array matching elements of data"""
+        """Return 2D array of journal vectors matching order of papers
+
+        If journal is not defined, set to zeros vector and set corresponding
+        ratio to 0
+        """
         vectors = []
-        null_vector = np.zeros((self.model.size, ))
+        zeros_vector = np.zeros((self.model.size, ))
         ratio = []
         for d in data:
-            if d['paper_journal_pk']:
+            if d['paper__journal__pk']:
                 vectors.append(self.journal_dict[d['paper__journal__pk']][:self.model.size])
                 ratio.append(self.journal_ratio)
             else:
-                vectors.append(null_vector)
+                vectors.append(zeros_vector)
                 ratio.append(0.0)
 
         return np.array(vectors), np.array(ratio)
