@@ -49,6 +49,8 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, is_active=True, **kwargs)
         user.set_password(password)
+        user.username = '{first} {last}'.format(first=user.first_name,
+                                                last=user.last_name)
         user.save(using=self._db)
         UserLib.objects.create(user=user)
         UserStats.objects.log_user_init(user, '')
