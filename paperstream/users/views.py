@@ -162,7 +162,7 @@ class UserLibraryView(LoginRequiredMixin, ListView):
                                    Q(abstract__icontains=q) |
                                    Q(journal__title__icontains=q) |
                                    Q(authors__last_name__icontains=q) |
-                                   Q(authors__first_name__icontains=q))
+                                   Q(authors__first_name__icontains=q)).distinct()
         # No q is specified so we return queryset
         return queryset
 
@@ -258,7 +258,7 @@ ajax_update_settings = UserSettingsUpdateView.as_view()
 @login_required
 def ajax_user_lib_count_papers(request):
     if request.method == 'GET':
-        if request.user.lib.status == 'IDL':
+        if request.user.lib.state == 'IDL':
             data = {'done': True}
         else:
             data = {'done': False,

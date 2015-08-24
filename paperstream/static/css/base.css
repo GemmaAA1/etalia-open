@@ -30,7 +30,7 @@ h6 {
 }
 
 .lead {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 400;
 }
 
@@ -55,10 +55,22 @@ h6 {
     display: block;
     background: url(../img/paperstream_mark_beta.png);
     width: 100px;
-    height: 50px;
+    height: 100px;
     background-repeat: no-repeat;
     background-position: 0px 5px;
 }
+
+.navbar .searchbox {
+    background-color: #3ac2e6;
+    border: none;
+    border-radius:0;
+}
+
+.form-control::-webkit-input-placeholder {color: white;}
+.form-control:-moz-placeholder {color: white;}
+.form-control::-moz-placeholder {color: white;}
+.form-control::-ms-input-placeholder {color: white;}
+
 
 .banner h2 {
     margin: 0;
@@ -112,7 +124,7 @@ p.copyright {
 
 /* Modal */
 .syncing {
-    padding-top: 200px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-top: 200px;
     padding-bottom: 200px;
     text-align: center;
     color: #f8f8f8;
@@ -123,6 +135,7 @@ p.copyright {
 
 .modal.display {
     display:block;
+    margin-top: 100px;
 }
 
 #loading-lib-modal {

@@ -6,7 +6,7 @@ from core.utils import get_celery_worker_status
 from .models import Affiliation
 
 from .tasks import update_lib as async_update_lib
-from .tasks import init_user as async_init_user
+from core.tasks import init_user as async_init_user
 
 @partial
 def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs):
@@ -46,7 +46,7 @@ def update_user_lib(backend, social, user, *args, **kwargs):
     session = backend.get_session(social, user)
     if settings.DEBUG and get_celery_worker_status().get('ERROR'):
         backend.update_lib(user, session)
-    else:  # celery is runnin -> go async
+    else:  # celery is running -> go async
         async_update_lib.apply_async(args=[user.pk, social.provider],
                                      serializer='json')
     return {}

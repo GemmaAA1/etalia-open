@@ -13,8 +13,8 @@
 {% endblock title %}
 
 {% block content %}
-    {% if user.lib.status == 'ING' %}
-        {% include "users/sync_lib_modal.html" %}
+    {% if user.lib.state == 'ING' %}
+        {% include "user/sync_lib_modal.html" %}
     {% elif userfeed.state == 'ING' %}
         {% include "feeds/update_feed_modal.html" %}
     {% else %}
