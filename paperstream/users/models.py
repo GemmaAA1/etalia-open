@@ -9,6 +9,7 @@ from django.conf import settings
 
 from library.models import Paper, Journal
 from nlp.models import Model
+from feeds.models import UserFeed
 from core.constants import NLP_TIME_LAPSE_CHOICES
 from feeds.constants import FEED_SCORING_CHOICES
 

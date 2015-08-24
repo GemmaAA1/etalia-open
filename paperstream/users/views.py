@@ -57,10 +57,10 @@ class UserLoginView(AjaxableResponseMixin, FormView):
 ajax_signin = UserLoginView.as_view()
 
 
-class UserBasicInfoSignupView(FormView):
+class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
 
     form_class = UserBasicForm
-    template_name = 'user/info.html'
+    template_name = 'user/basic_info.html'
 
     def get_success_url(self, **kwargs):
         return reverse('social:complete',
@@ -84,8 +84,12 @@ class UserBasicInfoSignupView(FormView):
             'first_name': form.cleaned_data['first_name'],
             'last_name': form.cleaned_data['last_name'],
             'email': form.cleaned_data['email'],
-            'password': form.cleaned_data['password1']}
+            }
         return super(UserBasicInfoSignupView, self).form_valid(form)
+
+    def get_ajax_data(self):
+        data = {'redirect': self.get_success_url()}
+        return data
 
 require_basic_info = UserBasicInfoSignupView.as_view()
 
@@ -93,7 +97,7 @@ require_basic_info = UserBasicInfoSignupView.as_view()
 class UserAffiliationSignupView(FormView):
 
     form_class = UserAffiliationForm
-    template_name = 'user/info.html'
+    template_name = 'user/basic_info.html'
 
     def get_success_url(self, **kwargs):
         return reverse('social:complete',
@@ -130,7 +134,7 @@ def validation_sent(request):
         'stage': 'validation_sent',
         'email': request.session.get('email_validation_address')
     }
-    return render(request, 'user/info.html', context)
+    return render(request, 'user/basic_info.html', context)
 
 
 # User Library

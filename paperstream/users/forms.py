@@ -19,20 +19,36 @@ class UserAuthenticationForm(AuthenticationForm):
 
 class UserBasicForm(forms.ModelForm):
 
-    error_messages = {
-        'password_mismatch': "The two password fields didn't match.",
-    }
+    # error_messages = {
+    #     'password_mismatch': "The two password fields didn't match.",
+    # }
 
-    password1 = forms.CharField(
-        label="Password",
-        widget=forms.PasswordInput,
-        initial='')
+    # password1 = forms.CharField(
+    #     label="Password",
+    #     widget=forms.PasswordInput,
+    #     initial='')
+    #
+    # password2 = forms.CharField(
+    #     label="Password confirmation",
+    #     widget=forms.PasswordInput,
+    #     help_text="Enter the same password as above, for verification.",
+    #     initial='')
 
-    password2 = forms.CharField(
-        label="Password confirmation",
-        widget=forms.PasswordInput,
-        help_text="Enter the same password as above, for verification.",
-        initial='')
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name')
+
+        widgets = {
+            'email':
+                forms.TextInput(attrs={'class': 'form-control input-lg ',
+                                                'placeholder': 'Email'}),
+            'first_name':
+                forms.TextInput(attrs={'class': 'form-control input-lg ',
+                                                'placeholder': 'First Name'}),
+            'last_name':
+                forms.TextInput(attrs={'class': 'form-control input-lg ',
+                                                'placeholder': 'Last Name'})
+        }
 
     def __init__(self, *args, **kwargs):
         super(UserBasicForm, self).__init__(*args, **kwargs)
@@ -47,20 +63,15 @@ class UserBasicForm(forms.ModelForm):
         last_name = self.cleaned_data['last_name']
         return last_name.strip()
 
-    def clean_password2(self):
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            raise forms.ValidationError(
-                self.error_messages['password_mismatch'],
-                code='password_mismatch',
-            )
-        return password2
-
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email')
-
+    # def clean_password2(self):
+    #     password1 = self.cleaned_data.get("password1")
+    #     password2 = self.cleaned_data.get("password2")
+    #     if password1 and password2 and password1 != password2:
+    #         raise forms.ValidationError(
+    #             self.error_messages['password_mismatch'],
+    #             code='password_mismatch',
+    #         )
+    #     return password2
 
 
 class UpdateUserBasicForm(forms.ModelForm):

@@ -21,45 +21,15 @@
         <h4 class="modal-title" id="myModalLabel">PaperStream needs some <code>basic info</code></h4>
       </div>
       <div class="modal-body">
-        <form role="form" method="POST" action="{% url "user:require-basic-info" %}">
+        <form role="form" method="POST" data-async data-target="#basic-info" action="{% url "user:require-basic-info" %}">
             {% csrf_token %}
+            <span id="id_errors"></span>
             {% for field in form %}
-                {% if field.errors %}
-                    {% for error in field.errors  %}
-                        <div class="alert alert-danger" role="alert">
-                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                            {{ error|escape }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
             {% endfor %}
-            <div class="form-group">
-                <label for="{{ form.email.id_for_label }}" class="control-label">Email:</label>
-                <input type="text" name="{{ form.email.html_name }}" class="form-control input-lg {% if form.email.errors %} alert alert-danger {% endif %}" placeholder="Email"
-                       value={{ form.email.value }}>
-            </div>
-            <div class="form-group">
-                <label for="{{ form.first_name.id_for_label }}" class="control-label">First Name:</label>
-                <input type="text" name="{{ form.first_name.html_name }}" class="form-control input-lg {% if form.first_name.errors %} alert alert-danger {% endif %}" placeholder='First Name'
-                        value={{ form.first_name.value }}>
-            </div>
-            <div class="form-group">
-                <label for="{{ form.last_name.id_for_label }}" class="control-label">Last Name:</label>
-                <input type="text" name="{{ form.last_name.html_name }}" class="form-control input-lg {% if form.last_name.errors %} alert alert-danger {% endif %}" placeholder="Last Name"
-                       value={{ form.last_name.value }}>
-            </div>
-{#            <div class="form-inline">#}
-            <div class="form-group">
-                <label for="{{ form.password1.id_for_label }}" class="control-label">Password:</label>
-                <input type="password" name="{{ form.password1.html_name }}" class="form-control input-lg {% if form.password1.errors %} alert alert-danger {% endif %}" placeholder="Password"
-                       value={{ form.password1.value }}>
-            </div>
-            <div class="form-group">
-                <label for="{{ form.password2.id_for_label }}" class="control-label">Password Confirmation:</label>
-                <input type="password" name="{{ form.password2.html_name }}" class="form-control input-lg {% if form.password2.errors %} alert alert-danger {% endif %}" placeholder="Password confirmation"
-                       value={{ form.password2.value }}>
-            </div>
-{#            </div>#}
           <div class="modal-footer center">
             <button type="submit" class="btn btn-primary btn-lg">Continue</button>
           </div>

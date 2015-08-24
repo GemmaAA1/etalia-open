@@ -225,9 +225,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
     'social.pipeline.debug.debug',
-    # 'users.pipeline.update_user_lib',
     'users.pipeline.init_user',
-    'users.pipeline.require_affiliation',
+    # 'users.pipeline.require_affiliation',
 )
 
 # TODO:
