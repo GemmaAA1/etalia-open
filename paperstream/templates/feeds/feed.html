@@ -13,68 +13,74 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container">
-        <div class="feeds">
-            <div class="row feed">
-                <div class="col-lg-1"></div>
-                <div class="col-lg-10">
-                    <ul class="list-group">
-                        <div>
-                            <span  class="title">{{ userfeed.name }}</span>
-                            <a href="{% url 'feeds:modify-feed' userfeed.pk %}">(Settings)</a>
-                            {% if not userfeed.name == 'main' %}
-                                <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>
-                            {% endif %}
-                            <a href="{% url 'feeds:update-feed' userfeed.pk %}">(Update)</a>
-                        </div>
+    {% if user.lib.status == 'ING' %}
+        {% include "users/sync_lib_modal.html" %}
+    {% elif userfeed.state == 'ING' %}
+        {% include "feeds/update_feed_modal.html" %}
+    {% else %}
+        <div class="container">
+            <div class="feeds">
+                <div class="row feed">
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-10">
+                        <ul class="list-group">
+                            <div>
+                                <span  class="title">{{ userfeed.name }}</span>
+                                <a href="{% url 'feeds:modify-feed' userfeed.pk %}">(Settings)</a>
+                                {% if not userfeed.name == 'main' %}
+                                    <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>
+                                {% endif %}
+                                <a href="{% url 'feeds:update-feed' userfeed.pk %}">(Update)</a>
+                            </div>
 
-                        {% for ufp in object_list %}
-                            <li id="{{ ufp.id }}" class="list-group-item">
-                                <div class="btn-group pull-right" role="group" aria-label="...">
-                                    <span class="btn-group dislike"  role="group">
-                                        <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button">
-                                            <span class="glyphicon glyphicon-minus"></span>
-                                        </button>
+                            {% for ufp in object_list %}
+                                <li id="{{ ufp.id }}" class="list-group-item">
+                                    <div class="btn-group pull-right" role="group" aria-label="...">
+                                        <span class="btn-group dislike"  role="group">
+                                            <button class="btn {% if ufp.is_disliked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button">
+                                                <span class="glyphicon glyphicon-minus"></span>
+                                            </button>
+                                        </span>
+                                        <span class="btn-group like" role="group">
+                                            <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-plus"></span></button>
+                                        </span>
+                                    </div>
+
+                                    <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">
+                                        <a id="paper-title{{ ufp.id }}" class="list-group-item-heading" href="{% url 'library:paper' ufp.paper.pk %}"> <strong>{{ ufp.paper.title }}</strong></a>
+                                        <a href="{{ ufp.paper.url }}" target="_blank"><strong>(link)</strong></a>
+                                        <span>(score: {{ufp.print_score}})</span>
                                     </span>
-                                    <span class="btn-group like" role="group">
-                                        <button class="btn {% if ufp.is_liked %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button"><span class="glyphicon glyphicon-plus"></span></button>
-                                    </span>
-                                </div>
+                                    <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
+                                    <p><i>in</i> {{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }} - {{ ufp.paper.print_ids }}</p>
 
-                                <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">
-                                    <a id="paper-title{{ ufp.id }}" class="list-group-item-heading" href="{% url 'library:paper' ufp.paper.pk %}"> <strong>{{ ufp.paper.title }}</strong></a>
-                                    <a href="{{ ufp.paper.url }}" target="_blank"><strong>(link)</strong></a>
-                                    <span>(score: {{ufp.print_score}})</span>
-                                </span>
-                                <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
-                                <p><i>in</i> {{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }} - {{ ufp.paper.print_ids }}</p>
+                                    <a href="{% url 'library:paper' ufp.paper.pk %}#disqus_thread" data-disqus-identifier="{{ ufp.paper.pk }}">View Comments</a>
+                                    {% disqus_num_replies %}
 
-                                <a href="{% url 'library:paper' ufp.paper.pk %}#disqus_thread" data-disqus-identifier="{{ ufp.paper.pk }}">View Comments</a>
-                                {% disqus_num_replies %}
-
-                                <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>
-                            </li>
-                            <br>
-                        {% endfor %}
-                    </ul>
-
-                    <!-- Pagination bar -->
-                    {% if is_paginated %}
-                        <ul class="pager">
-                            {% if page_obj.has_previous %}
-                                <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
-                            {% endif %}
-                            <span class="page-current">
-                          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                          </span>
-                            {% if page_obj.has_next %}
-                                <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
-                            {% endif %}
+                                    <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>
+                                </li>
+                                <br>
+                            {% endfor %}
                         </ul>
-                    {% endif %}
+
+                        <!-- Pagination bar -->
+                        {% if is_paginated %}
+                            <ul class="pager">
+                                {% if page_obj.has_previous %}
+                                    <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                                {% endif %}
+                                <span class="page-current">
+                              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                              </span>
+                                {% if page_obj.has_next %}
+                                    <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                                {% endif %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="col-lg-1"></div>
                 </div>
-                <div class="col-lg-1"></div>
             </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock content %}

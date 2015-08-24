@@ -32,9 +32,9 @@
         <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <!--[if lt IE 9] -->
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
 
         {% block head %}
@@ -72,13 +72,6 @@
         {% if user.is_authenticated %}
             {% include "user/profile_modal.html" %}
             {% include "feeds/create_new_modal.html" %}
-            {% if user.lib.status == 'ING' %}
-                {% include "users/sync_lib_modal.html" %}
-            {% endif %}
-            {% if userfeed.state == 'ING' %}
-                {% include "feeds/update_feed_modal.html" %}
-            {% endif %}
-
         {% else %}
             {% include "user/login_modal.html" %}
         {% endif %}
