@@ -4,8 +4,7 @@ from scipy.spatial import distance
 from django.utils import timezone
 
 from nlp.models import PaperVectors, JournalVectors
-from users.models import UserLibPaper
-
+from library.models import Paper
 
 class Scoring(object):
     """Scoring abstract class"""
@@ -102,16 +101,14 @@ class Scoring(object):
         is in 'time lapse from now in days'"""
         if not self._created_date_dict:
             # Get date data
-            created_date = UserLibPaper.objects\
-                .filter(
-                    userlib=self.user.lib,
-                    paper_id__in=self.seed_pks)\
-                .values_list('paper__pk',
-                             'date_created')
+            created_date = Paper.objects\
+                .filter(userlib_paper__userlib=self.user.lib,
+                        userlib_paper__paper__in=self.seed_pks)\
+                .values_list('pk',
+                             'userlib_paper__date_created')
 
             # Convert date into lapse of time from now in days
-            created_date_d = {k: self.convert_date(v)
-                                 for k, v in created_date}
+            created_date_d = {k: self.convert_date(v) for k, v in created_date}
 
             self._created_date_dict = created_date_d
         return self._created_date_dict

@@ -1,7 +1,6 @@
 import numpy as np
 import logging
 from django.db import models
-from django.utils.text import slugify
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
 from django.db.models import Q, F
@@ -11,7 +10,6 @@ from django.contrib.postgres.fields import ArrayField
 from core.models import TimeStampedModel
 from core.utils import pad_vector
 from library.models import Paper
-from users.models import UserLibPaper
 from nlp.models import PaperVectors, JournalVectors, Model, PaperNeighbors, LSH
 from config.celery import celery_app as capp
 
@@ -30,34 +28,23 @@ class UserFeedManager(BaseUserManager):
         if 'user' not in kwargs:
             raise AssertionError('<user> is not defined')
 
+        papers_seed = None
         if 'papers_seed' in kwargs:
-            papers_seed = kwargs['papers_seed']
-            kwargs.pop('papers_seed', None)
-        else:
-            papers_seed = None
+            papers_seed = kwargs.pop('papers_seed')
 
         obj = super(UserFeedManager, self).create(**kwargs)
 
-        # Init papers_seed
-        obj.add_seed_papers(papers_seed)
-
-        # Init feed vector
-        obj.update_userfeed_vector()
-
-        # update feed
-        obj.update()
+        if papers_seed:
+            obj.add_papers_seed(papers_seed)
+            obj.save()
 
         return obj
 
-    def create_default(self, **kwargs):
-        """Create a new default UserFeed / UserFeedVector, named 'main' with
-        all papers in user library
-        """
+    def create_main(self, **kwargs):
+        """Create a new default UserFeed / UserFeedVector, named 'main' """
         if 'user' not in kwargs:
             raise AssertionError('<user> is not defined')
-        user = kwargs.get('user')
-        papers = user.lib.papers.all()
-        return self.create(name='main', papers_seed=papers, **kwargs)
+        return self.create(name='main', **kwargs)
 
 
 class UserFeed(TimeStampedModel):
@@ -99,7 +86,7 @@ class UserFeed(TimeStampedModel):
     def __str__(self):
         return '{feed}@{username}'.format(feed=self.name, username=self.user.email)
 
-    def add_seed_papers(self, papers):
+    def add_papers_seed(self, papers):
 
         if papers:
             objs = []
@@ -107,6 +94,9 @@ class UserFeed(TimeStampedModel):
                 objs.append(UserFeedSeedPaper(feed=self,
                                               paper=paper))
             UserFeedSeedPaper.objects.bulk_create(objs)
+
+        # Update feed vector
+        self.update_userfeed_vector()
 
     def update_userfeed_vector(self):
         model_pks = Model.objects.all().values_list('pk', flat='True')

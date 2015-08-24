@@ -60,7 +60,8 @@
                     </div>
                     <div class="col-lg-3">
                         <div class="neighbors">
-                            <div>Similar Papers:</div>
+                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>{% endif %}
+                            <div class="title">Similar Papers:</div>
                             {% for neighbor in neighbors %}
                                 <div class="neighbor">
                                     <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
@@ -75,4 +76,6 @@
             <div class="col-lg-1"></div>
         </div>
     </div>
+
+    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
 {% endblock content %}

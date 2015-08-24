@@ -73,6 +73,10 @@
     font-family: 'OpenSansRegular',sans-serif;
 }
 
+.neighbors .title {
+    padding-top: 20px;
+}
+
 .neighbors .neighbor {
     margin-top: 5px;
     font-size: 14px;

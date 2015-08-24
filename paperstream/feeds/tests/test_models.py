@@ -4,10 +4,10 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from .base import UserFeedTestCase
-from ..models import UserFeed, UserFeedVector, UserFeedMatchPaper
+from ..models import UserFeed, UserFeedVector, UserFeedMatchPaper, \
+    UserFeedSeedPaper
 from library.models import Paper
 from nlp.models import PaperVectors
-from nlp.tasks import embed_all_models_and_find_neighbors
 
 class UserFeedBasicTest(UserFeedTestCase):
 
@@ -40,7 +40,7 @@ class UserFeedBasicTest(UserFeedTestCase):
     def test_userfeed_can_add_seed_paper(self):
         uf = UserFeed(name='test', user=self.user)
         uf.save()
-        uf.add_seed_papers(self.papers)
+        uf.add_papers_seed(self.papers)
         self.assertTrue(uf.papers_seed.count(), self.papers.count())
 
 
@@ -121,7 +121,10 @@ class UserFeedVectorTestCase(UserFeedTestCase):
         self.assertEqual(vector, None)
 
     def test_userfeedvector_can_update_vector(self):
-        self.userfeed.add_seed_papers(self.papers)
+        UserFeedSeedPaper.objects.create(feed=self.userfeed,
+                                         paper=self.paper)
+        UserFeedSeedPaper.objects.create(feed=self.userfeed,
+                                         paper=self.paper2)
         ufv = UserFeedVector.objects.create(model=self.model,
                                             feed=self.userfeed)
         ufv.update_vector()
@@ -134,28 +137,32 @@ class UserFeedTest(UserFeedTestCase):
         self.userfeed = UserFeed(name='test', user=self.user)
         self.userfeed.save()
 
-    def test_userfeed_can_update_seedvector(self):
-        self.userfeed.add_seed_papers(self.papers)
-        self.userfeed.update_userfeed_vector()
+    def test_userfeed_can_add_paper_and_update_seedvector(self):
+        self.userfeed.add_papers_seed(self.papers)
+        self.assertTrue(self.userfeed.papers_seed.count() > 0)
         self.assertTrue(self.userfeed.vectors.count() > 0)
 
     def test_userfeed_can_update(self):
-        self.userfeed.add_seed_papers(self.user.lib.papers.all())
-        self.user.settings.scoring_method = 4
+        self.userfeed.add_papers_seed(self.user.lib.papers.all())
+        self.user.settings.scoring_method = 1
         self.assertEqual(self.userfeed.papers_match.count(), 0)
         self.userfeed.update()
         self.assertTrue(self.userfeed.papers_match.count() > 0)
 
     def test_userfeed_can_be_created(self):
-        ul = UserFeed.objects.create(user=self.user, papers_seed=self.papers)
-        self.assertTrue(ul.papers_match.count() > 0)
+        ul = UserFeed.objects.create(user=self.user, name='test2',
+                                     papers_seed=self.papers)
+        self.assertTrue(ul.name == 'test2')
+        self.assertTrue(ul.papers_seed.count() > 0)
 
     def test_userfeed_can_create_default(self):
-        ul = UserFeed.objects.create_default(user=self.user)
-        self.assertTrue(ul.papers_match.count() > 0)
+        ul = UserFeed.objects.create_main(user=self.user)
+        self.assertEqual(ul.name, 'main')
 
     def test_userfeed_can_create_and_then_update(self):
-        ul = UserFeed.objects.create(user=self.user, papers_seed=self.papers)
+        ul = UserFeed.objects.create(user=self.user)
+        ul.add_papers_seed(self.papers)
+        ul.update()
         count1 = ul.papers_match.count()
         # a new paper is coming
         new_paper = Paper.objects.create(

@@ -53,9 +53,14 @@ class UserManager(BaseUserManager):
         user.username = '{first} {last}'.format(first=user.first_name,
                                                 last=user.last_name)
         user.save(using=self._db)
+        # create user library
         UserLib.objects.create(user=user)
+        # create user stats
         UserStats.objects.log_user_init(user, '')
+        # create user settings
         UserSettings.objects.create(user=user)
+        # create user default (main) feed
+        UserFeed.objects.create_main(user=user)
         return user
 
     def create_superuser(self, **kwargs):
@@ -185,9 +190,9 @@ class UserLib(TimeStampedModel):
 class UserLibPaper(TimeStampedModel):
     """Table - User/Paper relationship"""
 
-    userlib = models.ForeignKey(UserLib)
+    userlib = models.ForeignKey(UserLib, related_name='userlib_paper')
 
-    paper = models.ForeignKey(Paper)
+    paper = models.ForeignKey(Paper, related_name='userlib_paper')
 
     date_created = models.DateField(default=None, null=True)
 

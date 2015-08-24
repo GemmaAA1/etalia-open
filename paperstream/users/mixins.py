@@ -9,10 +9,11 @@ class ProfileModalFormsMixin(ContextMixin):
 
     def get_context_data(self, **kwargs):
         context = super(ProfileModalFormsMixin, self).get_context_data(**kwargs)
-        context['form_userbasic'] = \
-            UpdateUserBasicForm(instance=self.request.user)
-        context['form_affiliation'] = \
-            UserAffiliationForm(instance=self.request.user.affiliation)
-        context['form_settings'] = \
-            UserSettingsForm(instance=self.request.user.settings)
+        if not self.request.user.is_anonymous():
+            context['form_userbasic'] = \
+                UpdateUserBasicForm(instance=self.request.user)
+            context['form_affiliation'] = \
+                UserAffiliationForm(instance=self.request.user.affiliation)
+            context['form_settings'] = \
+                UserSettingsForm(instance=self.request.user.settings)
         return context

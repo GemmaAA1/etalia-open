@@ -12,7 +12,7 @@ class FeedViewTestCase(UserFeedTestCase):
     def setUp(self):
         super(FeedViewTestCase, self).setUp()
         self.factory = RequestFactory()
-        self.feed_default = UserFeed.objects.create_default(user=self.user)
+        self.feed_default = UserFeed.objects.create_main(user=self.user)
         self.feed2 = UserFeed.objects.create(user=self.user, name='test',
                                              papers_seed=self.papers)
 
@@ -74,7 +74,7 @@ class FeedUpdateTest(UserFeedTestCase):
     def setUp(self):
         super(FeedUpdateTest, self).setUp()
         self.factory = RequestFactory()
-        self.feed_default = UserFeed.objects.create_default(user=self.user)
+        self.feed_default = UserFeed.objects.create_main(user=self.user)
         self.feed2 = UserFeed.objects.create(user=self.user, name='test',
                                              papers_seed=self.papers)
 
