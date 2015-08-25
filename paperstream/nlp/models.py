@@ -445,9 +445,8 @@ class Model(TimeStampedModel):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=5,
-                    seed=False):
-        """Infer model vector for paper"""
+    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=5):
+        """Infer model vector for paper"""  # seed=seed)
 
         self.check_active()
 
@@ -458,19 +457,20 @@ class Model(TimeStampedModel):
         paper = Paper.objects.get(id=paper_pk)
         doc_words = paper2tokens(paper, fields=text_fields)
 
-        if seed:        # inference vector is initialize from Journal vector
-            try:
-                seed = JournalVectors.objects.get(model=self, journal=paper.journal)\
-                    .get_vector()
-            except JournalVectors.DoesNotExist:
-                seed = None
+        # if seed:        # inference vector is initialize from Journal vector
+        #     try:
+        #         seed = JournalVectors.objects.get(model=self, journal=paper.journal)\
+        #             .get_vector()
+        #     except JournalVectors.DoesNotExist:
+        #         seed = None
+
+
 
         # NB: infer_vector user explicit alpha-reduction with multi-passes
         vector = self._doc2vec.infer_vector(doc_words,
                                             alpha=alpha,
                                             min_alpha=min_alpha,
-                                            steps=passes,
-                                            seed=seed)
+                                            steps=passes)  # seed=seed)
         pv.set_vector(vector.tolist())
         pv.save()
 

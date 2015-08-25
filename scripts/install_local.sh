@@ -32,3 +32,9 @@ pip3 install -r ../requirements/local.txt
 # Populate database
 ./routines/init_populate.sh
 
+# download nltk_data
+python ./routines/init_nltk.py
+
+# test
+py.test
+

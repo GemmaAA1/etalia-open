@@ -17,7 +17,8 @@ django-disqus==0.5
 django-model-utils==2.2
 feedparser==5.2.1
 future==0.14.3
-gensim==0.12.1
+#gensim==0.12.1
+-e git+https://github.com/NPann/gensim.git
 gnureadline==6.3.3
 ipython==3.1.0
 kombu==3.0.26
@@ -31,6 +32,9 @@ numpy==1.9.2
 oauthlib==0.7.2
 progressbar2==2.7.3
 psycopg2==2.6
+pytest==2.7.2
+pytest-cov==2.1.0
+pytest-django==2.8.0
 python-dateutil==2.4.2
 python-social-auth==0.2.9
 python-stdnum==1.1
