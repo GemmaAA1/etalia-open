@@ -32,7 +32,7 @@ class BackendLibMixin(object):
         Raises:
         """
         try:
-            # minimum to be a paper: have a title and an author and be a
+            # requirement to be a paper: have a title and an author and be a
             # supported paper type
             if entry['paper'].get('title', '') and entry['authors'] and \
                     entry['paper'].get('type', ''):

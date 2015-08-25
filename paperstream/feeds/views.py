@@ -213,7 +213,7 @@ class UpdateFeedView(LoginRequiredMixin, ModalMixin, RedirectView):
                               user=self.request.user)
         # update feed async
         userfeed.set_state('ING')
-        async_update_feed.delay(kwargs['pk'])
+        async_update_feed.delay(userfeed.id)
         return super(UpdateFeedView, self).get_redirect_url(*args, **kwargs)
 
 update_feed_view = UpdateFeedView.as_view()

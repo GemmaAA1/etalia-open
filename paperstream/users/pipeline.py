@@ -6,7 +6,8 @@ from core.utils import get_celery_worker_status
 from .models import Affiliation
 
 from .tasks import update_lib as async_update_lib
-from core.tasks import init_user as async_init_user
+from .tasks import init_user as async_init_user
+
 
 @partial
 def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs):
@@ -53,9 +54,9 @@ def update_user_lib(backend, social, user, *args, **kwargs):
 
 @partial
 def init_user(social, user, *args, **kwargs):
-    if not (settings.DEBUG and get_celery_worker_status().get('ERROR')):
-        async_init_user.apply_async(args=[user.pk, social.provider],
-                                    serializer='json')
+    async_init_user(user.pk, social.provider)
+    user.lib.set_state('ING')
+    user.feeds.first().set_state('ING')
     return {}
 
 

@@ -269,7 +269,7 @@ def ajax_user_lib_count_papers(request):
 def async_update_user_lib(request):
     user = request.user
     provider_name = user.social_auth.first().provider
-    async_update_lib.apply_async(args=[user.pk, provider_name],
-                                 serializer='json')
+    async_update_lib.apply_async(args=[user.pk, provider_name])
+    request.user.lib.set_state('ING')
     return redirect('feeds:main')
 
