@@ -25,6 +25,7 @@ langdetect==1.0.5
 memoized-property==1.0.2
 mendeley==0.3.2
 names==0.3.0
+nameparser==0.3.6
 nltk==3.0.3
 numpy==1.9.2
 oauthlib==0.7.2
