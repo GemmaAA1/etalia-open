@@ -32,9 +32,6 @@ numpy==1.8.1
 oauthlib==0.7.2
 progressbar2==2.7.3
 psycopg2==2.6
-pytest==2.7.2
-pytest-cov==2.1.0
-pytest-django==2.8.0
 python-dateutil==2.4.2
 python-social-auth==0.2.9
 python-stdnum==1.1
