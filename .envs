@@ -1,5 +1,5 @@
 
-DJANGO_SETTINGS_MODULE=paperstream.settings.production
+DJANGO_SETTINGS_MODULE=paperstream.config.settings.heroku
 
 DJANGO_LOG_LEVEL=DEBUG
 DJANGO_DEBUG=True

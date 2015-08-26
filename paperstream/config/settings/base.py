@@ -265,9 +265,9 @@ CONS_INIT_PAST = 365
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
-NLP_DATA_PATH = os.path.join(str(APPS_DIR), 'nlp', 'data')
-NLP_DOC2VEC_PATH = os.path.join(str(APPS_DIR), 'nlp', 'mods')
-NLP_LSH_PATH = os.path.join(str(APPS_DIR), 'nlp', 'lshfs')
+NLP_DATA_PATH = os.path.join(str(ROOT_DIR), 'nlp_data', 'data')
+NLP_DOC2VEC_PATH = os.path.join(str(ROOT_DIR), 'nlp_data', 'mods')
+NLP_LSH_PATH = os.path.join(str(ROOT_DIR), 'nlp_data', 'lshfs')
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
 

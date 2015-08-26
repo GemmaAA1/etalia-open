@@ -67,11 +67,6 @@ docs/_build/
 # PyBuilder
 target/
 
-paperstream/nlp/lshfs/
-paperstream/nlp/data
-paperstream/nlp/mods
-
-paperstream/nlp/mods_test
-paperstream/nlp/lshfs_test
-paperstream/nlp/data_test
-stuffs/
+# Others
+nlp_data/
+logs/

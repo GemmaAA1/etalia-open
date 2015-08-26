@@ -1,4 +1,4 @@
-web: gunicorn config.wsgi:application --log-file -
+web: gunicorn paperstream.config.wsgi:application --log-file -
 #worker: celery -A config worker -Q default --loglevel=info
 #worker: celery -A config worker -Q dbow --concurrency=1 --loglevel=info
 #worker: celery -A config worker -Q consumers --loglevel=info
