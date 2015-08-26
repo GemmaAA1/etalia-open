@@ -1,8 +1,4 @@
 from django.test import TestCase
-from collections import namedtuple
-from unittest.mock import patch
-
-from ..pipeline import require_primary
 
 class Struct:
     def __init__(self, **entries):

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from library.constants import PAPER_TYPE
+from paperstream.library.constants import PAPER_TYPE
 from ..constants import PUBMED_PT
 
 class ConstantTest(TestCase):

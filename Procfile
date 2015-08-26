@@ -1,5 +1,1 @@
-web: gunicorn paperstream.config.wsgi:application --log-file -
-#worker: celery -A config worker -Q default --loglevel=info
-#worker: celery -A config worker -Q dbow --concurrency=1 --loglevel=info
-#worker: celery -A config worker -Q consumers --loglevel=info
-#worker: celery -A config beat -s ../logs/celerybeat-schedule
+web: gunicorn config.wsgi:application --log-file -

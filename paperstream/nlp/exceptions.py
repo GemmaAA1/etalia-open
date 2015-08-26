@@ -1,5 +1,3 @@
-
-
 class ModelError(Exception):
     """Top-level error for model exception.
     This exception should normally not be raised, only subclasses of this

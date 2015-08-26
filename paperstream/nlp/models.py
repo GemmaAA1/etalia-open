@@ -23,10 +23,10 @@ from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
     model_attr_getter, model_attr_setter
 from .exceptions import InvalidState
 
-from core.models import TimeStampedModel
-from core.utils import pad_vector, pad_neighbors
-from library.models import Paper, Journal
-from core.constants import NLP_TIME_LAPSE_CHOICES
+from paperstream.core.models import TimeStampedModel
+from paperstream.core.utils import pad_vector, pad_neighbors
+from paperstream.library.models import Paper, Journal
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 
 
 logger = logging.getLogger(__name__)

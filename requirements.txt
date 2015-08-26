@@ -1,2 +1,2 @@
 # requirements.txt
--r ../requirements/heroku.txt
+-r ./requirements/heroku.txt

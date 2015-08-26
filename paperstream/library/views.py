@@ -1,14 +1,13 @@
 from django.shortcuts import render
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
+from paperstream.nlp.models import PaperNeighbors, Model
+from paperstream.core.mixins import ModalMixin
 from .models import Journal, Paper
-from nlp.models import PaperNeighbors, Model
 from .constants import PAPER_TYPE
-from core.mixins import ModalMixin
 
 
 def library(request):

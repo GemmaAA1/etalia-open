@@ -3,8 +3,7 @@ import numpy as np
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django.utils import timezone
-from django.db.models import Q
+
 
 def get_env_variable(var_name, default=None):
     """

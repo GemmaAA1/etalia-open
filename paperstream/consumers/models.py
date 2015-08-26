@@ -1,31 +1,29 @@
 import re
 import logging
+import time
+
 import requests
 import feedparser
-import time
 from dateutil import parser
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q, F
-
-from config.celery import celery_app as app
 from celery.contrib.methods import task_method
-
-
 from Bio import Entrez
 from Bio import Medline
 from model_utils import Choices, fields
 
-from core.utils import get_env_variable
-from library.models import Journal, AuthorPaper, Paper, Author, CorpAuthor, \
-    CorpAuthorPaper
-from core.models import TimeStampedModel
+from config.celery import celery_app as app
+from paperstream.core.utils import get_env_variable
+from paperstream.library.models import Journal, AuthorPaper, Paper, Author, \
+    CorpAuthor, CorpAuthorPaper
+from paperstream.library.forms import PaperFormFillBlanks
+from paperstream.core.models import TimeStampedModel
+from paperstream.nlp.tasks import embed_all_models_and_find_neighbors
+
 from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
-from nlp.tasks import embed_all_models_and_find_neighbors
-
-from library.forms import AuthorForm, PaperFormFillBlanks
 
 logger = logging.getLogger(__name__)
 

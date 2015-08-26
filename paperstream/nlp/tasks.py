@@ -1,8 +1,11 @@
 import logging
-from config.celery import celery_app as app
+
 from celery import chain, Task
-from nlp.models import Model, LSH
-from core.constants import NLP_TIME_LAPSE_CHOICES
+
+from config.celery import celery_app as app
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+
+from .models import Model, LSH
 
 logger = logging.getLogger(__name__)
 

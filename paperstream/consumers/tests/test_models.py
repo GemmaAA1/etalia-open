@@ -2,8 +2,8 @@ import json
 from unittest.mock import patch
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-from library.models import Journal, Paper
+
+from paperstream.library.models import Journal, Paper
 from ..models import ConsumerPubmed, ConsumerJournal, ConsumerElsevier, \
     ConsumerArxiv
 
@@ -81,7 +81,7 @@ class ConsumerPubmedTest(TestCase):
         consumer.add_entry(item, journal)
         self.assertEqual(Paper.objects.all().count(), 1)
 
-    @patch('consumers.models.ConsumerPubmed.consume_journal')
+    @patch('paperstream.consumers.models.ConsumerPubmed.consume_journal')
     def test_consume_update_journal(self, mock_consume_journal):
         # setup mock object
         mock_consume_journal.return_value = self.entries, True
@@ -96,7 +96,7 @@ class ConsumerPubmedTest(TestCase):
         self.assertTrue(
             consumer.consumerjournal_set.first().last_number_papers_fetched > 0)
 
-    @patch('consumers.models.ConsumerPubmed.consume_journal')
+    @patch('paperstream.consumers.models.ConsumerPubmed.consume_journal')
     def test_populate_journal(self, mock_consume_journal):
         # setup mock object
         mock_consume_journal.return_value = self.entries, True
@@ -132,7 +132,7 @@ class ConsumerElsevierTest(TestCase):
         consumer.add_entry(item, journal)
         self.assertEqual(Paper.objects.all().count(), 1)
 
-    @patch('consumers.models.ConsumerElsevier.consume_journal')
+    @patch('paperstream.consumers.models.ConsumerElsevier.consume_journal')
     def test_consume_update_journal(self, mock_consume_journal):
         # setup mock object
         mock_consume_journal.return_value = self.entries, True
@@ -147,7 +147,7 @@ class ConsumerElsevierTest(TestCase):
         self.assertTrue(
             consumer.consumerjournal_set.first().last_number_papers_fetched > 0)
 
-    @patch('consumers.models.ConsumerElsevier.consume_journal')
+    @patch('paperstream.consumers.models.ConsumerElsevier.consume_journal')
     def test_populate_journal(self, mock_consume_journal):
         # setup mock object
         mock_consume_journal.return_value = self.entries, True

@@ -1,8 +1,10 @@
 import logging
+
 from django.contrib.auth import get_user_model
-from config.celery import celery_app as app
 from celery.canvas import chain
-from feeds.tasks import init_main_feed
+
+from config.celery import celery_app as app
+from paperstream.feeds.tasks import init_main_feed
 
 logger = logging.getLogger(__name__)
 

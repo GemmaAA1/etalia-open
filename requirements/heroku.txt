@@ -1,1 +1,10 @@
 -r base.txt  # includes the base.txt requirements file
+
+# WSGI Handler
+# ------------------------------------------------
+gunicorn==19.3.0
+
+
+# Mailgun Support
+# ---------------
+django-mailgun==0.2.2

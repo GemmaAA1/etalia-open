@@ -10,7 +10,7 @@ ZOTERO_PASSWORD = 'qwerty123'
 
 @skip
 class AuthenticateWithZoteroTest(FunctionalTest):
-
+    pass
     # def test_signup_with_zotero(self):
     #
     #     # X lands on paperstream home page and notice mendeley login

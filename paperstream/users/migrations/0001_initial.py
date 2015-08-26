@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import users.validators
+from paperstream import users
 from django.conf import settings
 
 

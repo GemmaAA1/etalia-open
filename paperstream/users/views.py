@@ -11,12 +11,12 @@ from django.http import JsonResponse
 
 from braces.views import LoginRequiredMixin
 
-from library.models import Paper
+from paperstream.library.models import Paper
+from paperstream.core.mixins import AjaxableResponseMixin
+
 from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
 from .models import Affiliation
-from core.mixins import AjaxableResponseMixin
-
 from .tasks import update_lib as async_update_lib
 
 User = get_user_model()

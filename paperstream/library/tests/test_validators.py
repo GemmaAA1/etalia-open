@@ -1,6 +1,6 @@
-from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+
 from ..validators import validate_issn, validate_author_names
 
 

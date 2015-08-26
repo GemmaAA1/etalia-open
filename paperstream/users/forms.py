@@ -4,7 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .models import Affiliation, UserSettings
 from .validators import validate_first_name, validate_last_name
 
-from nlp.models import Model
+from paperstream.nlp.models import Model
 
 User = get_user_model()
 

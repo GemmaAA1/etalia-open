@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from ..forms import JournalForm, PublisherForm, JournalFormFillBlanks
 from ..models import Journal, Publisher
 

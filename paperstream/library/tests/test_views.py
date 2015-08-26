@@ -1,11 +1,8 @@
-import random
-from . import gen_issn
-from stdnum import issn
 from django.test import TestCase
-from django.conf import settings
-from library.models import Paper, Journal, Author, Publisher, AuthorPaper
-from django.core.exceptions import ValidationError
 from django.utils import timezone
+
+from ..models import Paper, Journal, Author, Publisher, AuthorPaper
+from . import gen_issn
 
 
 class LibraryViewTest(TestCase):

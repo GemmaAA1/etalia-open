@@ -1,8 +1,9 @@
-from django import forms
-from .models import Journal, Paper, Author, Publisher, CorpAuthor
-from .constants import SOURCE_TYPE
 import requests
 from requests.exceptions import RequestException
+from django import forms
+
+from .models import Journal, Paper, Author, Publisher, CorpAuthor
+from .constants import SOURCE_TYPE
 
 
 class FillBlanksMixin(object):

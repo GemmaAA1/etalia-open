@@ -7,14 +7,14 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
 
-from library.models import Paper, Journal
-from nlp.models import Model
-from feeds.models import UserFeed
-from core.constants import NLP_TIME_LAPSE_CHOICES
-from feeds.constants import FEED_SCORING_CHOICES
+from paperstream.library.models import Paper, Journal
+from paperstream.nlp.models import Model
+from paperstream.feeds.models import UserFeed
+from paperstream.feeds.constants import FEED_SCORING_CHOICES
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+from paperstream.core.models import TimeStampedModel
 
 from .validators import validate_first_name, validate_last_name
-from core.models import TimeStampedModel
 
 
 class Affiliation(TimeStampedModel):

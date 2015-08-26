@@ -1,5 +1,5 @@
-from consumers.constants import CONSUMER_TYPE
-from users.constants import PROVIDER_TYPE
+from paperstream.consumers.constants import CONSUMER_TYPE
+from paperstream.users.constants import PROVIDER_TYPE
 
 # Define constants used in models
 

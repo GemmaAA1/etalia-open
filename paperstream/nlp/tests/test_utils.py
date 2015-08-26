@@ -1,12 +1,9 @@
-from django.test import TestCase
-from library.models import Paper, Journal
+from .base import NLPTestCase
+from paperstream.library.models import Paper, Journal
 from ..utils import paper2tokens
 from ..constants import FIELDS_FOR_MODEL
-from ..models import Journal, Model
 
-class TokenizePaperTest(TestCase):
-    def setUp(self):
-        pass
+class TokenizePaperTest(NLPTestCase):
 
     def test_fields_must_be_kwargs(self):
         paper = Paper(title='Bla bla.', abstract='Hi. Hi, <p>hi</p> {mu}\n')

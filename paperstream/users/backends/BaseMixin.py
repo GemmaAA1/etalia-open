@@ -1,13 +1,11 @@
 from django.db.models import Q
 
-from library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
+from paperstream.library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
     CorpAuthorPaper
-from library.forms import PaperFormFillBlanks
+from paperstream.library.forms import PaperFormFillBlanks
+from paperstream.nlp.tasks import embed_all_models_and_find_neighbors
 
 from ..models import UserLibPaper, UserLibJournal
-
-from nlp.tasks import embed_all_models_and_find_neighbors
-
 
 class BackendLibMixin(object):
     """Mixin for provider backend"""

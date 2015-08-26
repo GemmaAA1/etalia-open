@@ -10,8 +10,8 @@ from django.core.exceptions import ValidationError
 
 from braces.views import LoginRequiredMixin
 
-from core.mixins import ModalMixin, AjaxableResponseMixin
-from library.models import Paper
+from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
+from paperstream.library.models import Paper
 
 from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper
 from .forms import CreateUserFeedForm

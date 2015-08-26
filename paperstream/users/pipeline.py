@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.conf import settings
 from social.pipeline.partial import partial
 
-from core.utils import get_celery_worker_status
+from paperstream.core.utils import get_celery_worker_status
 from .models import Affiliation
 
 from .tasks import update_lib as async_update_lib

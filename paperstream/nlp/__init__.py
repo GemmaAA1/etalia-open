@@ -1,2 +1,2 @@
-default_app_config = 'nlp.apps.NLPConfig'
+default_app_config = 'paperstream.nlp.apps.NLPConfig'
 

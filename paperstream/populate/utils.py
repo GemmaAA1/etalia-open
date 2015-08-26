@@ -1,13 +1,11 @@
 import csv
-import sys
-import tempfile
 import logging
 from progressbar import ProgressBar, Percentage, Bar, ETA
-from library.models import Publisher, Journal
-from library.forms import JournalFormFillBlanks, PublisherForm
-from consumers.models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
 from django.db.models import Q
-from consumers.constants import CONSUMER_TYPE
+from paperstream.library.models import Publisher, Journal
+from paperstream.library.forms import JournalFormFillBlanks, PublisherForm
+from paperstream.consumers.models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
+from paperstream.consumers.constants import CONSUMER_TYPE
 
 logger = logging.getLogger(__name__)
 

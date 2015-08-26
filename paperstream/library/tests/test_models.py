@@ -1,7 +1,8 @@
 from django.test import TestCase
-from ..models import Paper, Journal, Author, Publisher, AuthorPaper
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+
+from ..models import Paper, Journal, Author, Publisher, AuthorPaper
 
 class PublisherModelTest(TestCase):
 

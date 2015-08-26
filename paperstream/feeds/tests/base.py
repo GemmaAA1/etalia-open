@@ -2,10 +2,10 @@ from django.test import TestCase
 from django.utils import timezone
 import numpy as np
 
-from library.models import Journal, Paper
-from nlp.models import LSH, Model, PaperVectors, JournalVectors
-from users.models import User, UserLib, UserLibPaper, UserSettings
-from nlp.tasks import register_all_models_and_lshs_tasks
+from paperstream.library.models import Journal, Paper
+from paperstream.nlp.models import LSH, Model, PaperVectors, JournalVectors
+from paperstream.users.models import User, UserLib, UserLibPaper, UserSettings
+from paperstream.nlp.tasks import register_all_models_and_lshs_tasks
 
 class UserFeedTestCase(TestCase):
 

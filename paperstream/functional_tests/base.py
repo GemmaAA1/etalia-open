@@ -5,7 +5,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from stdnum import issn
-from library.models import Paper, Journal, Author, AuthorPaper
+from paperstream.library.models import Paper, Journal, Author, AuthorPaper
 
 
 class FunctionalTest(StaticLiveServerTestCase):
@@ -22,8 +22,8 @@ class FunctionalTest(StaticLiveServerTestCase):
             super().tearDownClass()
 
     def setUp(self):
-        # self.browser = webdriver.Firefox()
-        self.browser = webdriver.Chrome()
+        self.browser = webdriver.Firefox()
+        # self.browser = webdriver.Chrome()
         self.browser.implicitly_wait(3)
 
     def tearDown(self):

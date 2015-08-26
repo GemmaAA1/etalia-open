@@ -5,7 +5,7 @@ from dateutil.parser import parse
 import datetime
 
 from ..constants import MENDELEY_PT, ZOTERO_PT
-from core.parsers import Parser
+from paperstream.core.parsers import Parser
 
 
 class ParserBackend(Parser):

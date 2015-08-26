@@ -1,4 +1,4 @@
-from core.validators import CustomRegexValidator
+from paperstream.core.validators import CustomRegexValidator
 
 def validate_first_name(char):
     regex_validator = CustomRegexValidator(

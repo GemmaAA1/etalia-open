@@ -1,8 +1,9 @@
 import re
 from dateutil.parser import parse
 
+from paperstream.core.parsers import Parser
+
 from .constants import PUBMED_PT
-from core.parsers import Parser
 
 
 class ParserPubmed(Parser):

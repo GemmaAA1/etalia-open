@@ -1,18 +1,18 @@
-import numpy as np
 import logging
+
+import numpy as np
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
-from django.db.models import Q, F
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
 
-from core.models import TimeStampedModel
-from core.utils import pad_vector
-from library.models import Paper
-from nlp.models import PaperVectors, JournalVectors, Model, PaperNeighbors, LSH
+from paperstream.core.models import TimeStampedModel
+from paperstream.core.utils import pad_vector
+from paperstream.library.models import Paper
+from paperstream.nlp.models import Model, LSH
 from config.celery import celery_app as capp
-
 from .constants import FEED_STATUS_CHOICES
 from .utils import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage

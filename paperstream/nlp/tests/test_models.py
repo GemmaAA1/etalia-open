@@ -6,12 +6,13 @@ import numpy as np
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+
 from ..models import LSH, Model, TextField, JournalVectors, PaperVectors, \
     PaperNeighbors
-
 from ..constants import FIELDS_FOR_MODEL
 from ..exceptions import InvalidState
-from core.constants import NLP_TIME_LAPSE_CHOICES
+
 from .base import NLPTestCase, NLPDataTestCase
 
 

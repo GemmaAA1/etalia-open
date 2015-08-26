@@ -4,7 +4,8 @@ from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
 
-from library.models import Journal, Paper
+from paperstream.library.models import Journal, Paper
+
 from ..models import Model
 from ..tasks import register_all_models_and_lshs_tasks
 

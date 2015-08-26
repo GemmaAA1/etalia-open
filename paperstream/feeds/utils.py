@@ -3,8 +3,8 @@ from scipy.spatial import distance
 
 from django.utils import timezone
 
-from nlp.models import PaperVectors, JournalVectors
-from library.models import Paper
+from paperstream.nlp.models import PaperVectors, JournalVectors
+from paperstream.library.models import Paper
 
 class Scoring(object):
     """Scoring abstract class"""

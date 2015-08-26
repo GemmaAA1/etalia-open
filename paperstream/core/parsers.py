@@ -1,6 +1,7 @@
 import abc
-from library.models import Paper, Journal, Author, CorpAuthor
-from library.forms import PaperForm, JournalForm, AuthorForm, CorpAuthorForm
+from paperstream.library.models import Paper, Journal, Author, CorpAuthor
+from paperstream.library.forms import PaperForm, JournalForm, AuthorForm, \
+    CorpAuthorForm
 from abc import ABCMeta, abstractmethod
 
 

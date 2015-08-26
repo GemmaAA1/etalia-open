@@ -4,8 +4,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from library.models import Paper, Journal
-from nlp.models import Model
+from paperstream.nlp.models import Model
 
 from ..models import UserLib, UserStats, UserLibPaper, UserLibJournal, \
     UserSettings

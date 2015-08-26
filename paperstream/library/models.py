@@ -1,14 +1,12 @@
 from django.db import models
-from django.db.models import Count
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
-from django.db.models import Q
-from core.models import TimeStampedModel, NullableCharField
+from model_utils.fields import MonitorField, StatusField
+
+from paperstream.core.models import TimeStampedModel, NullableCharField
+
 from .validators import validate_issn, validate_author_names
 from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
 from .utils import langcode_to_langpap
-from model_utils import Choices
-from model_utils.fields import MonitorField, StatusField
 
 from langdetect import detect
 

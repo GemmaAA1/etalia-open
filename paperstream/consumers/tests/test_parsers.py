@@ -1,7 +1,7 @@
 import json
-from unittest.mock import patch
 from django.test import TestCase
 from dateutil.parser import parse
+
 from ..parsers import ParserPubmed, ParserArxiv, ParserElsevier
 
 # Not sure what the best way to unit test parser.

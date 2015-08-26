@@ -6,8 +6,8 @@ from django.utils import timezone
 from .base import UserFeedTestCase
 from ..models import UserFeed, UserFeedVector, UserFeedMatchPaper, \
     UserFeedSeedPaper
-from library.models import Paper
-from nlp.models import PaperVectors
+from paperstream.library.models import Paper
+from paperstream.nlp.models import PaperVectors
 
 class UserFeedBasicTest(UserFeedTestCase):
 

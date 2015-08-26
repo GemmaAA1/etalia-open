@@ -1,13 +1,14 @@
-import numpy as np
 from django.utils import timezone
+
 from config.celery import celery_app as app
-from core.constants import NLP_TIME_LAPSE_CHOICES
-from library.models import Paper
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+from paperstream.library.models import Paper
 
 from ..tasks import EmbedPaperTask, LSHTask, embed_all_models_and_find_neighbors, \
     embed_all_models, register_all_models_and_lshs_tasks
 from ..models import Model, LSH
 from .base import NLPDataExtendedTestCase, NLPDataTestCase
+
 
 class EmbedPaperTaskClassTest(NLPDataTestCase):
 

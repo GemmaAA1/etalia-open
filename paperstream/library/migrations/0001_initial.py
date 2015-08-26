@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import model_utils.fields
-import core.models
+from paperstream import core
 import django.utils.timezone
-import library.validators
+from paperstream import library
 
 
 class Migration(migrations.Migration):

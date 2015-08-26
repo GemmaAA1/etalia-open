@@ -1,8 +1,8 @@
 import logging
 
-from config.celery import celery_app as app
 from django.contrib.auth import get_user_model
 
+from config.celery import celery_app as app
 from .models import UserFeed
 logger = logging.getLogger(__name__)
 

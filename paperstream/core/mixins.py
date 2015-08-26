@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-from users.mixins import ProfileModalFormsMixin
-from feeds.mixins import CreateFeedModalMixin
+from paperstream.users.mixins import ProfileModalFormsMixin
+from paperstream.feeds.mixins import CreateFeedModalMixin
 
 class AjaxableResponseMixin(object):
     """

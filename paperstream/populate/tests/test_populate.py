@@ -1,9 +1,8 @@
 import os
 import sys
-from django.conf import settings
 from django.test import TestCase
 from ..utils import populate_journal, populate_publisher
-from library.models import Journal, Publisher
+from paperstream.library.models import Journal, Publisher
 
 JOU_LIST1 = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                      'data_one_journal.csv')

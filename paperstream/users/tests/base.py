@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from library.models import Journal, Paper
+from paperstream.library.models import Journal, Paper
 
 
 class LibDataTestCase(TestCase):
