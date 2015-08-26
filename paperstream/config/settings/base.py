@@ -284,8 +284,6 @@ FEEDS_DISPLAY_N_PAPERS = 50
 
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
-# BROKER_URL = 'pyamqp://'
-# CELERY_RESULT_BACKEND = 'pyamqp://'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
 

@@ -32,9 +32,8 @@ logger = logging.getLogger(__name__)
 class Consumer(TimeStampedModel):
     """ Abstract Consumer Table
 
-    Consumers consumes papers from the web and populate library
+    Consumers consumes papers from the web and populate the library
     """
-    #TODO: How to make this class abstract? See comment below
 
     # IDS
     type = models.CharField(max_length=3, choices=CONSUMER_TYPE)
@@ -57,6 +56,9 @@ class Consumer(TimeStampedModel):
     # See Ticket #11760 (https://code.djangoproject.com/ticket/11760#no1)
     # class Meta:
     #     abstract = True
+
+    def __str__(self):
+        return self.name
 
     def add_journal(self, journal):
         """Add journal to consumer"""
@@ -90,24 +92,48 @@ class Consumer(TimeStampedModel):
             raise ValueError(msg)
 
     def deactivate_all(self):
-        """Deactivate all journals when possible"""
-        errors = []
-        for journal in self.journals.all():
-            try:
-                self.deactivate_journal(journal)
-            except ValueError or AssertionError as err:
-                logger.warning(err)
-                pass
+        """Deactivate all journals if idle, report others"""
+        self.consumerjournal_set\
+            .filter(status__in=['idle'])\
+            .update(status='inactive')
+        logger.info('({0}) {1}: Deactivate all journals'.format(self.pk,
+                                                                self.name))
+        cjs_failed = self.consumerjournal_set\
+            .filter(status__in=['error', 'in_queue', 'consuming'])\
+            .values('journal__pk', 'journal__short_title', 'status')
+
+        for cj in cjs_failed:
+            err = '({0}) {1}: Deactivate ({2}) {3} FAILED, status is {4}'\
+                .format(self.pk,
+                        self.name,
+                        cj['journal__pk'],
+                        cj['journal__short_title'],
+                        cj['status'])
+            logger.info(err)
+
+        return cjs_failed
 
     def activate_all(self):
-        """Activate all journals when possible"""
-        errors = []
-        for journal in self.journals.all():
-            try:
-                self.activate_journal(journal)
-            except ValueError as err:
-                logger.warning(err)
-                pass
+        """Activate all journals if inactive, report errors"""
+        self.consumerjournal_set\
+            .filter(status__in=['inactive'])\
+            .update(status='idle')
+        logger.info('({0}) {1}: Activate all journals'.format(self.pk,
+                                                              self.name))
+        cjs_failed = self.consumerjournal_set\
+            .filter(status__in=['error'])\
+            .values('journal__pk', 'journal__short_title', 'status')
+
+        for cj in cjs_failed:
+            err = '({0}) {1}: Activate ({2}){3} FAILED, status is {4}'\
+                .format(self.pk,
+                        self.name,
+                        cj['journal__pk'],
+                        cj['journal__short_title'],
+                        cj['status'])
+            logger.info(err)
+
+        return cjs_failed
 
     def reset_last_date_cons(self, journal):
         """Reset last date of consumption to default"""
@@ -612,24 +638,32 @@ class ConsumerJournal(models.Model):
         if self.status == 'inactive':
             self.status = 'idle'
             self.save()
-        elif self.status in ['idle', 'in_queue', 'consuming']:
-            msg = 'journal already active: current status is {0}'.format(self.status)
+            msg = '({0}) {1}: Activate {2}'.format(self.consumer.pk,
+                                                   self.consumer.name,
+                                                   self.journal)
             logger.info(msg)
-        else:
-            msg = 'cannot activate, journal status is {0}'.format(self.status)
-            logger.info(msg)
+        elif self.status == 'error':
+            msg = '({0}) {1}: Activate {2} FAILED, status is {3}'\
+                .format(self.consumer.pk,
+                        self.consumer.name,
+                        self.journal,
+                        self.status)
             raise ValueError(msg)
 
     def deactivate(self):
         if self.status in ['idle', 'error']:
             self.status = 'inactive'
             self.save()
-        elif self.status in ['in_queue', 'consuming']:
-            msg = 'cannot deactivate, journal is busy: current status is {0}'.format(self.status)
+            msg = '({0}) {1}: Deactivate {2}'.format(self.consumer.pk,
+                                                     self.consumer.name,
+                                                     self.journal)
             logger.info(msg)
-            raise ValueError(msg)
-        else:
-            msg = 'journal already active: current status is {0}'.format(self.status)
+        elif self.status in ['in_queue', 'consuming']:
+            msg = '({0}) {1}: Deactivate {2} FAILED, status is {3}'\
+                .format(self.consumer.pk,
+                        self.consumer.name,
+                        self.journal,
+                        self.status)
             logger.info(msg)
             raise ValueError(msg)
 

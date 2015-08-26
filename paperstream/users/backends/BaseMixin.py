@@ -8,6 +8,7 @@ from ..models import UserLibPaper, UserLibJournal
 
 from nlp.tasks import embed_all_models_and_find_neighbors
 
+
 class BackendLibMixin(object):
     """Mixin for provider backend"""
 

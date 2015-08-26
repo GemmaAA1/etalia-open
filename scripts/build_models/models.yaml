@@ -1,15 +1,24 @@
-- name: dbow-100-with-words
-  dm: 1
-  size: 100
+- name: dbow-128-with-words
+  dm: 0
+  size: 128
   window: 8
   alpha: 0.025
   hs: 1
   negative: 0
   dbow_words: 1
 
-- name: dbow-100
+- name: dbow-128
+  dm: 0
+  size: 128
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
+
+- name: dm-128
   dm: 1
-  size: 100
+  size: 128
   window: 8
   alpha: 0.025
   hs: 1

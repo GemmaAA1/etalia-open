@@ -187,9 +187,16 @@ class ParserArxiv(Parser):
 
         paper['url'] = entry.get('link', '')
 
-        paper['date_ep'] = parse(entry.get('published', 'a_date_that_excepts'))
-        paper['date_lr'] = parse(entry.get('updated', 'a_date_that_excepts'))
-
+        try:
+            paper['date_ep'] = parse(entry.get('published',
+                                               'a_date_that_excepts'))
+        except ValueError or AttributeError:
+            paper['date_ep'] = None
+        try:
+            paper['date_lr'] = parse(entry.get('updated',
+                                               'a_date_that_excepts'))
+        except ValueError or AttributeError:
+            paper['date_lr'] = None
         paper['abstract'] = entry.get('summary', '')
 
         paper['title'] = entry.get('title', '')
@@ -245,11 +252,17 @@ class ParserElsevier(Parser):
             date_ep = re.sub(r'Available online',
                              '',
                              entry.get('prism:coverDisplayDate', 'rejected')).strip()
-            paper['date_ep'] = parse(date_ep)
+            try:
+                paper['date_ep'] = parse(date_ep)
+            except ValueError or AttributeError:
+                paper['date_ep'] = None
         else:
             paper['publish_status'] = 'ppublish'
-            paper['date_pp'] = parse(entry.get('prism:coverDisplayDate',
-                                               'rejected'))
+            try:
+                paper['date_pp'] = parse(entry.get('prism:coverDisplayDate',
+                                                   'a_date_that_excepts'))
+            except ValueError or AttributeError:
+                paper['date_pp'] = None
             paper['page'] = '{start}-{end}'.format(
                 start=entry.get('prism:startingPage', ''),
                 end=entry.get('prism:endingPage', ''))

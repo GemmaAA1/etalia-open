@@ -5,8 +5,6 @@ from mendeley import Mendeley
 from mendeley.auth import MendeleySession, \
     MendeleyAuthorizationCodeTokenRefresher
 from mendeley.exception import MendeleyApiException
-from config.celery import celery_app as app
-from celery.contrib.methods import task_method
 
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserMendeley
