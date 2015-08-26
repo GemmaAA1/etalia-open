@@ -23,7 +23,6 @@ class NLPTestCase(TestCase):
             shutil.rmtree(settings.NLP_LSH_PATH)
 
 
-
 class NLPDataTestCase(NLPTestCase):
 
     def setUp(self):

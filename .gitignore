@@ -67,6 +67,9 @@ docs/_build/
 # PyBuilder
 target/
 
-# Others
+# PaperStream
 nlp_data/
+nlp_data_test/
 logs/
+paperstream/trash
+toy_Procfile
