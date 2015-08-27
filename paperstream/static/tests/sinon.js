@@ -1441,7 +1441,7 @@ var sinon = (function () {
                 proto = Object.getPrototypeOf(proto);
             }
             return descriptor;
-        }
+        };
 
         sinon.getConfig = function (custom) {
             var config = {};
@@ -1528,7 +1528,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -1612,8 +1612,7 @@ var sinon = (function () {
             }
 
             return target;
-        };
-
+        }
         sinon.extend = extend;
         return sinon.extend;
     }
@@ -1631,7 +1630,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -1674,7 +1673,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -1702,8 +1701,7 @@ var sinon = (function () {
             }
             var string = Object.prototype.toString.call(value);
             return string.substring(8, string.length - 1).toLowerCase();
-        };
-
+        }
         sinon.typeOf = typeOf;
         return sinon.typeOf;
     }
@@ -1721,7 +1719,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -1978,7 +1976,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -2010,16 +2008,14 @@ var sinon = (function () {
 
             function format() {
                 return formatter.ascii.apply(formatter, arguments);
-            };
-
+            }
             return format;
         }
 
         function getNodeFormatter(value) {
             function format(value) {
                 return typeof value == "object" && value.toString === Object.prototype.toString ? util.inspect(value) : value;
-            };
-
+            }
             try {
                 var util = require("util");
             } catch (e) {
@@ -2063,7 +2059,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -2285,7 +2281,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -2739,7 +2735,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -3098,7 +3094,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -3278,7 +3274,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -3734,7 +3730,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -3901,7 +3897,7 @@ var sinon = (function () {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -4130,12 +4126,11 @@ if (typeof sinon == "undefined") {
                 err.message = msg + err.message;
                 throw err;
             }, 0);
-        };
-
+        }
         // wrap realSetTimeout with something we can stub in tests
         logError.setTimeout = function (func, timeout) {
             realSetTimeout(func, timeout);
-        }
+        };
 
         var exports = {};
         exports.log = sinon.log = log;
@@ -4157,7 +4152,7 @@ if (typeof sinon == "undefined") {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -4999,7 +4994,7 @@ if (typeof sinon == "undefined") {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (typeof sinon === "undefined") {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -5503,7 +5498,7 @@ if (typeof sinon == "undefined") {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -5707,7 +5702,7 @@ if (typeof sinon == "undefined") {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }
@@ -5874,7 +5869,7 @@ if (typeof sinon == "undefined") {
                         "expected value to match",
                         "    expected = " + sinon.format(expectation),
                         "    actual = " + sinon.format(actual)
-                    ]
+                    ];
                     failAssertion(this, formatted.join("\n"));
                 }
             }
@@ -5920,7 +5915,7 @@ if (typeof sinon == "undefined") {
     } else if (isNode) {
         loadDependencies(require, module.exports, module);
     } else if (!sinon) {
-        return;
+
     } else {
         makeApi(sinon);
     }

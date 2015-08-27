@@ -55,7 +55,7 @@ jQuery(function ($) {
             data: $form.serialize(),
 
             success: function (json) {
-                $('#id_errors').empty()
+                $('#id_errors').empty();
                 $.each(json, function (key, value) {
                     var $field = $('input[name=' + key + ']');
                     $field.val(value);
@@ -71,7 +71,7 @@ jQuery(function ($) {
 
             error: function (resp) {
                 console.log(resp.responseText);
-                $('#id_errors').empty()
+                $('#id_errors').empty();
                 var res = JSON.parse(resp.responseText);
                 $('input').removeClass("alert alert-danger");
                 $.each(res, function (key, value) {
