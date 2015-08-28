@@ -1,9 +1,7 @@
-import os
-from django.conf import settings
-from populate.utils import populate_publisher, populate_journal, \
+from paperstream.populate.utils import populate_publisher, populate_journal, \
     populate_consumer
 from django.core.management.base import BaseCommand
-from consumers.constants import CONSUMER_TYPE
+from paperstream.consumers.constants import CONSUMER_TYPE
 from ...constants import PUBLISHER_OPTIONS, JOURNAL_OPTIONS, CONSUMER_OPTIONS
 
 class Command(BaseCommand):
