@@ -71,7 +71,7 @@ class ConsumerPubmedTest(TestCase):
         consumer.activate_journal(journal)
         consumer.save()
 
-        with open('consumers/tests/pubmed_sample.json') as file:
+        with open('paperstream/consumers/tests/pubmed_sample.json') as file:
             self.entries = json.load(file)
 
     def test_add_entry(self):
@@ -122,7 +122,7 @@ class ConsumerElsevierTest(TestCase):
         consumer.activate_journal(journal)
         consumer.save()
 
-        with open('consumers/tests/elsevier_sample.json') as file:
+        with open('paperstream/consumers/tests/elsevier_sample.json') as file:
             self.entries = json.load(file)
 
     def test_add_entry(self):

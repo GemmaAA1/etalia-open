@@ -12,7 +12,7 @@ from ..parsers import ParserPubmed, ParserArxiv, ParserElsevier
 class ParserPubmedTest(TestCase):
 
     def setUp(self):
-        with open('consumers/tests/pubmed_sample.json') as file:
+        with open('paperstream/consumers/tests/pubmed_sample.json') as file:
             self.entries = json.load(file)
 
     def test_parse_journal(self):
@@ -70,7 +70,7 @@ class ParserPubmedTest(TestCase):
 class ParserElsevierTest(TestCase):
 
     def setUp(self):
-        with open('consumers/tests/elsevier_sample.json') as file:
+        with open('paperstream/consumers/tests/elsevier_sample.json') as file:
             self.entries = json.load(file)
 
     def test_parse_journal(self):
