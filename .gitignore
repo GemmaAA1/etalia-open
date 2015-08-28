@@ -71,3 +71,4 @@ nlp_data/
 nlp_data_test/
 paperstream/trash
 fabfile/
+staticfiles/

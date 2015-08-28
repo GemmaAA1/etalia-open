@@ -7,7 +7,7 @@ DEBUG = env.bool('DJANGO_DEBUG', default=False)
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['localhost', 'paperstream.herokuapp.com']
+ALLOWED_HOSTS = ['localhost', 'paperstream.herokuapp.com', '127.0.0.1', 'localhost']
 
 # Parse database configuration from $DATABASE_URL
 import dj_database_url
@@ -24,7 +24,7 @@ STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 # # Static asset cocnfiguration
 # STATIC_ROOT = 'staticfiles'

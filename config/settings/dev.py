@@ -22,6 +22,16 @@ CACHES = {
     }
 }
 
+# Static asset configuration
+STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    str(APPS_DIR.path('static')),
+)
+
+# STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
 # CELERY
 # ------------------------------------------------------------------------------
 # In development, all tasks will be executed locally by blocking until the task

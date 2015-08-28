@@ -27,7 +27,7 @@ env = environ.Env()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost']
 
 
 # APP CONFIGURATION
@@ -147,7 +147,7 @@ USE_TZ = True
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 # use to serve static file in production by collecting static files in root
-STATIC_ROOT = str(APPS_DIR.path('staticfiles'))
+STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
