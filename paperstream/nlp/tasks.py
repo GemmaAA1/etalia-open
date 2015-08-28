@@ -1,9 +1,9 @@
 import logging
-
 from celery import chain, Task
 
 from config.celery import celery_app as app
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+from paperstream.core.utils import db_table_exists
 
 from .models import Model, LSH
 
@@ -115,7 +115,10 @@ def register_all_models_and_lshs_tasks():
                      .format(model_name=model_name,
                              time_lapse=time_lapse))
 
-register_all_models_and_lshs_tasks()
+# If table exist register task
+# NB: this avoid failing when running manage.py migrate from scratch
+if db_table_exists('nlp_model'):
+    register_all_models_and_lshs_tasks()
 
 
 def embed_all_models(paper_pk):

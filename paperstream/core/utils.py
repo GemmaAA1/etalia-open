@@ -4,6 +4,7 @@ import numpy as np
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.db import connection
 
 
 def get_env_variable(var_name, default=None):
@@ -76,3 +77,7 @@ def makedirs_p(path):
                 raise
     else:
         os.makedirs(path, exist_ok=True)
+
+
+def db_table_exists(table_name):
+    return table_name in connection.introspection.table_names()
