@@ -20,7 +20,7 @@ from paperstream.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 from paperstream.library.forms import PaperFormFillBlanks
 from paperstream.core.models import TimeStampedModel
-from paperstream.nlp.tasks import embed_all_models_and_find_neighbors
+from paperstream.core.tasks import embed_all_models_and_find_neighbors
 
 from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
