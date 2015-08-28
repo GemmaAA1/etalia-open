@@ -72,3 +72,5 @@ nlp_data_test/
 paperstream/trash
 fabfile/
 staticfiles/
+.env
+.envs

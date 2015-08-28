@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from __future__ import absolute_import, unicode_literals
 import environ
 from kombu import Queue, Exchange
 from celery.schedules import crontab

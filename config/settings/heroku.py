@@ -1,5 +1,4 @@
 import os
-from __future__ import absolute_import, unicode_literals
 from boto.s3.connection import OrdinaryCallingFormat
 from .common import *
 
@@ -7,11 +6,11 @@ DEBUG = env.bool('DJANGO_DEBUG', default=False)
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['localhost', 'paperstream.herokuapp.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['localhost', 'paperstream.herokuapp.com', '127.0.0.1', 'localhost', '0.0.0.0']
 
 # Parse database configuration from $DATABASE_URL
-import dj_database_url
-DATABASES['default'] = dj_database_url.config()
+# import dj_database_url
+# DATABASES['default'] = dj_database_url.config()
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -23,6 +22,17 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
+
+
+# Mail settings
+# ------------------------------------------------------------------------------
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
+                    default='django.core.mail.backends.console.EmailBackend')
+
+
+CELERY_ALWAYS_EAGER = True
 
 # STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
@@ -85,3 +95,6 @@ STATICFILES_DIRS = (
 # AWS_PRELOAD_METADATA = True
 # INSTALLED_APPS = ('collectfast', ) + INSTALLED_APPS
 # {%- endif %}
+
+
+
