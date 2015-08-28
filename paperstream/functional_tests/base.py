@@ -12,7 +12,7 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super(FunctionalTest, cls).setUpClass()
         cls.against_staging = False
         cls.server_url = cls.live_server_url
 

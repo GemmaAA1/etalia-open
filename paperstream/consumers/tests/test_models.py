@@ -1,5 +1,10 @@
 import json
-from unittest.mock import patch
+import sys
+if sys.version_info < (3, 3):
+    from mock import patch
+else:
+    from unittest.mock import patch
+
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 

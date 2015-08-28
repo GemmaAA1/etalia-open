@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
@@ -51,6 +52,7 @@ def pad_vector(vector):
 
     return vector
 
+
 def pad_neighbors(vector):
     if isinstance(vector, np.ndarray):
         if vector.size == 1:
@@ -63,3 +65,14 @@ def pad_neighbors(vector):
     else:
         raise ValidationError('vector is larger than NLP_MAX_KNN_NEIGHBORS')
     return vector
+
+
+def makedirs_p(path):
+    if sys.version_info < (3, 4):
+        try:
+            os.makedirs(path)
+        except OSError:
+            if not os.path.isdir(path):
+                raise
+    else:
+        os.makedirs(path, exist_ok=True)

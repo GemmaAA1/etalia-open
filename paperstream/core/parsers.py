@@ -2,10 +2,10 @@ import abc
 from paperstream.library.models import Paper, Journal, Author, CorpAuthor
 from paperstream.library.forms import PaperForm, JournalForm, AuthorForm, \
     CorpAuthorForm
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 
-class Parser(metaclass=ABCMeta):
+class Parser(object):
     """Abstract Parser class
 
     Parser is used to parse entry in journal, paper, authors and corp_author
@@ -18,8 +18,6 @@ class Parser(metaclass=ABCMeta):
         author_template: Template for Author
         corp_author_tempalte: Template for CorpAuthor
     """
-
-    __metaclass__ = abc.ABCMeta
 
     paper_template = dict([(field, Paper._meta.get_field(field).default)
                            for field in PaperForm.Meta.fields])

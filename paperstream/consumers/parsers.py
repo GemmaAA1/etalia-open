@@ -115,7 +115,10 @@ class ParserPubmed(Parser):
         for auth in full_authors:
             author = self.author_template.copy()
             try:
-                last, first = tuple(list(map(str.strip, auth.split(','))))
+                tmp = []
+                for s in auth.split(','):
+                    tmp.append(s.strip())
+                last, first = tuple(tmp)
             except ValueError:
                 last = auth.strip()
                 first = ''
@@ -152,7 +155,9 @@ class ParserArxiv(Parser):
         for auth in full_authors:
             author = self.author_template.copy()
             # assuming all first name are only initialized [e.g E. J. Martin]
-            split_auth = list(map(str.strip, auth['name'].split('.')))
+            split_auth = []
+            for s in auth['name'].split('.'):
+                split_auth.append(s.strip())
             if len(split_auth) > 1:
                 first = ' '.join(split_auth[:-1])
                 last = split_auth[-1]

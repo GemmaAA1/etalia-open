@@ -1,3 +1,4 @@
+from __future__ import print_function
 import csv
 import logging
 from progressbar import ProgressBar, Percentage, Bar, ETA
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 def populate_journal(csv_file, print_to=None):
 
     # counting number of row
-    with open(csv_file, 'r') as rows:
+    with open(csv_file, 'rU') as rows:
         reader = csv.DictReader(rows, delimiter=';')
         trows = sum(1 for row in reader)
 
@@ -26,7 +27,7 @@ def populate_journal(csv_file, print_to=None):
     pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                        maxval=trows, redirect_stderr=True).start()
 
-    with open(csv_file, 'r') as rows:
+    with open(csv_file, 'rU') as rows:
         # Generate a dict per row, with the first CSV row being the keys.
         for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
             try:

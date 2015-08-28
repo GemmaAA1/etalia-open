@@ -74,11 +74,11 @@ class LSHTaskClassTest(NLPDataExtendedTestCase):
     def test_lsh_task_reload_lsh_if_modified(self):
         lsht = LSHTask(model_name=self.model.name,
                        time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
-        # load model
-        state0 = lsht.lsh.state
-        # modified lsh
+        # access model
+        _ = lsht.lsh.state
+        # modifying lsh
         self.lsh.set_state('BUS')
-        # test reload works
+        # test reload if modified works
         self.assertEqual(self.lsh.state, lsht.lsh.state)
         # Test Not reload if model modification not saved
         self.lsh.state = 'IDL'
