@@ -72,5 +72,4 @@ nlp_data/
 nlp_data_test/
 logs/
 paperstream/trash
-toy_Procfile
-deploy_tools/
+fabfile/

@@ -1,6 +1,4 @@
-from .base import *
-from core.utils import get_env_variable
-
+from .common import *
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -12,8 +10,7 @@ TEMPLATE_DEBUG = False
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # Note: This key only used for development and testing.
-SECRET_KEY = get_env_variable('PAP_SECRET_KEY')
-
+SECRET_KEY = env('PAP_SECRET_KEY')
 
 # Mail settings
 # ------------------------------------------------------------------------------
@@ -38,11 +35,11 @@ PUBMED_EMAIL = env.str('PUBMED_EMAIL', '')
 ELSEVIER_API_KEY = env.str('ELSEVIER_API_KEY', '')
 
 # NLP PATHS CHANGE
-NLP_DATA_PATH = str(APPS_DIR.path('nlp', 'data_test'))
-NLP_DOC2VEC_PATH = str(APPS_DIR.path('nlp', 'mods_test'))
-NLP_LSH_PATH = str(APPS_DIR.path('nlp', 'lshfs_test'))
 NLP_CHUNK_SIZE = 2
 NLP_MAX_VECTOR_SIZE = 300
+NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data_test', 'data'))
+NLP_DOC2VEC_PATH = str(ROOT_DIR.path('nlp_data_test', 'mods'))
+NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data_test', 'lshfs'))
 
 # LOGGING
 LOGGING = {}
@@ -57,6 +54,3 @@ CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 BROKER_BACKEND = 'memory'
 
-NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data_test', 'data'))
-NLP_DOC2VEC_PATH = str(ROOT_DIR.path('nlp_data_test', 'mods'))
-NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data_test', 'lshfs'))

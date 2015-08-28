@@ -11,7 +11,7 @@
 # > rabbitmq-server &
 # > celery -A config worker --loglevel=info
 #
-# Also modified 'USER' in DATABASES definition in config/base.py to match
+# Also modified 'USER' in DATABASES definition in config/common.py to match
 # you postgres username.
 
 # install local requirement
