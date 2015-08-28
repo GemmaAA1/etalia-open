@@ -19,7 +19,7 @@ class FunctionalTest(StaticLiveServerTestCase):
     @classmethod
     def tearDownClass(cls):
         if not cls.against_staging:
-            super().tearDownClass()
+            super(FunctionalTest, cls).tearDownClass()
 
     def setUp(self):
         self.browser = webdriver.Firefox()
