@@ -73,4 +73,3 @@ paperstream/trash
 fabfile/
 staticfiles/
 .env
-.envs
