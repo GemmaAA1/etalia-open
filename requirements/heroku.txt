@@ -1,4 +1,4 @@
--r base.txt # includes the base.txt requirements file
+-r common.txt # includes the base.txt requirements file
 
 dj-database-url==0.3.0
 dj-static==0.0.6
