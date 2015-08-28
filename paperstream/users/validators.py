@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from paperstream.core.validators import CustomRegexValidator
 
 def validate_first_name(char):

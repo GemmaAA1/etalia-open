@@ -6,13 +6,6 @@ DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATE_DEBUG = DEBUG
 
 
-# SECRET CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-# Note: This key only used for development and testing.
-SECRET_KEY = env('SECRET_KEY', default='CHANGEME!!!')
-
-
 # Mail settings
 # ------------------------------------------------------------------------------
 EMAIL_HOST = 'localhost'
@@ -28,12 +21,6 @@ CACHES = {
         'LOCATION': ''
     }
 }
-
-# CONSUMER CONFIGURATION
-# ------------------------------------------------------------------------------
-
-PUBMED_EMAIL = env('PUBMED_EMAIL')
-ELSEVIER_API_KEY = env('ELSEVIER_API_KEY')
 
 # CELERY
 # ------------------------------------------------------------------------------

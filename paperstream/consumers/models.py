@@ -343,7 +343,7 @@ class ConsumerPubmed(Consumer):
     parser = ParserPubmed()
 
     # email
-    email = get_env_variable('PUBMED_EMAIL')
+    email = get_env_variable('CONSUMER_PUBMED_EMAIL')
 
     def journal_is_valid(self, journal):
         if super(ConsumerPubmed, self).journal_is_valid(journal):
@@ -427,7 +427,7 @@ class ConsumerElsevier(Consumer):
     parser = ParserElsevier()
 
     # API key
-    API_KEY = get_env_variable('ELSEVIER_API_KEY')
+    API_KEY = get_env_variable('CONSUMER_ELSEVIER_API_KEY')
 
     # URL
     URL_QUERY = 'http://api.elsevier.com/content/search/index:SCIDIR?query='

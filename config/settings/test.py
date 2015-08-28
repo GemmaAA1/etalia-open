@@ -5,13 +5,6 @@ from .common import *
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-
-# SECRET CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-# Note: This key only used for development and testing.
-SECRET_KEY = env('PAP_SECRET_KEY')
-
 # Mail settings
 # ------------------------------------------------------------------------------
 EMAIL_HOST = 'localhost'
@@ -30,9 +23,6 @@ CACHES = {
 
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
-
-PUBMED_EMAIL = env.str('PUBMED_EMAIL', '')
-ELSEVIER_API_KEY = env.str('ELSEVIER_API_KEY', '')
 
 # NLP PATHS CHANGE
 NLP_CHUNK_SIZE = 2

@@ -1,7 +1,6 @@
 from .common import *
 
 DEBUG = env.bool('DJANGO_DEBUG', default=False)
-SECRET_KEY = env('PAP_SECRET_KEY')
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -1,7 +1,6 @@
 from .common import *
 
 DEBUG = env.bool('DJANGO_DEBUG', default=False)
-SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # Parse database configuration from $DATABASE_URL
 import dj_database_url
@@ -20,7 +19,7 @@ STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    # os.path.join(BASE_DIR, 'static'),
 )
 
 

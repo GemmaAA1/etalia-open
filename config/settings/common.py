@@ -25,7 +25,8 @@ env = environ.Env()
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
 ALLOWED_HOSTS = []
 
 
@@ -146,7 +147,7 @@ USE_TZ = True
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 # use to serve static file in production by collecting static files in root
-# STATIC_ROOT = str(APPS_DIR.path('static'))
+STATIC_ROOT = str(APPS_DIR.path('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
@@ -229,26 +230,20 @@ SOCIAL_AUTH_PIPELINE = (
     # 'users.pipeline.require_affiliation',
 )
 
-# TODO:
-# ****
-# API KEY TO MOVE IN ENV VARIABLE LATER
-# ****
-
 # Mendeley
-SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = '1678'
-SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = 'caOrLU0DqOUC4wdD'
+SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = \
+    env('SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY')
+SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = \
+    env('SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET')
 # Zotero
-SOCIAL_AUTH_CUSTOM_ZOTERO_KEY = 'a7ecbff3d0bbe59abc4b'
-SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = 'c5d0c178d9196e62bdbf'
-
+SOCIAL_AUTH_CUSTOM_ZOTERO_KEY = env('SOCIAL_AUTH_CUSTOM_ZOTERO_KEY')
+SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = env('SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET')
 
 # DISQUS
-# TODO: I think DISQUS_API_KEY is not needed but only DISQUS_PUBLIC_KEY should be defined
-DISQUS_API_KEY = 'w2W0iBEJwGE49PjupwQxDnfzC9ayliEvctiGwbmVb63uHIXNTZLgreJDNRvvBOap'
-DISQUS_WEBSITE_SHORTNAME = 'paperstream'
+DISQUS_WEBSITE_SHORTNAME = env('DISQUS_WEBSITE_SHORTNAME')
 # TODO: Move to var env
-DISQUS_PUBLIC_KEY = 'w2W0iBEJwGE49PjupwQxDnfzC9ayliEvctiGwbmVb63uHIXNTZLgreJDNRvvBOap'
-DISQUS_SECRET_KEY = 'eMWsm6qeNkDHzdvLViScWPldyDVnmvAz4U79YjsCelOu58XnRPelrUimqTrhGrRw'
+DISQUS_PUBLIC_KEY = env('DISQUS_PUBLIC_KEY')
+DISQUS_SECRET_KEY = env('DISQUS_SECRET_KEY')
 
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -260,6 +255,9 @@ CONS_MAX_DELAY = 7
 
 # In days, how many day in the past to look at when initializing database
 CONS_INIT_PAST = 365
+
+CONSUMER_PUBMED_EMAIL = env('CONSUMER_PUBMED_EMAIL')
+CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 
 
 # NLP APP
