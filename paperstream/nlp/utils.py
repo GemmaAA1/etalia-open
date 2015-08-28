@@ -10,6 +10,8 @@ from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
 from sklearn.neighbors import LSHForest
 
+from django.conf import settings
+
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
@@ -49,6 +51,9 @@ def paper2tokens(paper, **kwargs):
 def pre_process_text(text):
     """Preprocess text
     """
+    # add data to path
+    nltk.data.path += [settings.NLP_NLTK_DATA_PATH]
+
     # remove HTML
     text = BeautifulSoup(text).get_text()
 

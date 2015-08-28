@@ -268,6 +268,7 @@ NLP_DOC2VEC_PATH = str(ROOT_DIR.path('nlp_data', 'mods'))
 NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data', 'lshfs'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
+NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 
