@@ -59,7 +59,6 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
 
 # Sphinx documentation
 docs/_build/
@@ -70,6 +69,5 @@ target/
 # PaperStream
 nlp_data/
 nlp_data_test/
-logs/
 paperstream/trash
 fabfile/

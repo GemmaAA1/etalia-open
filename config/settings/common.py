@@ -363,46 +363,52 @@ LOGGING = {
         },
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'paperstream.log')),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'populate': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'populate.log')),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'nlp': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'nlp.log')),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'feeds': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'feeds.log')),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'users': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'users.log')),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'consumers': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'consumers.log')),
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'celery': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(ROOT_DIR.path('logs', 'celery.log')),
             'formatter': 'verbose',
-            'maxBytes': 1024 * 1024 * 50,  # 100 mb
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
     },
     'loggers': {
