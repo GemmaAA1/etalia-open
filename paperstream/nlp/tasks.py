@@ -72,8 +72,7 @@ class LSHTask(Task):
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
             # check if time_lapse allowed
-            choices = [time_lapse for time_lapse, _ in NLP_TIME_LAPSE_CHOICES] + \
-                      [None]
+            choices = [tl for tl, _ in NLP_TIME_LAPSE_CHOICES] + [None]
             if time_lapse in choices:
                 self.time_lapse = time_lapse
             else:
