@@ -41,3 +41,9 @@ python manage.py populate journal arxiv
 python manage.py populate consumer pubmed --name pubmed_all
 python manage.py populate consumer arxiv --name arxiv_all
 python manage.py populate consumer elsevier --name elsevier_all
+
+
+
+# KEY FOR PRODUCTIONS (when different):
+heroku config:set SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY='2132'
+heroku config:set SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET='sSfvl197gZXrEnd9'
