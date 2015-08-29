@@ -1,4 +1,7 @@
-from consumers.models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
+from paperstream.consumers.models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
 from django.db.models import Q
 import time
 

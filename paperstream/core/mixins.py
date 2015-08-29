@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.http import JsonResponse
 from paperstream.users.mixins import ProfileModalFormsMixin
 from paperstream.feeds.mixins import CreateFeedModalMixin

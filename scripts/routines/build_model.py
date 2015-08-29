@@ -1,13 +1,16 @@
-import yaml
-from nlp.models import Model, LSH
-from library.models import Paper
-from core.constants import NLP_TIME_LAPSE_CHOICES
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
 
-path_to_model_file = 'scripts/build_models/models.yaml'
+import yaml
+from paperstream.nlp.models import Model, LSH
+from paperstream.library.models import Paper
+
+path_to_model_file = 'models.yaml'
 with open(path_to_model_file) as stream:
     MODELS = yaml.load(stream)
 
-def build(model_name):
+
+def build(model_name, papers=None):
 
     check_unique_name(MODELS)
     model_args = [model for model in MODELS if model['name'] == model_name][0]
@@ -15,7 +18,8 @@ def build(model_name):
     # Initiate model
     model = Model.objects.create(**model_args)
     # dump papers data
-    papers = Paper.objects.all()
+    if not papers:
+        papers = Paper.objects.all()
     model.dump(papers)
     model.build_vocab_and_train()
     # Propagate to LSH, journalvector, papervector

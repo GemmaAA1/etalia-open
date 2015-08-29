@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 from boto.s3.connection import OrdinaryCallingFormat
 from .common import *

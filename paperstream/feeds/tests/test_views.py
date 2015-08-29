@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.http import Http404
 from django.test import RequestFactory, Client
 from django.conf import settings

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from .base import UserFeedTestCase
 from ..utils import Scoring, SimpleAverage, ThresholdAverage, \
     WeightedJournalAverage, WeightedJournalCreatedDateAverage

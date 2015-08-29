@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import numpy as np
 
 from django.core.exceptions import ValidationError

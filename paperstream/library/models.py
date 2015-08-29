@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.db import models
 from django.core.urlresolvers import reverse
 from model_utils.fields import MonitorField, StatusField

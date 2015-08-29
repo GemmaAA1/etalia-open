@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 """To retrieve a list of affiliation from pubmed"""
+from __future__ import unicode_literals, absolute_import
 
 import re
 from Bio import Entrez

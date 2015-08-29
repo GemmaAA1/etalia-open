@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.views.generic.base import ContextMixin
 
 from .forms import UpdateUserBasicForm, UserAffiliationForm, \

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .heroku_local import *
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False

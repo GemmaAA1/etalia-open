@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
 import logging

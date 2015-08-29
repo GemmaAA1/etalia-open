@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.core.exceptions import ValidationError
 from stdnum import issn as issn_checker
 from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Django settings for paperstream project.
 
@@ -227,20 +229,29 @@ SOCIAL_AUTH_PIPELINE = (
     # 'users.pipeline.require_affiliation',
 )
 
-# Mendeley
+# Mendeley Keys
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY = \
     env('SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY')
 SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET = \
     env('SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET')
-# Zotero
+
+# Zotero Keys
 SOCIAL_AUTH_CUSTOM_ZOTERO_KEY = env('SOCIAL_AUTH_CUSTOM_ZOTERO_KEY')
 SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET = env('SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET')
 
+
 # DISQUS
+# ------------------------------------------------------------------------------
 DISQUS_WEBSITE_SHORTNAME = env('DISQUS_WEBSITE_SHORTNAME')
-# TODO: Move to var env
 DISQUS_PUBLIC_KEY = env('DISQUS_PUBLIC_KEY')
 DISQUS_SECRET_KEY = env('DISQUS_SECRET_KEY')
+
+
+# AWS S3
+# ------------------------------------------------------------------------------
+DJANGO_AWS_ACCESS_KEY_ID = env('DJANGO_AWS_ACCESS_KEY_ID')
+DJANGO_AWS_SECRET_ACCESS_KEY = env('DJANGO_AWS_SECRET_ACCESS_KEY')
+
 
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -260,12 +271,15 @@ CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
+NLP_DATA_BUCKET_NAME = 'paperstream-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'paperstream-nlp-models'
+NLP_LSH_BUCKET_NAME = 'paperstream-nlp-lshs'
 NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data', 'data'))
 NLP_DOC2VEC_PATH = str(ROOT_DIR.path('nlp_data', 'mods'))
 NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data', 'lshfs'))
+NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
-NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 

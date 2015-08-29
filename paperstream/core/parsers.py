@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import abc
 from paperstream.library.models import Paper, Journal, Author, CorpAuthor
 from paperstream.library.forms import PaperForm, JournalForm, AuthorForm, \

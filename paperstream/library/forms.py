@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import requests
 from requests.exceptions import RequestException
 from django import forms

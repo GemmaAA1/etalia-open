@@ -1,4 +1,6 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from ..validators import validate_first_name, validate_last_name

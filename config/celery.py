@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Celery auto detect task script. Task defined with decorator celery_app
 located in a app/task.py files are auto detected and available to workers
 
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 from django.conf import settings

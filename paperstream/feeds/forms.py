@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import UserFeed

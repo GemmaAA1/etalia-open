@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from paperstream.populate.utils import populate_publisher, populate_journal, \
     populate_consumer
 from django.core.management.base import BaseCommand
@@ -51,7 +54,6 @@ class Command(BaseCommand):
                     records_added, errors = populate_publisher(
                         sourcefile['file_path'],
                         print_to=self.stderr)
-                    # print(errors)
             else:
                 msg = 'argument {opt} unknown, possible choice ' \
                       'is: {ch}'.format(
@@ -74,7 +76,6 @@ class Command(BaseCommand):
                     records_added, errors = populate_journal(
                         sourcefile['file_path'],
                         print_to=self.stderr)
-                    # print(errors)
             elif source in source_options:
                 sourcefile = [so for so in JOURNAL_OPTIONS if
                               so['source'] == source][0]

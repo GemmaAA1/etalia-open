@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from ..tasks import update_feed, init_main_feed
 from ..models import UserFeed
 

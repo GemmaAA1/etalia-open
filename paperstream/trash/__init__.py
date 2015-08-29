@@ -1,1 +1,1 @@
-__author__ = 'nicolaspannetier'
+# -*- coding: utf-8 -*-

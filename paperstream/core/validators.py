@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import regex as reg
 from django.utils import six
 from django.core.validators import RegexValidator

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 NLP_TIME_LAPSE_CHOICES = (
     # (7, '1 Week'),
     # (14, '2 Weeks'),

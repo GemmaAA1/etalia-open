@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import logging
 from social.backends.oauth import BaseOAuth2
 from social.backends.mendeley import MendeleyMixin

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from .base import NLPTestCase
 from paperstream.library.models import Paper, Journal
 from ..utils import paper2tokens

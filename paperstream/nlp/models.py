@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 import os
 import logging
 from random import shuffle
@@ -72,8 +75,8 @@ class ModelManager(models.Manager):
         try:
             model._doc2vec = Doc2Vec.load(os.path.join(
                 settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(model.name)))
-        except FileNotFoundError:
-            raise FileNotFoundError
+        except EnvironmentError as e:      # OSError or IOError...
+            print(os.strerror(e.errno))
         return model
 
 
@@ -262,7 +265,7 @@ class Model(TimeStampedModel):
         else:
             tot = len(papers)
         file_count = 0
-        file = None
+        fid = None
 
         if not data_path:
             data_path = settings.NLP_DATA_PATH
@@ -282,9 +285,9 @@ class Model(TimeStampedModel):
                 continue
 
             if not count % settings.NLP_CHUNK_SIZE:
-                if file:
-                    file.close()
-                file = open(os.path.join(data_path,
+                if fid:
+                    fid.close()
+                fid = open(os.path.join(data_path,
                                          '{0:06d}.txt'.format(file_count)),
                             'w+')
                 file_count += 1
@@ -294,24 +297,24 @@ class Model(TimeStampedModel):
                 j_pk = paper.journal.pk
             else:
                 j_pk = 0
-            file.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
+            fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
 
             # line body
             line_val = paper2tokens(paper, fields=text_fields)
 
             # write to file
-            file.write(' '.join(line_val).strip())
+            fid.write(' '.join(line_val).strip())
 
             # write new line
-            file.write('\n')
+            fid.write('\n')
 
             # update progress bar
             if not count % sub_update_step:
                 pbar.update(count/sub_update_step)
         # close progress bar
         pbar.finish()
-        if file:
-            file.close()
+        if fid:
+            fid.close()
 
     @staticmethod
     def load_documents(data_path=None, phraser=None, ):

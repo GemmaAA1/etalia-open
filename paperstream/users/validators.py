@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from __future__ import unicode_literals
 from paperstream.core.validators import CustomRegexValidator
 

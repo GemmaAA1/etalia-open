@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.core.urlresolvers import reverse
