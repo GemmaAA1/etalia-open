@@ -16,7 +16,7 @@ def populate_journal(csv_file, print_to=None):
 
     # counting number of row
     with open(csv_file, 'rU') as rows:
-        reader = csv.DictReader(rows, delimiter=';')
+        reader = csv.DictReader(rows, delimiter=str(';'))
         trows = sum(1 for row in reader)
 
     # Init
@@ -31,7 +31,7 @@ def populate_journal(csv_file, print_to=None):
 
     with open(csv_file, 'rU') as rows:
         # Generate a dict per row, with the first CSV row being the keys.
-        for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
+        for i, row in enumerate(csv.DictReader(rows, delimiter=str(";"))):
             try:
                 try:
                     journal = Journal.objects.get(
@@ -75,7 +75,7 @@ def populate_publisher(csv_file, print_to=None):
     # counting the number of lines. Useful for progressbar
     # counting number of row
     with open(csv_file, 'r') as rows:
-        reader = csv.DictReader(rows, delimiter=';')
+        reader = csv.DictReader(rows, delimiter=str(';'))
         trows = sum(1 for row in reader)
 
     # init progress bar
@@ -86,7 +86,7 @@ def populate_publisher(csv_file, print_to=None):
                        maxval=trows, redirect_stderr=True).start()
 
     with open(csv_file, 'r') as rows:
-        for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
+        for i, row in enumerate(csv.DictReader(rows, delimiter=str(";"))):
             try:
                 publisher = Publisher.objects.get(name=row['name'])
             except Publisher.DoesNotExist:
@@ -174,7 +174,7 @@ def populate_consumer_from_file(consumer, type_, csv_file, print_to=None):
 
     # counting number of row
     with open(csv_file, 'r') as rows:
-        reader = csv.DictReader(rows, delimiter=';')
+        reader = csv.DictReader(rows, delimiter=str(';'))
         trows = sum(1 for row in reader)
 
     # init progress bar
@@ -186,7 +186,7 @@ def populate_consumer_from_file(consumer, type_, csv_file, print_to=None):
 
     with open(csv_file, 'r') as rows:
         # Generate a dict per row, with the first CSV row being the keys.
-        for i, row in enumerate(csv.DictReader(rows, delimiter=";")):
+        for i, row in enumerate(csv.DictReader(rows, delimiter=str(";"))):
             try:
                 if type_ == 'PUB':
                     journal = Journal.objects.get(id_issn=row['id_issn'])
