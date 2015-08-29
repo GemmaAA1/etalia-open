@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals, absolute_import, print_function
 
 # To be run from paperstream shell
 import os
@@ -86,14 +86,16 @@ class TaggedDocumentsIterator(object):
 
     def __iter__(self):
         for filename in self.filenames:
-            for line in open(filename):
-                # print(line)
-                pk, j_pk, text = re.match(r'(?P<pk>[\d]+), (?P<j_pk>j_[\d]+): (.+)', line).groups()
-                if self.phraser:
-                    text_l = self.phraser[text.strip().split(' ')]
-                else:
-                    text_l = text.strip().split(' ')
-                yield TaggedDocument(text_l, [pk, j_pk])
+            with open(filename) as fp:
+                for line in fp:
+                    pk, j_pk, text = re.match(
+                        r'(?P<pk>[\d]+), (?P<j_pk>j_[\d]+): (.+)', line.decode('utf-8'))\
+                        .groups()
+                    if self.phraser:
+                        text_l = self.phraser[text.strip().split(u' ')]
+                    else:
+                        text_l = text.strip().split(u' ')
+                    yield TaggedDocument(text_l, [pk, j_pk])
 
 
 class MyLSHForest(LSHForest):

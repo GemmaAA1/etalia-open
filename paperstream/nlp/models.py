@@ -284,12 +284,12 @@ class Model(TimeStampedModel):
                                'empty abstract)'.format(pk=paper.id))
                 continue
 
-            if not count % settings.NLP_CHUNK_SIZE:
+            # rotate file when # lines is NLP_CHUNK_SIZE
+            if not count % settings.NLP_CHUNK_SIZE or not fid:
                 if fid:
                     fid.close()
                 fid = open(os.path.join(data_path,
-                                         '{0:06d}.txt'.format(file_count)),
-                            'w+')
+                                        '{0:06d}.txt'.format(file_count)), 'w+')
                 file_count += 1
 
             # write header
@@ -297,16 +297,16 @@ class Model(TimeStampedModel):
                 j_pk = paper.journal.pk
             else:
                 j_pk = 0
-            fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
+            fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk).encode('utf-8'))
 
             # line body
             line_val = paper2tokens(paper, fields=text_fields)
 
             # write to file
-            fid.write(' '.join(line_val).strip())
+            fid.write(u' '.join(line_val).strip().encode('utf-8'))
 
             # write new line
-            fid.write('\n')
+            fid.write('\n'.encode('utf-8'))
 
             # update progress bar
             if not count % sub_update_step:
