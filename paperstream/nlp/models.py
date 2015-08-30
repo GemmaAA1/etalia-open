@@ -6,6 +6,8 @@ import logging
 from random import shuffle
 import numpy as np
 from timeit import time
+import boto
+from boto.s3.key import Key
 
 from sklearn.externals import joblib
 
@@ -74,7 +76,7 @@ class ModelManager(models.Manager):
         model = super(ModelManager, self).get(**kwargs)
         try:
             model._doc2vec = Doc2Vec.load(os.path.join(
-                settings.NLP_DOC2VEC_PATH, '{0}.mod'.format(model.name)))
+                settings.NLP_MODELS_PATH, '{0}.mod'.format(model.name)))
         except EnvironmentError as e:      # OSError or IOError...
             print(os.strerror(e.errno))
         return model
@@ -204,6 +206,9 @@ class Model(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['name', ]
+
     def init_doc2vec(self):
         """Instantiate new doc2vec with model attributes
         """
@@ -230,16 +235,16 @@ class Model(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         super(Model, self).save(*args, **kwargs)
-        if not os.path.exists(settings.NLP_DOC2VEC_PATH):
-            os.makedirs(settings.NLP_DOC2VEC_PATH)
+        if not os.path.exists(settings.NLP_MODELS_PATH):
+            os.makedirs(settings.NLP_MODELS_PATH)
         self._doc2vec.save(
-            os.path.join(settings.NLP_DOC2VEC_PATH,
+            os.path.join(settings.NLP_MODELS_PATH,
                          '{0}.mod'.format(self.name)))
 
     def delete(self, *args, **kwargs):
         try:
             os.remove(
-                os.path.join(settings.NLP_DOC2VEC_PATH,
+                os.path.join(settings.NLP_MODELS_PATH,
                              '{0}.mod'.format(self.name)))
         except FileNotFoundError:
             pass
@@ -366,6 +371,7 @@ class Model(TimeStampedModel):
             self._doc2vec.alpha = alpha
             self._doc2vec.min_alpha = alpha
             self._doc2vec.train(documents)
+            self.save()
             alpha -= alpha_delta
 
     def build_vocab_and_train(self, **kwargs):
@@ -376,7 +382,6 @@ class Model(TimeStampedModel):
         self.build_vocab(docs)
         # Train, save and activate
         self.train(docs, **kwargs)
-        self.save()
         self.activate()
 
     def build_lshs(self):
@@ -460,20 +465,11 @@ class Model(TimeStampedModel):
         paper = Paper.objects.get(id=paper_pk)
         doc_words = paper2tokens(paper, fields=text_fields)
 
-        # if seed:        # inference vector is initialize from Journal vector
-        #     try:
-        #         seed = JournalVectors.objects.get(model=self, journal=paper.journal)\
-        #             .get_vector()
-        #     except JournalVectors.DoesNotExist:
-        #         seed = None
-
-
-
         # NB: infer_vector user explicit alpha-reduction with multi-passes
         vector = self._doc2vec.infer_vector(doc_words,
                                             alpha=alpha,
                                             min_alpha=min_alpha,
-                                            steps=passes)  # seed=seed)
+                                            steps=passes)
         pv.set_vector(vector.tolist())
         pv.save()
 
@@ -506,9 +502,6 @@ class Model(TimeStampedModel):
         if not self.is_active:
             raise ValidationError('model is not active')
 
-    class Meta:
-        ordering = ['name', ]
-
     @classmethod
     def infer_paper_all_models(cls, paper, **kwargs):
         """Infer all model vector for paper
@@ -526,6 +519,36 @@ class Model(TimeStampedModel):
         for model_name in model_names:
             model = cls.objects.get(name=model_name)
             model.infer_papers(papers, **kwargs)
+
+    def push_to_s3(self):
+        if not hasattr(self, 'pbar'):
+            setattr(self, 'pbar', None)
+
+        def callback(complete, tot):
+            if not self.pbar:
+                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                                        maxval=tot).start()
+            self.pbar.update(complete)
+            if complete == tot:
+                # close progress bar
+                self.pbar.finish()
+                self.pbar = None
+
+        try:
+            bucket_name = settings.NLP_MODELS_BUCKET_NAME
+            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
+                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
+            bucket = conn.get_bucket(bucket_name)
+            key = self.name
+            fn = os.path.join(settings.NLP_MODELS_PATH, '{}.mod'
+                              .format(self.name))
+
+            # create a key to keep track of our file in the storage
+            k = Key(bucket)
+            k.key = key
+            k.set_contents_from_filename(fn, cb=callback, num_cb=100)
+        except Exception:
+            raise
 
 
 class TextField(TimeStampedModel):

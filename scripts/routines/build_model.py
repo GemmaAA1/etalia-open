@@ -21,7 +21,7 @@ def build(model_name, papers=None):
     if not papers:
         papers = Paper.objects.all()
     model.dump(papers)
-    model.build_vocab_and_train()
+        model.build_vocab_and_train()
     # Propagate to LSH, journalvector, papervector
     model.propagate()
 

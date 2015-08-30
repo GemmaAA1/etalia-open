@@ -14,7 +14,7 @@ class NLPConfig(AppConfig):
     name = 'paperstream.nlp'
 
     # Creating default folders for NLP
-    if not(os.path.isdir(settings.NLP_DOC2VEC_PATH)):
+    if not(os.path.isdir(settings.NLP_MODELS_PATH)):
         makedirs_p(settings.NLP_DOC2VEC_PATH)
     if not(os.path.isdir(settings.NLP_DATA_PATH)):
         makedirs_p(settings.NLP_DATA_PATH)
