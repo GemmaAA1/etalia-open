@@ -6,7 +6,7 @@ from django.db.models import Q
 from paperstream.library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
     CorpAuthorPaper
 from paperstream.library.forms import PaperFormFillBlanks
-from paperstream.nlp.tasks import embed_all_models_and_find_neighbors
+from paperstream.core.tasks import embed_all_models_and_find_neighbors
 
 from ..models import UserLibPaper, UserLibJournal
 

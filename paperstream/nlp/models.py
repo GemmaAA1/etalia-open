@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import os
 import logging
+import glob
 from random import shuffle
 import numpy as np
 from timeit import time
@@ -73,13 +74,15 @@ class ModelManager(models.Manager):
         return super(ModelManager, self).get(**kwargs)
 
     def load(self, **kwargs):
-        model = super(ModelManager, self).get(**kwargs)
+        obj = super(ModelManager, self).get(**kwargs)
         try:
-            model._doc2vec = Doc2Vec.load(os.path.join(
-                settings.NLP_MODELS_PATH, '{0}.mod'.format(model.name)))
-        except EnvironmentError as e:      # OSError or IOError...
-            print(os.strerror(e.errno))
-        return model
+            if not os.path.join(settings.NLP_MODELS_PATH, '{}.mod'.format(obj.name)):
+                obj.download_from_s3()
+            obj._doc2vec = Doc2Vec.load(os.path.join(
+                settings.NLP_MODELS_PATH, '{0}.mod'.format(obj.name)))
+        except EnvironmentError:      # OSError or IOError...
+            raise
+        return obj
 
 
 class Model(TimeStampedModel):
@@ -243,10 +246,10 @@ class Model(TimeStampedModel):
 
     def delete(self, *args, **kwargs):
         try:
-            os.remove(
-                os.path.join(settings.NLP_MODELS_PATH,
-                             '{0}.mod'.format(self.name)))
-        except FileNotFoundError:
+            for filename in glob.glob(os.path.join(settings.NLP_MODELS_PATH,
+                                                   '{0}.mod*'.format(self.name))):
+                os.remove(filename)
+        except IOError:
             pass
         super(Model, self).delete(*args, **kwargs)
 
@@ -375,6 +378,7 @@ class Model(TimeStampedModel):
             alpha -= alpha_delta
 
     def build_vocab_and_train(self, **kwargs):
+        """Build vocabulary (with phraser is set) and train model"""
         # Build vocabulary and phraser
         docs = self.load_documents()
         phraser = self.build_phraser(docs, **kwargs)
@@ -385,6 +389,7 @@ class Model(TimeStampedModel):
         self.activate()
 
     def build_lshs(self):
+        """Build Local Sensitive Hashing data structure"""
         LSH.objects.filter(model=self).delete()
         # Build time-lapse related LSH
         for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
@@ -392,6 +397,8 @@ class Model(TimeStampedModel):
                                time_lapse=time_lapse)
 
     def propagate(self):
+        """Save Journal and Paper vectors and build LSHs
+        (To be run after model training)"""
         self.save_journal_vec_from_bulk()
         self.save_paper_vec_from_bulk()
         self.build_lshs()
@@ -491,10 +498,12 @@ class Model(TimeStampedModel):
         pbar.finish()
 
     def activate(self):
+        """Set model to active"""
         self.is_active = True
         self.save_db_only()
 
     def deactivate(self):
+        """Set model to inactive"""
         self.is_active = False
         self.save_db_only()
 
@@ -521,6 +530,7 @@ class Model(TimeStampedModel):
             model.infer_papers(papers, **kwargs)
 
     def push_to_s3(self):
+        """Upload model to Amazon s3 bucket"""
         if not hasattr(self, 'pbar'):
             setattr(self, 'pbar', None)
 
@@ -547,6 +557,37 @@ class Model(TimeStampedModel):
             k = Key(bucket)
             k.key = key
             k.set_contents_from_filename(fn, cb=callback, num_cb=100)
+        except Exception:
+            raise
+
+    def download_from_s3(self):
+        """Download model from Amazon s3 bucket"""
+        if not hasattr(self, 'pbar'):
+            setattr(self, 'pbar', None)
+
+        def callback(complete, tot):
+            if not self.pbar:
+                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                                        maxval=tot).start()
+            self.pbar.update(complete)
+            if complete == tot:
+                # close progress bar
+                self.pbar.finish()
+                self.pbar = None
+
+        try:
+            bucket_name = settings.NLP_MODELS_BUCKET_NAME
+            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
+                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
+            bucket = conn.get_bucket(bucket_name)
+            bucket_list = bucket.list(prefix='{}.mod'.format(self.name))
+            for l in bucket_list:
+                keyString = str(l.key)
+                # check if file exists locally, if not: download it
+                file_path = os.path.join(settings.NLP_MODELS_PATH, keyString)
+                if not os.path.exists(file_path):
+                    l.get_contents_to_filename(file_path, cb=callback,
+                                               num_cb=100)
         except Exception:
             raise
 

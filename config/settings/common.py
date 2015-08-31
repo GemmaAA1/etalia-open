@@ -23,6 +23,7 @@ APPS_DIR = ROOT_DIR.path('paperstream')
 
 env = environ.Env()
 
+SITE_ID = 1
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -183,8 +184,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
 AUTHENTICATION_BACKENDS = (
-    'users.backends.mendeley.CustomMendeleyOAuth2',
-    'users.backends.zotero.CustomZoteroOAuth',
+    'paperstream.users.backends.mendeley.CustomMendeleyOAuth2',
+    'paperstream.users.backends.zotero.CustomZoteroOAuth',
     'social.backends.email.EmailAuth',
     'django.contrib.auth.backends.ModelBackend',
     # 'allauth.account.auth_backends.AuthenticationBackend',
@@ -204,7 +205,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
 ]
 # SOCIAL_AUTH_EMAIL_FORM_URL = '/signup-email'
 SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
-SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'users.mail.send_validation'
+SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'paperstream.users.mail.send_validation'
 SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'user:validation-sent'
 # SOCIAL_AUTH_USERNAME_FORM_URL = '/signup-username'
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
@@ -218,15 +219,15 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.auth_allowed',
     'social.pipeline.social_auth.social_user',
     'social.pipeline.user.get_username',
-    'users.pipeline.require_primary',
+    'paperstream.users.pipeline.require_primary',
     # 'social.pipeline.mail.mail_validation',
     'social.pipeline.user.create_user',
     'social.pipeline.social_auth.associate_user',
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
     'social.pipeline.debug.debug',
-    'users.pipeline.init_user',
-    # 'users.pipeline.require_affiliation',
+    'paperstream.users.pipeline.init_user',
+    # 'paperstream.users.pipeline.require_affiliation',
 )
 
 # Mendeley Keys

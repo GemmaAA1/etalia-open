@@ -13,15 +13,18 @@ with open(path_to_model_file) as stream:
 def build(model_name, papers=None):
 
     check_unique_name(MODELS)
-    model_args = [model for model in MODELS if model['name'] == model_name][0]
+    model_args = [m for m in MODELS if m['name'] == model_name][0]
 
     # Initiate model
     model = Model.objects.create(**model_args)
     # dump papers data
     if not papers:
-        papers = Paper.objects.all()
+        papers = Paper.objects.filter(is_trusted=True,
+                                      title__regex = r'^.{5}.*',
+                                      abstract__regex = r'^.{10}.*')
+        # papers = Paper.objects.all()
     model.dump(papers)
-        model.build_vocab_and_train()
+    model.build_vocab_and_train()
     # Propagate to LSH, journalvector, papervector
     model.propagate()
 
