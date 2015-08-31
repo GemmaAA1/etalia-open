@@ -15,7 +15,7 @@ class NLPConfig(AppConfig):
 
     # Creating default folders for NLP
     if not(os.path.isdir(settings.NLP_MODELS_PATH)):
-        makedirs_p(settings.NLP_DOC2VEC_PATH)
+        makedirs_p(settings.NLP_MODELS_PATH)
     if not(os.path.isdir(settings.NLP_DATA_PATH)):
         makedirs_p(settings.NLP_DATA_PATH)
     if not(os.path.isdir(settings.NLP_LSH_PATH)):
