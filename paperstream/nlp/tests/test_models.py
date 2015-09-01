@@ -22,7 +22,7 @@ from .base import NLPTestCase, NLPDataTestCase
 class ModelTest(NLPTestCase):
 
     def test_config_folders_have_been_created(self):
-        self.assertTrue(os.path.isdir(settings.NLP_DOC2VEC_PATH))
+        self.assertTrue(os.path.isdir(settings.NLP_MODELS_PATH))
         self.assertTrue(os.path.isdir(settings.NLP_DATA_PATH))
         self.assertTrue(os.path.isdir(settings.NLP_LSH_PATH))
 
@@ -56,7 +56,7 @@ class ModelTest(NLPTestCase):
         model = Model(name='test')
         model.save()
         path_to_be_save_to = os.path.join(
-            settings.NLP_DOC2VEC_PATH,
+            settings.NLP_MODELS_PATH,
             '{0}.mod'.format(model.name))
         self.assertTrue(os.path.isfile(path_to_be_save_to))
 
@@ -177,7 +177,7 @@ class TestModelTrainingStack(NLPDataTestCase):
         self.model.save()
         self.model.delete()
         path_to_be_save_to = os.path.join(
-            settings.NLP_DOC2VEC_PATH,
+            settings.NLP_MODELS_PATH,
             '{0}.mod'.format(self.model.name))
         self.assertFalse(os.path.isfile(path_to_be_save_to))
         self.assertEqual(Model.objects.count(), 0)
@@ -350,7 +350,7 @@ class LSHModelTest(NLPDataTestCase):
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         lsh.save()
         save_path = os.path.join(settings.NLP_LSH_PATH,
-                                 '{model_name}_{time_lapse}.lsh'
+                                 '{model_name}-tl{time_lapse}.lsh'
                                  .format(model_name=lsh.model.name,
                                          time_lapse=lsh.time_lapse))
         self.assertTrue(os.path.isfile(save_path))
@@ -367,7 +367,7 @@ class LSHModelTest(NLPDataTestCase):
         lsh = LSH(model=self.model, time_lapse=time_lapse)
         lsh.save()
         save_path = os.path.join(settings.NLP_LSH_PATH,
-                                 '{model_name}_{time_lapse}.lsh'
+                                 '{model_name}-lt{time_lapse}.lsh'
                                  .format(model_name=lsh.model.name,
                                          time_lapse=lsh.time_lapse))
         lsh.delete()

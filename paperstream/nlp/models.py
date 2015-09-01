@@ -743,11 +743,11 @@ class LSHManager(models.Manager):
         try:
             obj.lsh = joblib.load(
                 os.path.join(settings.NLP_LSH_PATH,
-                             '{model_name}{time_lapse}.lsh'.format(
+                             '{model_name}-tl{time_lapse}.lsh'.format(
                                  model_name=obj.model.name,
                                  time_lapse=obj.time_lapse)))
-        except FileNotFoundError:
-            raise FileNotFoundError
+        except IOError:
+            raise
         return obj
 
 
@@ -777,7 +777,7 @@ class LSH(TimeStampedModel, S3ProgressBarMixin):
             if not os.path.exists(settings.NLP_LSH_PATH):
                 os.makedirs(settings.NLP_LSH_PATH)
             joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
-                '{model_name}{time_lapse}.lsh'.format(
+                '{model_name}-tl{time_lapse}.lsh'.format(
                     model_name=self.model.name,
                     time_lapse=self.time_lapse)))
             self.save_db_only()
@@ -788,10 +788,10 @@ class LSH(TimeStampedModel, S3ProgressBarMixin):
         try:
             os.remove(
                 os.path.join(settings.NLP_LSH_PATH,
-                             '{model_name}_{time_lapse}.lsh'.format(
+                             '{model_name}-tl{time_lapse}.lsh'.format(
                                 model_name=self.model.name,
                                 time_lapse=self.time_lapse)))
-        except FileNotFoundError:
+        except IOError:
             pass
         super(LSH, self).delete(*args, **kwargs)
 
