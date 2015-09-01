@@ -9,6 +9,7 @@ import numpy as np
 from timeit import time
 import boto
 from boto.s3.key import Key
+import tarfile
 
 from sklearn.externals import joblib
 
@@ -76,7 +77,7 @@ class ModelManager(models.Manager):
     def load(self, **kwargs):
         obj = super(ModelManager, self).get(**kwargs)
         try:
-            if not os.path.join(settings.NLP_MODELS_PATH, '{}.mod'.format(obj.name)):
+            if not os.path.isfile(os.path.join(settings.NLP_MODELS_PATH, '{}.mod'.format(obj.name))):
                 obj.download_from_s3()
             obj._doc2vec = Doc2Vec.load(os.path.join(
                 settings.NLP_MODELS_PATH, '{0}.mod'.format(obj.name)))
@@ -549,14 +550,26 @@ class Model(TimeStampedModel):
             conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
                                    settings.DJANGO_AWS_SECRET_ACCESS_KEY)
             bucket = conn.get_bucket(bucket_name)
-            key = self.name
-            fn = os.path.join(settings.NLP_MODELS_PATH, '{}.mod'
-                              .format(self.name))
+
+            # Compress file
+            key = '{}.tar.gz'.format(self.name)
+            tar_name = os.path.join(settings.NLP_MODELS_PATH, key)
+            tar = tarfile.open(tar_name, 'w:gz')
+            logging.info('{} Compressing...'.format(self.name))
+            for filename in glob.glob(os.path.join(settings.NLP_MODELS_PATH,
+                                                   '{0}.mod*'.format(self.name))):
+                tar.add(filename, arcname=os.path.split(filename)[1])
+            tar.close()
+            logging.info('↑ {} Uploading...'.format(self.name))
 
             # create a key to keep track of our file in the storage
             k = Key(bucket)
             k.key = key
-            k.set_contents_from_filename(fn, cb=callback, num_cb=100)
+            k.set_contents_from_filename(tar_name, cb=callback, num_cb=100)
+            # remove tar file
+            os.remove(tar_name)
+            logging.info('↑ {} Uploading DONE'.format(self.name))
+
         except Exception:
             raise
 
@@ -580,14 +593,20 @@ class Model(TimeStampedModel):
             conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
                                    settings.DJANGO_AWS_SECRET_ACCESS_KEY)
             bucket = conn.get_bucket(bucket_name)
-            bucket_list = bucket.list(prefix='{}.mod'.format(self.name))
-            for l in bucket_list:
-                keyString = str(l.key)
-                # check if file exists locally, if not: download it
-                file_path = os.path.join(settings.NLP_MODELS_PATH, keyString)
-                if not os.path.exists(file_path):
-                    l.get_contents_to_filename(file_path, cb=callback,
-                                               num_cb=100)
+            key = self.name + '.tar.gz'
+            item = bucket.get_key(key)
+            tar_path = os.path.join(settings.NLP_MODELS_PATH, key)
+            logging.info('↓ {} Downloading...'.format(self.name))
+            item.get_contents_to_filename(tar_path,
+                                          cb=callback,
+                                          num_cb=100)
+            logging.info('{} Decompressing...'.format(self.name))
+            tar = tarfile.open(tar_path, 'r:gz')
+            tar.extractall(settings.NLP_MODELS_PATH)
+            tar.close()
+            # remove tar file
+            os.remove(tar_path)
+            logging.info('{} Done'.format(self.name))
         except Exception:
             raise
 
@@ -776,7 +795,7 @@ class LSH(TimeStampedModel):
             if not os.path.exists(settings.NLP_LSH_PATH):
                 os.makedirs(settings.NLP_LSH_PATH)
             joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
-                '{model_name}_{time_lapse}.lsh'.format(
+                '{model_name}{time_lapse}.lsh'.format(
                     model_name=self.model.name,
                     time_lapse=self.time_lapse)))
             self.save_db_only()
@@ -1082,6 +1101,86 @@ class LSH(TimeStampedModel):
         indices = self.k_neighbors(mat, **kwargs)
         return indices.tolist()
 
+    def push_to_s3(self):
+        """Upload model to Amazon s3 bucket"""
+        if not hasattr(self, 'pbar'):
+            setattr(self, 'pbar', None)
+
+        def callback(complete, tot):
+            if not self.pbar:
+                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                                        maxval=tot).start()
+            self.pbar.update(complete)
+            if complete == tot:
+                # close progress bar
+                self.pbar.finish()
+                self.pbar = None
+
+        try:
+            bucket_name = settings.NLP_LSH_BUCKET_NAME
+            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
+                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
+            bucket = conn.get_bucket(bucket_name)
+
+            # Compress file
+            key = '{}.tar.gz'.format(self.model.name + str(self.time_lapse))
+            tar_name = os.path.join(settings.NLP_LSH_PATH, key)
+            tar = tarfile.open(tar_name, 'w:gz')
+            logging.info('{} Compressing...'.format(self.name))
+            for filename in glob.glob(os.path.join(settings.NLP_LSH_PATH,
+                                                   '{0}.mod*'.format(self.name))):
+                tar.add(filename, arcname=os.path.split(filename)[1])
+            tar.close()
+            logging.info('↑ {} Uploading...'.format(self.name))
+
+            # create a key to keep track of our file in the storage
+            k = Key(bucket)
+            k.key = key
+            k.set_contents_from_filename(tar_name, cb=callback, num_cb=100)
+            # remove tar file
+            os.remove(tar_name)
+            logging.info('↑ {} Uploading DONE'.format(self.name))
+
+        except Exception:
+            raise
+
+    def download_from_s3(self):
+        """Download model from Amazon s3 bucket"""
+        if not hasattr(self, 'pbar'):
+            setattr(self, 'pbar', None)
+
+        def callback(complete, tot):
+            if not self.pbar:
+                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                                        maxval=tot).start()
+            self.pbar.update(complete)
+            if complete == tot:
+                # close progress bar
+                self.pbar.finish()
+                self.pbar = None
+
+        try:
+            bucket_name = settings.NLP_MODELS_BUCKET_NAME
+            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
+                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
+            bucket = conn.get_bucket(bucket_name)
+            key = self.name + '.tar.gz'
+            item = bucket.get_key(key)
+            tar_path = os.path.join(settings.NLP_LSH_PATH, key)
+            logging.info('↓ {} Downloading...'.format(self.name))
+            item.get_contents_to_filename(tar_path,
+                                          cb=callback,
+                                          num_cb=100)
+            logging.info('{} Decompressing...'.format(self.name))
+            tar = tarfile.open(tar_path, 'r')
+            tar.extractall(settings.NLP_LSH_PATH)
+            tar.close()
+            # remove tar file
+            os.remove(tar_path)
+            logging.info('{} Done'.format(self.name))
+        except Exception:
+            raise
+
     def tasks(self, *args, **kwargs):
         """Use from tasks.py for calling task while object remains in-memory
 
@@ -1141,4 +1240,3 @@ class LSH(TimeStampedModel):
         else:
             print(task)
             raise ValueError('Unknown task action')
-
