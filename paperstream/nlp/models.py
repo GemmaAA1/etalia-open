@@ -11,9 +11,11 @@ import boto
 from boto.s3.key import Key
 import tarfile
 
+from bulk_update.helper import bulk_update
+
 from sklearn.externals import joblib
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q, QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
@@ -29,6 +31,7 @@ from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
 from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
     model_attr_getter, model_attr_setter
 from .exceptions import InvalidState
+from .mixins import S3ProgressBarMixin
 
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector, pad_neighbors
@@ -86,7 +89,7 @@ class ModelManager(models.Manager):
         return obj
 
 
-class Model(TimeStampedModel):
+class Model(TimeStampedModel, S3ProgressBarMixin):
     """Natural Language Processing Class based on Doc2Vec from Gensim
     """
 
@@ -400,8 +403,11 @@ class Model(TimeStampedModel):
     def propagate(self):
         """Save Journal and Paper vectors and build LSHs
         (To be run after model training)"""
+        logging.info('{} Populate journals...'.format(self.name))
         self.save_journal_vec_from_bulk()
+        logging.info('{} Populate papers...'.format(self.name))
         self.save_paper_vec_from_bulk()
+        logging.info('{} Build LSH...'.format(self.name))
         self.build_lshs()
 
     def save_journal_vec_from_bulk(self):
@@ -532,18 +538,6 @@ class Model(TimeStampedModel):
 
     def push_to_s3(self):
         """Upload model to Amazon s3 bucket"""
-        if not hasattr(self, 'pbar'):
-            setattr(self, 'pbar', None)
-
-        def callback(complete, tot):
-            if not self.pbar:
-                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                                        maxval=tot).start()
-            self.pbar.update(complete)
-            if complete == tot:
-                # close progress bar
-                self.pbar.finish()
-                self.pbar = None
 
         try:
             bucket_name = settings.NLP_MODELS_BUCKET_NAME
@@ -555,12 +549,12 @@ class Model(TimeStampedModel):
             key = '{}.tar.gz'.format(self.name)
             tar_name = os.path.join(settings.NLP_MODELS_PATH, key)
             tar = tarfile.open(tar_name, 'w:gz')
-            logging.info('{} Compressing...'.format(self.name))
+            logging.info('{} Compress...'.format(self.name))
             for filename in glob.glob(os.path.join(settings.NLP_MODELS_PATH,
                                                    '{0}.mod*'.format(self.name))):
                 tar.add(filename, arcname=os.path.split(filename)[1])
             tar.close()
-            logging.info('↑ {} Uploading...'.format(self.name))
+            logging.info('↑ {} Upload...'.format(self.name))
 
             # create a key to keep track of our file in the storage
             k = Key(bucket)
@@ -568,25 +562,13 @@ class Model(TimeStampedModel):
             k.set_contents_from_filename(tar_name, cb=callback, num_cb=100)
             # remove tar file
             os.remove(tar_name)
-            logging.info('↑ {} Uploading DONE'.format(self.name))
+            logging.info('↑ {} Upload DONE'.format(self.name))
 
         except Exception:
             raise
 
     def download_from_s3(self):
         """Download model from Amazon s3 bucket"""
-        if not hasattr(self, 'pbar'):
-            setattr(self, 'pbar', None)
-
-        def callback(complete, tot):
-            if not self.pbar:
-                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                                        maxval=tot).start()
-            self.pbar.update(complete)
-            if complete == tot:
-                # close progress bar
-                self.pbar.finish()
-                self.pbar = None
 
         try:
             bucket_name = settings.NLP_MODELS_BUCKET_NAME
@@ -596,11 +578,11 @@ class Model(TimeStampedModel):
             key = self.name + '.tar.gz'
             item = bucket.get_key(key)
             tar_path = os.path.join(settings.NLP_MODELS_PATH, key)
-            logging.info('↓ {} Downloading...'.format(self.name))
+            logging.info('↓ {} Download...'.format(self.name))
             item.get_contents_to_filename(tar_path,
                                           cb=callback,
                                           num_cb=100)
-            logging.info('{} Decompressing...'.format(self.name))
+            logging.info('{} Decompress...'.format(self.name))
             tar = tarfile.open(tar_path, 'r:gz')
             tar.extractall(settings.NLP_MODELS_PATH)
             tar.close()
@@ -688,7 +670,7 @@ class PaperNeighbors(TimeStampedModel):
 
     def set_neighbors(self, vector):
         self.neighbors = pad_neighbors(vector)
-        self.save()
+        self.save(update_fields=['neighbors'])
 
     def get_neighbors(self):
         return self.neighbors[:self.lsh.model.size]
@@ -761,7 +743,7 @@ class LSHManager(models.Manager):
         try:
             obj.lsh = joblib.load(
                 os.path.join(settings.NLP_LSH_PATH,
-                             '{model_name}_{time_lapse}.lsh'.format(
+                             '{model_name}{time_lapse}.lsh'.format(
                                  model_name=obj.model.name,
                                  time_lapse=obj.time_lapse)))
         except FileNotFoundError:
@@ -769,7 +751,7 @@ class LSHManager(models.Manager):
         return obj
 
 
-class LSH(TimeStampedModel):
+class LSH(TimeStampedModel, S3ProgressBarMixin):
     """Local Sensitive Hashing to retrieve approximate k-neighbors"""
 
     model = models.ForeignKey(Model, related_name='lsh')
@@ -907,7 +889,7 @@ class LSH(TimeStampedModel):
         self.set_state('BUS')
 
         logger.info(
-            'Updating LSH ({pk}/{model_name}/{time_lapse}) - starting...'
+            'Update LSH ({pk}/{model_name}/{time_lapse}) - start...'
                 .format(pk=self.id, model_name=self.model.name,
                         time_lapse=self.time_lapse))
         t0 = time.time()
@@ -923,7 +905,7 @@ class LSH(TimeStampedModel):
         if pv_pks:      # if data
 
             logger.info(
-                'Updating LSH ({pk}/{model_name}/{time_lapse}) - fitting...'
+                'Update LSH ({pk}/{model_name}/{time_lapse}) - fit...'
                     .format(pk=self.id,
                             model_name=self.model.name,
                             time_lapse=self.time_lapse))
@@ -1012,10 +994,11 @@ class LSH(TimeStampedModel):
                         perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
 
             self.populate_neighbors(pk)
+        # self.populate_neighbors_bulk(pks)
+
 
     def populate_neighbors(self, paper_pk):
         """Populate neighbors of paper
-
         """
 
         pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
@@ -1029,6 +1012,38 @@ class LSH(TimeStampedModel):
         pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
                                                      paper_id=paper_pk)
         pn.set_neighbors(pks)
+
+
+    # BELOW IS A FAILED TENTATIVE TO SPEED UP POPULATE NEIGHBORS
+    # def populate_neighbors_bulk(self, paper_pks):
+    #     pvs = PaperVectors.objects.filter(paper_id__in=paper_pks, model=self.model)\
+    #         .values('pk', 'paper__pk', 'vector')
+    #
+    #     mat = [pv['vector'][:self.model.size] for pv in pvs]
+    #     mat_np = np.array(mat)
+    #     indices = self.k_neighbors(mat_np,
+    #                                n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS + 1)
+    #     ind = {}
+    #     for i, pv in enumerate(pvs):
+    #         ind[pv['paper__pk']] = indices[i, :][1:].flatten()
+    #
+    #     pns = PaperNeighbors.objects.filter(lsh_id=self.pk,
+    #                                         paper_id__in=paper_pks)
+    #     p_pns_pks = [pn.paper.pk for pn in pns]
+    #     p_pks_create = [pk for pk in paper_pks if pk not in p_pns_pks]
+    #     # bulk create pn
+    #     pns_create = []
+    #     for pk in p_pks_create:
+    #         pns_create.append(PaperNeighbors(lsh_id=self.pk,
+    #                                          paper_id=pk))
+    #     pns_new = PaperNeighbors.objects.bulk_create(pns_create)
+    #     pns = list(pns) + pns_new
+    #
+    #     # bulk update
+    #     for pn in pns:
+    #         pn.neighbors = pad_neighbors(ind[pn.paper_id])
+    #     bulk_update(pns, update_fields=['neighbors'])
+
 
     def k_neighbors(self, seed, **kwargs):
         """Return k nearest neighbors
@@ -1103,18 +1118,6 @@ class LSH(TimeStampedModel):
 
     def push_to_s3(self):
         """Upload model to Amazon s3 bucket"""
-        if not hasattr(self, 'pbar'):
-            setattr(self, 'pbar', None)
-
-        def callback(complete, tot):
-            if not self.pbar:
-                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                                        maxval=tot).start()
-            self.pbar.update(complete)
-            if complete == tot:
-                # close progress bar
-                self.pbar.finish()
-                self.pbar = None
 
         try:
             bucket_name = settings.NLP_LSH_BUCKET_NAME
@@ -1126,12 +1129,12 @@ class LSH(TimeStampedModel):
             key = '{}.tar.gz'.format(self.model.name + str(self.time_lapse))
             tar_name = os.path.join(settings.NLP_LSH_PATH, key)
             tar = tarfile.open(tar_name, 'w:gz')
-            logging.info('{} Compressing...'.format(self.name))
+            logging.info('{} Compress...'.format(self.name))
             for filename in glob.glob(os.path.join(settings.NLP_LSH_PATH,
-                                                   '{0}.mod*'.format(self.name))):
+                                                   '{}'.format(self.model.name + str(self.time_lapse)))):
                 tar.add(filename, arcname=os.path.split(filename)[1])
             tar.close()
-            logging.info('↑ {} Uploading...'.format(self.name))
+            logging.info('↑ {} Upload...'.format(self.name))
 
             # create a key to keep track of our file in the storage
             k = Key(bucket)
@@ -1139,39 +1142,27 @@ class LSH(TimeStampedModel):
             k.set_contents_from_filename(tar_name, cb=callback, num_cb=100)
             # remove tar file
             os.remove(tar_name)
-            logging.info('↑ {} Uploading DONE'.format(self.name))
+            logging.info('↑ {} Upload DONE'.format(self.name))
 
         except Exception:
             raise
 
     def download_from_s3(self):
         """Download model from Amazon s3 bucket"""
-        if not hasattr(self, 'pbar'):
-            setattr(self, 'pbar', None)
-
-        def callback(complete, tot):
-            if not self.pbar:
-                self.pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                                        maxval=tot).start()
-            self.pbar.update(complete)
-            if complete == tot:
-                # close progress bar
-                self.pbar.finish()
-                self.pbar = None
 
         try:
             bucket_name = settings.NLP_MODELS_BUCKET_NAME
             conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
                                    settings.DJANGO_AWS_SECRET_ACCESS_KEY)
             bucket = conn.get_bucket(bucket_name)
-            key = self.name + '.tar.gz'
+            key = self.model.name + str(self.time_lapse) + '.tar.gz'
             item = bucket.get_key(key)
             tar_path = os.path.join(settings.NLP_LSH_PATH, key)
-            logging.info('↓ {} Downloading...'.format(self.name))
+            logging.info('↓ {} Download...'.format(self.name))
             item.get_contents_to_filename(tar_path,
                                           cb=callback,
                                           num_cb=100)
-            logging.info('{} Decompressing...'.format(self.name))
+            logging.info('{} Decompress...'.format(self.name))
             tar = tarfile.open(tar_path, 'r')
             tar.extractall(settings.NLP_LSH_PATH)
             tar.close()
