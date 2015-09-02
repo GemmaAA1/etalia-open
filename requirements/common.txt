@@ -26,7 +26,7 @@ mendeley==0.3.2
 names==0.3.0
 nameparser==0.3.6
 nltk==3.0.3
-numpy==1.8.1
+numpy==1.9.2
 oauthlib==0.7.2
 progressbar2==2.7.3
 psycopg2==2.6
@@ -39,7 +39,7 @@ regex==2015.06.10
 requests==2.7.0
 requests-oauthlib==0.5.0
 scikit-learn==0.16.1
-scipy==0.14.0
+scipy==0.16.0
 six==1.9.0
 smart-open==1.2.1
 sqlparse==0.1.15
