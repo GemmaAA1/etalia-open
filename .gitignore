@@ -73,3 +73,4 @@ paperstream/trash
 fabfile/
 staticfiles/
 .envs/
+scripts/heroku_cheats
