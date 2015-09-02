@@ -32,7 +32,11 @@ STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
 
-# STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+# AWS S3 Buckets
+NLP_DATA_BUCKET_NAME = 'paperstream-development-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
+NLP_LSH_BUCKET_NAME = 'paperstream-development-nlp-lshs'
+
 
 # CELERY
 # ------------------------------------------------------------------------------

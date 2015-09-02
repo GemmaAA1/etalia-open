@@ -272,9 +272,6 @@ CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
-NLP_DATA_BUCKET_NAME = 'paperstream-nlp-data'
-NLP_MODELS_BUCKET_NAME = 'paperstream-nlp-models'
-NLP_LSH_BUCKET_NAME = 'paperstream-nlp-lshs'
 NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data', 'data'))
 NLP_MODELS_PATH = str(ROOT_DIR.path('nlp_data', 'mods'))
 NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data', 'lshfs'))

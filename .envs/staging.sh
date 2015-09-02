@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-
-#!/usr/bin/env bash
-export DJANGO_SETTINGS_MODULE='config.settings.production'
+export DJANGO_SETTINGS_MODULE='config.settings.staging'
 export DJANGO_LOG_LEVEL='DEBUG'
 export DJANGO_DEBUG=True
 export DJANGO_SECRET_KEY='_kjjr3)+tdlfbcw7uu&oue+*50+hbv9gsd-yx35^*%n$5ugp-s'
@@ -22,25 +20,3 @@ export AWS_RDS_USERNAME='npannetier'
 export AWS_RDS_PASSWORD='Octopusisdb'
 export AWS_RDS_HOSTNAME='paperstream-db-staging.c61ni52g1qt1.us-west-2.rds.amazonaws.com'
 export AWS_RDS_PORT='5432'
-
-# CREATE Postgres DATABASE
-psql postgres -c "CREATE DATABASE paperstream"
-
-# MAKE MIGRATIONS AND MIGRATE
-../manage.py makemigrations
-../manage.py migrate
-
-# POPULATE DATABASE
-# populate library
-../manage.py populate publisher all
-../manage.py populate journal thomson
-../manage.py populate journal pubmed
-../manage.py populate journal arxiv
-# populate consumers
-../manage.py populate consumer pubmed --name pubmed_all
-../manage.py populate consumer arxiv --name arxiv_all
-../manage.py populate consumer elsevier --name elsevier_all
-
-# RUN TEST
-py.test
-

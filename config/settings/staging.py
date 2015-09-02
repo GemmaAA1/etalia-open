@@ -15,3 +15,8 @@ DATABASES = {
         'PORT': env.str('AWS_RDS_PORT'),
     }
 }
+
+
+NLP_DATA_BUCKET_NAME = 'paperstream-staging-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'paperstream-staging-nlp-models'
+NLP_LSH_BUCKET_NAME = 'paperstream-staging-nlp-lshs'
