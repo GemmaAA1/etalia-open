@@ -11,7 +11,7 @@ import boto
 from boto.s3.key import Key
 import tarfile
 
-from bulk_update.helper import bulk_update
+# from bulk_update.helper import bulk_update
 
 from sklearn.externals import joblib
 

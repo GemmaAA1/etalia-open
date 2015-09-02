@@ -1,0 +1,50 @@
+sudo apt-get update
+sudo apt-get -y install python-pip python-dev build-essential
+sudo apt-get -y install git
+sudo apt-get -y install postgresql postgresql-contrib
+sudo apt-get -y install nginx git python-pip
+sudo apt-get -y install python-psycopg2
+sudo apt-get -y install libpq-dev
+sudo apt-get -y install libncurses5-dev
+sudo apt-get -y install libatlas-base-dev
+sudo apt-get -y install gfortran
+sudo apt-get -y install rabbitmq-server
+sudo apt-get -y install libpq-dev
+sudo pip install virtualenvwrapper
+
+sudo mkdir -p ~/staging.paperstream.io/source
+
+cat >>~/.bashrc << EOL
+# Virtualenvrapper
+export VIRTUALENVWRAPPER_PYTHON="/usr/bin/python2.7"
+export WORKON_HOME=$HOME/.envs
+source /usr/local/bin/virtualenvwrapper.sh
+EOL
+
+sudo git clone https://NPann@bitbucket.org/NPann/paperstream.git ~/staging.paperstream.io/source
+sudo git fetch && sudo git checkout aws
+sudo ~/staging.paperstream.io/virtualenv/bin/pip install -r ~/staging.paperstream.io/source/requirements/prod.txt
+
+
+#export environment variable to virtulalenv postactivate
+file=$VIRTUAL_ENV/bin/postactivate
+rm $file
+cat >$file <<EOL
+#!/usr/bin/env bash
+export DJANGO_SETTINGS_MODULE='config.settings.dev'
+export DJANGO_LOG_LEVEL='DEBUG'
+export DJANGO_DEBUG=True
+export DJANGO_SECRET_KEY='_kjjr3)+tdlfbcw7uu&oue+*50+hbv9gsd-yx35^*%n$5ugp-s'
+export CONSUMER_ELSEVIER_API_KEY='293e288c325d7765b7c22f5195175351'
+export CONSUMER_PUBMED_EMAIL='nicolas.pannetier@gmail.com'
+export SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY='1678'
+export SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET='caOrLU0DqOUC4wdD'
+export SOCIAL_AUTH_CUSTOM_ZOTERO_KEY='a7ecbff3d0bbe59abc4b'
+export SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET='c5d0c178d9196e62bdbf'
+export DJANGO_AWS_ACCESS_KEY_ID='AKIAJP4QVWCJZTBCDW7A'
+export DJANGO_AWS_SECRET_ACCESS_KEY='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'
+export DJANGO_AWS_STORAGE_BUCKET_NAME='paperstreamstatic'
+export DISQUS_WEBSITE_SHORTNAME='paperstream'
+export DISQUS_PUBLIC_KEY='w2W0iBEJwGE49PjupwQxDnfzC9ayliEvctiGwbmVb63uHIXNTZLgreJDNRvvBOap'
+export DISQUS_SECRET_KEY='eMWsm6qeNkDHzdvLViScWPldyDVnmvAz4U79YjsCelOu58XnRPelrUimqTrhGrRw'
+EOL
