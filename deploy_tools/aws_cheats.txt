@@ -3,6 +3,7 @@
 (from http://kronosapiens.github.io/blog/2015/04/28/rabbitmq-aws.html)
 
 # create new user and set permissions
+# NB must match related env variable
 sudo rabbitmqctl add_user <username> <password>
 sudo rabbitmqctl set_permissions -p / <username> ".*" ".*" ".*"
 
