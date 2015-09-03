@@ -31,5 +31,13 @@ STATICFILES_DIRS = (
 )
 
 # Celery
-BROKER_URL = 'amqp://fox:Octopusisrabbitmq@jobs.local:5672//'
-CELERY_RESULT_BACKEND = 'amqp://fox:Octopusisrabbitmq@jobs.local:5672//'
+BROKER_URL = 'amqp://{username}:{password}@{host}:5672//'.format(
+    username=env.str('RABBITMQ_USERNAME'),
+    password=env.str('RABBITMQ_PASSWORD'),
+    host=env.str('RABBITMQ_HOST'),
+)
+CELERY_RESULT_BACKEND = 'amqp://{username}:{password}@{host}:5672//'.format(
+    username=env.str('RABBITMQ_USERNAME'),
+    password=env.str('RABBITMQ_PASSWORD'),
+    host=env.str('RABBITMQ_HOST'),
+)
