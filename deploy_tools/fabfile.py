@@ -33,10 +33,10 @@ def deploy(site=SITE):
     # run
     _update_and_require_libraries()
     _create_virtual_env_if_necessary()
-    _create_directory_structure_if_necessary(env.site_folder)
-    _get_latest_source(env.source_folder)
+    _create_directory_structure_if_necessary()
+    _get_latest_source()
     _pip_install()
-    # _update_static_files(source_folder)
+    _update_static_files()
     # _update_database(source_folder)
 
 
@@ -75,6 +75,17 @@ def _update_and_require_libraries():
 
     # Require some Ubuntu packages
     fabtools.require.deb.packages(['python3-dev',
+                                   'build-essential',
+                                   'python3-setuptools',
+                                   'python3-numpy',
+                                   'python3-scipy',
+                                   'python3-pip',
+                                   'libblas-dev',
+                                   'liblapack-dev',
+                                   'libatlas-dev',
+                                   'libatlas3gf-base',
+                                   'gfortran',
+                                   'libncurses5-dev',
                                    'postgresql',
                                    'nginx',
                                    'git',
@@ -112,10 +123,10 @@ def _workon():
     return prefix(" && ".join(workon_command))
 
 
-def _create_directory_structure_if_necessary(site_folder):
+def _create_directory_structure_if_necessary():
     for sub_folder in ('static', 'source'):
-        if not files.exists('{0}/{1}'.format(site_folder, sub_folder)):
-            run('mkdir -p {0}/{1}'.format(site_folder, sub_folder))
+        if not files.exists('{0}/{1}'.format(env.site_folder, sub_folder)):
+            run('mkdir -p {0}/{1}'.format(env.site_folder, sub_folder))
 
 
 def _get_latest_source(source_folder):
@@ -131,12 +142,12 @@ def _get_latest_source(source_folder):
         run('cat ~/.ssh/id_rsa.pub')
         return
     if files.exists(source_folder + '/.git'):
-        run('cd {0} && git fetch'.format(source_folder))
+        run('cd {0} && git fetch'.format(env.source_folder))
     else:
-        run('git clone {0} {1}'.format(REPO_URL, source_folder))
-    # git match what is currently checked out on your local repo
+        run('git clone {0} {1}'.format(REPO_URL, env.source_folder))
+    # git match what is checkout on your local repo
     current_commit = local("git log -n 1 --format=%H", capture=True)
-    run('cd {0} && sudo git reset --hard {1}'.format(source_folder,
+    run('cd {0} && sudo git reset --hard {1}'.format(env.source_folder,
                                                      current_commit))
 
 
@@ -145,4 +156,8 @@ def _pip_install():
         run('pip install -r requirements/{site}.txt'.format(site=env.site))
 
 
+def _update_static_files():
+    with settings(cd(env.source_folder), _workon()):
+        run('cd {} && ./manage.py collectstatic --noinput'
+            .format(env.source_folder))
 
