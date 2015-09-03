@@ -79,6 +79,7 @@ def _update_and_require_libraries():
                                    'nginx',
                                    'git',
                                    'python-pip',
+                                   'libpq-dev',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper', ], use_sudo=True)
