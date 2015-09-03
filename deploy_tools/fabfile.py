@@ -37,7 +37,7 @@ def deploy(site=SITE):
     _get_latest_source()
     _pip_install()
     _update_static_files()
-    # _update_database(source_folder)
+    _update_database()
 
 
 def set_hosts(tag=SITE, value='*', region=REGION):
@@ -91,6 +91,7 @@ def _update_and_require_libraries():
                                    'git',
                                    'python-pip',
                                    'libpq-dev',
+                                   'rabbitmq-server',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper', ], use_sudo=True)
@@ -129,7 +130,7 @@ def _create_directory_structure_if_necessary():
             run('mkdir -p {0}/{1}'.format(env.site_folder, sub_folder))
 
 
-def _get_latest_source(source_folder):
+def _get_latest_source():
     # Generating public key for ssh bitbucket
     if not files.exists('/home/{}/.ssh/id_rsa.pub'.format(env.user)):
         print('Generate id_rsa for BitBucket git ssh\n')
@@ -141,7 +142,7 @@ def _get_latest_source(source_folder):
               '(https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)')
         run('cat ~/.ssh/id_rsa.pub')
         return
-    if files.exists(source_folder + '/.git'):
+    if files.exists(env.source_folder + '/.git'):
         run('cd {0} && git fetch'.format(env.source_folder))
     else:
         run('git clone {0} {1}'.format(REPO_URL, env.source_folder))
@@ -161,3 +162,6 @@ def _update_static_files():
         run('cd {} && ./manage.py collectstatic --noinput'
             .format(env.source_folder))
 
+
+def _update_database():
+    run('cd {} && ./manage.py migrate --noinput'.format(env.source_folder,))
