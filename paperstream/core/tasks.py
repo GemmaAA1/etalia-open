@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 @app.task
 def add(x, y):
     """dummy task"""
+    logger.info("--> Processing task add")
     return x + y
 
 
