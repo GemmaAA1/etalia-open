@@ -29,3 +29,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
+
+# Celery
+BROKER_URL = 'amqp://fox:**@jobs.local:5672//'
+CELERY_RESULT_BACKEND = 'amqp://fox:**@jobs.local:5672//'
