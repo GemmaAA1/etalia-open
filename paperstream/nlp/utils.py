@@ -89,7 +89,7 @@ class TaggedDocumentsIterator(object):
             with open(filename) as fp:
                 for line in fp:
                     pk, j_pk, text = re.match(
-                        r'(?P<pk>[\d]+), (?P<j_pk>j_[\d]+): (.+)', line.decode('utf-8'))\
+                        r'(?P<pk>[\d]+), (?P<j_pk>j_[\d]+): (.+)', line)\
                         .groups()
                     if self.phraser:
                         text_l = self.phraser[text.strip().split(u' ')]

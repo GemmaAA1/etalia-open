@@ -2,42 +2,47 @@
 from __future__ import absolute_import, unicode_literals, print_function
 import os
 from boto.ec2 import connect_to_region
-from fabric.api import *
-from fabtools.python import virtualenv
-from fabtools import require
-from fabtools import files
-from fabtools.utils import run_as_root, env
+from fabric.api import env, run, cd, settings, prefix, task, local, prompt, put, sudo
+from fabric.contrib import files
+from fabtools.utils import run_as_root
 import fabtools
 
 SITE = 'staging'
-
 REGION = os.environ.get("DJANGO_AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'
+VIRTUALENV_DIR = '.virtualenvs'
+
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
-env.user = "ubuntu"
+env.user = 'ubuntu'
+env.site = SITE
 # List of AWS private key Files
-env.key_filename = ["~/.ssh/npannetier-key-pair-oregon.pem"]
+env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
+env.virtualenv_dir = VIRTUALENV_DIR
 
 
 def deploy(site=SITE):
-    setattr(env, 'site', site)
+    # setup
+    env.site = site
     if not env.hosts:
-        set_hosts(tag=site)
+        set_hosts(tag=site, value='*')
     site_folder = '/home/{0}/{1}'.format(env.user, env.site)
+    setattr(env, 'site_folder', site_folder)
     source_folder = '{0}/source'.format(site_folder)
+    setattr(env, 'source_folder', source_folder)
+    # run
     _update_and_require_libraries()
-    _create_directory_structure_if_necessary(site_folder)
-    _get_latest_source(source_folder)
-    _update_virtualenv(source_folder)
+    _create_virtual_env_if_necessary()
+    _create_directory_structure_if_necessary(env.site_folder)
+    _get_latest_source(env.source_folder)
+    _pip_install()
     # _update_static_files(source_folder)
     # _update_database(source_folder)
 
 
-def set_hosts(tag=SITE, value="*", region=REGION):
+def set_hosts(tag=SITE, value='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
     key = "tag:"+tag
-    env.site_folder = SITE
     env.hosts = _get_public_dns(region, key, value)
 
 
@@ -67,46 +72,64 @@ def _create_connection(region):
 
 
 def _update_and_require_libraries():
+
     # Require some Ubuntu packages
-    require.deb.packages(['python-dev',
-                          'postgresql',
-                          'postgresql-contrib',
-                          'nginx',
-                          'git',
-                          'python-pip',
-                          'python-psycopg2',
-                          'libpq-dev',
-                          'libncurses5-dev',
-                          'libatlas-base-dev',
-                          'python-numpy',
-                          'python-scipy',
-                          'gfortran',
-                          'rabbitmq-server',
-                          'libpq-dev',
-                          ], update=True)
+    fabtools.require.deb.packages(['python3-dev',
+                                   'postgresql',
+                                   'nginx',
+                                   'git',
+                                   'python-pip',
+                                   ], update=True)
     # Require some pip packages
-    require.python.packages(['virtualenv', ],  use_sudo=True)
+    fabtools.require.python.packages(['virtualenvwrapper', ], use_sudo=True)
+    # Set virtualenvwrapper
+    if not files.contains("~/.bashrc", "export WORKON_HOME={virtualenv_dir}".format(
+            virtualenv_dir=env.virtualenv_dir)):
+        files.append("~/.bashrc", "export WORKON_HOME={virtualenv_dir}".format(
+            virtualenv_dir=env.virtualenv_dir))
+    if not files.contains("~/.bashrc", "source /usr/local/bin/virtualenvwrapper.sh"):
+        files.append("~/.bashrc", "source /usr/local/bin/virtualenvwrapper.sh")
+    if not files.exists(env.virtualenv_dir):
+        run("mkdir -p {virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir))
+
+
+def _create_virtual_env_if_necessary():
+    # Create virtual env
+    with prefix("WORKON_HOME={virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir)):
+        with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
+            existent_virtual_envs = run("lsvirtualenv")
+            if not env.site in existent_virtual_envs:
+                run("mkvirtualenv --python=/usr/bin/python3 {virtual_env}".format(virtual_env=env.site))
+
+
+def _workon():
+    workon_command = [
+        "source /usr/local/bin/virtualenvwrapper.sh",
+        "workon {site}".format(site=env.site),
+        "export DJANGO_SETTINGS_MODULE=config.settings.{site}".format(site=env.site) % env
+    ]
+    return prefix(" && ".join(workon_command))
 
 
 def _create_directory_structure_if_necessary(site_folder):
     for sub_folder in ('static', 'source'):
-        if not files.is_dir('{0}/{1}'.format(site_folder, sub_folder)):
+        if not files.exists('{0}/{1}'.format(site_folder, sub_folder)):
             run('mkdir -p {0}/{1}'.format(site_folder, sub_folder))
 
 
 def _get_latest_source(source_folder):
     # Generating public key for ssh bitbucket
-    if not files.is_file('/home/{}/.ssh/id_rsa.pub'.format(env.user)):
+    if not files.exists('/home/{}/.ssh/id_rsa.pub'.format(env.user)):
         print('Generate id_rsa for BitBucket git ssh\n')
-        run('ssh-keygen')
-        run('ps -e | grep [s]sh-agent')
-        run('ssh-agent /bin/bash')
-        run('ssh-add ~/.ssh/id_rsa ')
+        run_as_root('ssh-keygen')
+        run_as_root('ps -e | grep [s]sh-agent')
+        run_as_root('ssh-agent /bin/bash')
+        run_as_root('ssh-add ~/.ssh/id_rsa ')
         print('Add the public below to your bitbutcket and run again'
               '(https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)')
         run('cat ~/.ssh/id_rsa.pub')
         return
-    if files.is_dir(source_folder + '/.git'):
+    if files.exists(source_folder + '/.git'):
         run('cd {0} && git fetch'.format(source_folder))
     else:
         run('git clone {0} {1}'.format(REPO_URL, source_folder))
@@ -116,13 +139,9 @@ def _get_latest_source(source_folder):
                                                      current_commit))
 
 
-def _update_virtualenv(source_folder):
-    virtualenv_folder = source_folder + '/../virtualenv'
-    if not files.is_file(virtualenv_folder + '/bin/pip'):
-        run('virtualenv --python=python2.7 {}'.format(virtualenv_folder))
-    # install requirement
-    run('{0}/bin/pip install --upgrade pip'.format(virtualenv_folder))
-    run('{0}/bin/pip install -r {1}/requirements/{2}.txt'.format(
-        virtualenv_folder, source_folder, env.site))
+def _pip_install():
+    with settings(cd(env.source_folder), _workon()):
+        run('pip install -r requirements/{site}.txt'.format(site=env.site))
+
 
 

@@ -307,16 +307,18 @@ class Model(TimeStampedModel, S3ProgressBarMixin):
                 j_pk = paper.journal.pk
             else:
                 j_pk = 0
-            fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk).encode('utf-8'))
+            # fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk).encode('utf-8'))
+            fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
 
             # line body
             line_val = paper2tokens(paper, fields=text_fields)
 
             # write to file
-            fid.write(u' '.join(line_val).strip().encode('utf-8'))
+            # fid.write(u' '.join(line_val).strip().encode('utf-8'))
+            fid.write(u' '.join(line_val).strip())
 
             # write new line
-            fid.write('\n'.encode('utf-8'))
+            fid.write('\n')
 
             # update progress bar
             if not count % sub_update_step:

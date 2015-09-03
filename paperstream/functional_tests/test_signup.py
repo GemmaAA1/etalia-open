@@ -37,7 +37,7 @@ class AuthenticateWithZoteroTest(FunctionalTest):
 
 
 
-
+@skip
 class AuthenticationWithMendeleyTest(FunctionalTest):
 
     def test_signup_with_mendeley(self):
