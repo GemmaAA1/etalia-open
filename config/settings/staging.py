@@ -31,5 +31,5 @@ STATICFILES_DIRS = (
 )
 
 # Celery
-BROKER_URL = 'amqp://fox:**@jobs.local:5672//'
-CELERY_RESULT_BACKEND = 'amqp://fox:**@jobs.local:5672//'
+BROKER_URL = 'amqp://fox:Octopusisrabbitmq@jobs.local:5672//'
+CELERY_RESULT_BACKEND = 'amqp://fox:Octopusisrabbitmq@jobs.local:5672//'

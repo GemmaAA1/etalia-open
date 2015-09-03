@@ -1,4 +1,5 @@
-# Rabbitmq
+# -- RABBITMQ --
+
 (from http://kronosapiens.github.io/blog/2015/04/28/rabbitmq-aws.html)
 
 # create new user and set permissions
@@ -7,3 +8,15 @@ sudo rabbitmqctl set_permissions -p / <username> ".*" ".*" ".*"
 
 # check user is listed
 sudo rabbitmqctl list_users
+
+# Open port in security group, default is 5672
+
+# -- HOSTNAME --
+hostname <hostname>   (ex: jobs.local)
+# and update /etc/hosts to, for ex:
+127.0.0.1 jobs jobs.local localhost localhost.local
+# and /etc/hostname
+jobs.local
+
+
+
