@@ -10,8 +10,14 @@ from paperstream.nlp.models import Model
 logger = logging.getLogger(__name__)
 
 
+@app.task
+def add(x, y):
+    """dummy task"""
+    return x + y
+
+
 def embed_all_models_and_find_neighbors(paper_pk):
-    """
+    """Send chain task to embed paper and populate neighbors
     """
     model_names = Model.objects.all().values_list('name', flat=True)
     for model_name in model_names:

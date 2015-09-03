@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+ex: fab set_hosts:staging deploy
+"""
 from __future__ import absolute_import, unicode_literals, print_function
 import os
 from boto.ec2 import connect_to_region
@@ -164,4 +167,5 @@ def _update_static_files():
 
 
 def _update_database():
-    run('cd {} && ./manage.py migrate --noinput'.format(env.source_folder,))
+    with settings(cd(env.source_folder), _workon()):
+        run('cd {} && ./manage.py migrate --noinput'.format(env.source_folder,))
