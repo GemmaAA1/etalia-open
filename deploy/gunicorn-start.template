@@ -1,0 +1,22 @@
+#!/bin/bash
+
+NAME="%(SITENAME)s"                               # Name of the application
+SOURCE_DIR=%(SOURCE_FOLDER)s                      # Source project directory
+SOCKFILE=/tmp/%(SITENAME)s.socket                 # we will communicte using this unix socket
+USER=%(USER)s                                       # the user to run as
+GROUP=apps                                        # the group to run as
+NUM_WORKERS=3                                     # how many worker processes should Gunicorn spawn
+
+# Activate the virtual environment
+cd $SOURCE_DIR
+workon %(STACK)s
+
+# Start your Django Unicorn
+# Programs meant to be run under supervisor should not daemonize themselves (do not use --daemon)
+exec gunicorn config.wsgi:application \
+    --name $NAME \
+    --workers $NUM_WORKERS \
+    --user=$USER --group=$GROUP \
+    --bind=unix:$SOCKFILE \
+    --log-level=info \
+    --log-file=-

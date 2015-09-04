@@ -1,6 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-ex: fab set_hosts:staging deploy
+Fabfile for paperstream deployment on AWS.
+
+Current Configuration is as follow:
+Two stacks are defined:
+    - staging (at staging-stack.paperstream.io)
+    - production (at www.paperstream.io)
+Each stack has has 3 layers:
+    - a Postgres db (host on AWS RDS)
+    - apps
+    - jobs
+
+Each instance is tagged accordingly. For example, an instance with tags
+{'site': 'staging', 'layer': 'jobs', 'Name': 'job1'} corresponds to an instance
+that belongs to stack staging and layer jobs.
+
+Deployment examples:
+- deploy to layer jobs on staging stack:
+    fab set_hosts:staging,jobs deploy
+- deploy instance App1 on layer apps on the production stack:
+    fab set_hosts:production,apps,App1 deploy
+- deploy on all instances of stack staging:
+    fab deploy:staging
+
+NB: During first deployment, fabfile will stop to allow you to upload you id_rsa.pub
+to Bitbucket to allow pulling
+
 """
 from __future__ import absolute_import, unicode_literals, print_function
 import os
@@ -10,28 +35,36 @@ from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
 
-SITE = 'staging'
+STACK = 'staging'
+STACK_SITE_MAPPING = {'staging': 'staging-stack.paperstream.io',
+                      'production': 'www.paperstream.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'
 VIRTUALENV_DIR = '.virtualenvs'
+USER = 'ubuntu'
+
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
-env.user = 'ubuntu'
-env.site = SITE
 # List of AWS private key Files
 env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
+env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 
 
-def deploy(site=SITE):
-    # setup
-    env.site = site
+def deploy(stack=STACK):
+    # setup env
+    setattr(env, 'stack', stack)
+    setattr(env, 'stack_site', STACK_SITE_MAPPING.get(env.stack))
+    setattr(env, 'env_dir', '/home/{user}/{venv}/{stack}'.format(
+        user=env.user,
+        venv=env.virtualenv_dir,
+        stack=env.stack))
     if not env.hosts:
-        set_hosts(tag=site, value='*')
-    site_folder = '/home/{0}/{1}'.format(env.user, env.site)
-    setattr(env, 'site_folder', site_folder)
-    source_folder = '{0}/source'.format(site_folder)
+        set_hosts(stack=stack)
+    stack_folder = '/home/{0}/{1}'.format(env.user, env.stack)
+    setattr(env, 'site_folder', stack_folder)
+    source_folder = '{0}/source'.format(stack_folder)
     setattr(env, 'source_folder', source_folder)
     # run
     _update_and_require_libraries()
@@ -41,20 +74,25 @@ def deploy(site=SITE):
     _pip_install()
     _update_static_files()
     _update_database()
+    _update_nginx_conf_file()
 
 
-def set_hosts(tag=SITE, value='*', region=REGION):
+def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
-    key = "tag:"+tag
-    env.hosts = _get_public_dns(region, key, value)
+    context = {
+        'tag:stack': stack,
+        'tag:layer': layer,
+        'tag:Name': name,
+    }
+    env.hosts = _get_public_dns(region, context)
 
 
-def _get_public_dns(region, key, value="*"):
+def _get_public_dns(region, context):
     """Private method to get public DNS name for instance with given tag key
      and value pair"""
     public_dns = []
     connection = _create_connection(region)
-    reservations = connection.get_all_instances(filters={key: value})
+    reservations = connection.get_all_instances(filters=context)
     for reservation in reservations:
         for instance in reservation.instances:
             print("Instance {}".format(instance.public_dns_name))
@@ -95,6 +133,7 @@ def _update_and_require_libraries():
                                    'python-pip',
                                    'libpq-dev',
                                    'rabbitmq-server',
+                                   'supervisor',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper', ], use_sudo=True)
@@ -121,16 +160,16 @@ def _create_virtual_env_if_necessary():
 def _workon():
     workon_command = [
         "source /usr/local/bin/virtualenvwrapper.sh",
-        "workon {site}".format(site=env.site),
-        "export DJANGO_SETTINGS_MODULE=config.settings.{site}".format(site=env.site) % env
+        "workon {stack}".format(stack=env.stack),
+        "export DJANGO_SETTINGS_MODULE=config.settings.{stack}".format(stack=env.stack) % env
     ]
     return prefix(" && ".join(workon_command))
 
 
 def _create_directory_structure_if_necessary():
     for sub_folder in ('static', 'source'):
-        if not files.exists('{0}/{1}'.format(env.site_folder, sub_folder)):
-            run('mkdir -p {0}/{1}'.format(env.site_folder, sub_folder))
+        if not files.exists('{0}/{1}'.format(env.stack_folder, sub_folder)):
+            run('mkdir -p {0}/{1}'.format(env.stack_folder, sub_folder))
 
 
 def _get_latest_source():
@@ -141,9 +180,9 @@ def _get_latest_source():
         run_as_root('ps -e | grep [s]sh-agent')
         run_as_root('ssh-agent /bin/bash')
         run_as_root('ssh-add ~/.ssh/id_rsa ')
-        print('Add the public below to your bitbutcket and run again'
+        print('Add the public below to your bitbutcket and run again:'
               '(https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)')
-        run('cat ~/.ssh/id_rsa.pub')
+        run_as_root('cat ~/.ssh/id_rsa.pub')
         return
     if files.exists(env.source_folder + '/.git'):
         run('cd {0} && git fetch'.format(env.source_folder))
@@ -157,7 +196,7 @@ def _get_latest_source():
 
 def _pip_install():
     with settings(cd(env.source_folder), _workon()):
-        run('pip install -r requirements/{site}.txt'.format(site=env.site))
+        run('pip install -r requirements/{stack}.txt'.format(site=env.stack))
 
 
 def _update_static_files():
@@ -169,3 +208,40 @@ def _update_static_files():
 def _update_database():
     with settings(cd(env.source_folder), _workon()):
         run('cd {} && ./manage.py migrate --noinput'.format(env.source_folder,))
+
+
+def _update_nginx_conf_file():
+    # remove file if exists
+    available_file = '/etc/nginx/sites-available/{site}'.format(site=env.stack_site)
+    if files.exists(available_file):
+        run_as_root('rm ' + available_file)
+    # upload template
+    files.upload_template(
+        '{source}/deploy/nginx.template.conf'.format(source=env.source_folder),
+        available_file,
+        context={'SITENAME': env.stack_site,
+                 'USER': env.user,
+                 'STACK': env.stack})
+    # update link
+    enable_link = '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site)
+    if files.is_link(enable_link):
+        run_as_root('rm {link}'.format(link=enable_link))
+    run_as_root('ln -s /etc/nginx/sites-available/{site} '
+                '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site))
+
+
+def _update_gunicorn_start():
+    # remove file if exists
+    gunicorn_start_path = '{env_dir}/bin/gunicorn-start'.format(env_dir=env.env_dir)
+    if files.exists(gunicorn_start_path):
+        run_as_root('rm ' + gunicorn_start_path)
+    # upload template
+    files.upload_template(
+        '{source}/deploy/gunicorn-start.template'.format(source=env.source_folder),
+        gunicorn_start_path,
+        context={'SITENAME': env.stack_site,
+                 'SOURCE_FOLDER': env.source_folder,
+                 'USER': env.user,
+                 'STACK': env.stack})
+    # change mod to execute
+    run_as_root('sudo chmod 775 ' + gunicorn_start_path)
