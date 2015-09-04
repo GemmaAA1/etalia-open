@@ -63,7 +63,7 @@ def deploy(stack=STACK):
     if not env.hosts:
         set_hosts(stack=stack)
     stack_folder = '/home/{0}/{1}'.format(env.user, env.stack)
-    setattr(env, 'site_folder', stack_folder)
+    setattr(env, 'stack_folder', stack_folder)
     source_folder = '{0}/source'.format(stack_folder)
     setattr(env, 'source_folder', source_folder)
     # run
@@ -75,7 +75,7 @@ def deploy(stack=STACK):
     _update_static_files()
     _update_database()
     _update_nginx_conf_file()
-
+    _update_gunicorn_start()
 
 def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
@@ -153,8 +153,8 @@ def _create_virtual_env_if_necessary():
     with prefix("WORKON_HOME={virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir)):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
             existent_virtual_envs = run("lsvirtualenv")
-            if not env.site in existent_virtual_envs:
-                run("mkvirtualenv --python=/usr/bin/python3 {virtual_env}".format(virtual_env=env.site))
+            if not env.stack in existent_virtual_envs:
+                run("mkvirtualenv --python=/usr/bin/python3 {virtual_env}".format(virtual_env=env.stack))
 
 
 def _workon():
@@ -176,10 +176,10 @@ def _get_latest_source():
     # Generating public key for ssh bitbucket
     if not files.exists('/home/{}/.ssh/id_rsa.pub'.format(env.user)):
         print('Generate id_rsa for BitBucket git ssh\n')
-        run_as_root('ssh-keygen')
-        run_as_root('ps -e | grep [s]sh-agent')
-        run_as_root('ssh-agent /bin/bash')
-        run_as_root('ssh-add ~/.ssh/id_rsa ')
+        run('ssh-keygen')
+        run('ps -e | grep [s]sh-agent')
+        run('ssh-agent /bin/bash')
+        run('ssh-add ~/.ssh/id_rsa ')
         print('Add the public below to your bitbutcket and run again:'
               '(https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)')
         run_as_root('cat ~/.ssh/id_rsa.pub')
@@ -196,7 +196,7 @@ def _get_latest_source():
 
 def _pip_install():
     with settings(cd(env.source_folder), _workon()):
-        run('pip install -r requirements/{stack}.txt'.format(site=env.stack))
+        run('pip install -r requirements/{stack}.txt'.format(stack=env.stack))
 
 
 def _update_static_files():
@@ -217,11 +217,11 @@ def _update_nginx_conf_file():
         run_as_root('rm ' + available_file)
     # upload template
     files.upload_template(
-        '{source}/deploy/nginx.template.conf'.format(source=env.source_folder),
+        'nginx.template.conf'.format(source=env.source_folder),
         available_file,
         context={'SITENAME': env.stack_site,
                  'USER': env.user,
-                 'STACK': env.stack})
+                 'STACK': env.stack}, use_sudo=True)
     # update link
     enable_link = '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site)
     if files.is_link(enable_link):
@@ -237,11 +237,12 @@ def _update_gunicorn_start():
         run_as_root('rm ' + gunicorn_start_path)
     # upload template
     files.upload_template(
-        '{source}/deploy/gunicorn-start.template'.format(source=env.source_folder),
+        'gunicorn-start.template'.format(source=env.source_folder),
         gunicorn_start_path,
         context={'SITENAME': env.stack_site,
                  'SOURCE_FOLDER': env.source_folder,
                  'USER': env.user,
-                 'STACK': env.stack})
+                 'STACK': env.stack,
+                 'ENV_DIR': env.env_dir}, use_sudo=True)
     # change mod to execute
     run_as_root('sudo chmod 775 ' + gunicorn_start_path)

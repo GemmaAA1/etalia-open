@@ -7,13 +7,36 @@ USER=%(USER)s                                       # the user to run as
 GROUP=apps                                        # the group to run as
 NUM_WORKERS=3                                     # how many worker processes should Gunicorn spawn
 
-# Activate the virtual environment
-cd $SOURCE_DIR
-workon %(STACK)s
+# Export environment var
+. %(ENV_DIR)s/bin/postactivate
+export DJANGO_SETTINGS_MODULE
+export DJANGO_LOG_LEVEL
+export DJANGO_DEBUG
+export DJANGO_SECRET_KEY
+export CONSUMER_ELSEVIER_API_KEY
+export CONSUMER_PUBMED_EMAIL
+export SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_KEY
+export SOCIAL_AUTH_CUSTOM_MENDELEY_OAUTH2_SECRET
+export SOCIAL_AUTH_CUSTOM_ZOTERO_KEY
+export SOCIAL_AUTH_CUSTOM_ZOTERO_SECRET
+export DJANGO_AWS_ACCESS_KEY_ID
+export DJANGO_AWS_SECRET_ACCESS_KEY
+export DJANGO_AWS_STORAGE_BUCKET_NAME
+export DISQUS_WEBSITE_SHORTNAME
+export DISQUS_PUBLIC_KEY
+export DISQUS_SECRET_KEY
+export AWS_RDS_DB_NAME
+export AWS_RDS_USERNAME
+export AWS_RDS_PASSWORD
+export AWS_RDS_HOSTNAME
+export AWS_RDS_PORT
+export RABBITMQ_USERNAME
+export RABBITMQ_PASSWORD
+export RABBITMQ_HOSTNAME
 
 # Start your Django Unicorn
 # Programs meant to be run under supervisor should not daemonize themselves (do not use --daemon)
-exec gunicorn config.wsgi:application \
+exec %(ENV_DIR)s/bin/gunicorn config.wsgi:application \
     --name $NAME \
     --workers $NUM_WORKERS \
     --user=$USER --group=$GROUP \
