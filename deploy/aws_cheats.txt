@@ -20,4 +20,5 @@ hostname <hostname>   (ex: jobs.local)
 jobs.local
 
 
-
+# -- NGINX --
+sudo service nginx reload

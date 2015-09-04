@@ -30,7 +30,7 @@ CACHES = {
 NLP_CHUNK_SIZE = 2
 NLP_MAX_VECTOR_SIZE = 300
 NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data_test', 'data'))
-NLP_DOC2VEC_PATH = str(ROOT_DIR.path('nlp_data_test', 'mods'))
+NLP_MODELS_PATH = str(ROOT_DIR.path('nlp_data_test', 'mods'))
 NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data_test', 'lshfs'))
 
 # LOGGING

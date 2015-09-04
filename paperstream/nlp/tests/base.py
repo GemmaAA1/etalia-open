@@ -16,8 +16,8 @@ class NLPTestCase(TestCase):
 
     def tearDown(self):
         # Removing test folders for NLP
-        if os.path.isdir(settings.NLP_DOC2VEC_PATH):
-            shutil.rmtree(settings.NLP_DOC2VEC_PATH)
+        if os.path.isdir(settings.NLP_MODELS_PATH):
+            shutil.rmtree(settings.NLP_MODELS_PATH)
 
         if os.path.isdir(settings.NLP_DATA_PATH):
             shutil.rmtree(settings.NLP_DATA_PATH)
