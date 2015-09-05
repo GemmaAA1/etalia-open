@@ -36,6 +36,7 @@ import string
 import random
 from boto.ec2 import connect_to_region
 from fabric.decorators import roles, runs_once, task, parallel
+from fabric.operations import put
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, put, sudo
 from fabric.contrib import files
 from fabtools.utils import run_as_root
@@ -262,17 +263,12 @@ def create_directory_structure_if_necessary():
 @task
 def pull_latest_source():
     """Pull source from bitbucket"""
-    # Generating public key for ssh bitbucket
+    # Test if private key has been uploaded
     if not files.exists('/home/{}/.ssh/id_rsa'.format(env.user)):
-        print('Generate id_rsa for BitBucket git ssh\n')
-        run('ssh-keygen')
-        run('ps -e | grep [s]sh-agent')
-        run('ssh-agent /bin/bash')
-        run('ssh-add ~/.ssh/id_rsa ')
-        run('echo "Add the public key below to your bitbutcket and run again '
-            '(https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html):"')
-        run('cat ~/.ssh/id_rsa.pub')
-        return
+        if not files.exists('/home/{}/.ssh'.format(env.user)):
+            run('mkdir /home/{}/.ssh'.format(env.user))
+        put('.ssh/id_rsa', '/home/{}/.ssh/id_rsa')
+    # pull git
     if files.exists(env.source_dir + '/.git'):
         run('cd {0} && git fetch'.format(env.source_dir))
     else:

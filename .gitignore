@@ -73,4 +73,5 @@ paperstream/trash
 fabfile/
 staticfiles/
 deploy/.envs
+deploy/.ssh
 scripts/heroku_cheats
