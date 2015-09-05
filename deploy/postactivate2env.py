@@ -29,12 +29,11 @@ def main(argv):
                     line = re.sub('export ', '', line.strip()).strip()
                     # escape % character
                     line = re.sub('%', '%%', line)
-                    print line
                     if vars:  # add a comma
                         vars += ','
                     vars += line
         # store in environment variable
-        command = 'export ENV_FOR_SUPVIS='' + vars + '''
+        command = "export ENV_FOR_SUPVIS='" + vars + "'"
         print command
         subprocess.call(command, shell=True)
 
