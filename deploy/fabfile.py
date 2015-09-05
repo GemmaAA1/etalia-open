@@ -245,12 +245,12 @@ def _workon():
     return prefix(" && ".join(workon_command))
 
 
-
-
+@task
 def create_directory_structure_if_necessary():
     for sub_dir in ('static', 'source', env.conf_dir):
         if not files.exists('{0}/{1}'.format(env.stack_dir, sub_dir)):
             run('mkdir -p {0}/{1}'.format(env.stack_dir, sub_dir))
+
 
 @task
 def pull_latest_source():
@@ -343,8 +343,9 @@ def set_rabbit_user():
 def update_supervisor():
     """Set supervisor conf file"""
     # remove file if exists
-    supervisor_file = '{stack_dir}/{conf_dir}'.format(stack_dir=env.stack_dir,
-                                                      conf_dir=env.conf_dir)
+    supervisor_file = '{stack_dir}/{conf_dir}/supervisord.conf'.format(
+        stack_dir=env.stack_dir,
+        conf_dir=env.conf_dir)
     if files.exists(supervisor_file):
         run_as_root('rm ' + supervisor_file)
     # upload template
@@ -368,4 +369,3 @@ def update_supervisor():
 @task
 def run_supervisor():
     """Start supervisor"""
-    pass
