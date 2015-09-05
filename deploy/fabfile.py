@@ -79,7 +79,11 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
         'tag:layer': layer,
         'tag:Name': name,
     }
-    env.hosts, env.roledefs = _get_public_dns(region, context)
+    env.hosts, env.roles, env.roledefs = _get_public_dns(region, context)
+
+
+def get_host_roles():
+    return [k for k, v in env.roledefs.items() if env.host_string in v]
 
 
 @task
@@ -87,13 +91,12 @@ def deploy():
     """Deploy paperstream on hosts"""
     if not env.hosts:
         raise ValueError('No hosts defined')
-
     # run
     update_and_require_libraries()
     create_virtual_env_if_necessary()
     set_virtual_env_hooks()
     create_directory_structure_if_necessary()
-    get_latest_source()
+    pull_latest_source()
     pip_install()
     update_database()
     update_static_files()
@@ -163,7 +166,7 @@ def _get_public_dns(region, context):
         roledefs[role] = [host for host in public_dns
                           if tags[host]['layer'] == role]
 
-    return public_dns, roledefs
+    return public_dns, roles, roledefs
 
 
 def _create_connection(region):
@@ -353,7 +356,7 @@ def update_supervisor():
                  'SOURCE_DIR': env.source_dir,
                  'ENV_DIR': env.env_dir,
                  'CONF_DIR': env.conf_dir,
-                 'role': env.role,
+                 'ROLES': get_host_roles(),
                  }, use_sudo=True, use_jinja=True)
 
     # Copy env variable from postactivate
