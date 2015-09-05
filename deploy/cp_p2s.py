@@ -43,7 +43,7 @@ def main(argv):
             lines = sources.readlines()
         with open(output_file, "w") as sources:
             for line in lines:
-                sources.write(re.sub(r'{{ ENV_VARS }}', vars, line))
+                sources.write(re.sub(r'ENV_VARS_POSTACTIVATE', vars, line))
 
 
 if __name__ == "__main__":

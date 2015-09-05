@@ -353,6 +353,7 @@ def update_supervisor():
                  'SOURCE_DIR': env.source_dir,
                  'ENV_DIR': env.env_dir,
                  'CONF_DIR': env.conf_dir,
+                 'role': env.role,
                  }, use_sudo=True, use_jinja=True)
 
     # Copy env variable from postactivate
