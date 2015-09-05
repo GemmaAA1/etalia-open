@@ -103,6 +103,7 @@ def deploy():
     update_nginx_conf()
     update_gunicorn_conf()
     set_rabbit_user()
+    update_supervisor_conf()
     update_supervisor()
 
 
@@ -351,12 +352,12 @@ def set_rabbit_user():
 
 
 @task
-def update_supervisor():
+def update_supervisor_conf():
     """Set supervisor conf file"""
     # create log directories if necessary
     if not files.exists('/var/log/celery'):
         run_as_root('mkdir -p /var/log/celery')
-    if not files.exists('/var/log/celery'):
+    if not files.exists('/var/log/supervisord'):
         run_as_root('mkdir -p /var/log/supervisord')
 
     # remove file if exists
@@ -383,6 +384,16 @@ def update_supervisor():
         env_dir=env.env_dir,
         supervisor=supervisor_file))
 
+    # simlink
+    if files.exists('/etc/supervisor/conf.d/supervisord.conf'):
+        run_as_root('rm /etc/supervisor/conf.d/supervisord.conf')
+    run_as_root('ln -s {stack_dir}/{conf_dir}/supervisord.conf /etc/supervisor/conf.d/supervisord.conf'.format(
+        stack_dir=env.stack_dir,
+        conf_dir=env.conf_dir))
+
+
 @task
-def run_supervisor():
-    """Start supervisor"""
+def update_supervisor():
+    run_as_root('supervisorctl reread')
+    run_as_root('supervisorctl update')
+
