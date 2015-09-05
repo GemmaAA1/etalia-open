@@ -94,7 +94,7 @@ def deploy():
     # run
     update_and_require_libraries()
     create_virtual_env_if_necessary()
-    set_virtual_env_hooks()
+    create_virtual_env_hooks_if_necessary()
     create_directory_structure_if_necessary()
     pull_latest_source()
     pip_install()
@@ -106,9 +106,16 @@ def deploy():
     update_supervisor()
 
 
+def create_virtual_env_hooks_if_necessary():
+    """Create environment variable hooks if not defined"""
+    postactivate_path = '{env_dir}/bin/postactivate'.format(env_dir=env.env_dir)
+    if not files.contains(postactivate_path, 'DJANGO_SECRET_KEY'):  # this is the bare minimum
+        update_virtual_env_hooks()
+
+
 @task
-def set_virtual_env_hooks():
-    """Define environment variable on host"""
+def update_virtual_env_hooks():
+    """Define environment variable on host based on local file"""
     if not env.hosts:
         raise ValueError('No hosts defined')
 
@@ -209,7 +216,6 @@ def update_and_require_libraries():
                                    'git',
                                    'python-pip',
                                    'libpq-dev',
-                                   'rabbitmq-server',
                                    'supervisor',
                                    ], update=True)
     # Require some pip packages
@@ -336,12 +342,23 @@ def update_gunicorn_conf():
 def set_rabbit_user():
     """Set rabbit user"""
     with settings(_workon()):
-        run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
-        run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"'.format(rabbit_user=env.rabbit_user))
+        if not files.exists("/usr/sbin/rabbitmq-server"):
+            fabtools.require.deb.packages(['rabbitmq-server'])
+            run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
+            run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"'.format(rabbit_user=env.rabbit_user))
+            run_as_root("rabbitmqctl delete_user guest")
+            run_as_root("service rabbitmq-server restart")
+
 
 @task
 def update_supervisor():
     """Set supervisor conf file"""
+    # create log directories if necessary
+    if not files.exists('/var/log/celery'):
+        run_as_root('mkdir -p /var/log/celery')
+    if not files.exists('/var/log/celery'):
+        run_as_root('mkdir -p /var/log/supervisord')
+
     # remove file if exists
     supervisor_file = '{stack_dir}/{conf_dir}/supervisord.conf'.format(
         stack_dir=env.stack_dir,
