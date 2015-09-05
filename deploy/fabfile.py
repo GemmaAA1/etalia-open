@@ -59,7 +59,7 @@ env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
 
-
+@task
 def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
     # setup env
@@ -83,7 +83,6 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
 
 
 @task
-@parallel
 def deploy():
     """Deploy paperstream on hosts"""
     if not env.hosts:
@@ -105,7 +104,6 @@ def deploy():
 
 
 @task
-@parallel
 def set_virtual_env_hooks():
     """Define environment variable on host"""
     if not env.hosts:
@@ -188,7 +186,6 @@ def _generate_new_secret_key(key_length=32):
 
 
 @task
-@parallel
 def update_and_require_libraries():
     """Update ubuntu libraries"""
     # Require some Ubuntu packages
@@ -226,7 +223,7 @@ def update_and_require_libraries():
         run("mkdir -p {virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir))
 
 
-@parallel
+
 def create_virtual_env_if_necessary():
     # Create virtual env
     with prefix("WORKON_HOME={virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir)):
@@ -246,18 +243,17 @@ def _workon():
 
 
 
-@parallel
+
 def create_directory_structure_if_necessary():
     for sub_dir in ('static', 'source', env.conf_dir):
         if not files.exists('{0}/{1}'.format(env.stack_dir, sub_dir)):
             run('mkdir -p {0}/{1}'.format(env.stack_dir, sub_dir))
 
 @task
-@parallel
 def pull_latest_source():
     """Pull source from bitbucket"""
     # Generating public key for ssh bitbucket
-    if not files.exists('/home/{}/.ssh/id_rsa.pub'.format(env.user)):
+    if not files.exists('/home/{}/.ssh/id_rsa'.format(env.user)):
         print('Generate id_rsa for BitBucket git ssh\n')
         run('ssh-keygen')
         run('ps -e | grep [s]sh-agent')
@@ -277,14 +273,12 @@ def pull_latest_source():
                                                      current_commit))
 
 @task
-@parallel
 def pip_install():
     """Pip install requirements"""
     with settings(cd(env.source_dir), _workon()):
         run('pip install -r requirements/{stack}.txt'.format(stack=env.stack))
 
 @task
-@parallel
 def update_static_files():
     """Update static files"""
     with settings(cd(env.source_dir), _workon()):
@@ -300,7 +294,6 @@ def update_database():
 
 
 @task
-@parallel
 @roles('apps')
 def update_nginx_conf():
     """Update Nginx conf files"""
@@ -321,7 +314,6 @@ def update_nginx_conf():
                 '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site))
 
 @task
-@parallel
 @roles('apps')
 def update_gunicorn_conf():
     """Update Gunicorn conf files"""
@@ -337,7 +329,6 @@ def update_gunicorn_conf():
                  'USER': env.user}, use_sudo=True, use_jinja=True)
 
 @task
-@parallel
 @roles('jobs')
 def set_rabbit_user():
     """Set rabbit user"""
@@ -346,16 +337,14 @@ def set_rabbit_user():
         run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"'.format(rabbit_user=env.rabbit_user))
 
 @task
-@parallel
 def update_supervisor():
     """Set supervisor conf file"""
     # Store env variable from postactivate
-    run('python {source_dir}/deploy/postactivate2env.py -i {env_dir}/bin/postactivate'.format(
+    run('python {source_dir}/deploy/postactivate2env.py -i "{env_dir}/bin/postactivate"'.format(
         source_dir=env.source_dir,
         env_dir=env.env_dir))
 
 @task
-@parallel
 def run_supervisor():
     """Start supervisor"""
     pass

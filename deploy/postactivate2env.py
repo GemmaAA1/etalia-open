@@ -21,18 +21,20 @@ def main(argv):
             inputfile = arg
 
     if inputfile:
+        print 'Open'
         vars = ''
         with open(inputfile, 'r') as f:
             for line in f:
                 if line.strip().startswith('export'):
-
                     line = re.sub('export ', '', line.strip()).strip()
                     # escape % character
                     line = re.sub('%', '%%', line)
+                    print line
                     if vars:  # add a comma
                         vars += ','
                     vars += line
         # store in environment variable
+        print vars
         subprocess.call(["export ENV_FOR_SUPERVISOR=", '"'+vars+'"'], shell=True)
 
 
