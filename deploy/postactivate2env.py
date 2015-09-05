@@ -34,8 +34,9 @@ def main(argv):
                         vars += ','
                     vars += line
         # store in environment variable
-        print vars
-        subprocess.call(["export ENV_FOR_SUPERVISOR=", '''+vars+'''], shell=True)
+        command = 'export ENV_FOR_SUPVIS='' + vars + '''
+        print command
+        subprocess.call(command, shell=True)
 
 
 if __name__ == "__main__":
