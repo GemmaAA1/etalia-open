@@ -339,10 +339,27 @@ def set_rabbit_user():
 @task
 def update_supervisor():
     """Set supervisor conf file"""
-    # Store env variable from postactivate
-    run('python {source_dir}/deploy/postactivate2env.py -i "{env_dir}/bin/postactivate"'.format(
+    # remove file if exists
+    supervisor_file = '{stack_dir}/{conf_dir}'.format(stack_dir=env.stack_dir,
+                                                      conf_dir=env.conf_dir)
+    if files.exists(supervisor_file):
+        run_as_root('rm ' + supervisor_file)
+    # upload template
+    files.upload_template('supervisord.template.conf', supervisor_file,
+        context={'SITENAME': env.stack_site,
+                 'USER': env.user,
+                 'STACK': env.stack,
+                 'STACK_DIR': env.stack_dir,
+                 'SOURCE_DIR': env.source_dir,
+                 'ENV_DIR': env.env_dir,
+                 'CONF_DIR': env.conf_dir,
+                 }, use_sudo=True, use_jinja=True)
+
+    # Copy env variable from postactivate
+    run('python {source_dir}/deploy/cp_p2s.py -i {env_dir}/bin/postactivate -o {supervisor}'.format(
         source_dir=env.source_dir,
-        env_dir=env.env_dir))
+        env_dir=env.env_dir,
+        supervisor=supervisor_file))
 
 @task
 def run_supervisor():
