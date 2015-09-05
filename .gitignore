@@ -72,5 +72,5 @@ nlp_data_test/
 paperstream/trash
 fabfile/
 staticfiles/
-.envs/
+deploy/.envs
 scripts/heroku_cheats

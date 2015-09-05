@@ -37,9 +37,9 @@ $ ./scripts/install_local.sh
 $ rabbitmq-server
 
 # Start Celery queues, and beat
-$ celery -A config worker -Q default --loglevel=info
-$ celery -A config worker -Q dbow --concurrency=1 --loglevel=info
-$ celery -A config worker -Q consumers --loglevel=info
+$ celery -A config worker -Q default --concurrency=10 -l INFO -n worker1.default.%h
+$ celery -A config worker -Q models,default --concurrency=10 -l INFO -n worker1.models.%h
+$ celery -A config worker -Q consumers,default -l INFO -n worker1.consumers.%h
 $ celery -A config beat -s ../logs/celerybeat-schedule
 
 # Start WebApp
