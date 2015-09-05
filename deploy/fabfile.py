@@ -354,9 +354,6 @@ def set_rabbit_user():
 @task
 def update_supervisor_conf():
     """Set supervisor conf file"""
-    # create log directories if necessary
-    if not files.exists('/var/log/celery'):
-        run_as_root('mkdir -p /var/log/celery')
     if not files.exists('/var/log/supervisord'):
         run_as_root('mkdir -p /var/log/supervisord')
 
