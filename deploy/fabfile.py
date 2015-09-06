@@ -36,8 +36,7 @@ import string
 import random
 from boto.ec2 import connect_to_region
 from fabric.decorators import roles, runs_once, task, parallel
-from fabric.operations import put
-from fabric.api import env, run, cd, settings, prefix, task, local, prompt, put, sudo
+from fabric.api import env, run, cd, settings, prefix, task, local, prompt, put, sudo, get
 from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
@@ -101,11 +100,14 @@ def deploy():
     pip_install()
     update_database()
     update_static_files()
-    update_nginx_conf()
-    update_gunicorn_conf()
-    set_rabbit_user()
-    update_supervisor_conf()
-    update_supervisor()
+    if env.host_string in env.roledefs.get('apps', []):
+        set_rabbit_user()
+        update_gunicorn_conf()
+    if env.host_string in env.roledefs.get('jobs', []):
+        update_supervisor_conf()
+        update_nginx_conf()
+        reload_nginx()
+    reload_supervisor()
 
 
 def create_virtual_env_hooks_if_necessary():
@@ -164,11 +166,12 @@ def _get_public_dns(region, context):
     reservations = connection.get_all_instances(filters=context)
     for reservation in reservations:
         for instance in reservation.instances:
-            print("Instance {}".format(instance.public_dns_name))
-            public_dns.append(str(instance.public_dns_name))
-            tags[str(instance.public_dns_name)] = instance.tags
+            if instance.public_dns_name:
+                print("Instance {}".format(instance.public_dns_name))
+                public_dns.append(str(instance.public_dns_name))
+                tags[str(instance.public_dns_name)] = instance.tags
 
-    # Define roles for instances based on tag
+    # Define rol    es for instances based on tag
     roles = list(set([tags[host]['layer'] for host in public_dns]))
     roledefs = {}
     for role in roles:
@@ -267,7 +270,8 @@ def pull_latest_source():
     if not files.exists('/home/{}/.ssh/id_rsa'.format(env.user)):
         if not files.exists('/home/{}/.ssh'.format(env.user)):
             run('mkdir /home/{}/.ssh'.format(env.user))
-        put('.ssh/id_rsa', '/home/{}/.ssh/id_rsa')
+        put('.ssh/id_rsa', '/home/{}/.ssh/id_rsa'.format(env.user))
+        run('chmod 400 /home/{}/.ssh/id_rsa'.format(env.user))
     # pull git
     if files.exists(env.source_dir + '/.git'):
         run('cd {0} && git fetch'.format(env.source_dir))
@@ -334,6 +338,7 @@ def update_gunicorn_conf():
         context={'SITENAME': env.stack_site,
                  'USER': env.user}, use_sudo=True, use_jinja=True)
 
+
 @task
 @roles('jobs')
 def set_rabbit_user():
@@ -342,9 +347,8 @@ def set_rabbit_user():
         if not files.exists("/usr/sbin/rabbitmq-server"):
             fabtools.require.deb.packages(['rabbitmq-server'])
             run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
-            run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"'.format(rabbit_user=env.rabbit_user))
+            run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
             run_as_root("rabbitmqctl delete_user guest")
-            run_as_root("service rabbitmq-server restart")
 
 
 @task
@@ -386,7 +390,12 @@ def update_supervisor_conf():
 
 
 @task
-def update_supervisor():
+def reload_nginx():
+    run_as_root('sudo service nginx reload')
+
+
+@task
+def reload_supervisor():
     run_as_root('supervisorctl reread')
     run_as_root('supervisorctl update')
 
