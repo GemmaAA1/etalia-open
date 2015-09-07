@@ -100,9 +100,11 @@ def deploy():
     pip_install()
     update_database()
     update_static_files()
+    # app related
     if env.host_string in env.roledefs.get('apps', []):
         set_rabbit_user()
         update_gunicorn_conf()
+    # job related
     if env.host_string in env.roledefs.get('jobs', []):
         update_supervisor_conf()
         update_nginx_conf()
