@@ -34,9 +34,11 @@ import os
 import re
 import string
 import random
+import sys
 from boto.ec2 import connect_to_region
 from fabric.decorators import roles, runs_once, task, parallel
-from fabric.api import env, run, cd, settings, prefix, task, local, prompt, put, sudo, get
+from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
+    put, sudo, get, reboot
 from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
@@ -80,6 +82,8 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
         'tag:Name': name,
     }
     env.hosts, env.roles, env.roledefs = _get_public_dns(region, context)
+    # store stack used
+    setattr(env, 'stack_string', stack)
 
 
 def get_host_roles():
@@ -102,14 +106,17 @@ def deploy():
     update_static_files()
     # app related
     if env.host_string in env.roledefs.get('apps', []):
-        set_rabbit_user()
-        update_gunicorn_conf()
-    # job related
-    if env.host_string in env.roledefs.get('jobs', []):
-        update_supervisor_conf()
         update_nginx_conf()
         reload_nginx()
+    # job related
+    if env.host_string in env.roledefs.get('jobs', []):
+        update_rabbit_user()
+        update_gunicorn_conf()
+    update_supervisor_conf()
     reload_supervisor()
+    reb = update_hosts_file(env.stack_string)
+    if reb:
+        reboot_instance()
 
 
 def create_virtual_env_hooks_if_necessary():
@@ -239,7 +246,6 @@ def update_and_require_libraries():
         run("mkdir -p {virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir))
 
 
-
 def create_virtual_env_if_necessary():
     # Create virtual env
     with prefix("WORKON_HOME={virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir)):
@@ -343,13 +349,19 @@ def update_gunicorn_conf():
 
 @task
 @roles('jobs')
-def set_rabbit_user():
+def update_rabbit_user():
     """Set rabbit user"""
-    with settings(_workon()):
+    with settings(_workon()):  # to get env var
+        # if rabbitmq not installed, install
         if not files.exists("/usr/sbin/rabbitmq-server"):
             fabtools.require.deb.packages(['rabbitmq-server'])
+        # test if user exists:
+        list_users = run_as_root('rabbitmqctl list_users')
+        user = run_as_root('echo $RABBITMQ_USERNAME')
+        if user not in list_users:
             run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
             run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
+        if 'guest' in list_users:
             run_as_root("rabbitmqctl delete_user guest")
 
 
@@ -383,13 +395,6 @@ def update_supervisor_conf():
         env_dir=env.env_dir,
         supervisor=supervisor_file))
 
-    # simlink
-    if files.exists('/etc/supervisor/conf.d/supervisord.conf'):
-        run_as_root('rm /etc/supervisor/conf.d/supervisord.conf')
-    run_as_root('ln -s {stack_dir}/{conf_dir}/supervisord.conf /etc/supervisor/conf.d/supervisord.conf'.format(
-        stack_dir=env.stack_dir,
-        conf_dir=env.conf_dir))
-
 
 @task
 def reload_nginx():
@@ -398,6 +403,65 @@ def reload_nginx():
 
 @task
 def reload_supervisor():
-    run_as_root('supervisorctl reread')
-    run_as_root('supervisorctl update')
+    run_as_root('supervisorctl -c staging/supervisor/supervisord.conf reread')
+    run_as_root('supervisorctl -c staging/supervisor/supervisord.conf update')
 
+
+@task
+def update_hosts_file(stack=STACK):
+    conn = _create_connection(REGION)
+    reservations = conn.get_all_instances(filters={'tag:stack': stack})
+
+    context = {}
+    for reservation in reservations:
+        for instance in reservation.instances:
+            if instance.public_dns_name:
+                context[instance.public_dns_name] = {
+                    'ip': instance.ip_address,
+                    'private_ip': instance.private_ip_address,
+                    'name': instance.tags.get('Name', ''),
+                }
+    # overwrite host_string ip to localhost
+    context[env.host_string] = {
+        'ip': '127.0.0.1',
+        'private_ip': '127.0.0.1',
+        'name': context[env.host_string]['name'],
+    }
+
+    # update host file if necessary
+    reb = False
+    for cont in context.values():
+        if not cont['private_ip'] == '127.0.0.1':
+            line_str = '{private_ip} {name} {name}.localdomain'.format(
+                private_ip=cont['private_ip'],
+                name=cont['name'],
+            )
+        else:
+            line_str = '{private_ip} {name} {name}.localdomain localhost localhost.localdomain'.format(
+                private_ip=cont['private_ip'],
+                name=cont['name'],
+            )
+
+        if not files.contains('/etc/hosts', line_str):
+            if files.contains('/etc/hosts', cont['private_ip']):  # update line if ip already in
+                run_as_root("sed -i 's/.*{private_ip}.*/{new_line}/' /etc/hosts".format(
+                    private_ip=cont['private_ip'],
+                    new_line=line_str))
+            elif files.contains('/etc/hosts', cont['name']):  # update line if name already in
+                run_as_root("sed -i 's/.*{name}.*/{new_line}/' /etc/hosts".format(
+                    name=cont['name'],
+                    new_line=line_str))
+            else:  # add line to top row
+                run_as_root("sed -i -e '1i{new_line}\' /etc/hosts".format(
+                    new_line=line_str))
+
+    # update host_name
+    if not files.contains('/etc/hostname', context[env.host_string]['name']):
+        run_as_root('echo "{name}.localdomain" > /etc/hostname'.format(name=context[env.host_string]['name']))
+        run_as_root('hostname {name}'.format(name=context[env.host_string]['name']))
+        reb = True
+    return reb
+
+@task
+def reboot_instance():
+    reboot()
