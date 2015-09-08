@@ -307,28 +307,28 @@ CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'task.default'
 
-# CELERY_ROUTES = {
-#     'paperstream.nlp.tasks.dbow_embed_paper': {
-#         'queue': 'nlp',
-#         'routing_key': 'dbow.embed',
-#     },
-#     'paperstream.nlp.tasks.dbow_lsh': {
-#         'queue': 'dbow',
-#         'routing_key': 'dbow.lsh',
-#     },
-#     'paperstream.consumers.tasks.pubmed_run_all': {
-#         'queue': 'consumers',
-#         'routing_key': 'consumers.pubmed',
-#     },
-#     'paperstream.consumers.tasks.arxiv_run_all': {
-#         'queue': 'consumers',
-#         'routing_key': 'consumers.arxiv',
-#     },
-#     'paperstream.consumers.tasks.elsevier_run_all': {
-#         'queue': 'consumers',
-#         'routing_key': 'consumers.elsevier',
-#     },
-# }
+CELERY_ROUTES = {
+    'paperstream.nlp.tasks.dbow_embed_paper': {
+        'queue': 'nlp',
+        'routing_key': 'dbow.embed',
+    },
+    'paperstream.nlp.tasks.dbow_lsh': {
+        'queue': 'dbow',
+        'routing_key': 'dbow.lsh',
+    },
+    'paperstream.consumers.tasks.pubmed_run_all': {
+        'queue': 'consumers',
+        'routing_key': 'consumers.pubmed',
+    },
+    'paperstream.consumers.tasks.arxiv_run_all': {
+        'queue': 'consumers',
+        'routing_key': 'consumers.arxiv',
+    },
+    'paperstream.consumers.tasks.elsevier_run_all': {
+        'queue': 'consumers',
+        'routing_key': 'consumers.elsevier',
+    },
+}
 
 CELERYBEAT_SCHEDULE = {
     'pubmed-once-a-day': {
