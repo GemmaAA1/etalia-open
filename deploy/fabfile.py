@@ -106,6 +106,7 @@ def deploy():
     update_static_files()
     # app related
     if env.host_string in env.roledefs.get('apps', []):
+        update_gunicorn_conf()
         update_nginx_conf()
         reload_nginx()
     # job related
@@ -394,6 +395,17 @@ def update_supervisor_conf():
         source_dir=env.source_dir,
         env_dir=env.env_dir,
         supervisor=supervisor_file))
+
+    # Simlink to conf file
+    run_as_root('rm /etc/supervisor/supervisord.conf')
+    run_as_root('ln -s {stack_dir}/{conf_dir}/supervisord.conf /etc/supervisor/supervisord.conf'.format(
+        stack_dir=env.stack_dir,
+        conf_dir=env.conf_dir,
+    ))
+
+    # restart supervisor
+    pid = run('pgrep supervisor')
+    run_as_root('kill -HUP {pid}'.format(pid=pid))
 
 
 @task
