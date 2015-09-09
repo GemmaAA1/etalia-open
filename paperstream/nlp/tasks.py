@@ -136,4 +136,5 @@ def embed_all_models(paper_pk):
             logger.error('Embeding task for {model_name} not defined'.format(
                 model_name=model_name))
             continue
-        embed_task.apply_async(args=(paper_pk,))
+        embed_task.apply_async(args=(paper_pk,),
+                               routing_key='nlp.{model}'.format(model=model_name))

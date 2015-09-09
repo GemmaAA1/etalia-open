@@ -290,7 +290,7 @@ FEEDS_DISPLAY_N_PAPERS = 50
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
 ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
-
+ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600  # slightly less than each second in a a day
 
 # CELERY
 # ------------------------------------------------------------------------------
@@ -304,23 +304,17 @@ CELERY_DEFAULT_QUEUE = 'default'
 # embed_exchange = Exchange('embed', type='topic')
 # consumer_exchange = Exchange('consumer', type='topic')
 CELERY_QUEUES = (
-    Queue('default', routing_key='task.#'),
+    Queue('default', routing_key='default.#'),
     Queue('nlp', routing_key='nlp.#'),
     Queue('consumers', routing_key='consumers.#'),
+    Queue('altmetric', routing_key='altmetric.#'),
 )
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
-CELERY_DEFAULT_ROUTING_KEY = 'task.default'
+CELERY_DEFAULT_ROUTING_KEY = 'default'
 
+# NB: nlp routes are defined as argument when calling apply_async
 CELERY_ROUTES = {
-    'paperstream.nlp.tasks.dbow_embed_paper': {
-        'queue': 'nlp',
-        'routing_key': 'dbow.embed',
-    },
-    'paperstream.nlp.tasks.dbow_lsh': {
-        'queue': 'dbow',
-        'routing_key': 'dbow.lsh',
-    },
     'paperstream.consumers.tasks.pubmed_run_all': {
         'queue': 'consumers',
         'routing_key': 'consumers.pubmed',
@@ -332,6 +326,10 @@ CELERY_ROUTES = {
     'paperstream.consumers.tasks.elsevier_run_all': {
         'queue': 'consumers',
         'routing_key': 'consumers.elsevier',
+    },
+    'paperstream.altmetric.tasks.update_altmetric_periodic': {
+        'queue': 'altmetric',
+        'routing_key': 'altmetric.periodic',
     },
 }
 

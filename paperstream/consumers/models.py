@@ -30,6 +30,7 @@ from .constants import CONSUMER_TYPE
 
 logger = logging.getLogger(__name__)
 
+
 class Consumer(TimeStampedModel):
     """ Abstract Consumer Table
 
@@ -634,6 +635,7 @@ class ConsumerJournal(models.Model):
 
     class Meta:
         unique_together = ('journal', 'consumer')
+        ordering = ['last_date_cons']
 
     def activate(self):
         if self.status == 'inactive':
@@ -705,9 +707,6 @@ class ConsumerJournal(models.Model):
                               number_papers_recorded=0,
                               status='FAI')
             self.save()
-
-    class Meta:
-        ordering = ['last_date_cons']
 
 
 class ConsumerJournalStat(models.Model):
