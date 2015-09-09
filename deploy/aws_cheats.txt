@@ -23,3 +23,19 @@ jobs.local
 # -- NGINX --
 sudo service nginx reload
 
+# -- MONITORING CELERY --
+celery -A config status
+celery -A config inspect active
+celery -A config inspect scheduled
+celery -A config inspect reserved
+celery -A config inspect registered
+celery -A config inspect stats
+# Curses Monitor
+celery -A config events
+
+# -- MONITORING RABBITMQ --
+#Finding the number of tasks in a queue:
+rabbitmqctl list_queues name messages messages_ready messages_unacknowledged
+
+rabbitmqctl list_queues name consumers
+rabbitmqctl list_queues name memory
