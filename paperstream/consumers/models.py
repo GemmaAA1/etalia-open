@@ -64,10 +64,11 @@ class Consumer(TimeStampedModel):
 
     def add_journal(self, journal):
         """Add journal to consumer"""
-        cj, new = ConsumerJournal.objects.get_or_create(
-            journal=journal,
-            consumer=self,
-            last_date_cons=timezone.now() - timezone.timedelta(days=self.day0))
+        cj, new = ConsumerJournal.objects.get_or_create(journal=journal,
+                                                        consumer=self)
+        if new:
+            cj.last_date_cons = timezone.now() - timezone.timedelta(days=self.day0)
+            cj.save()
         return cj
 
     def add_journals(self, journals):

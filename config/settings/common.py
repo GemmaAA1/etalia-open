@@ -280,17 +280,27 @@ NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
 
-FEED_JOURNAL_VECTOR_RATIO = 0.2
+NLP_TIME_LAPSE_CHOICES = (
+    (7, '1 Week'),
+    (30, '1 Month'),
+    (60, '2 Months'),
+    (-1, 'All'),
+)
+
 
 # FEED APP
 # ------------------------------------------------------------------------------
 FEEDS_SCORE_KEEP_N_PAPERS = 100
 FEEDS_DISPLAY_N_PAPERS = 50
+FEED_JOURNAL_VECTOR_RATIO = 0.2
+
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
 ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
 ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600  # slightly less than each second in a a day
+
+
 
 # CELERY
 # ------------------------------------------------------------------------------

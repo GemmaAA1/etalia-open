@@ -55,7 +55,7 @@ def populate_journal(csv_file, print_to=None):
                     errors.append(form.errors)
                     logger.warning('journal failed to register: '
                                    '{0}'.format(form.errors))
-            except KeyError as e:
+            except Exception as e:
                 logger.warning('journal row error: {0}'.format(row))
                 pass
 
@@ -111,18 +111,18 @@ def populate_publisher(csv_file, print_to=None):
 def populate_consumer(type_, name, csv_file=None, print_to=None):
 
     if type_ == 'PUB':
-        consumer = ConsumerPubmed.objects.create(name=name)
+        consumer, _ = ConsumerPubmed.objects.get_or_create(name=name)
         records_added, errors = populate_consumer_from_file(consumer,
                                                             type_,
                                                             csv_file,
                                                             print_to=print_to)
     elif type_ == 'ARX':
-        consumer = ConsumerArxiv.objects.create(name=name)
+        consumer, _ = ConsumerArxiv.objects.get_or_create(name=name)
         records_added, errors = populate_consumer_from_db(consumer,
                                                           type_,
                                                           print_to=print_to)
     elif type_ == 'ELS':
-        consumer = ConsumerElsevier.objects.create(name=name)
+        consumer, _ = ConsumerElsevier.objects.get_or_create(name=name)
         records_added, errors = populate_consumer_from_db(consumer,
                                                           type_,
                                                           print_to=print_to)
@@ -189,7 +189,10 @@ def populate_consumer_from_file(consumer, type_, csv_file, print_to=None):
         for i, row in enumerate(csv.DictReader(rows, delimiter=str(";"))):
             try:
                 if type_ == 'PUB':
-                    journal = Journal.objects.get(id_issn=row['id_issn'])
+                    try:
+                        journal = Journal.objects.get(id_issn=row['id_issn'])
+                    except Journal.DoesNotExist:
+                        journal = Journal.objects.get(id_eissn=row['id_eissn'])
                 elif type_ == 'ARX':
                     journal = Journal.objects.get(id_arx=row['id_arx'])
                 else:
