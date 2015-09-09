@@ -60,6 +60,7 @@ LOCAL_APPS = (
     'paperstream.nlp',
     'paperstream.users',
     'paperstream.feeds',
+    'paperstream.altmetric',
     # 'functional_tests',
 )
 
@@ -286,6 +287,10 @@ FEED_JOURNAL_VECTOR_RATIO = 0.2
 FEEDS_SCORE_KEEP_N_PAPERS = 100
 FEEDS_DISPLAY_N_PAPERS = 50
 
+# ALTMETRIC APP
+# ------------------------------------------------------------------------------
+ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
+
 
 # CELERY
 # ------------------------------------------------------------------------------
@@ -332,17 +337,21 @@ CELERY_ROUTES = {
 
 CELERYBEAT_SCHEDULE = {
     'pubmed-once-a-day': {
-        'task': 'consumers.tasks.pubmed_run_all',
-        'schedule': crontab(minute=0, hour=0),  # daily at midnight
+        'task': 'paperstream.consumers.tasks.pubmed_run_all',
+        'schedule': crontab(minute=0, hour=0),  # daily at UCT+0
     },
     'arxiv-once-a-day': {
-        'task': 'consumers.tasks.arxiv_run_all',
-        'schedule': crontab(minute=0, hour=12),  # daily at 12pm
+        'task': 'paperstream.consumers.tasks.arxiv_run_all',
+        'schedule': crontab(minute=0, hour=12),  # daily at UTC+12
     },
     'elsevier-once-a-day': {
-        'task': 'consumers.tasks.elsevier_run_all',
-        'schedule': crontab(minute=0, hour=18),  # daily at 6pm
+        'task': 'paperstream.consumers.tasks.elsevier_run_all',
+        'schedule': crontab(minute=0, hour=18),  # daily at UTC+6
     },
+    'update-altmetric': {
+        'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
+        'schedule': crontab(minute=0, hour=6),  # daily at UTC+6
+    }
 }
 
 # LOGGING CONFIGURATION

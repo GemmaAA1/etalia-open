@@ -348,6 +348,15 @@ class Paper(TimeStampedModel):
                     value=getattr(self, field.name))
         return ids_str
 
+    def get_ids(self):
+        """Return dictionary of paper ids"""
+        ids = {}
+        # Loop through field starting with 'id_'
+        for field in self._meta.fields:
+            if field.name.startswith('id_') and getattr(self, field.name):
+                ids[field.name.split('id_')[1]] = getattr(self, field.name)
+        return ids
+
     def count_ids(self):
         count = 0
         # Loop through field starting with 'id_'

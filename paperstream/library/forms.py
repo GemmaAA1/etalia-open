@@ -26,12 +26,6 @@ class FillBlanksMixin(object):
         for field in self.cleaned_data.keys():
             self.cleaned_data[field] = self.fill_blank(field)
 
-            # push short_title to title is title not defined
-            if field == 'title':
-                if not self.cleaned_data.get(field, '') and \
-                        self.cleaned_data.get('short_title', ''):
-                    self.cleaned_data['title'] = self.cleaned_data['short_title']
-
         cleaned_data = super(FillBlanksMixin, self).clean()
         return cleaned_data
 
