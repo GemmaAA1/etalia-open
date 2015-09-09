@@ -637,6 +637,9 @@ class ConsumerJournal(models.Model):
         unique_together = ('journal', 'consumer')
         ordering = ['last_date_cons']
 
+    def __str__(self):
+        return self.consumer.name
+
     def activate(self):
         if self.status == 'inactive':
             self.status = 'idle'

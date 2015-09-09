@@ -170,6 +170,30 @@ class ConsumerElsevierTest(TestCase):
         self.assertEqual(papers.count(), 10)
 
 
-class ConsumerArxivTest(TestCase):
 # TODO: Implement
+class ConsumerArxivTest(TestCase):
     pass
+
+
+# TODO: Complete
+class ConsumerJournalTest(TestCase):
+
+    def setUp(self):
+        self.journal, _ = Journal.objects.get_or_create(id_issn='1053-8119')
+        self.consumer, _ = ConsumerElsevier.objects.get_or_create(name='pub cons #1')
+
+    def test_consumerjournal_can_be_instantiated(self):
+        cj = ConsumerJournal(journal=self.journal, consumer=self.consumer)
+        cj.full_clean()
+
+    def test_consumerjournal_are_unique(self):
+        ConsumerJournal.objects.create(journal=self.journal, consumer=self.consumer)
+        cj = ConsumerJournal(journal=self.journal, consumer=self.consumer)
+        with self.assertRaises(ValidationError):
+            cj.full_clean()
+
+
+# TODO: Implement
+class ConsumerJournalStats(TestCase):
+    pass
+
