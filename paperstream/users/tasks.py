@@ -35,6 +35,7 @@ def update_lib(user_pk, provider_name):
     return user_pk
 
 
+@app.task()
 def init_user(user_pk, provider_name):
     """Task init user / Chain user library update, and main feed initialization
     """

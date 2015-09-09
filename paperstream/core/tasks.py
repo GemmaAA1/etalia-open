@@ -44,4 +44,4 @@ def embed_all_models_and_find_neighbors(paper_pk):
 
             task = chain(embed_task.s(paper_pk),
                          lsh_task.s('populate_neighbors'))
-            task.apply_async(routing_key='nlp.{model}'.format(model=model_name))
+            task.apply_async()

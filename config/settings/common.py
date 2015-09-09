@@ -270,6 +270,7 @@ CONSUMER_PUBMED_EMAIL = env('CONSUMER_PUBMED_EMAIL')
 CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 
 
+
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
@@ -286,7 +287,6 @@ NLP_TIME_LAPSE_CHOICES = (
     (60, '2 Months'),
     (-1, 'All'),
 )
-
 
 # FEED APP
 # ------------------------------------------------------------------------------
@@ -323,24 +323,23 @@ CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
 
-# NB: nlp routes are defined as argument when calling apply_async
+CONS_ROUTING_KEY_STEM = 'consumers'
+NLP_ROUTING_KEY_STEM = 'nlp'
+ALTMETRIC_ROUTING_KEY_STEM = 'altmetric'
+
 CELERY_ROUTES = {
-    'paperstream.consumers.tasks.pubmed_run_all': {
-        'queue': 'consumers',
-        'routing_key': 'consumers.pubmed',
-    },
-    'paperstream.consumers.tasks.arxiv_run_all': {
-        'queue': 'consumers',
-        'routing_key': 'consumers.arxiv',
-    },
-    'paperstream.consumers.tasks.elsevier_run_all': {
-        'queue': 'consumers',
-        'routing_key': 'consumers.elsevier',
-    },
-    'paperstream.altmetric.tasks.update_altmetric_periodic': {
-        'queue': 'altmetric',
-        'routing_key': 'altmetric.periodic',
-    },
+    # 'paperstream.consumers.models.populate_journal': {
+    #     'queue': 'consumers',
+    #     'routing_key': 'consumers',
+    # },
+    # 'paperstream.consumers.tasks.pubmed_run_all': {
+    #     'queue': 'consumers',
+    #     'routing_key': 'consumers',
+    # },
+    # 'paperstream.altmetric.tasks.update_altmetric_periodic': {
+    #     'queue': 'altmetric',
+    #     'routing_key': 'altmetric.periodic',
+    # },
 }
 
 CELERYBEAT_SCHEDULE = {
@@ -348,18 +347,18 @@ CELERYBEAT_SCHEDULE = {
         'task': 'paperstream.consumers.tasks.pubmed_run_all',
         'schedule': crontab(minute=0, hour=0),  # daily at UCT+0
     },
+    'update-altmetric': {
+        'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
+        'schedule': crontab(minute=0, hour=6),  # daily at UTC+6
+    },
     'arxiv-once-a-day': {
         'task': 'paperstream.consumers.tasks.arxiv_run_all',
         'schedule': crontab(minute=0, hour=12),  # daily at UTC+12
     },
     'elsevier-once-a-day': {
         'task': 'paperstream.consumers.tasks.elsevier_run_all',
-        'schedule': crontab(minute=0, hour=18),  # daily at UTC+6
+        'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
     },
-    'update-altmetric': {
-        'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
-        'schedule': crontab(minute=0, hour=6),  # daily at UTC+6
-    }
 }
 
 # LOGGING CONFIGURATION

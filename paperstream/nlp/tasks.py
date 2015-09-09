@@ -5,6 +5,9 @@ import logging
 from celery import chain, Task
 
 from config.celery import celery_app as app
+
+from django.conf import settings
+
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 from paperstream.core.utils import db_table_exists
 
@@ -17,10 +20,10 @@ class EmbedPaperTask(Task):
     Use to load model in __init__ so that it is cached for subsequent call
     to task
     """
-
     ignore_result = False
     model_name = None
     _model = None
+    routing_key = settings.NLP_ROUTING_KEY_STEM
 
     def __init__(self, *args, **kwargs):
         if 'model_name' in kwargs:
@@ -55,11 +58,11 @@ class LSHTask(Task):
     Use to load lsh instance in __init__ so that it is cached for subsequent call
     to task
     """
-
     ignore_result = False
     model_name = None
     time_lapse = None
     _lsh = None
+    routing_key = settings.NLP_ROUTING_KEY_STEM
 
     def __init__(self, *args, **kwargs):
         if ('model_name' in kwargs) and ('time_lapse' in kwargs):
@@ -99,6 +102,7 @@ class LSHTask(Task):
     def run(self, *args, **kwargs):
         return self.lsh.tasks(*args, **kwargs)
 
+
 # Model based tasks factory
 def register_all_models_and_lshs_tasks():
     # Create embedding task from model
@@ -136,5 +140,4 @@ def embed_all_models(paper_pk):
             logger.error('Embeding task for {model_name} not defined'.format(
                 model_name=model_name))
             continue
-        embed_task.apply_async(args=(paper_pk,),
-                               routing_key='nlp.{model}'.format(model=model_name))
+        embed_task.apply_async(args=(paper_pk,))

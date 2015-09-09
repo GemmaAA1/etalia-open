@@ -248,7 +248,7 @@ class Consumer(TimeStampedModel):
             start_date = timezone.now() - timezone.timedelta(self.day0)
         return start_date
 
-    @app.task(filter=task_method)
+    @app.task(filter=task_method, routing_key=settings.CONS_ROUTING_KEY_STEM)
     def populate_journal(self, journal_pk):
         """Consume data from journal
 
@@ -333,9 +333,9 @@ class Consumer(TimeStampedModel):
 
         # queue journal for consumption
         for consumerjournal in consumerjournals_go_to_queue:
-            self.populate_journal.apply_async(args=[consumerjournal.journal.pk, ],
-                                              countdown=1,
-                                              serializer='pickle')
+            self.populate_journal.apply_async(
+                args=[consumerjournal.journal.pk, ],
+                countdown=1)
 
 
 class ConsumerPubmed(Consumer):
@@ -639,7 +639,7 @@ class ConsumerJournal(models.Model):
         ordering = ['last_date_cons']
 
     def __str__(self):
-        return self.consumer.name
+        return '{0}@{1}'.format(self.journal.short_title, self.consumer.name)
 
     def activate(self):
         if self.status == 'inactive':

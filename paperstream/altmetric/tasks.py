@@ -12,6 +12,7 @@ from config.celery import celery_app as app
 from .models import AltmetricModel
 
 
+@app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM)
 def update_altmetric_periodic():
     """Update altmetric"""
 
@@ -29,7 +30,7 @@ def update_altmetric_periodic():
         time.sleep(1)  # wait 1 sec
 
 
-@app.task()
+@app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM)
 def update_altmetric(paper_pk):
     """Celery task for altmetric update"""
     altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper_pk)
