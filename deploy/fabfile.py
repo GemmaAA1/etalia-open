@@ -34,7 +34,6 @@ import os
 import re
 import string
 import random
-import sys
 from boto.ec2 import connect_to_region
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
