@@ -323,33 +323,21 @@ CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
 
+# Celery routes are defined at the app level with the below routing_key
+# CELERY_ROUTES = {
+# }
 CONS_ROUTING_KEY_STEM = 'consumers'
 NLP_ROUTING_KEY_STEM = 'nlp'
 ALTMETRIC_ROUTING_KEY_STEM = 'altmetric'
 
-CELERY_ROUTES = {
-    # 'paperstream.consumers.models.populate_journal': {
-    #     'queue': 'consumers',
-    #     'routing_key': 'consumers',
-    # },
-    # 'paperstream.consumers.tasks.pubmed_run_all': {
-    #     'queue': 'consumers',
-    #     'routing_key': 'consumers',
-    # },
-    # 'paperstream.altmetric.tasks.update_altmetric_periodic': {
-    #     'queue': 'altmetric',
-    #     'routing_key': 'altmetric.periodic',
-    # },
-}
-
 CELERYBEAT_SCHEDULE = {
-    'pubmed-once-a-day': {
-        'task': 'paperstream.consumers.tasks.pubmed_run_all',
-        'schedule': crontab(minute=0, hour=0),  # daily at UCT+0
-    },
     'update-altmetric': {
         'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
-        'schedule': crontab(minute=0, hour=6),  # daily at UTC+6
+        'schedule': crontab(minute=0, hour=0),  # daily at UTC+6
+    },
+    'pubmed-once-a-day': {
+        'task': 'paperstream.consumers.tasks.pubmed_run_all',
+        'schedule': crontab(minute=0, hour=6),  # daily at UCT+0
     },
     'arxiv-once-a-day': {
         'task': 'paperstream.consumers.tasks.arxiv_run_all',
