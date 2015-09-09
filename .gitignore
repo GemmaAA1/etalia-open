@@ -74,4 +74,5 @@ fabfile/
 staticfiles/
 deploy/.envs
 deploy/.ssh
+deploy/aws_cheats.txt
 scripts/heroku_cheats
