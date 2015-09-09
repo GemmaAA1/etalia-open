@@ -59,7 +59,7 @@ class AltmetricModel(TimeStampedModel):
     readers_mendeley = models.IntegerField(default=0)
 
     class Meta:
-        order_by = ('score', )
+        ordering = ['-score']
 
     def __str__(self):
         return '{short_title}: {score}'.format(
