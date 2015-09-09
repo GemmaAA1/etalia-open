@@ -58,6 +58,9 @@ class AltmetricModel(TimeStampedModel):
     readers_citeulike = models.IntegerField(default=0)
     readers_mendeley = models.IntegerField(default=0)
 
+    class Meta:
+        order_by = ('score', )
+
     def __str__(self):
         return '{short_title}: {score}'.format(
             short_title=self.paper.short_title,
@@ -133,6 +136,7 @@ class AltmetricModel(TimeStampedModel):
 
         # save
         self.save()
+
 
 
 
