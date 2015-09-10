@@ -113,7 +113,7 @@ def deploy():
         update_rabbit_user()
         update_gunicorn_conf()
     update_supervisor_conf()
-    reload_supervisor()
+    restart_supervisor()
     reb = update_hosts_file(env.stack_string)
     if reb:
         reboot_instance()
@@ -378,16 +378,19 @@ def update_supervisor_conf():
     if files.exists(supervisor_file):
         run_as_root('rm ' + supervisor_file)
     # upload template
-    files.upload_template('supervisord.template.conf', supervisor_file,
-        context={'SITENAME': env.stack_site,
-                 'USER': env.user,
-                 'STACK': env.stack,
-                 'STACK_DIR': env.stack_dir,
-                 'SOURCE_DIR': env.source_dir,
-                 'ENV_DIR': env.env_dir,
-                 'CONF_DIR': env.conf_dir,
-                 'ROLES': get_host_roles(),
-                 }, use_sudo=True, use_jinja=True)
+    with settings(_workon()):  # to get env var
+        flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
+        files.upload_template('supervisord.template.conf', supervisor_file,
+            context={'SITENAME': env.stack_site,
+                     'USER': env.user,
+                     'STACK': env.stack,
+                     'STACK_DIR': env.stack_dir,
+                     'SOURCE_DIR': env.source_dir,
+                     'ENV_DIR': env.env_dir,
+                     'CONF_DIR': env.conf_dir,
+                     'ROLES': get_host_roles(),
+                     'USERS_PASSWORDS_FLOWER': flower_users_passwords,
+                     }, use_sudo=True, use_jinja=True)
 
     # Copy env variable from postactivate
     run('python {source_dir}/deploy/cp_p2s.py -i {env_dir}/bin/postactivate -o {supervisor}'.format(
@@ -402,6 +405,8 @@ def update_supervisor_conf():
         conf_dir=env.conf_dir,
     ))
 
+@task
+def restart_supervisor():
     # restart supervisor
     pid = run('pgrep supervisor')
     run_as_root('kill -HUP {pid}'.format(pid=pid))
@@ -414,8 +419,8 @@ def reload_nginx():
 
 @task
 def reload_supervisor():
-    run_as_root('supervisorctl -c staging/supervisor/supervisord.conf reread')
-    run_as_root('supervisorctl -c staging/supervisor/supervisord.conf update')
+    run_as_root('supervisorctl reread')
+    run_as_root('supervisorctl update')
 
 
 @task
