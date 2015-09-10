@@ -25,10 +25,10 @@ def update_altmetric_periodic():
         .values_list('pk', flat=True)[:settings.ALTMETRIC_MAX_PAPERS_PER_PERIOD]
 
     for pk in ps_pks:
-        update_altmetric.apply_async(args=(pk,), countdown=1)
+        update_altmetric.apply_async(args=(pk,))
 
 
-@app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM, rate_limit='1/s')
+@app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM, rate_limit=1)
 def update_altmetric(paper_pk):
     """Celery task for altmetric update"""
     altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper_pk)
