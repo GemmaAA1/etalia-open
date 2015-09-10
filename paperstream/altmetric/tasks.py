@@ -26,8 +26,7 @@ def update_altmetric_periodic():
         .values_list('pk', flat=True)[:settings.ALTMETRIC_MAX_PAPERS_PER_PERIOD]
 
     for pk in ps_pks:
-        update_altmetric.delay(pk)
-        time.sleep(1)  # wait 1 sec
+        update_altmetric.apply_async(pk, countdown=1)
 
 
 @app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM)
