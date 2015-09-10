@@ -587,7 +587,7 @@ class ConsumerArxiv(Consumer):
                             count=count,
                             ret_max=self.ret_max)
                 resp = requests.get(query)
-                time.sleep(1)
+                time.sleep(1)  # for politeness
                 data = feedparser.parse(resp.text)
                 total_entries = int(data['feed']['opensearch_totalresults'])
                 if len(data.entries) < 25 and \

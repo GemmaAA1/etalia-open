@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import time
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
@@ -26,10 +25,10 @@ def update_altmetric_periodic():
         .values_list('pk', flat=True)[:settings.ALTMETRIC_MAX_PAPERS_PER_PERIOD]
 
     for pk in ps_pks:
-        update_altmetric.apply_async(pk, countdown=1)
+        update_altmetric.apply_async(args=(pk,), countdown=1)
 
 
-@app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM)
+@app.task(routing_key=settings.ALTMETRIC_ROUTING_KEY_STEM, rate_limit='1/s')
 def update_altmetric(paper_pk):
     """Celery task for altmetric update"""
     altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper_pk)

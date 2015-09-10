@@ -30,6 +30,12 @@ STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
 
+#
+EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
+MAILGUN_ACCESS_KEY = 'key-9b74a707d80624254f6d538bc841c439  '
+MAILGUN_SERVER_NAME = 'staging-stack.paperstream.io'
+
+
 # Celery
 BROKER_URL = 'amqp://{username}:{password}@{host}:5672//'.format(
     username=env.str('RABBITMQ_USERNAME'),
