@@ -301,6 +301,10 @@ ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
 ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600  # slightly less than each second in a a day
 
 
+# LANDING
+# ------------------------------------------------------------------------------
+LANDING_ACTIVE_PAPERS_NUMBER = 3
+LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
 
 # CELERY
 # ------------------------------------------------------------------------------

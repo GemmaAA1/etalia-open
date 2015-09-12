@@ -1,5 +1,5 @@
-from consumers.models import ConsumerPubmed, ConsumerArxiv
-from library.models import Journal
+from paperstream.consumers.models import ConsumerPubmed, ConsumerArxiv
+from paperstream.library.models import Journal
 
 journals = ['Nature',
             'Science',

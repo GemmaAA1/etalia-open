@@ -16,11 +16,11 @@ class AltmetricModel(TimeStampedModel):
 
     paper = models.OneToOneField(Paper, related_name='altmetric')
 
-    score = models.FloatField(default=0.0)
+    score = models.FloatField(default=0.0, db_index=True)
 
     # altmetric ids
     altmetric_id = models.IntegerField(default=0)
-    altmetric_jid = models.CharField(max_length=32)
+    altmetric_jid = models.CharField(max_length=32, blank=True)
 
     # history
     score_1d = models.FloatField(default=0.0)
@@ -101,7 +101,7 @@ class AltmetricModel(TimeStampedModel):
         if rsp:
             self.score = rsp.get('score')
             self.altmetric_id = rsp.get('altmetric_id')
-            self.altmetric_jid = rsp.get('altmetric_jid')
+            self.altmetric_jid = rsp.get('altmetric_jid', '')
             self.score_1d = rsp.get('history').get('1d')
             self.score_2d = rsp.get('history').get('2d')
             self.score_3d = rsp.get('history').get('3d')

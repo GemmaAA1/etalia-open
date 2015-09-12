@@ -110,7 +110,7 @@ def register_all_models_and_lshs_tasks():
 
     for model_name in model_names:
         cls = EmbedPaperTask(model_name=model_name)
-        app.task(cls, name='nlp.tasks.embed_paper_{model_name}'.format(
+        app.task(cls, name='paperstream.nlp.tasks.embed_paper_{model_name}'.format(
             model_name=model_name))
 
     # Create lsh related tasks
@@ -118,7 +118,7 @@ def register_all_models_and_lshs_tasks():
         for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
             cls = LSHTask(model_name=model_name, time_lapse=time_lapse,
                           bind=True)
-            app.task(cls, name='nlp.tasks.lsh_{model_name}_{time_lapse}'
+            app.task(cls, name='paperstream.nlp.tasks.lsh_{model_name}_{time_lapse}'
                      .format(model_name=model_name,
                              time_lapse=time_lapse))
 
@@ -134,7 +134,7 @@ def embed_all_models(paper_pk):
     model_names = Model.objects.all().values_list('name', flat=True)
     for model_name in model_names:
         try:
-            embed_task = app.tasks['nlp.tasks.embed_paper_{model_name}'.format(
+            embed_task = app.tasks['paperstream.nlp.tasks.embed_paper_{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Embeding task for {model_name} not defined'.format(

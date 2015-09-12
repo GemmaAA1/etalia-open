@@ -21,7 +21,6 @@
         {% if user.is_authenticated %}
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 {% if "feed" in request.path or "user" in request.path %}
-{#                    add search bo#}
                     <form class="navbar-form navbar-left" role="search">
                         <div class="form-group has-feedback">
                             <input type="text" class="form-control searchbox" placeholder="Search" name="query" value="">
@@ -33,7 +32,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
 {#                        <a href="{% url 'feeds:feed' %}">Feeds</a>#}
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Streams<span class="caret"></span></a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Your Streams<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             {% for feed in user.feeds.all %}
                                 <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>
@@ -62,6 +61,9 @@
             </div>
         {% else %}
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-left">
+                    <li><h3>PaperStream.io</h3></li>
+                </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li>
                         <a href="{% url 'core:home' %}#about">About</a>

@@ -62,7 +62,10 @@
                     </div>
                     <div class="col-lg-3">
                         <div class="neighbors">
-                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>{% endif %}
+                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
+                            {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                            {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                            {% endif %}
                             <div class="title">Similar Papers:</div>
                             {% for neighbor in neighbors %}
                                 <div class="neighbor">
