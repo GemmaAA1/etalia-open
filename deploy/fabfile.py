@@ -80,9 +80,11 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
         'tag:layer': layer,
         'tag:Name': name,
     }
-    env.hosts, env.roles, env.roledefs = _get_public_dns(region, context)
+    env.hosts, env.roles, env.roledefs, tags = _get_public_dns(region, context)
     # store stack used
     setattr(env, 'stack_string', stack)
+    # store tags
+    setattr(env, 'tags', tags)
 
 
 def get_host_roles():
@@ -109,9 +111,8 @@ def deploy():
         update_nginx_conf()
         reload_nginx()
     # job related
-    if env.host_string in env.roledefs.get('jobs', []):
+    if env.tags[env.host_string].get('Name') == 'job1':  # rabbitmq runs on job1
         update_rabbit_user()
-        update_gunicorn_conf()
     update_supervisor_conf()
     restart_supervisor()
     reb = update_hosts_file(env.stack_string)
@@ -187,7 +188,7 @@ def _get_public_dns(region, context):
         roledefs[role] = [host for host in public_dns
                           if tags[host]['layer'] == role]
 
-    return public_dns, roles, roledefs
+    return public_dns, roles, roledefs, tags
 
 
 def _create_connection(region):

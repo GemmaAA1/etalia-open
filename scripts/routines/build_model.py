@@ -12,7 +12,6 @@ with open(path_to_model_file) as stream:
 
 def build(model_name, papers=None):
 
-    check_unique_name(MODELS)
     model_args = [m for m in MODELS if m['name'] == model_name][0]
 
     # Initiate model
@@ -27,9 +26,3 @@ def build(model_name, papers=None):
     model.build_vocab_and_train()
     # Propagate to LSH, journalvector, papervector
     model.propagate()
-
-
-def check_unique_name(models):
-    names = [(i, models['name']) for i, model in enumerate(models)]
-    if not len(names) == len(set(names)):
-        raise AssertionError('MODELS has duplicated names')
