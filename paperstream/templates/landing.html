@@ -97,7 +97,7 @@
                     <p class="lead">Exploring a new field? Changing focus? PaperStream will adapt as you go.</p>
                 </div>
                 <div class="col-lg-5 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive" style="height: 350px" src="{% static '/static/img/bubles.png' %}" alt="">
+                    <img class="img-responsive" src="{% static '/static/img/bubles.png' %}" alt="">
                 </div>
             </div>
 
@@ -121,13 +121,13 @@
                     <h4>This week trending papers:</h4>
                     {% for paper in active_papers %}
                         <div class="row" style="height:70px">
-                            <div class="col-lg-2 col-sm-2">
+                            <div class="col-lg-3 col-sm-3">
                             {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
                             {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
                             {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                             {% endif %}
                             </div>
-                            <div class="col-lg-8 col-sm-10">
+                            <div class="col-lg-9 col-sm-9">
                                 <div><a href="{{ paper.url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a></div>
                                 <div>
                                     {{ paper.print_compact_first_author }}
