@@ -559,7 +559,7 @@ class Model(TimeStampedModel, S3ProgressBarMixin):
             # create a key to keep track of our file in the storage
             k = Key(bucket)
             k.key = key
-            k.set_contents_from_filename(tar_name, cb=callback, num_cb=100)
+            k.set_contents_from_filename(tar_name, cb=self.callback, num_cb=100)
             # remove tar file
             os.remove(tar_name)
             logging.info('↑ {} Upload DONE'.format(self.name))
@@ -580,7 +580,7 @@ class Model(TimeStampedModel, S3ProgressBarMixin):
             tar_path = os.path.join(settings.NLP_MODELS_PATH, key)
             logging.info('↓ {} Download...'.format(self.name))
             item.get_contents_to_filename(tar_path,
-                                          cb=callback,
+                                          cb=self.callback,
                                           num_cb=100)
             logging.info('{} Decompress...'.format(self.name))
             tar = tarfile.open(tar_path, 'r:gz')
@@ -1139,7 +1139,7 @@ class LSH(TimeStampedModel, S3ProgressBarMixin):
             # create a key to keep track of our file in the storage
             k = Key(bucket)
             k.key = key
-            k.set_contents_from_filename(tar_name, cb=callback, num_cb=100)
+            k.set_contents_from_filename(tar_name, cb=self.callback, num_cb=100)
             # remove tar file
             os.remove(tar_name)
             logging.info('↑ {} Upload DONE'.format(self.name))
@@ -1160,7 +1160,7 @@ class LSH(TimeStampedModel, S3ProgressBarMixin):
             tar_path = os.path.join(settings.NLP_LSH_PATH, key)
             logging.info('↓ {} Download...'.format(self.name))
             item.get_contents_to_filename(tar_path,
-                                          cb=callback,
+                                          cb=self.callback,
                                           num_cb=100)
             logging.info('{} Decompress...'.format(self.name))
             tar = tarfile.open(tar_path, 'r')
