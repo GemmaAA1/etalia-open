@@ -346,7 +346,7 @@ class UserSettings(TimeStampedModel):
                                          default=1)
 
     # in days
-    time_lapse = models.IntegerField(default=61,
+    time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
                                      choices=NLP_TIME_LAPSE_CHOICES,
                                      verbose_name='In the past for')
 

@@ -162,7 +162,7 @@ class UserFeed(TimeStampedModel):
         # from LSH
         # Get corresponding LSH task:
         try:
-            lsh_task = capp.tasks['nlp.tasks.lsh_{name}_{time_lapse}'.format(
+            lsh_task = capp.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
                 name=self.user.settings.model.name,
                 time_lapse=self.user.settings.time_lapse)]
         except KeyError:
