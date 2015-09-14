@@ -712,6 +712,17 @@ class ConsumerJournal(models.Model):
                               status='FAI')
             self.save()
 
+    def print_stats(self):
+        tmp = []
+        for stat in self.stats.all():
+            tmp.append('{date}\t{state}\t{fetch}\t{reco}\n'.format(
+                date=stat.datetime,
+                state=stat.status,
+                fetch=stat.number_papers_fetched,
+                reco=stat.number_papers_recorded,
+            ))
+        return ''.join(tmp)
+
 
 class ConsumerJournalStat(models.Model):
     """Table for ConsumerJournal stats"""
@@ -731,3 +742,5 @@ class ConsumerJournalStat(models.Model):
                               choices=(('SUC', 'Success'),
                                        (('FAI'), 'Failed')))
 
+    class Meta:
+        ordering = ['datetime']

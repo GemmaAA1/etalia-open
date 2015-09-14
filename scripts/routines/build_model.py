@@ -17,12 +17,12 @@ def build(model_name, papers=None):
     # Initiate model
     model = Model.objects.create(**model_args)
     # dump papers data
-    if not papers:
-        papers = Paper.objects.filter(is_trusted=True,
-                                      title__regex = r'^.{5}.*',
-                                      abstract__regex = r'^.{10}.*')
-        # papers = Paper.objects.all()
-    model.dump(papers)
+    # if not papers:
+    #     papers = Paper.objects.filter(is_trusted=True,
+    #                                   title__regex = r'^.{5}.*',
+    #                                   abstract__regex = r'^.{10}.*')
+    #     # papers = Paper.objects.all()
+    # model.dump(papers)
     model.build_vocab_and_train()
     # Propagate to LSH, journalvector, papervector
-    model.propagate()
+    # model.propagate()
