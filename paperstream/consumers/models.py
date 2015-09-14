@@ -714,7 +714,7 @@ class ConsumerJournal(models.Model):
             self.save()
 
     def print_stats(self):
-        tmp = []
+        tmp = ['Date\tState\t# Fetched\t# Recorded\n']
         for stat in self.stats.all():
             tmp.append('{date}\t{state}\t{fetch}\t{reco}\n'.format(
                 date=stat.datetime,
@@ -722,7 +722,7 @@ class ConsumerJournal(models.Model):
                 fetch=stat.number_papers_fetched,
                 reco=stat.number_papers_recorded,
             ))
-        return ''.join(tmp)
+        print(''.join(tmp))
 
 
 class ConsumerJournalStat(models.Model):

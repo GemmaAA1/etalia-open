@@ -9,7 +9,7 @@ Two stacks are defined:
 Each stack has has 3 layers:
     - a Postgres db (host on AWS RDS)
     - apps
-    - jobs
+    - jobs (one master (JOB_MASTER) and satellites)
 
 Each instance is tagged accordingly. For example, an instance with tags
 {'site': 'staging', 'layer': 'jobs', 'Name': 'job1'} corresponds to an instance
@@ -51,7 +51,7 @@ REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'
 VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
-
+JOB_MASTER = 'job1'
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -111,8 +111,7 @@ def deploy():
         update_nginx_conf()
         reload_nginx()
     # job related
-    if env.tags[env.host_string].get('Name') == 'job1':  # rabbitmq runs on job1
-        update_rabbit_user()
+    update_rabbit_user()
     update_supervisor_conf()
     restart_supervisor()
     reb = update_hosts_file(env.stack_string)
@@ -351,19 +350,20 @@ def update_gunicorn_conf():
 @task
 @roles('jobs')
 def update_rabbit_user():
-    """Set rabbit user"""
-    with settings(_workon()):  # to get env var
-        # if rabbitmq not installed, install
-        if not files.exists("/usr/sbin/rabbitmq-server"):
-            fabtools.require.deb.packages(['rabbitmq-server'])
-        # test if user exists:
-        list_users = run_as_root('rabbitmqctl list_users')
-        user = run_as_root('echo $RABBITMQ_USERNAME')
-        if user not in list_users:
-            run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
-            run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
-        if 'guest' in list_users:
-            run_as_root("rabbitmqctl delete_user guest")
+    """Set rabbit user on job_master"""
+    if env.tags[env.host_string].get('Name') == JOB_MASTER:
+        with settings(_workon()):  # to get env var
+            # if rabbitmq not installed, install
+            if not files.exists("/usr/sbin/rabbitmq-server"):
+                fabtools.require.deb.packages(['rabbitmq-server'])
+            # test if user exists:
+            list_users = run_as_root('rabbitmqctl list_users')
+            user = run_as_root('echo $RABBITMQ_USERNAME')
+            if user not in list_users:
+                run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
+                run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
+            if 'guest' in list_users:
+                run_as_root("rabbitmqctl delete_user guest")
 
 
 @task
@@ -381,6 +381,10 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
+        if env.tags[env.host_string].get('Name') == JOB_MASTER:
+            job_master = True
+        else:
+            job_master = False
         files.upload_template('supervisord.template.conf', supervisor_file,
             context={'SITENAME': env.stack_site,
                      'USER': env.user,
@@ -391,6 +395,7 @@ def update_supervisor_conf():
                      'CONF_DIR': env.conf_dir,
                      'ROLES': get_host_roles(),
                      'USERS_PASSWORDS_FLOWER': flower_users_passwords,
+                     'JOB_MASTER': job_master,
                      }, use_sudo=True, use_jinja=True)
 
     # Copy env variable from postactivate
