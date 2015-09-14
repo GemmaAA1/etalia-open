@@ -639,7 +639,8 @@ class ConsumerJournal(models.Model):
         ordering = ['last_date_cons']
 
     def __str__(self):
-        return '{0}@{1}'.format(self.journal.short_title, self.consumer.name)
+        return '{0}@{1}'.format(self.journal.short_title or self.journal.title,
+                                self.consumer.name)
 
     def activate(self):
         if self.status == 'inactive':
