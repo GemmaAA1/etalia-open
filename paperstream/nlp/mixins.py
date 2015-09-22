@@ -31,7 +31,7 @@ class S3Mixin(object):
             self.pbar = None
 
     def push_to_s3(self):
-        """Upload model to Amazon s3 bucket"""
+        """Upload object to Amazon s3 bucket"""
         try:
             bucket_name = self.BUCKET_NAME
             conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID,
@@ -42,12 +42,12 @@ class S3Mixin(object):
             key = '{}.tar.gz'.format(self.name)
             tar_name = os.path.join(self.PATH, key)
             tar = tarfile.open(tar_name, 'w:gz')
-            logging.info('{} Compress...'.format(self.name))
+            logging.info('{} Compressing...'.format(self.name))
             for filename in glob.glob(os.path.join(self.PATH,
                                                    '{0}.mod*'.format(self.name))):
                 tar.add(filename, arcname=os.path.split(filename)[1])
             tar.close()
-            logging.info('↑ {} Upload...'.format(self.name))
+            logging.info('↑ {} Uploading...'.format(self.name))
 
             # create a key to keep track of our file in the storage
             k = Key(bucket)
@@ -61,7 +61,7 @@ class S3Mixin(object):
             raise
 
     def download_from_s3(self):
-        """Download model from Amazon s3 bucket"""
+        """Download object from Amazon s3 bucket"""
         try:
             bucket_name = self.BUCKET_NAME
             conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID,
@@ -70,16 +70,32 @@ class S3Mixin(object):
             key = self.name + '.tar.gz'
             item = bucket.get_key(key)
             tar_path = os.path.join(self.PATH, key)
-            logging.info('↓ {} Download...'.format(self.name))
+            logging.info('↓ {} Downloading...'.format(self.name))
             item.get_contents_to_filename(tar_path,
                                           cb=self.callback,
                                           num_cb=100)
-            logging.info('{} Decompress...'.format(self.name))
+            logging.info('{} Decompressing...'.format(self.name))
             tar = tarfile.open(tar_path, 'r:gz')
             tar.extractall(self.PATH)
             tar.close()
             # remove tar file
             os.remove(tar_path)
             logging.info('{} Done'.format(self.name))
+        except Exception:
+            raise
+
+    def delete_on_s3(self):
+        """Delete object from Amazon s3 bucket"""
+        try:
+            bucket_name = self.BUCKET_NAME
+            conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID,
+                                   self.AWS_SECRET_ACCESS_KEY)
+            bucket = conn.get_bucket(bucket_name)
+            key = self.name + '.tar.gz'
+            item = bucket.get_key(key)
+            if item:
+                logging.info('{} Deleting...'.format(self.name))
+                item.delete()
+                logging.info('{} Done'.format(self.name))
         except Exception:
             raise

@@ -261,6 +261,12 @@ class Model(TimeStampedModel, S3Mixin):
                 os.remove(filename)
         except IOError:
             pass
+
+        # delete on amazon s3
+        try:
+            self.delete_on_s3()
+        except IOError:
+            pass
         super(Model, self).delete(*args, **kwargs)
 
     def dump(self, papers, data_path=None):
@@ -402,6 +408,7 @@ class Model(TimeStampedModel, S3Mixin):
 
     def build_lshs(self):
         """Build Local Sensitive Hashing data structure"""
+        # Delete previously save data
         LSH.objects.filter(model=self).delete()
         # Build time-lapse related LSH
         for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
@@ -750,12 +757,18 @@ class LSH(TimeStampedModel, S3Mixin):
             raise InvalidState('LSH state is {0}'.format(self.state))
 
     def delete(self, *args, **kwargs):
+        # delete on local volume
         try:
             os.remove(
                 os.path.join(settings.NLP_LSH_PATH,
                              '{model_name}-tl{time_lapse}.lsh'.format(
                                 model_name=self.model.name,
                                 time_lapse=self.time_lapse)))
+        except IOError:
+            pass
+        # delete on amazon s3
+        try:
+            self.delete_on_s3()
         except IOError:
             pass
         super(LSH, self).delete(*args, **kwargs)
