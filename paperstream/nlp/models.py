@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class ModelManager(models.Manager):
+
     def create(self, **kwargs):
         # starting popping text_fields key if any
         default_text_fields = [field[0] for field in FIELDS_FOR_MODEL]
@@ -737,6 +738,12 @@ class LSH(TimeStampedModel, S3Mixin):
 
     objects = LSHManager()
 
+    @property
+    def name(self):
+        return '{model_name}-tl{time_lapse}.lsh'.format(
+            model_name=self.model.name,
+            time_lapse=self.time_lapse)
+
     class Meta:
         unique_together = ('model', 'time_lapse')
 
@@ -748,10 +755,7 @@ class LSH(TimeStampedModel, S3Mixin):
             # save files to local volume
             if not os.path.exists(settings.NLP_LSH_PATH):
                 os.makedirs(settings.NLP_LSH_PATH)
-            joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
-                '{model_name}-tl{time_lapse}.lsh'.format(
-                    model_name=self.model.name,
-                    time_lapse=self.time_lapse)))
+            joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH, self.name))
 
             # push files to s3
             self.push_to_s3()

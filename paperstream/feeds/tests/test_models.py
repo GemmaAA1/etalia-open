@@ -12,6 +12,7 @@ from ..models import UserFeed, UserFeedVector, UserFeedMatchPaper, \
 from paperstream.library.models import Paper
 from paperstream.nlp.models import PaperVectors
 
+
 class UserFeedBasicTest(UserFeedTestCase):
 
     def setUp(self):
