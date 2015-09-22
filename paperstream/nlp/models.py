@@ -416,8 +416,9 @@ class Model(TimeStampedModel, S3Mixin):
         LSH.objects.filter(model=self).delete()
         # Build time-lapse related LSH
         for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
-            LSH.objects.create(model=self,
-                               time_lapse=time_lapse)
+            lsh = LSH.objects.create(model=self,
+                                     time_lapse=time_lapse)
+            lsh.full_update()
 
     def propagate(self):
         """Save Journal and Paper vectors and build LSHs
@@ -687,14 +688,8 @@ class JournalVectors(TimeStampedModel):
     def get_vector(self):
         return self.vector[:self.model.size]
 
-class LSHManager(models.Manager):
 
-    def create(self, **kwargs):
-        """Return LSH instance, updated"""
-        obj = super(LSHManager, self).create(**kwargs)
-        # Init lsh
-        obj.full_update(**kwargs)
-        return obj
+class LSHManager(models.Manager):
 
     def get(self, **kwargs):
         # print('Warning: Not loading LSH object. Use load() instead')
