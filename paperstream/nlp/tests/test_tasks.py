@@ -107,7 +107,7 @@ class EmbedTaskTest(NLPDataExtendedTestCase):
         register_all_models_and_lshs_tasks()
 
     def test_can_run_embed_paper_task(self):
-        embed_task = app.tasks['nlp.tasks.embed_paper_{model_name}'
+        embed_task = app.tasks['paperstream.nlp.tasks.embed_paper_{model_name}'
             .format(model_name=self.model.name)]
         self.assertIsNone(self.new_paper.vectors.first())
         rst = embed_task.delay(self.new_paper.pk)
@@ -144,31 +144,31 @@ class LSHTaskTest(NLPDataExtendedTestCase):
         register_all_models_and_lshs_tasks()
 
     def test_update_task(self):
-        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_{time_lapse}'.format(
+        lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{model_name}_{time_lapse}'.format(
             model_name=self.model.name, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])]
         res = lsh_task.delay('update')
         self.assertTrue(res.successful())
 
     def test_update_partial_task(self):
-        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
+        lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
         res = lsh_task.delay('update')
         self.assertTrue(res.successful())
 
     def test_full_update_task(self):
-        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
+        lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
         res = lsh_task.delay('full_update')
         self.assertTrue(res.successful())
 
     def test_populate_neighbors_task(self):
-        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
+        lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
         res = lsh_task.delay(self.paper.pk, 'populate_neighbors')
         self.assertTrue(res.successful())
 
     def test_k_neighbors_task(self):
-        lsh_task = app.tasks['nlp.tasks.lsh_{model_name}_-1'.format(
+        lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{model_name}_-1'.format(
             model_name=self.model.name)]
         pks = self.papers.values_list('pk', flat=True)
         model_pk = self.model.pk

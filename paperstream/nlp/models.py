@@ -82,7 +82,8 @@ class ModelManager(models.Manager):
             # if not on volume try download from s3
             if not os.path.isfile(os.path.join(settings.NLP_MODELS_PATH,
                                                '{}.mod'.format(obj.name))):
-                obj.download_from_s3()
+                if getattr(settings, 'NLP_MODELS_BUCKET_NAME', ''):
+                    obj.pull_from_s3()
             obj._doc2vec = Doc2Vec.load(os.path.join(
                 settings.NLP_MODELS_PATH, '{0}.mod'.format(obj.name)))
         except EnvironmentError:      # OSError or IOError...
@@ -95,10 +96,10 @@ class Model(TimeStampedModel, S3Mixin):
     """
 
     # For S3 Mixin
-    BUCKET_NAME = settings.NLP_MODELS_BUCKET_NAME
-    PATH = settings.NLP_MODELS_PATH
-    AWS_ACCESS_KEY_ID = settings.DJANGO_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = settings.DJANGO_AWS_SECRET_ACCESS_KEY
+    BUCKET_NAME = getattr(settings, 'NLP_MODELS_BUCKET_NAME', '')
+    PATH = getattr(settings, 'NLP_MODELS_PATH', '')
+    AWS_ACCESS_KEY_ID = getattr(settings, 'DJANGO_AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = getattr(settings, 'DJANGO_AWS_SECRET_ACCESS_KEY', '')
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
@@ -255,7 +256,8 @@ class Model(TimeStampedModel, S3Mixin):
             os.path.join(settings.NLP_MODELS_PATH,
                          '{0}.mod'.format(self.name)))
         # push files to s3
-        self.push_to_s3()
+        if self.BUCKET_NAME:
+            self.push_to_s3()
         # save to db
         self.save_db_only(*args, **kwargs)
 
@@ -269,7 +271,8 @@ class Model(TimeStampedModel, S3Mixin):
 
         # delete on amazon s3
         try:
-            self.delete_on_s3()
+            if self.BUCKET_NAME:
+                self.delete_on_s3()
         except IOError:
             pass
         super(Model, self).delete(*args, **kwargs)
@@ -701,11 +704,13 @@ class LSHManager(models.Manager):
         obj = super(LSHManager, self).get(**kwargs)
         try:
             # if not on volume try download from s3
+
             if not os.path.isfile(os.path.join(settings.NLP_LSH_PATH,
                                                '{model_name}-tl{time_lapse}.lsh'.format(
                                                model_name=obj.model.name,
                                                time_lapse=obj.time_lapse))):
-                obj.download_from_s3()
+                if getattr(settings, 'NLP_LSH_BUCKET_NAME', ''):
+                    obj.pull_from_s3()
             obj.lsh = joblib.load(
                 os.path.join(settings.NLP_LSH_PATH,
                              '{model_name}-tl{time_lapse}.lsh'.format(
@@ -721,10 +726,10 @@ class LSH(TimeStampedModel, S3Mixin):
     """Local Sensitive Hashing to retrieve approximate k-neighbors"""
 
     # For S3 Mixin
-    BUCKET_NAME = settings.NLP_LSH_BUCKET_NAME
-    PATH = settings.NLP_LSH_PATH
-    AWS_ACCESS_KEY_ID = settings.DJANGO_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = settings.DJANGO_AWS_SECRET_ACCESS_KEY
+    BUCKET_NAME = getattr(settings, 'NLP_LSH_BUCKET_NAME', '')
+    PATH = getattr(settings, 'NLP_LSH_PATH', '')
+    AWS_ACCESS_KEY_ID = getattr(settings, 'DJANGO_AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = getattr(settings, 'DJANGO_AWS_SECRET_ACCESS_KEY', '')
 
     model = models.ForeignKey(Model, related_name='lsh')
 
@@ -758,7 +763,8 @@ class LSH(TimeStampedModel, S3Mixin):
             joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH, self.name))
 
             # push files to s3
-            self.push_to_s3()
+            if self.BUCKET_NAME:
+                self.push_to_s3()
             # save to db
             self.save_db_only()
         else:
@@ -779,7 +785,8 @@ class LSH(TimeStampedModel, S3Mixin):
             pass
         # delete on amazon s3
         try:
-            self.delete_on_s3()
+            if self.BUCKET_NAME:
+                self.delete_on_s3()
         except IOError:
             pass
         super(LSH, self).delete(*args, **kwargs)

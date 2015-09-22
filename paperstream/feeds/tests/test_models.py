@@ -15,9 +15,6 @@ from paperstream.nlp.models import PaperVectors
 
 class UserFeedBasicTest(UserFeedTestCase):
 
-    def setUp(self):
-        super(UserFeedBasicTest, self).setUp()
-
     def test_userfeed_can_be_instantiated(self):
         UserFeed(name='test', user=self.user)
 

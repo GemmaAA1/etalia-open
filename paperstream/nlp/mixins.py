@@ -60,7 +60,7 @@ class S3Mixin(object):
         except Exception:
             raise
 
-    def download_from_s3(self):
+    def pull_from_s3(self):
         """Download object from Amazon s3 bucket"""
         try:
             bucket_name = self.BUCKET_NAME
