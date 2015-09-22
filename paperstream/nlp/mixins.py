@@ -70,7 +70,8 @@ class S3Mixin(object):
             key = self.name + '.tar.gz'
             item = bucket.get_key(key)
             tar_path = os.path.join(self.PATH, key)
-            logging.info('↓ {} Downloading...'.format(self.name))
+            logging.info('↓ {0} Downloading to {1}...'.format(self.name,
+                                                              self.PATH))
             item.get_contents_to_filename(tar_path,
                                           cb=self.callback,
                                           num_cb=100)

@@ -247,12 +247,16 @@ class Model(TimeStampedModel, S3Mixin):
         super(Model, self).save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        super(Model, self).save(*args, **kwargs)
+        # save files to local volume
         if not os.path.exists(settings.NLP_MODELS_PATH):
             os.makedirs(settings.NLP_MODELS_PATH)
         self._doc2vec.save(
             os.path.join(settings.NLP_MODELS_PATH,
                          '{0}.mod'.format(self.name)))
+        # push files to s3
+        self.push_to_s3()
+        # save to db
+        self.save_db_only(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         try:
@@ -746,15 +750,23 @@ class LSH(TimeStampedModel, S3Mixin):
 
     def save(self, *args, **kwargs):
         if not self.state == 'BUS':
+            # save files to local volume
             if not os.path.exists(settings.NLP_LSH_PATH):
                 os.makedirs(settings.NLP_LSH_PATH)
             joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
                 '{model_name}-tl{time_lapse}.lsh'.format(
                     model_name=self.model.name,
                     time_lapse=self.time_lapse)))
+
+            # push files to s3
+            self.push_to_s3()
+            # save to db
             self.save_db_only()
         else:
             raise InvalidState('LSH state is {0}'.format(self.state))
+
+    def save_db_only(self, *args, **kwargs):
+        super(LSH, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         # delete on local volume
@@ -772,9 +784,6 @@ class LSH(TimeStampedModel, S3Mixin):
         except IOError:
             pass
         super(LSH, self).delete(*args, **kwargs)
-
-    def save_db_only(self, *args, **kwargs):
-        super(LSH, self).save(*args, **kwargs)
 
     def set_state(self, state):
         self.state = state
