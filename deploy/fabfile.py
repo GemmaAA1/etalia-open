@@ -111,7 +111,8 @@ def deploy():
         update_nginx_conf()
         reload_nginx()
     # job related
-    update_rabbit_user()
+    if env.host_string in env.roledefs.get('jobs', []):
+        update_rabbit_user()
     update_supervisor_conf()
     restart_supervisor()
     reb = update_hosts_file(env.stack_string)

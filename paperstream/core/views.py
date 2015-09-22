@@ -13,11 +13,13 @@ def home(request):
     if request.user.is_authenticated():
         return redirect('feeds:main')
     else:
+        # Get some trending altmetric papers
         d = timezone.datetime.now().date() - \
             timezone.timedelta(days=settings.LANDING_ACTIVE_PAPERS_TIME_IN_DAYS)
         ten_recent_most_active_paper = AltmetricModel.objects\
             .filter(Q(paper__date_ep__gt=d) |
-                    (Q(paper__date_ep=None) & Q(paper__date_pp__gt=d)))[:settings.LANDING_ACTIVE_PAPERS_NUMBER]
+                    (Q(paper__date_ep=None) & Q(paper__date_pp__gt=d)))\
+            [:settings.LANDING_ACTIVE_PAPERS_NUMBER]
         papers = [p.paper for p in ten_recent_most_active_paper]
         context = {'active_papers': papers}
         return render(request, 'landing.html', context=context)

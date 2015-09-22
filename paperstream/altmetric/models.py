@@ -83,7 +83,6 @@ class AltmetricModel(TimeStampedModel):
         return cbs
 
     def update(self):
-
         rsp = None
         a = Altmetric(settings.ALTMETRIC_API_KEY)
         ids = self.paper.get_ids()

@@ -103,7 +103,7 @@ class LSHTask(Task):
         return self.lsh.tasks(*args, **kwargs)
 
 
-# Model based tasks factory
+# Instantiate all task for model and LSH
 def register_all_models_and_lshs_tasks():
     # Create embedding task from model
     model_names = Model.objects.all().values_list('name', flat=True)
@@ -141,3 +141,4 @@ def embed_all_models(paper_pk):
                 model_name=model_name))
             continue
         embed_task.apply_async(args=(paper_pk,))
+

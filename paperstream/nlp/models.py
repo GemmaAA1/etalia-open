@@ -29,7 +29,7 @@ from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
 from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
     model_attr_getter, model_attr_setter
 from .exceptions import InvalidState
-from .mixins import S3ProgressBarMixin
+from .mixins import S3Mixin
 
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector, pad_neighbors
@@ -78,7 +78,9 @@ class ModelManager(models.Manager):
     def load(self, **kwargs):
         obj = super(ModelManager, self).get(**kwargs)
         try:
-            if not os.path.isfile(os.path.join(settings.NLP_MODELS_PATH, '{}.mod'.format(obj.name))):
+            # if not on volume try download from s3
+            if not os.path.isfile(os.path.join(settings.NLP_MODELS_PATH,
+                                               '{}.mod'.format(obj.name))):
                 obj.download_from_s3()
             obj._doc2vec = Doc2Vec.load(os.path.join(
                 settings.NLP_MODELS_PATH, '{0}.mod'.format(obj.name)))
@@ -87,9 +89,15 @@ class ModelManager(models.Manager):
         return obj
 
 
-class Model(TimeStampedModel, S3ProgressBarMixin):
+class Model(TimeStampedModel, S3Mixin):
     """Natural Language Processing Class based on Doc2Vec from Gensim
     """
+
+    # For S3 Mixin
+    BUCKET_NAME = settings.NLP_MODELS_BUCKET_NAME
+    PATH = settings.NLP_MODELS_PATH
+    AWS_ACCESS_KEY_ID = settings.DJANGO_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = settings.DJANGO_AWS_SECRET_ACCESS_KEY
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
@@ -536,62 +544,6 @@ class Model(TimeStampedModel, S3ProgressBarMixin):
             model = cls.objects.get(name=model_name)
             model.infer_papers(papers, **kwargs)
 
-    def push_to_s3(self):
-        """Upload model to Amazon s3 bucket"""
-
-        try:
-            bucket_name = settings.NLP_MODELS_BUCKET_NAME
-            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
-                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
-            bucket = conn.get_bucket(bucket_name)
-
-            # Compress file
-            key = '{}.tar.gz'.format(self.name)
-            tar_name = os.path.join(settings.NLP_MODELS_PATH, key)
-            tar = tarfile.open(tar_name, 'w:gz')
-            logging.info('{} Compress...'.format(self.name))
-            for filename in glob.glob(os.path.join(settings.NLP_MODELS_PATH,
-                                                   '{0}.mod*'.format(self.name))):
-                tar.add(filename, arcname=os.path.split(filename)[1])
-            tar.close()
-            logging.info('↑ {} Upload...'.format(self.name))
-
-            # create a key to keep track of our file in the storage
-            k = Key(bucket)
-            k.key = key
-            k.set_contents_from_filename(tar_name, cb=self.callback, num_cb=100)
-            # remove tar file
-            os.remove(tar_name)
-            logging.info('↑ {} Upload DONE'.format(self.name))
-
-        except Exception:
-            raise
-
-    def download_from_s3(self):
-        """Download model from Amazon s3 bucket"""
-
-        try:
-            bucket_name = settings.NLP_MODELS_BUCKET_NAME
-            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
-                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
-            bucket = conn.get_bucket(bucket_name)
-            key = self.name + '.tar.gz'
-            item = bucket.get_key(key)
-            tar_path = os.path.join(settings.NLP_MODELS_PATH, key)
-            logging.info('↓ {} Download...'.format(self.name))
-            item.get_contents_to_filename(tar_path,
-                                          cb=self.callback,
-                                          num_cb=100)
-            logging.info('{} Decompress...'.format(self.name))
-            tar = tarfile.open(tar_path, 'r:gz')
-            tar.extractall(settings.NLP_MODELS_PATH)
-            tar.close()
-            # remove tar file
-            os.remove(tar_path)
-            logging.info('{} Done'.format(self.name))
-        except Exception:
-            raise
-
 
 class TextField(TimeStampedModel):
     """Store which fields of paper and related data are used in model training
@@ -741,18 +693,31 @@ class LSHManager(models.Manager):
         """Return LSH instance loaded from file"""
         obj = super(LSHManager, self).get(**kwargs)
         try:
+            # if not on volume try download from s3
+            if not os.path.isfile(os.path.join(settings.NLP_LSH_PATH,
+                                               '{model_name}-tl{time_lapse}.lsh'.format(
+                                               model_name=obj.model.name,
+                                               time_lapse=obj.time_lapse))):
+                obj.download_from_s3()
             obj.lsh = joblib.load(
                 os.path.join(settings.NLP_LSH_PATH,
                              '{model_name}-tl{time_lapse}.lsh'.format(
                                  model_name=obj.model.name,
                                  time_lapse=obj.time_lapse)))
-        except IOError:
+        except EnvironmentError:      # OSError or IOError...
             raise
+
         return obj
 
 
-class LSH(TimeStampedModel, S3ProgressBarMixin):
+class LSH(TimeStampedModel, S3Mixin):
     """Local Sensitive Hashing to retrieve approximate k-neighbors"""
+
+    # For S3 Mixin
+    BUCKET_NAME = settings.NLP_LSH_BUCKET_NAME
+    PATH = settings.NLP_LSH_PATH
+    AWS_ACCESS_KEY_ID = settings.DJANGO_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = settings.DJANGO_AWS_SECRET_ACCESS_KEY
 
     model = models.ForeignKey(Model, related_name='lsh')
 
@@ -1115,62 +1080,6 @@ class LSH(TimeStampedModel, S3ProgressBarMixin):
 
         indices = self.k_neighbors(mat, **kwargs)
         return indices.tolist()
-
-    def push_to_s3(self):
-        """Upload model to Amazon s3 bucket"""
-
-        try:
-            bucket_name = settings.NLP_LSH_BUCKET_NAME
-            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
-                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
-            bucket = conn.get_bucket(bucket_name)
-
-            # Compress file
-            key = '{}.tar.gz'.format(self.model.name + str(self.time_lapse))
-            tar_name = os.path.join(settings.NLP_LSH_PATH, key)
-            tar = tarfile.open(tar_name, 'w:gz')
-            logging.info('{} Compress...'.format(self.name))
-            for filename in glob.glob(os.path.join(settings.NLP_LSH_PATH,
-                                                   '{}'.format(self.model.name + str(self.time_lapse)))):
-                tar.add(filename, arcname=os.path.split(filename)[1])
-            tar.close()
-            logging.info('↑ {} Upload...'.format(self.name))
-
-            # create a key to keep track of our file in the storage
-            k = Key(bucket)
-            k.key = key
-            k.set_contents_from_filename(tar_name, cb=self.callback, num_cb=100)
-            # remove tar file
-            os.remove(tar_name)
-            logging.info('↑ {} Upload DONE'.format(self.name))
-
-        except Exception:
-            raise
-
-    def download_from_s3(self):
-        """Download model from Amazon s3 bucket"""
-
-        try:
-            bucket_name = settings.NLP_MODELS_BUCKET_NAME
-            conn = boto.connect_s3(settings.DJANGO_AWS_ACCESS_KEY_ID,
-                                   settings.DJANGO_AWS_SECRET_ACCESS_KEY)
-            bucket = conn.get_bucket(bucket_name)
-            key = self.model.name + str(self.time_lapse) + '.tar.gz'
-            item = bucket.get_key(key)
-            tar_path = os.path.join(settings.NLP_LSH_PATH, key)
-            logging.info('↓ {} Download...'.format(self.name))
-            item.get_contents_to_filename(tar_path,
-                                          cb=self.callback,
-                                          num_cb=100)
-            logging.info('{} Decompress...'.format(self.name))
-            tar = tarfile.open(tar_path, 'r')
-            tar.extractall(settings.NLP_LSH_PATH)
-            tar.close()
-            # remove tar file
-            os.remove(tar_path)
-            logging.info('{} Done'.format(self.name))
-        except Exception:
-            raise
 
     def tasks(self, *args, **kwargs):
         """Use from tasks.py for calling task while object remains in-memory
