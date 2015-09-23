@@ -56,10 +56,10 @@
                                 <!-- use sso for disqus -->
 {#                                {% disqus_sso %}#}
                                 {% if user.is_authenticated %}
-                                {% get_disqus_sso request %}
+                                    {% get_disqus_sso request %}
+                                    <!-- comments -->
+                                    {% disqus_show_comments %}
                                 {%  endif %}
-                                <!-- comments -->
-                                {% disqus_show_comments %}
                         </div>
                     </div>
                     <div class="col-lg-3">
@@ -74,7 +74,7 @@
                                     <div class="neighbor">
                                         <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
                                         <br>
-                                        <i>in</i> {{ neighbor.journal.__str__ }}, {{ neighbor.print_year }}
+                                        <i>in</i> {{ neighbor.journal }}, {{ neighbor.print_year }}
                                     </div>
                                 {% endfor %}
                             {% endif %}
