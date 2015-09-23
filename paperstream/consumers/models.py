@@ -248,7 +248,7 @@ class Consumer(TimeStampedModel):
             start_date = timezone.now() - timezone.timedelta(self.day0)
         return start_date
 
-    @app.task(filter=task_method, routing_key=settings.CONS_ROUTING_KEY_STEM)
+    @app.task(filter=task_method)
     def populate_journal(self, journal_pk):
         """Consume data from journal
 

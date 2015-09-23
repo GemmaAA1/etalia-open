@@ -8,6 +8,9 @@ class MyRouter(object):
         if task.startswith('paperstream.consumers'):
             return {'queue': 'consumers',
                     'routing_key': 'consumers'}
+        if task.startswith('paperstream.users'):
+            return {'queue': 'default',
+                    'routing_key': 'default.users'}
         if task.startswith('paperstream.nlp'):
             return {'queue': 'nlp',
                     'routing_key': 'nlp.nlp'}

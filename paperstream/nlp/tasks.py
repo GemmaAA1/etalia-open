@@ -24,7 +24,6 @@ class EmbedPaperTask(Task):
     ignore_result = False
     model_name = None
     _model = None
-    routing_key = settings.NLP_ROUTING_KEY_STEM
 
     def __init__(self, *args, **kwargs):
         if 'model_name' in kwargs:
@@ -63,7 +62,6 @@ class LSHTask(Task):
     model_name = None
     time_lapse = None
     _lsh = None
-    routing_key = settings.NLP_ROUTING_KEY_STEM
 
     def __init__(self, *args, **kwargs):
         if ('model_name' in kwargs) and ('time_lapse' in kwargs):
