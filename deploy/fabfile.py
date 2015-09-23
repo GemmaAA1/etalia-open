@@ -85,7 +85,7 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     tags = _get_public_dns(region, context)
 
     env.hosts = tags.keys()
-    env.roles = list(set([tag['layer'] for tag in tags]))
+    env.roles = list(set([tag['layer'] for tag in tags.values()]))
     roledefs = {}
     for role in env.roles:
         roledefs[role] = [host for host in env.hosts if tags[host]['layer'] == role]

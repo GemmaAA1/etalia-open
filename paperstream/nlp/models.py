@@ -972,16 +972,16 @@ class LSH(TimeStampedModel, S3Mixin):
 
         for count, pk in enumerate(pks):
 
-            if not count % np.ceil(len(pks)/100):
-                logger.info(
-                    'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating '
-                    'neighbors ({perc:.0f}%)...'.format(
-                        pk=self.id,
-                        model_name=self.model.name,
-                        time_lapse=self.time_lapse,
-                        perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
+            # if not count % np.ceil(len(pks)/100):
+            #     logger.info(
+            #         'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating '
+            #         'neighbors ({perc:.0f}%)...'.format(
+            #             pk=self.id,
+            #             model_name=self.model.name,
+            #             time_lapse=self.time_lapse,
+            #             perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
             # async populate
-            self.populate_neighbors.delay(pk)
+            self.populate_neighbors.apply_async(args=[pk, ])
 
     @app.task(filter=task_method)
     def populate_neighbors(self, paper_pk):
