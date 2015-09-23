@@ -760,7 +760,8 @@ class LSH(TimeStampedModel, S3Mixin):
             # save files to local volume
             if not os.path.exists(settings.NLP_LSH_PATH):
                 os.makedirs(settings.NLP_LSH_PATH)
-            joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH, self.name))
+            joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
+                                               self.name + '.lsh'))
 
             # push files to s3
             if self.BUCKET_NAME:
