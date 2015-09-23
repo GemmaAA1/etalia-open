@@ -988,8 +988,9 @@ class LSH(TimeStampedModel, S3Mixin):
         """Populate neighbors of paper
         """
 
-        pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
-        vec = pv.get_vector()
+        vec = PaperVectors.objects\
+            .filter(paper_id=paper_pk, model=self.model)\
+            .values_list('vector', flat=True)[0][:self.model.size]
 
         pks = self.k_neighbors(vec,
                                n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS + 1)
