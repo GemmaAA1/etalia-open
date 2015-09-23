@@ -257,7 +257,7 @@ class Model(TimeStampedModel, S3Mixin):
                          '{0}.mod'.format(self.name)))
         # push files to s3
         if self.BUCKET_NAME:
-            self.push_to_s3()
+            self.push_to_s3(ext='mod')
         # save to db
         self.save_db_only(*args, **kwargs)
 
@@ -764,7 +764,7 @@ class LSH(TimeStampedModel, S3Mixin):
 
             # push files to s3
             if self.BUCKET_NAME:
-                self.push_to_s3()
+                self.push_to_s3(ext='lsh')
             # save to db
             self.save_db_only()
         else:

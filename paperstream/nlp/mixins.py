@@ -30,7 +30,7 @@ class S3Mixin(object):
             self.pbar.finish()
             self.pbar = None
 
-    def push_to_s3(self):
+    def push_to_s3(self, ext=''):
         """Upload object to Amazon s3 bucket"""
         try:
             bucket_name = self.BUCKET_NAME
@@ -44,7 +44,9 @@ class S3Mixin(object):
             tar = tarfile.open(tar_name, 'w:gz')
             logging.info('{} Compressing...'.format(self.name))
             for filename in glob.glob(os.path.join(self.PATH,
-                                                   '{0}.mod*'.format(self.name))):
+                                                   '{stem}.{ext}*'.format(
+                                                       stem=self.name,
+                                                       ext=ext))):
                 tar.add(filename, arcname=os.path.split(filename)[1])
             tar.close()
             logging.info('↑ {} Uploading...'.format(self.name))
