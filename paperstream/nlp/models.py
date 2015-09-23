@@ -72,11 +72,8 @@ class ModelManager(models.Manager):
 
         return obj
 
-    def get(self, **kwargs):
-        print('Warning: Not loading Doc2Vec. Use load() instead')
-        return super(ModelManager, self).get(**kwargs)
-
     def load(self, **kwargs):
+        """Get model instance and load model data"""
         obj = super(ModelManager, self).get(**kwargs)
         try:
             # if not on volume try download from s3
@@ -695,20 +692,17 @@ class JournalVectors(TimeStampedModel):
 
 class LSHManager(models.Manager):
 
-    def get(self, **kwargs):
-        # print('Warning: Not loading LSH object. Use load() instead')
-        return super(LSHManager, self).get(**kwargs)
-
     def load(self, **kwargs):
-        """Return LSH instance loaded from file"""
+        """Get LSH instance and load model data"""
         obj = super(LSHManager, self).get(**kwargs)
         try:
             # if not on volume try download from s3
 
-            if not os.path.isfile(os.path.join(settings.NLP_LSH_PATH,
-                                               '{model_name}-tl{time_lapse}.lsh'.format(
-                                               model_name=obj.model.name,
-                                               time_lapse=obj.time_lapse))):
+            if not os.path.isfile(
+                    os.path.join(settings.NLP_LSH_PATH,
+                                 '{model_name}-tl{time_lapse}.lsh'.format(
+                                     model_name=obj.model.name,
+                                     time_lapse=obj.time_lapse))):
                 if getattr(settings, 'NLP_LSH_BUCKET_NAME', ''):
                     obj.pull_from_s3()
             obj.lsh = joblib.load(
