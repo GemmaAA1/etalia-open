@@ -9,7 +9,6 @@ import numpy as np
 from timeit import time
 
 from config.celery import celery_app as app
-from celery.contrib.methods import task_method
 
 from sklearn.externals import joblib
 
@@ -982,7 +981,15 @@ class LSH(TimeStampedModel, S3Mixin):
             #             perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
             # async populate
             # self.populate_neighbors.apply_async(args=[pk, ])
-            self.populate_neighbors(pk)
+            # self.populate_neighbors(pk)
+            # Get corresponding LSH task:
+            try:
+                lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
+                    name=self.model.name,
+                    time_lapse=self.time_lapse)]
+            except KeyError:
+                raise KeyError
+            lsh_task.delay(pk, 'populate_neighbors')
 
     # @app.task(filter=task_method)
     def populate_neighbors(self, paper_pk):
@@ -1079,8 +1086,8 @@ class LSH(TimeStampedModel, S3Mixin):
         This is an odd design. This method dispatches tasks that can be run
         from LSH. It is so because we want to have the lsh object in-memory
         to avoid over-head of loading from file. Given the Task class of Celery
-        the work-around I found is to define a BIG task that dispatches to
-        smaller tasks. Therefore the instance of the tasks is associated to
+        the work-around I found is to define a master task that dispatches to
+        sub tasks. Therefore the instance of the tasks is associated to
         one single thread/worker and everything is 'fast'
 
         Args:

@@ -15,7 +15,7 @@ from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
 from paperstream.library.models import Paper
 from paperstream.nlp.models import Model, LSH
-from config.celery import celery_app as capp
+from config.celery import celery_app as app
 from .constants import FEED_STATUS_CHOICES
 from .utils import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage
@@ -162,7 +162,7 @@ class UserFeed(TimeStampedModel):
         # from LSH
         # Get corresponding LSH task:
         try:
-            lsh_task = capp.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
+            lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
                 name=self.user.settings.model.name,
                 time_lapse=self.user.settings.time_lapse)]
         except KeyError:
