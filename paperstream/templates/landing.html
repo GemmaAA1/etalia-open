@@ -128,7 +128,7 @@
                             {% endif %}
                             </div>
                             <div class="col-lg-9 col-sm-9">
-                                <div><a href="{{ paper.url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a></div>
+                                <div><a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a></div>
                                 <div>
                                     {{ paper.print_compact_first_author }}
                                 </div>
