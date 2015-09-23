@@ -143,7 +143,7 @@ def embed_all_models(paper_pk):
 
 
 @app.task()
-def update_lshs_all():
+def update_lshs():
     lshs = LSH.objects.all()
     for lsh in lshs:
         lsh.update()

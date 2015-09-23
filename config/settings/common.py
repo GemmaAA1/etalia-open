@@ -285,6 +285,7 @@ NLP_TIME_LAPSE_CHOICES = (
     (7, '1 Week'),
     (30, '1 Month'),
     (60, '2 Months'),
+    (365, '1 Year'),
     (-1, 'All'),
 )
 
@@ -335,7 +336,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=0),  # daily at UTC+0
     },
     'update-lshs-all': {
-        'task': 'paperstream.nlp.tasks.update_lshs_all',
+        'task': 'paperstream.nlp.tasks.update_lshs',
         'schedule': crontab(minute=0, hour=0),  # daily at UTC+0
     },
     'pubmed-once-a-day': {
