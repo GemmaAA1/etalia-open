@@ -972,7 +972,7 @@ class LSH(TimeStampedModel, S3Mixin):
 
         for count, pk in enumerate(pks):
 
-            if not count % np.ceil(len(pks)/10):
+            if not count % np.ceil(len(pks)/100):
                 logger.info(
                     'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating '
                     'neighbors ({perc:.0f}%)...'.format(
