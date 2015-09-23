@@ -15,6 +15,7 @@ from .models import Model, LSH
 
 logger = logging.getLogger(__name__)
 
+
 class EmbedPaperTask(Task):
     """Abstract Embedding Paper task for model
     Use to load model in __init__ so that it is cached for subsequent call
@@ -142,3 +143,9 @@ def embed_all_models(paper_pk):
             continue
         embed_task.apply_async(args=(paper_pk,))
 
+
+@app.task(routing_key=settings.NLP_ROUTING_KEY_STEM)
+def update_lshs_all():
+    lshs = LSH.objects.all()
+    for lsh in lshs:
+        lsh.update()

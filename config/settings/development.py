@@ -42,5 +42,6 @@ STATICFILES_DIRS = (
 # ------------------------------------------------------------------------------
 # In development, all tasks will be executed locally by blocking until the task
 # returns
+CELERYBEAT_SCHEDULE = {}
 CELERY_ALWAYS_EAGER = True
 

@@ -337,11 +337,15 @@ ALTMETRIC_ROUTING_KEY_STEM = 'altmetric'
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
         'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
-        'schedule': crontab(minute=0, hour=0),  # daily at UTC+6
+        'schedule': crontab(minute=0, hour=0),  # daily at UTC+0
+    },
+    'update-lshs-all': {
+        'task': 'paperstream.nlp.tasks.update_lshs_all',
+        'schedule': crontab(minute=0, hour=0),  # daily at UTC+0
     },
     'pubmed-once-a-day': {
         'task': 'paperstream.consumers.tasks.pubmed_run_all',
-        'schedule': crontab(minute=0, hour=6),  # daily at UCT+0
+        'schedule': crontab(minute=0, hour=6),  # daily at UCT+6
     },
     'arxiv-once-a-day': {
         'task': 'paperstream.consumers.tasks.arxiv_run_all',
