@@ -328,9 +328,6 @@ CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
 
 CELERY_ROUTES = ('config.routers', )
-# CONS_ROUTING_KEY_STEM = 'consumers'
-# NLP_ROUTING_KEY_STEM = 'nlp'
-# ALTMETRIC_ROUTING_KEY_STEM = 'altmetric'
 
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
