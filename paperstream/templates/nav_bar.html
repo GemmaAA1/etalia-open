@@ -31,15 +31,15 @@
                 {% endif %}
                 <ul class="nav navbar-nav navbar-right">
                     <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
-{#                        <a href="{% url 'feeds:feed' %}">Feeds</a>#}
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Your Streams<span class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            {% for feed in user.feeds.all %}
-                                <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>
-                            {% endfor %}
-                          <li class="divider"></li>
-                          <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>
-                        </ul>
+                        <a href="{% url 'feeds:main' %}">Your Stream</a>
+{#                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Your Streams<span class="caret"></span></a>#}
+{#                        <ul class="dropdown-menu" role="menu">#}
+{#                            {% for feed in user.feeds.all %}#}
+{#                                <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>#}
+{#                            {% endfor %}#}
+{#                          <li class="divider"></li>#}
+{#                          <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>#}
+{#                        </ul>#}
                     </li>
                     <li id="nav-bar-library" class="{% active request 'user/library.+' %}">
                         <a href="{% url 'user:library' %}">Your Library</a>

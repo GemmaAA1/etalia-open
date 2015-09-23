@@ -44,10 +44,12 @@
                                     {{ paper.print_ids }}
                                 </span>
                             </div>
-                            <div class="abstract-title">Abstract:</div>
-                            <div class="abstract-body">
-                                {{ paper.abstract }}
-                            </div>
+                            {% if paper.abstract %}
+                                <div class="abstract-title">Abstract:</div>
+                                <div class="abstract-body">
+                                    {{ paper.abstract }}
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="comment">
                             <div id="disqus_thread"></div>
@@ -66,14 +68,16 @@
                             {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
                             {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                             {% endif %}
+                            {% if neighbors %}
                             <div class="title">Similar Papers:</div>
-                            {% for neighbor in neighbors %}
-                                <div class="neighbor">
-                                    <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
-                                    <br>
-                                    <i>in</i> {{ neighbor.journal.short_title }}, {{ neighbor.print_year }}
-                                </div>
-                            {% endfor %}
+                                {% for neighbor in neighbors %}
+                                    <div class="neighbor">
+                                        <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
+                                        <br>
+                                        <i>in</i> {{ neighbor.journal.short_title }}, {{ neighbor.print_year }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
