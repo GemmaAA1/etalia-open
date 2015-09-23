@@ -159,6 +159,15 @@ class PaperForm(forms.ModelForm):
             title = title[1:-1]
         return title
 
+    def clean_abstract(self):
+        abstract = self.cleaned_data['abstract']
+        # remove word 'abstract' if it is first word
+        if abstract.lower().startswith('abstract') \
+                or abstract.lower().startswith('abstract:'):
+            abstract = abstract.lower().split(' ', 1)[1]
+
+        return abstract
+
     def clean(self):
         cleaned_data = super(PaperForm, self).clean()
 
