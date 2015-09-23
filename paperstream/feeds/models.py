@@ -269,6 +269,7 @@ class UserFeedMatchPaper(TimeStampedModel):
         return '{paper}/{score}'.format(paper=self.paper.short_title,
                                         score=self.score)
 
+
 class UserFeedVector(TimeStampedModel):
     """Feature vector for feed is defined as the averaged of paper vectors in
     feed

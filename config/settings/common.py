@@ -327,12 +327,10 @@ CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
 
-# Celery routes are defined at the app level with the below routing_key
-# CELERY_ROUTES = {
-# }
-CONS_ROUTING_KEY_STEM = 'consumers'
-NLP_ROUTING_KEY_STEM = 'nlp'
-ALTMETRIC_ROUTING_KEY_STEM = 'altmetric'
+CELERY_ROUTES = ('config.routers', )
+# CONS_ROUTING_KEY_STEM = 'consumers'
+# NLP_ROUTING_KEY_STEM = 'nlp'
+# ALTMETRIC_ROUTING_KEY_STEM = 'altmetric'
 
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
