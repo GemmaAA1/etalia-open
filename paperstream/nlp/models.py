@@ -989,7 +989,6 @@ class LSH(TimeStampedModel, S3Mixin):
             self.populate_neighbors(pk)
         # self.populate_neighbors_bulk(pks)
 
-
     def populate_neighbors(self, paper_pk):
         """Populate neighbors of paper
         """
@@ -1003,7 +1002,7 @@ class LSH(TimeStampedModel, S3Mixin):
         pks = pks.flatten()[1:]     # remove first element (self)
 
         pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
-                                                     paper_id=paper_pk)
+                                                         paper_id=paper_pk)
         pn.set_neighbors(pks)
 
 
