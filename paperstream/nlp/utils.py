@@ -102,8 +102,16 @@ class MyLSHForest(LSHForest):
     """Adding pks attribute to store Paper pk correspondence in LSH
     """
 
-    def __init__(self, *args, **kwargs):
-        super(MyLSHForest, self).__init__(*args, **kwargs)
+    def __init__(self, n_estimators=10, radius=1.0, n_candidates=50,
+                 n_neighbors=5, min_hash_match=4, radius_cutoff_ratio=.9,
+                 random_state=None):
+        super(MyLSHForest, self).__init__(n_estimators=n_estimators,
+                                          radius=radius,
+                                          n_candidates=n_candidates,
+                                          n_neighbors=n_neighbors,
+                                          min_hash_match=min_hash_match,
+                                          radius_cutoff_ratio=radius_cutoff_ratio,
+                                          random_state=random_state)
         self.pks = []
 
 
