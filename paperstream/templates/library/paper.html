@@ -74,7 +74,7 @@
                                     <div class="neighbor">
                                         <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
                                         <br>
-                                        <i>in</i> {{ neighbor.journal }}, {{ neighbor.print_year }}
+                                        <i>in</i> {{ neighbor.print_journal_title }}, {{ neighbor.print_year }}
                                     </div>
                                 {% endfor %}
                             {% endif %}
