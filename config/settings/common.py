@@ -327,7 +327,7 @@ CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
 
-CELERY_ROUTES = ('config.routers', )
+CELERY_ROUTES = ('config.routers.MyRouter', )
 
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
