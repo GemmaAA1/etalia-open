@@ -7,9 +7,9 @@ import glob
 from random import shuffle
 import numpy as np
 from timeit import time
-import boto
-from boto.s3.key import Key
-import tarfile
+
+from config.celery import celery_app as app
+from celery.contrib.methods import task_method
 
 from sklearn.externals import joblib
 
@@ -980,10 +980,10 @@ class LSH(TimeStampedModel, S3Mixin):
                         model_name=self.model.name,
                         time_lapse=self.time_lapse,
                         perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
+            # async populate
+            self.populate_neighbors.delay(pk)
 
-            self.populate_neighbors(pk)
-        # self.populate_neighbors_bulk(pks)
-
+    @app.task(filter=task_method)
     def populate_neighbors(self, paper_pk):
         """Populate neighbors of paper
         """
@@ -1000,38 +1000,6 @@ class LSH(TimeStampedModel, S3Mixin):
         pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
                                                      paper_id=paper_pk)
         pn.set_neighbors(pks)
-
-
-    # BELOW IS A FAILED TENTATIVE TO SPEED UP POPULATE NEIGHBORS
-    # def populate_neighbors_bulk(self, paper_pks):
-    #     pvs = PaperVectors.objects.filter(paper_id__in=paper_pks, model=self.model)\
-    #         .values('pk', 'paper__pk', 'vector')
-    #
-    #     mat = [pv['vector'][:self.model.size] for pv in pvs]
-    #     mat_np = np.array(mat)
-    #     indices = self.k_neighbors(mat_np,
-    #                                n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS + 1)
-    #     ind = {}
-    #     for i, pv in enumerate(pvs):
-    #         ind[pv['paper__pk']] = indices[i, :][1:].flatten()
-    #
-    #     pns = PaperNeighbors.objects.filter(lsh_id=self.pk,
-    #                                         paper_id__in=paper_pks)
-    #     p_pns_pks = [pn.paper.pk for pn in pns]
-    #     p_pks_create = [pk for pk in paper_pks if pk not in p_pns_pks]
-    #     # bulk create pn
-    #     pns_create = []
-    #     for pk in p_pks_create:
-    #         pns_create.append(PaperNeighbors(lsh_id=self.pk,
-    #                                          paper_id=pk))
-    #     pns_new = PaperNeighbors.objects.bulk_create(pns_create)
-    #     pns = list(pns) + pns_new
-    #
-    #     # bulk update
-    #     for pn in pns:
-    #         pn.neighbors = pad_neighbors(ind[pn.paper_id])
-    #     bulk_update(pns, update_fields=['neighbors'])
-
 
     def k_neighbors(self, seed, **kwargs):
         """Return k nearest neighbors

@@ -52,6 +52,7 @@ VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
 JOB_MASTER = 'job1'
+KNOWN_INSTANCE_TYPES = ['t2.micro', 't2.small', 't2.medium', 't2.large']
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -59,6 +60,7 @@ env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
 env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
+
 
 @task
 def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
@@ -80,7 +82,15 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
         'tag:layer': layer,
         'tag:Name': name,
     }
-    env.hosts, env.roles, env.roledefs, tags = _get_public_dns(region, context)
+    tags = _get_public_dns(region, context)
+
+    env.hosts = tags.keys()
+    env.roles = list(set([tag['layer'] for tag in tags]))
+    roledefs = {}
+    for role in env.roles:
+        roledefs[role] = [host for host in env.hosts if tags[host]['layer'] == role]
+    env.roledefs = roledefs
+
     # store stack used
     setattr(env, 'stack_string', stack)
     # store tags
@@ -89,7 +99,6 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
 
 def get_host_roles():
     return [k for k, v in env.roledefs.items() if env.host_string in v]
-
 
 @task
 def deploy():
@@ -180,15 +189,9 @@ def _get_public_dns(region, context):
                 print("Instance {}".format(instance.public_dns_name))
                 public_dns.append(str(instance.public_dns_name))
                 tags[str(instance.public_dns_name)] = instance.tags
+                tags[str(instance.public_dns_name)]['type'] = instance.instance_type
 
-    # Define rol    es for instances based on tag
-    roles = list(set([tags[host]['layer'] for host in public_dns]))
-    roledefs = {}
-    for role in roles:
-        roledefs[role] = [host for host in public_dns
-                          if tags[host]['layer'] == role]
-
-    return public_dns, roles, roledefs, tags
+    return tags
 
 
 def _create_connection(region):
@@ -397,6 +400,7 @@ def update_supervisor_conf():
                      'ROLES': get_host_roles(),
                      'USERS_PASSWORDS_FLOWER': flower_users_passwords,
                      'JOB_MASTER': job_master,
+                     'INSTANCE_TYPE': env.tags[env.host_string]['type']
                      }, use_sudo=True, use_jinja=True)
 
     # Copy env variable from postactivate
