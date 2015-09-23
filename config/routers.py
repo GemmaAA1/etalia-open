@@ -11,9 +11,9 @@ class MyRouter(object):
         if task.startswith('paperstream.users'):
             return {'queue': 'default',
                     'routing_key': 'default.users'}
-        if task == 'paperstream.nlp.models.populate_neighbors':
+        if task.startswith('paperstream.nlp.tasks.lsh'):
             return {'queue': 'lsh',
-                    'routing_key': 'lsh.populate_neighbors'}
+                    'routing_key': 'lsh'}
         if task.startswith('paperstream.feeds'):
             return {'queue': 'lsh',
                     'routing_key': 'lsh.feeds'}

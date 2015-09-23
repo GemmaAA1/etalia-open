@@ -981,9 +981,10 @@ class LSH(TimeStampedModel, S3Mixin):
             #             time_lapse=self.time_lapse,
             #             perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
             # async populate
-            self.populate_neighbors.apply_async(args=[pk, ])
+            # self.populate_neighbors.apply_async(args=[pk, ])
+            self.populate_neighbors(pk)
 
-    @app.task(filter=task_method)
+    # @app.task(filter=task_method)
     def populate_neighbors(self, paper_pk):
         """Populate neighbors of paper
         """
