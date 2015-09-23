@@ -142,7 +142,7 @@ def embed_all_models(paper_pk):
         embed_task.apply_async(args=(paper_pk,))
 
 
-@app.task(routing_key=settings.NLP_ROUTING_KEY_STEM)
+@app.task()
 def update_lshs_all():
     lshs = LSH.objects.all()
     for lsh in lshs:
