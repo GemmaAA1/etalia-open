@@ -147,3 +147,10 @@ def update_lshs_all():
     lshs = LSH.objects.all()
     for lsh in lshs:
         lsh.update()
+
+
+@app.task()
+def add_nlp(x, y):
+    """dummy task"""
+    logger.info("--> Processing task add")
+    return x + y

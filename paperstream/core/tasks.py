@@ -10,8 +10,8 @@ from paperstream.nlp.models import Model
 logger = logging.getLogger(__name__)
 
 
-@app.task
-def add(x, y):
+@app.task()
+def add_core(x, y):
     """dummy task"""
     logger.info("--> Processing task add")
     return x + y
