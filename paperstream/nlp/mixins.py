@@ -82,7 +82,10 @@ class S3Mixin(object):
             tar.extractall(self.PATH)
             tar.close()
             # remove tar file
-            os.remove(tar_path)
+            try:
+                os.remove(tar_path)
+            except FileNotFoundError:
+                pass
             logging.info('{} Done'.format(self.name))
         except Exception:
             raise
