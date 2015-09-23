@@ -745,7 +745,7 @@ class LSH(TimeStampedModel, S3Mixin):
 
     @property
     def name(self):
-        return '{model_name}-tl{time_lapse}.lsh'.format(
+        return '{model_name}-tl{time_lapse}'.format(
             model_name=self.model.name,
             time_lapse=self.time_lapse)
 
