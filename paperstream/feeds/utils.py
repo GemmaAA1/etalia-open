@@ -155,7 +155,8 @@ class Scoring(object):
         ratio = []
         for d in data:
             if d['paper__journal__pk']:
-                vectors.append(self.journal_dict[d['paper__journal__pk']][:self.model.size])
+                vectors.append(self.journal_dict.get(
+                    d['paper__journal__pk'], zeros_vector)[:self.model.size])
                 ratio.append(self.journal_ratio)
             else:
                 vectors.append(zeros_vector)

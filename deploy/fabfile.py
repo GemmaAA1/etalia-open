@@ -60,7 +60,8 @@ INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         'm4.xlarge': 4}
 ROLE_INSTANCE_TYPE_MAP = {'base': 't2.small',
                           'lsh': 't2.medium',
-                          'nlp': 't2.large'}
+                          'nlp': 't2.large',
+                          'spot': 'm4.large'}
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
