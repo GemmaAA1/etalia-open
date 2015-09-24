@@ -334,11 +334,11 @@ CELERY_ROUTES = ('config.routers.MyRouter', )
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
         'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
-        'schedule': crontab(minute=0, hour=0),  # daily at UTC+0
+        'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0
     },
     'update-lshs-all': {
         'task': 'paperstream.nlp.tasks.update_lshs',
-        'schedule': crontab(minute=0, hour=0),  # daily at UTC+0
+        'schedule': crontab(minute=0, hour=0, day_of_week='sun'),  # every sunday at UTC+0
     },
     'pubmed-once-a-day': {
         'task': 'paperstream.consumers.tasks.pubmed_run_all',
