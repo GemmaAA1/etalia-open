@@ -100,7 +100,8 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     roledefs = {}
     for role in env.roles:
         roledefs[role] = [host for host in env.hosts
-                          if tags[host]['layer'] == role or tags[host]['role'] == role]
+                          if tags[host]['layer'] == role or
+                          tags[host].get('role', '') == role]
     env.roledefs = roledefs
 
     # store stack used
@@ -118,10 +119,11 @@ def check_integrity():
         role = env.tags[host].get('role', '')
         if role:
             min_type = ROLE_INSTANCE_TYPE_MAP[role]
-            if not INSTANCE_TYPES_RANK[min_type] < INSTANCE_TYPES_RANK[inst_type]:
-                raise TypeError('Instance {0} too small, min is {1}'.format(
+            if not INSTANCE_TYPES_RANK[min_type] <= INSTANCE_TYPES_RANK[inst_type]:
+                raise TypeError('Instance {0} too small, type is {1} (min {2})'.format(
                     host,
-                    INSTANCE_TYPES_RANK[min_type]
+                    inst_type,
+                    min_type
                 ))
 
 
