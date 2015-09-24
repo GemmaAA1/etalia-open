@@ -911,11 +911,12 @@ class LSH(TimeStampedModel, S3Mixin):
             # Update PaperVector.is_in_full_lsh
             self.update_if_full_lsh_flag(pv_pks)
 
-            # Update neighbors
-            if partial:
-                self.update_neighbors(new_pks)
-            else:
-                self.update_neighbors()
+            # EDIT: Update is done on a per request basis
+            # # Update neighbors
+            # if partial:
+            #     self.update_neighbors(new_pks)
+            # else:
+            #     self.update_neighbors()
 
         tend = time.time() - t0
         logger.info(
@@ -991,7 +992,6 @@ class LSH(TimeStampedModel, S3Mixin):
                 raise KeyError
             lsh_task.delay(pk, 'populate_neighbors')
 
-    # @app.task(filter=task_method)
     def populate_neighbors(self, paper_pk):
         """Populate neighbors of paper
         """
@@ -1008,6 +1008,8 @@ class LSH(TimeStampedModel, S3Mixin):
         pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
                                                      paper_id=paper_pk)
         pn.set_neighbors(pks)
+
+        return pks
 
     def k_neighbors(self, seed, **kwargs):
         """Return k nearest neighbors
@@ -1134,8 +1136,8 @@ class LSH(TimeStampedModel, S3Mixin):
             return pks
         # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':
-            self.populate_neighbors(paper_pk)
-            return paper_pk
+            neighbors_pk = self.populate_neighbors(paper_pk)
+            return neighbors_pk
         else:
             print(task)
             raise ValueError('Unknown task action')

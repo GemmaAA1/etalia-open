@@ -6,6 +6,9 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.utils import timezone
+
+from config.celery import celery_app as app
 
 from paperstream.nlp.models import PaperNeighbors, Model
 from paperstream.core.mixins import ModalMixin
@@ -59,19 +62,28 @@ class PaperView(ModalMixin, DetailView):
         else:
             model = Model.objects.first()
 
-        # Get neighbors papers
+        # Get stored neighbors papers
         try:
-            neigh = paper_.neighbors.get(lsh__model=model, lsh__time_lapse=-1)
-            if neigh.neighbors:
-                neigh_pk = neigh.neighbors[:settings.NUMBER_OF_NEIGHBORS]
-                neigh_fetched_d = dict(
-                    [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
-                context['neighbors'] = \
-                    [neigh_fetched_d[key] for key in neigh_pk]
+            neigh_data = paper_.neighbors.get(lsh__model=model, lsh__time_lapse=-1)
+            if neigh_data.modified > (timezone.now() - timezone.timedelta(days=7)):
+                neighbors = neigh_data.neighbors
             else:
-                context['neighbors'] = []
-        except PaperNeighbors.DoesNotExist:
-            context['neighbors'] = []
+                raise PaperNeighbors.DoesNotExist
+        except PaperNeighbors.DoesNotExist:   # refresh
+            try:
+                lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
+                    name=model.name,
+                    time_lapse=-1)]
+                res = lsh_task.delay(paper_.pk, 'populate_neighbors')
+                neighbors = res.get()
+            except KeyError:
+                raise
+
+        neigh_pk = neighbors[:settings.NUMBER_OF_NEIGHBORS]
+        neigh_fetched_d = dict(
+            [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
+        context['neighbors'] = \
+            [neigh_fetched_d[key] for key in neigh_pk]
 
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         return context

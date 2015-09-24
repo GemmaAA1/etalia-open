@@ -69,7 +69,10 @@
                             {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                             {% endif %}
                             {% if neighbors %}
-                            <div class="title">Recent Similar Papers:</div>
+                            <div>
+                                <span class="title">Similar Papers</span>
+                                <span style="font-size: 11px">1y 2m 1m 1w</span>
+                            </div>
                                 {% for neighbor in neighbors %}
                                     <div class="neighbor">
                                         <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>

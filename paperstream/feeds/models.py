@@ -175,8 +175,8 @@ class UserFeed(TimeStampedModel):
                              model_pk=self.user.settings.model.pk,
                              k=10)
         # # Wait for Results
-        results = res.get(timeout=5)
-        target_seed_pks = list(set([pk for sublist in results for pk in sublist]))
+        results = res.get()
+        target_seed_pks = list(set([pk for sub in results for pk in sub]))
 
         # target_seed_pks = LSH.objects.load(
         #     model=self.user.settings.model,
