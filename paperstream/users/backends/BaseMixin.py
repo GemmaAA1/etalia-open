@@ -6,7 +6,8 @@ from django.db.models import Q
 from paperstream.library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
     CorpAuthorPaper
 from paperstream.library.forms import PaperFormFillBlanks
-from paperstream.core.tasks import embed_all_models_and_find_neighbors
+from paperstream.core.tasks import embed_all_models_and_find_neighbors, \
+    embed_all_models
 
 from ..models import UserLibPaper, UserLibJournal
 
@@ -99,8 +100,9 @@ class BackendLibMixin(object):
 
         paper, journal = self.get_or_create_entry(entry)
 
-        if paper:       # Embed paper and get closest neighbors
-            embed_all_models_and_find_neighbors(paper.pk)
+        if paper:
+            # embed_all_models_and_find_neighbors(paper.pk)
+            embed_all_models(paper.pk)
 
         return paper, journal
 
