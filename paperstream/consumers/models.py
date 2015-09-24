@@ -622,7 +622,7 @@ class ConsumerJournal(models.Model):
 
     # last update
     # datetime of last consumption
-    last_date_cons = models.DateTimeField(null=True, blank=True)
+    last_date_cons = models.DateTimeField(null=True, blank=True, default=None)
     # number of papers recorded in db
     last_number_papers_recorded = models.IntegerField(default=0)
     # number of papers fetched from provider
@@ -652,7 +652,8 @@ class ConsumerJournal(models.Model):
         for field in fields_to_reset:
             setattr(self, field, self._meta.get_field(field).default)
         self.save()
-        self.stats.create(status='RES')
+        self.stats.create(status='RES',
+                          message='Reset ConsumerJournal')
 
     def activate(self):
         if self.status == 'inactive':
@@ -729,7 +730,7 @@ class ConsumerJournal(models.Model):
             self.save()
 
     def print_stats(self):
-        tmp = ['Date\tState\t# Fetched\t# Recorded\n']
+        tmp = ['Date\tState\t# Fetched\t# Recorded\tMessages\n']
         for stat in self.stats.all():
             tmp.append('{date}\t{state}\t{fetch}\t{reco}\t{mess}\n'.format(
                 date=stat.datetime,
