@@ -634,7 +634,7 @@ class PaperNeighbors(TimeStampedModel):
 
     def set_neighbors(self, vector):
         self.neighbors = pad_neighbors(vector)
-        self.save(update_fields=['neighbors'])
+        self.save()
 
     def get_neighbors(self):
         return self.neighbors[:self.lsh.model.size]
