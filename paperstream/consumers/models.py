@@ -643,6 +643,17 @@ class ConsumerJournal(models.Model):
         return '{0}@{1}'.format(self.journal.short_title or self.journal.title,
                                 self.consumer.name)
 
+    def reset(self):
+        fields_to_reset = ['status',
+                           'last_date_cons',
+                           'last_number_papers_fetched',
+                           'last_number_papers_recorded',
+                           'base_coundown_period']
+        for field in fields_to_reset:
+            setattr(self, field, self._meta.get_field(field).default)
+        self.save()
+        self.stats.create(status='RES')
+
     def activate(self):
         if self.status == 'inactive':
             self.status = 'idle'
@@ -651,12 +662,14 @@ class ConsumerJournal(models.Model):
                                                    self.consumer.name,
                                                    self.journal)
             logger.info(msg)
+            self.stats.create(status='ACT')
         elif self.status == 'error':
             msg = '({0}) {1}: Activate {2} FAILED, status is {3}'\
                 .format(self.consumer.pk,
                         self.consumer.name,
                         self.journal,
                         self.status)
+            self.stats.create(status='FAI', message=msg)
             raise ValueError(msg)
 
     def deactivate(self):
@@ -674,6 +687,7 @@ class ConsumerJournal(models.Model):
                         self.journal,
                         self.status)
             logger.info(msg)
+            self.stats.create(status='FAI', message=msg)
             raise ValueError(msg)
 
     def update_stats(self, success, n_fet, n_rec):
@@ -717,11 +731,12 @@ class ConsumerJournal(models.Model):
     def print_stats(self):
         tmp = ['Date\tState\t# Fetched\t# Recorded\n']
         for stat in self.stats.all():
-            tmp.append('{date}\t{state}\t{fetch}\t{reco}\n'.format(
+            tmp.append('{date}\t{state}\t{fetch}\t{reco}\t{mess}\n'.format(
                 date=stat.datetime,
                 state=stat.status,
                 fetch=stat.number_papers_fetched,
                 reco=stat.number_papers_recorded,
+                mess=stat.message,
             ))
         print(''.join(tmp))
 
@@ -733,16 +748,22 @@ class ConsumerJournalStat(models.Model):
     # date of consumption
     datetime = models.DateTimeField(null=False, auto_now_add=True)
 
-    # number of papers fetched
-    number_papers_fetched = models.IntegerField()
-
-    # number of papers recorded
-    number_papers_recorded = models.IntegerField()
-
-    # status
+    # state
     status = models.CharField(max_length=3,
                               choices=(('SUC', 'Success'),
-                                       (('FAI'), 'Failed')))
+                                       ('FAI', 'Failed'),
+                                       ('RES', 'Reset'),
+                                       ('ACT', 'Activate'),
+                                       ('DEA', 'Deactivate')))
+
+    # number of papers fetched
+    number_papers_fetched = models.IntegerField(default=0)
+
+    # number of papers recorded
+    number_papers_recorded = models.IntegerField(default=0)
+
+    # message
+    message = models.CharField(max_length=512, default='')
 
     class Meta:
         ordering = ['datetime']

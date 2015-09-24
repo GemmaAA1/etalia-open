@@ -11,6 +11,7 @@ from paperstream.library.models import Paper
 
 class Scoring(object):
     """Scoring abstract class"""
+
     def __init__(self, model, user, **kwargs):
         self.model = model
         self.user = user

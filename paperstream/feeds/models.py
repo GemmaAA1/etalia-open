@@ -173,7 +173,7 @@ class UserFeed(TimeStampedModel):
         res = lsh_task.delay('k_neighbors_pks',
                              seed_pks=seed_pks,
                              model_pk=self.user.settings.model.pk,
-                             k=10)
+                             k=settings.FEED_K_NEIGHBORS)
         # # Wait for Results
         results = res.get()
         target_seed_pks = list(set([pk for sub in results for pk in sub]))

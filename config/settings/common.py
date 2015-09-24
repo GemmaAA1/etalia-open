@@ -289,17 +289,22 @@ NLP_TIME_LAPSE_CHOICES = (
     (-1, 'All'),
 )
 
+# Time in days for recomputing neighbors is accessed
+NLP_NEIGHBORS_REFRESH_TIME_LAPSE = 7
+
 # FEED APP
 # ------------------------------------------------------------------------------
 FEEDS_SCORE_KEEP_N_PAPERS = 100
 FEEDS_DISPLAY_N_PAPERS = 50
 FEED_JOURNAL_VECTOR_RATIO = 0.2
-
+# Number of neighbors from seed paper
+FEED_K_NEIGHBORS = 50
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
 ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
-ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600  # slightly less than each second in a a day
+# slightly less than each second in a a day
+ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 
 
 # LANDING
