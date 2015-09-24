@@ -52,7 +52,15 @@ VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
 JOB_MASTER = 'job1'
-KNOWN_INSTANCE_TYPES = ['t2.micro', 't2.small', 't2.medium', 't2.large']
+INSTANCE_TYPES_RANK = { 't2.micro': 0,
+                        't2.small': 1,
+                        't2.medium': 2,
+                        't2.large': 3,
+                        'm4.large': 3,
+                        'm4.xlarge': 4}
+ROLE_INSTANCE_TYPE_MAP = {'base': 't2.small',
+                          'lsh': 't2.medium',
+                          'nlp': 't2.large'}
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -85,10 +93,14 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     tags = _get_public_dns(region, context)
 
     env.hosts = tags.keys()
-    env.roles = list(set([tag['layer'] for tag in tags.values()]))
+    roles = []
+    roles += [tag.get('layer', '') for tag in tags.values()]
+    roles += [tag.get('role', '') for tag in tags.values()]
+    env.roles = list(set(roles))
     roledefs = {}
     for role in env.roles:
-        roledefs[role] = [host for host in env.hosts if tags[host]['layer'] == role]
+        roledefs[role] = [host for host in env.hosts
+                          if tags[host]['layer'] == role or tags[host]['role'] == role]
     env.roledefs = roledefs
 
     # store stack used
@@ -96,9 +108,26 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     # store tags
     setattr(env, 'tags', tags)
 
+    check_integrity()
+
+
+def check_integrity():
+    """Check if instance type is compatible with role"""
+    for host in env.hosts:
+        inst_type = env.tags[host]['type']
+        role = env.tags[host].get('role', '')
+        if role:
+            min_type = ROLE_INSTANCE_TYPE_MAP[role]
+            if not INSTANCE_TYPES_RANK[min_type] < INSTANCE_TYPES_RANK[inst_type]:
+                raise TypeError('Instance {0} too small, min is {1}'.format(
+                    host,
+                    INSTANCE_TYPES_RANK[min_type]
+                ))
+
 
 def get_host_roles():
     return [k for k, v in env.roledefs.items() if env.host_string in v]
+
 
 @task
 def deploy():
