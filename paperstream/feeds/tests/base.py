@@ -6,9 +6,10 @@ from django.utils import timezone
 import numpy as np
 
 from paperstream.library.models import Journal, Paper
-from paperstream.nlp.models import LSH, Model, PaperVectors, JournalVectors
+from paperstream.nlp.models import Model, PaperVectors, JournalVectors
 from paperstream.users.models import User, UserLib, UserLibPaper, UserSettings
-from paperstream.nlp.tasks import register_all_models_and_lshs_tasks
+from paperstream.nlp.tasks import register_nlp_tasks
+
 
 class UserFeedTestCase(TestCase):
 
@@ -93,5 +94,5 @@ class UserFeedTestCase(TestCase):
             jv.set_vector(vec)
 
         # register celery task for testing
-        self.model.build_lshs()
-        register_all_models_and_lshs_tasks()
+        self.model.build_most_similar()
+        register_nlp_tasks()

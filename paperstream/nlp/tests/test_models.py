@@ -9,12 +9,9 @@ import numpy as np
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
-from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 
-from ..models import LSH, Model, TextField, JournalVectors, PaperVectors, \
-    PaperNeighbors
+from ..models import Model, TextField, JournalVectors, PaperVectors
 from ..constants import FIELDS_FOR_MODEL
-from ..exceptions import InvalidState
 
 from .base import NLPTestCase, NLPDataTestCase
 
@@ -24,7 +21,7 @@ class ModelTest(NLPTestCase):
     def test_config_folders_have_been_created(self):
         self.assertTrue(os.path.isdir(settings.NLP_MODELS_PATH))
         self.assertTrue(os.path.isdir(settings.NLP_DATA_PATH))
-        self.assertTrue(os.path.isdir(settings.NLP_LSH_PATH))
+        self.assertTrue(os.path.isdir(settings.NLP_MS_PATH))
 
     def test_model_can_be_instantiated(self):
         model = Model(name='test')
@@ -276,6 +273,7 @@ class PaperVectorTest(NLPDataTestCase):
 
         self.assertAlmostEqual(vec_diff, 0)
 
+
 class JournalVectorTest(NLPDataTestCase):
 
     def test_journalvector_cannot_be_created_if_model_NOT_active(self):
@@ -307,205 +305,205 @@ class JournalVectorTest(NLPDataTestCase):
             jv.full_clean()
 
 
-class LSHModelTest(NLPDataTestCase):
-
-    def setUp(self):
-        super(LSHModelTest, self).setUp()
-        self.pv = PaperVectors.objects.create(model=self.model,
-                                              paper=self.paper)
-        self.pv2 = PaperVectors.objects.create(model=self.model,
-                                               paper=self.paper2)
-        self.pv.set_vector(np.zeros(self.model.size))
-        self.pv2.set_vector(np.zeros(self.model.size))
-
-    def test_lsh_can_be_instantiated(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH.objects.create(model=self.model, time_lapse=time_lapse)
-
-    def test_different_lsh_can_link_to_same_model(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH.objects.create(model=self.model, time_lapse=time_lapse)
-        lsh = LSH.objects.create(model=self.model, time_lapse=-1)
-
-    def test_lsh_default_state_is_none(self):
-        model = Model.objects.first()
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=model, time_lapse=time_lapse)
-        self.assertEqual(lsh.state, 'NON')
-
-    def test_lsh_cannot_have_same_model_and_time_lapse(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        LSH.objects.create(model=self.model, time_lapse=time_lapse)
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        with self.assertRaises(ValidationError):
-            lsh.full_clean()
-
-    def test_lsh_time_lapse_raise_when_time_lapse_NOT_in_choices(self):
-        lsh = LSH(model=self.model, time_lapse=1341241234312)
-        with self.assertRaises(ValidationError):
-            lsh.full_clean()
-
-    def test_lsh_can_be_saved(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.save()
-        save_path = os.path.join(settings.NLP_LSH_PATH,
-                                 '{model_name}-tl{time_lapse}.lsh'
-                                 .format(model_name=lsh.model.name,
-                                         time_lapse=lsh.time_lapse))
-        self.assertTrue(os.path.isfile(save_path))
-
-    def test_lsh_can_be_loaded(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.save()
-        lsh2 = LSH.objects.load(model=self.model, time_lapse=time_lapse)
-        self.assertTrue(lsh, lsh2)
-
-    def test_lsh_can_be_deleted(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.save()
-        save_path = os.path.join(settings.NLP_LSH_PATH,
-                                 '{model_name}-lt{time_lapse}.lsh'
-                                 .format(model_name=lsh.model.name,
-                                         time_lapse=lsh.time_lapse))
-        lsh.delete()
-        self.assertFalse(os.path.isfile(save_path))
-
-    def test_lsh_can_change_state(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.set_state('BUS')
-        self.assertEqual(lsh.state, 'BUS')
-
-    def test_lsh_cannot_save_if_status_is_busy(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.set_state('BUS')
-        with self.assertRaises(InvalidState):
-            lsh.save()
-
-    def test_lsh_get_data(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        x_data, pv_pks, new_pks = lsh.get_data()
-        self.assertEqual(set(pv_pks), set([self.pv.pk, self.pv2.pk]))
-        self.assertEqual(set(new_pks), set([self.paper.pk, self.paper2.pk]))
-        self.assertTrue((x_data[0, :] == 0).all())
-
-    def test_lsh_update_is_in_full_lsh_flag_if_full(self):
-        time_lapse = -1
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        x_data, pv_pks, new_pks = lsh.get_data()
-        lsh.update_if_full_lsh_flag(pv_pks)
-        pv = PaperVectors.objects.get(pk=pv_pks[0])
-        self.assertTrue(pv.is_in_full_lsh)
-
-    def test_lsh_DOESNOT_update_is_in_full_lsh_flag_if_lsh_NOT_full(self):
-        time_lapse = 61
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        x_data, pv_pks, new_pks = lsh.get_data()
-        lsh.update_if_full_lsh_flag(pv_pks)
-        pv = PaperVectors.objects.get(pk=pv_pks[0])
-        self.assertFalse(pv.is_in_full_lsh)
-
-    def test_lsh_can_run_update(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.update()
-
-    def test_lsh_can_run_partial_update(self):
-        time_lapse = -1
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.update(partial=True)
-
-    def test_lsh_canNOT_run_partial_update_on_lsh_with_time_lapse(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        with self.assertRaises(ValueError):
-            lsh.update(partial=True)
-
-    def test_lsh_can_run_full_update(self):
-        time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
-        lsh = LSH(model=self.model, time_lapse=time_lapse)
-        lsh.full_update()
-
-    def test_lsh_can_be_created(self):
-        LSH.objects.create(model=self.model,
-                           time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
-
-    def test_lsh_can_search_for_kneighbors(self):
-        lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
-        lsh.set_state('IDL')
-        vec = np.zeros(lsh.model.size)
-        indices = lsh.k_neighbors(vec)
-        self.assertTrue(len(indices) > 0)
-
-    def test_lsh_kneighbors_raises_if_state_not_idle(self):
-        lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
-        vec = np.zeros(lsh.model.size)
-        with self.assertRaises(InvalidState):
-            lsh.k_neighbors(vec)
-
-    def test_lsh_kneighbors_raises_with_wrong_vec_size(self):
-        lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
-        lsh.set_state('IDL')
-        vec = np.zeros(lsh.model.size+1)
-        with self.assertRaises(AssertionError):
-            lsh.k_neighbors(vec)
-
-    def test_lsh_kneighbors_can_take_2d_array_in_input(self):
-        lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
-        lsh.set_state('IDL')
-        mat = np.random.randn(10, lsh.model.size)
-        indices = lsh.k_neighbors(mat, n_neighbors=2)
-        self.assertEqual(indices.shape, (10, 2))
-
-
-class PaperNeighborsTest(NLPDataTestCase):
-
-    def setUp(self):
-        super(PaperNeighborsTest, self).setUp()
-        self.lsh = LSH(model=self.model, time_lapse=-1)
-        self.lsh.save_db_only()
-
-    def test_paperneighbors_can_be_instantiated(self):
-        pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
-
-    def test_paperneighbors_can_NOT_have_same_lsh_and_paper(self):
-        PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
-        pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
-        with self.assertRaises(ValidationError):
-            pn.full_clean()
-
-    def test_paperneighbors_can_set_neighbors(self):
-        pn = PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
-        neigh = [1, 2, 3, 4]
-        pn.set_neighbors(neigh)
-        pn2 = PaperNeighbors.objects.get(pk=pn.id)
-        self.assertTrue(pn2.get_neighbors() == pn.get_neighbors())
-
-
-class LSHModelStackTest(NLPDataTestCase):
-
-    def setUp(self):
-        super(LSHModelStackTest, self).setUp()
-
-    def test_can_build_all_lshs(self):
-        self.model.dump(self.papers.all())
-        self.model.build_vocab_and_train()
-        self.model.save_journal_vec_from_bulk()
-        self.model.save_paper_vec_from_bulk()
-        self.model.build_lshs()
-
-    def test_can_propagate(self):
-        self.model.dump(self.papers.all())
-        self.model.build_vocab_and_train()
-        self.model.propagate()
-
-    def test_can_build_full_stack(self):
-        model2 = Model.objects.create(name='test2', size=32)
-        model2.dump(self.papers.all())
-        model2.build_vocab_and_train()
-        model2.propagate()
+# class LSHModelTest(NLPDataTestCase):
+#
+#     def setUp(self):
+#         super(LSHModelTest, self).setUp()
+#         self.pv = PaperVectors.objects.create(model=self.model,
+#                                               paper=self.paper)
+#         self.pv2 = PaperVectors.objects.create(model=self.model,
+#                                                paper=self.paper2)
+#         self.pv.set_vector(np.zeros(self.model.size))
+#         self.pv2.set_vector(np.zeros(self.model.size))
+#
+#     def test_lsh_can_be_instantiated(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH.objects.create(model=self.model, time_lapse=time_lapse)
+#
+#     def test_different_lsh_can_link_to_same_model(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH.objects.create(model=self.model, time_lapse=time_lapse)
+#         lsh = LSH.objects.create(model=self.model, time_lapse=-1)
+#
+#     def test_lsh_default_state_is_none(self):
+#         model = Model.objects.first()
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=model, time_lapse=time_lapse)
+#         self.assertEqual(lsh.state, 'NON')
+#
+#     def test_lsh_cannot_have_same_model_and_time_lapse(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         LSH.objects.create(model=self.model, time_lapse=time_lapse)
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         with self.assertRaises(ValidationError):
+#             lsh.full_clean()
+#
+#     def test_lsh_time_lapse_raise_when_time_lapse_NOT_in_choices(self):
+#         lsh = LSH(model=self.model, time_lapse=1341241234312)
+#         with self.assertRaises(ValidationError):
+#             lsh.full_clean()
+#
+#     def test_lsh_can_be_saved(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.save()
+#         save_path = os.path.join(settings.NLP_LSH_PATH,
+#                                  '{model_name}-tl{time_lapse}.lsh'
+#                                  .format(model_name=lsh.model.name,
+#                                          time_lapse=lsh.time_lapse))
+#         self.assertTrue(os.path.isfile(save_path))
+#
+#     def test_lsh_can_be_loaded(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.save()
+#         lsh2 = LSH.objects.load(model=self.model, time_lapse=time_lapse)
+#         self.assertTrue(lsh, lsh2)
+#
+#     def test_lsh_can_be_deleted(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.save()
+#         save_path = os.path.join(settings.NLP_LSH_PATH,
+#                                  '{model_name}-lt{time_lapse}.lsh'
+#                                  .format(model_name=lsh.model.name,
+#                                          time_lapse=lsh.time_lapse))
+#         lsh.delete()
+#         self.assertFalse(os.path.isfile(save_path))
+#
+#     def test_lsh_can_change_state(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.set_state('BUS')
+#         self.assertEqual(lsh.state, 'BUS')
+#
+#     def test_lsh_cannot_save_if_status_is_busy(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.set_state('BUS')
+#         with self.assertRaises(InvalidState):
+#             lsh.save()
+#
+#     def test_lsh_get_data(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         x_data, pv_pks, new_pks = lsh.get_data()
+#         self.assertEqual(set(pv_pks), set([self.pv.pk, self.pv2.pk]))
+#         self.assertEqual(set(new_pks), set([self.paper.pk, self.paper2.pk]))
+#         self.assertTrue((x_data[0, :] == 0).all())
+#
+#     def test_lsh_update_is_in_full_lsh_flag_if_full(self):
+#         time_lapse = -1
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         x_data, pv_pks, new_pks = lsh.get_data()
+#         lsh.update_if_full_lsh_flag(pv_pks)
+#         pv = PaperVectors.objects.get(pk=pv_pks[0])
+#         self.assertTrue(pv.is_in_full_lsh)
+#
+#     def test_lsh_DOESNOT_update_is_in_full_lsh_flag_if_lsh_NOT_full(self):
+#         time_lapse = 61
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         x_data, pv_pks, new_pks = lsh.get_data()
+#         lsh.update_if_full_lsh_flag(pv_pks)
+#         pv = PaperVectors.objects.get(pk=pv_pks[0])
+#         self.assertFalse(pv.is_in_full_lsh)
+#
+#     def test_lsh_can_run_update(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.update()
+#
+#     def test_lsh_can_run_partial_update(self):
+#         time_lapse = -1
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.update(partial=True)
+#
+#     def test_lsh_canNOT_run_partial_update_on_lsh_with_time_lapse(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         with self.assertRaises(ValueError):
+#             lsh.update(partial=True)
+#
+#     def test_lsh_can_run_full_update(self):
+#         time_lapse = NLP_TIME_LAPSE_CHOICES[0][0]
+#         lsh = LSH(model=self.model, time_lapse=time_lapse)
+#         lsh.full_update()
+#
+#     def test_lsh_can_be_created(self):
+#         LSH.objects.create(model=self.model,
+#                            time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
+#
+#     def test_lsh_can_search_for_kneighbors(self):
+#         lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
+#         lsh.set_state('IDL')
+#         vec = np.zeros(lsh.model.size)
+#         indices = lsh.k_neighbors(vec)
+#         self.assertTrue(len(indices) > 0)
+#
+#     def test_lsh_kneighbors_raises_if_state_not_idle(self):
+#         lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
+#         vec = np.zeros(lsh.model.size)
+#         with self.assertRaises(InvalidState):
+#             lsh.k_neighbors(vec)
+#
+#     def test_lsh_kneighbors_raises_with_wrong_vec_size(self):
+#         lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
+#         lsh.set_state('IDL')
+#         vec = np.zeros(lsh.model.size+1)
+#         with self.assertRaises(AssertionError):
+#             lsh.k_neighbors(vec)
+#
+#     def test_lsh_kneighbors_can_take_2d_array_in_input(self):
+#         lsh = LSH(model=self.model, time_lapse=NLP_TIME_LAPSE_CHOICES[0][0])
+#         lsh.set_state('IDL')
+#         mat = np.random.randn(10, lsh.model.size)
+#         indices = lsh.k_neighbors(mat, n_neighbors=2)
+#         self.assertEqual(indices.shape, (10, 2))
+#
+#
+# class PaperNeighborsTest(NLPDataTestCase):
+#
+#     def setUp(self):
+#         super(PaperNeighborsTest, self).setUp()
+#         self.lsh = LSH(model=self.model, time_lapse=-1)
+#         self.lsh.save_db_only()
+#
+#     def test_paperneighbors_can_be_instantiated(self):
+#         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
+#
+#     def test_paperneighbors_can_NOT_have_same_lsh_and_paper(self):
+#         PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
+#         pn = PaperNeighbors(lsh=self.lsh, paper=self.paper)
+#         with self.assertRaises(ValidationError):
+#             pn.full_clean()
+#
+#     def test_paperneighbors_can_set_neighbors(self):
+#         pn = PaperNeighbors.objects.create(lsh=self.lsh, paper=self.paper)
+#         neigh = [1, 2, 3, 4]
+#         pn.set_neighbors(neigh)
+#         pn2 = PaperNeighbors.objects.get(pk=pn.id)
+#         self.assertTrue(pn2.get_neighbors() == pn.get_neighbors())
+#
+#
+# class LSHModelStackTest(NLPDataTestCase):
+#
+#     def setUp(self):
+#         super(LSHModelStackTest, self).setUp()
+#
+#     def test_can_build_all_lshs(self):
+#         self.model.dump(self.papers.all())
+#         self.model.build_vocab_and_train()
+#         self.model.save_journal_vec_from_bulk()
+#         self.model.save_paper_vec_from_bulk()
+#         self.model.build_lshs()
+#
+#     def test_can_propagate(self):
+#         self.model.dump(self.papers.all())
+#         self.model.build_vocab_and_train()
+#         self.model.propagate()
+#
+#     def test_can_build_full_stack(self):
+#         model2 = Model.objects.create(name='test2', size=32)
+#         model2.dump(self.papers.all())
+#         model2.build_vocab_and_train()
+#         model2.propagate()

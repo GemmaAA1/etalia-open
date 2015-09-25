@@ -24,7 +24,7 @@ def embed_all_models(paper_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            embed_task = app.tasks['paperstream.nlp.tasks.embed_paper_{model_name}'.format(
+            embed_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Embeding task for {model_name} not defined'.format(
@@ -32,33 +32,3 @@ def embed_all_models(paper_pk):
             continue
 
         embed_task.apply_async(args=(paper_pk, ))
-
-
-def embed_all_models_and_find_neighbors(paper_pk):
-    """Send chain task to embed paper and populate neighbors
-    """
-    model_names = Model.objects.all().values_list('name', flat=True)
-    for model_name in model_names:
-        # Send task for embedding
-        try:
-            embed_task = app.tasks['paperstream.nlp.tasks.embed_paper_{model_name}'.format(
-                model_name=model_name)]
-        except KeyError:
-            logger.error('Embeding task for {model_name} not defined'.format(
-                model_name=model_name))
-            continue
-
-        # Send task for time_lapse related LSHs
-        for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
-            try:
-                lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{model_name}_{time_lapse}'
-                    .format(model_name=model_name, time_lapse=time_lapse)]
-            except KeyError:
-                logger.error('LSH task for {model_name}/{time_lapse} not defined'
-                             .format(model_name=model_name,
-                                     time_lapse=time_lapse))
-                continue
-
-            task = chain(embed_task.s(paper_pk),
-                         lsh_task.s('populate_neighbors'))
-            task.apply_async()

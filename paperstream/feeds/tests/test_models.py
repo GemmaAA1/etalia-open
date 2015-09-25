@@ -175,8 +175,7 @@ class UserFeedTest(UserFeedTestCase):
         pv = PaperVectors.objects.create(paper=new_paper, model=self.model)
         vec = np.random.randn(self.model.size)
         pv.set_vector(vec)
-        # rebuild LSHs
-        self.model.build_lshs()
+        self.model.build_most_similar()
         ul.update()
         count2 = ul.papers_match.count()
         self.assertTrue(count1 + 1 == count2)

@@ -14,6 +14,7 @@ from sklearn.externals import joblib
 
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
+from django.db.models.functions import Coalesce
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 from django.utils import timezone
@@ -23,11 +24,11 @@ from django.core.exceptions import ValidationError
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec
 from gensim.models import Phrases
+from gensim import matutils
 
-from .constants import MODEL_STATES, FIELDS_FOR_MODEL, LSHF_STATES
-from .utils import paper2tokens, TaggedDocumentsIterator, MyLSHForest, \
-    model_attr_getter, model_attr_setter
-from .exceptions import InvalidState
+from .constants import FIELDS_FOR_MODEL
+from .utils import paper2tokens, TaggedDocumentsIterator, model_attr_getter, \
+    model_attr_setter
 from .mixins import S3Mixin
 
 from paperstream.core.models import TimeStampedModel
@@ -410,25 +411,24 @@ class Model(TimeStampedModel, S3Mixin):
         self.train(docs, **kwargs)
         self.activate()
 
-    def build_lshs(self):
-        """Build Local Sensitive Hashing data structure"""
-        # Delete previously save data
-        LSH.objects.filter(model=self).delete()
-        # Build time-lapse related LSH
-        for time_lapse, _ in NLP_TIME_LAPSE_CHOICES:
-            lsh = LSH.objects.create(model=self,
-                                     time_lapse=time_lapse)
-            lsh.full_update()
-
     def propagate(self):
-        """Save Journal and Paper vectors and build LSHs
+        """Save Journal and Paper vectors and init MostSimilar
         (To be run after model training)"""
         logging.info('{} Populate journals...'.format(self.name))
         self.save_journal_vec_from_bulk()
         logging.info('{} Populate papers...'.format(self.name))
         self.save_paper_vec_from_bulk()
         logging.info('{} Build LSH...'.format(self.name))
-        self.build_lshs()
+        self.build_most_similar()
+
+    def build_most_similar(self):
+        try:
+            ms = MostSimilar.objects.get(model=self)
+            ms.delete()
+        except MostSimilar.DoesNotExist:
+            pass
+        ms = MostSimilar.objects.create(model=self)
+        ms.update()
 
     def save_journal_vec_from_bulk(self):
         """Store inferred journal vector from training in db
@@ -443,11 +443,13 @@ class Model(TimeStampedModel, S3Mixin):
             if pk.startswith('j') and not pk == 'j_0':
                 try:
                     journal = Journal.objects.get(pk=int(pk[2:]))
-                    vector = self._doc2vec.docvecs[pk].tolist()
+                    vector = self._doc2vec.docvecs[pk]
+                    # normalize
+                    vector /= np.linalg.norm(vector)
+                    # store
                     pv, _ = JournalVectors.objects.get_or_create(model=self,
                                                                  journal=journal)
-                    pv.vector = vector
-                    pv.save()
+                    pv.set_vector(vector)
                 except Journal.DoesNotExist:
                     print('Journal {pk} did not match'.format(pk=pk))
             pbar.update(count)
@@ -468,11 +470,12 @@ class Model(TimeStampedModel, S3Mixin):
             if not pk.startswith('j'):
                 try:
                     paper = Paper.objects.get(pk=int(pk))
-                    vector = self._doc2vec.docvecs[pk].tolist()
+                    vector = self._doc2vec.docvecs[pk]
+                    # normalize
+                    vector /= np.linalg.norm(vector)
                     pv, _ = PaperVectors.objects.get_or_create(model=self,
                                                                paper=paper)
                     pv.set_vector(vector)
-                    pv.save()
                 except Paper.DoesNotExist:
                     print('Paper {pk} did not match'.format(pk=pk))
             pbar.update(count)
@@ -504,8 +507,10 @@ class Model(TimeStampedModel, S3Mixin):
                                             alpha=alpha,
                                             min_alpha=min_alpha,
                                             steps=passes)
+        # normalize
+        vector /= np.linalg.norm(vector)
+        # store
         pv.set_vector(vector.tolist())
-        pv.save()
 
         return paper_pk
 
@@ -597,8 +602,6 @@ class PaperVectors(TimeStampedModel):
                         size=settings.NLP_MAX_VECTOR_SIZE,
                         null=True, db_index=True)
 
-    is_in_full_lsh = models.BooleanField(default=False)
-
     objects = PaperVectorsManager()
 
     class Meta:
@@ -614,33 +617,6 @@ class PaperVectors(TimeStampedModel):
 
     def get_vector(self):
         return self.vector[:self.model.size]
-
-
-class PaperNeighbors(TimeStampedModel):
-    """ Table of papers nearest neighbors"""
-    lsh = models.ForeignKey('LSH')
-
-    paper = models.ForeignKey(Paper, related_name='neighbors')
-
-    # Primary keys of the k-nearest neighbors papers
-    neighbors = ArrayField(models.IntegerField(null=True),
-                           size=settings.NLP_MAX_KNN_NEIGHBORS,
-                           null=True, blank=True)
-
-    def __str__(self):
-        return '{model_name}/{time_lapse}'.format(
-            model_name=self.lsh.model.name,
-            time_lapse=self.lsh.time_lapse)
-
-    def set_neighbors(self, vector):
-        self.neighbors = pad_neighbors(vector)
-        self.save()
-
-    def get_neighbors(self):
-        return self.neighbors[:self.lsh.model.size]
-
-    class Meta:
-        unique_together = ('lsh', 'paper')
 
 
 class JournalVectorsManager(models.Manager):
@@ -689,92 +665,121 @@ class JournalVectors(TimeStampedModel):
         return self.vector[:self.model.size]
 
 
-class LSHManager(models.Manager):
+class PaperNeighbors(TimeStampedModel):
+    """ Table of papers nearest neighbors"""
+
+    paper = models.ForeignKey(Paper, related_name='neighbors')
+
+    model = models.ForeignKey(Model)
+
+    time_lapse = models.IntegerField(default=-1,
+                                     choices=NLP_TIME_LAPSE_CHOICES,
+                                     verbose_name='Days from right now')
+
+    # Primary keys of the k-nearest neighbors papers
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)
+
+    def __str__(self):
+        return '{model_name}/{time_lapse}'.format(
+            model_name=self.model.name,
+            time_lapse=self.time_lapse)
+
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
+
+    def get_neighbors(self):
+        return self.neighbors[:self.model.size]
+
+    class Meta:
+        unique_together = ('time_lapse', 'paper', 'model')
+
+
+class MostSimilarManager(models.Manager):
 
     def load(self, **kwargs):
-        """Get LSH instance and load model data"""
-        obj = super(LSHManager, self).get(**kwargs)
+        """Get MostSimilar instance and load corresponding data"""
+        obj = super(MostSimilarManager, self).get(**kwargs)
         try:
             # if not on volume try download from s3
-
-            if not os.path.isfile(
-                    os.path.join(settings.NLP_LSH_PATH,
-                                 '{model_name}-tl{time_lapse}.lsh'.format(
-                                     model_name=obj.model.name,
-                                     time_lapse=obj.time_lapse))):
-                if getattr(settings, 'NLP_LSH_BUCKET_NAME', ''):
+            if not os.path.isfile(os.path.join(settings.NLP_MS_PATH,
+                                               '{0}.ms_data'.format(obj.name))):
+                if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
                     obj.pull_from_s3()
-            obj.lsh = joblib.load(
-                os.path.join(settings.NLP_LSH_PATH,
-                             '{model_name}-tl{time_lapse}.lsh'.format(
-                                 model_name=obj.model.name,
-                                 time_lapse=obj.time_lapse)))
+            obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
+                                                '{0}.ms_data'.format(obj.name)))
+            obj.index2pk = joblib.load(os.path.join(settings.NLP_MS_PATH,
+                                                '{0}.ms_ind2pk'.format(obj.name)))
+            obj.date = joblib.load(os.path.join(settings.NLP_MS_PATH,
+                                                '{0}.ms_date'.format(obj.name)))
         except EnvironmentError:      # OSError or IOError...
             raise
 
         return obj
 
 
-class LSH(TimeStampedModel, S3Mixin):
-    """Local Sensitive Hashing to retrieve approximate k-neighbors"""
+class MostSimilar(TimeStampedModel, S3Mixin):
+    """Most Similar class to perform k-nearest neighbors search based on
+    simple dot product. This is working because paper vector are normalized"""
 
     # For S3 Mixin
-    BUCKET_NAME = getattr(settings, 'NLP_LSH_BUCKET_NAME', '')
-    PATH = getattr(settings, 'NLP_LSH_PATH', '')
+    BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
+    PATH = getattr(settings, 'NLP_MS_PATH', '')
     AWS_ACCESS_KEY_ID = getattr(settings, 'DJANGO_AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = getattr(settings, 'DJANGO_AWS_SECRET_ACCESS_KEY', '')
 
-    model = models.ForeignKey(Model, related_name='lsh')
+    model = models.OneToOneField(Model, related_name='ms', unique=True)
 
-    state = models.CharField(default='NON', choices=LSHF_STATES, max_length=3)
+    # 2D array of # papers x vector size
+    data = np.empty(0)
+    # data index to paper pk
+    index2pk = []
+    # index date
+    date = []
 
-    time_lapse = models.IntegerField(default=-1,
-                                     choices=NLP_TIME_LAPSE_CHOICES,
-                                     verbose_name='Days from right now')
-
-    lsh = MyLSHForest()
-
-    objects = LSHManager()
+    objects = MostSimilarManager()
 
     @property
     def name(self):
-        return '{model_name}-tl{time_lapse}'.format(
-            model_name=self.model.name,
-            time_lapse=self.time_lapse)
-
-    class Meta:
-        unique_together = ('model', 'time_lapse')
+        return '{model_name}'.format(
+            model_name=self.model.name)
 
     def __str__(self):
-        return '{0}/{1}/{2}'.format(self.id, self.model.name, self.time_lapse)
+        return '{id}/{name}'.format(id=self.id, name=self.name)
 
     def save(self, *args, **kwargs):
-        if not self.state == 'BUS':
-            # save files to local volume
-            if not os.path.exists(settings.NLP_LSH_PATH):
-                os.makedirs(settings.NLP_LSH_PATH)
-            joblib.dump(self.lsh, os.path.join(settings.NLP_LSH_PATH,
-                                               self.name + '.lsh'))
 
-            # push files to s3
-            if self.BUCKET_NAME:
-                self.push_to_s3(ext='lsh')
-            # save to db
-            self.save_db_only()
-        else:
-            raise InvalidState('LSH state is {0}'.format(self.state))
+        logger.info('Saving MS ({pk}/{name})'.format(pk=self.id,
+                                                     name=self.name))
+
+        # save files to local volume
+        if not os.path.exists(settings.NLP_MS_PATH):
+            os.makedirs(settings.NLP_MS_PATH)
+        joblib.dump(self.data, os.path.join(settings.NLP_MS_PATH,
+                                            self.name + '.ms_data'))
+        joblib.dump(self.index2pk, os.path.join(settings.NLP_MS_PATH,
+                                            self.name + '.ms_ind2pk'))
+        joblib.dump(self.date, os.path.join(settings.NLP_MS_PATH,
+                                            self.name + '.ms_date'))
+        # push files to s3
+        if self.BUCKET_NAME:
+            self.push_to_s3(ext='ms')
+        # save to db
+        self.save_db_only()
 
     def save_db_only(self, *args, **kwargs):
-        super(LSH, self).save(*args, **kwargs)
+        super(MostSimilar, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         # delete on local volume
         try:
-            os.remove(
-                os.path.join(settings.NLP_LSH_PATH,
-                             '{model_name}-tl{time_lapse}.lsh'.format(
-                                model_name=self.model.name,
-                                time_lapse=self.time_lapse)))
+            # remove local
+            rm_files = glob.glob(
+                os.path.join(settings.NLP_MS_PATH, '{0}.ms*'.format(self.name)))
+            for file in rm_files:
+                os.remove(file)
         except IOError:
             pass
         # delete on amazon s3
@@ -783,306 +788,106 @@ class LSH(TimeStampedModel, S3Mixin):
                 self.delete_on_s3()
         except IOError:
             pass
-        super(LSH, self).delete(*args, **kwargs)
+        super(MostSimilar, self).delete(*args, **kwargs)
 
-    def set_state(self, state):
-        self.state = state
-        self.save_db_only()
-
-    def get_data(self, partial=False):
-        """Get and reshape data for training LSH
-
-        Args:
-            partial (bool): If true, perform partial fit of LSH (default=False)
-
-        Returns:
-            (np.array): 2D array (sample x vector size) of paper vector
-            (list): List of PaperVectos primary keys
-            (list): List of corresponding Paper primary keys
-
+    def update(self):
+        """Update data for knn search
         """
 
-        logger.info(
-            'Updating LSH ({pk}/{model_name}/{time_lapse}) - getting data...'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse))
+        logger.info('Updating MS ({pk}/{name}) - getting data...'.format(
+            pk=self.id, name=self.name))
 
         # size of the model space used for truncation of vector
         vec_size = self.model.size
 
-        if self.time_lapse > 0:
-            from_date = (timezone.now() -
-                         timezone.timedelta(
-                             days=self.time_lapse)).date()
-            data = PaperVectors.objects\
-                .filter(Q(model=self.model) &
-                        (Q(paper__date_ep__gt=from_date) |
-                         (Q(paper__date_pp__gt=from_date) &
-                          Q(paper__date_ep=None))))\
-                .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
-                .values_list('pk', 'paper__pk', 'vector')
-        else:
-            if partial:
-                data = PaperVectors.objects\
-                    .filter(model=self.model, is_in_full_lsh=False)\
-                    .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
-                    .values_list('pk', 'paper__pk', 'vector')
-            else:
-                data = PaperVectors.objects\
-                    .filter(model=self.model)\
-                    .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
-                    .values_list('pk', 'paper__pk', 'vector')
+        data = PaperVectors.objects\
+            .filter(model=self.model)\
+            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
+            .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
+                    'paper__date_pp')
+
+        # order by date
+        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_pp').asc())
 
         # Reshape data
-        pv_pks = []
-        new_pks = []    # use for partial update
-        x_data = np.zeros((data.count(), vec_size))
+        self.date = []
+        self.index2pk = []
+        self.data = np.zeros((data.count(), vec_size))
         for i, dat in enumerate(data):
-            # store PaperVector pk
-            pv_pks.append(data[i][0])
+            self.date.append(data[i]['paper__date_ep'] or data[i]['paper__date_pp'])
             # store paper pk
-            new_pks.append(data[i][1])
+            self.index2pk.append(data[i]['paper__pk'])
             # build input matrix for fit
-            x_data[i, :] = data[i][2][:vec_size]
+            self.data[i, :] = data[i]['vector'][:vec_size]
 
-        # store paper pks in lsh
-        self.lsh.pks += new_pks
+        # Store
+        self.save()
 
-        return x_data, pv_pks, new_pks
-
-    def update_if_full_lsh_flag(self, pv_pks):
-        """Update is_in_full_lsh flag of PaperVectors"""
-        # this is a the full LSH
-        if self.time_lapse < 0:
-            PaperVectors.objects.filter(pk__in=pv_pks)\
-                .update(is_in_full_lsh=True)
-
-    def _update(self, partial=False, n_estimators=10, n_candidates=50, **kwargs):
-        # TODO: Complete docstring
-        """Update LSH with new data and fit
-
-        Partial update is allowed only for LSH with time_lapse=-1. Partial fit
-        cannot be performed on LSH with time_lapse > 0 because samples cannot
-        be removed from LSH, only added.
-
-        Args:
-            partial (bool): if True, do partial update
-            n_estimators (int): Number of trees in the LSH Forest
-            n_candidates (int): Minimum number of candidates evaluated per
-                estimator
-        """
-
-        # Register status as busy
-        self.set_state('BUS')
-
-        logger.info(
-            'Update LSH ({pk}/{model_name}/{time_lapse}) - start...'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse))
-        t0 = time.time()
-
-        if not partial:         # Init LSH
-            self.lsh = MyLSHForest(n_estimators=n_estimators,
-                                   n_candidates=n_candidates)
-
-        # Get data
-        data, pv_pks, new_pks = self.get_data(partial=partial)
-
-        # Train
-        if pv_pks:      # if data
-
-            logger.info(
-                'Update LSH ({pk}/{model_name}/{time_lapse}) - fit...'
-                    .format(pk=self.id,
-                            model_name=self.model.name,
-                            time_lapse=self.time_lapse))
-
-            if partial:
-                self.lsh.partial_fit(data)
-            else:
-                self.lsh.fit(data)
-
-            # Register status as idle
-            self.set_state('IDL')
-
-            # Save
-            self.save()
-
-            # Update PaperVector.is_in_full_lsh
-            self.update_if_full_lsh_flag(pv_pks)
-
-            # EDIT: Update is done on a per request basis
-            # # Update neighbors
-            # if partial:
-            #     self.update_neighbors(new_pks)
-            # else:
-            #     self.update_neighbors()
-
-        tend = time.time() - t0
-        logger.info(
-            'full update of LSH ({pk}/{model_name}/{time_lapse}) done in {time}'
-                .format(pk=self.id, model_name=self.model.name,
-                        time_lapse=self.time_lapse, time=tend))
-
-    def update(self, **kwargs):
-        """Update dispatcher for LSH
-
-        Depending on time_lapse, update is routed to partial udpate or
-        full_update
-        """
-        # Register state as busy
-        self.set_state('BUS')
-
-        if 'partial' in kwargs and kwargs['partial']:
-            if self.time_lapse < 0:
-                self._update(**kwargs)
-            else:
-                raise ValueError('partial can be true with lsh time_lapse '
-                                 'defined')
-        else:
-            if self.time_lapse < 0:
-                self._update(partial=True, **kwargs)
-            else:
-                self._update(partial=False, **kwargs)
-
-        # Register state as busy
-        self.set_state('IDL')
-
-    def full_update(self, **kwargs):
-        """Full update of LSH"""
-        # Register state as busy
-        self.set_state('BUS')
-        self._update(partial=False, **kwargs)
-        # Register state as busy
-        self.set_state('IDL')
-
-    def update_neighbors(self, *args):
-        """Update neighbors of papers
-
-        Args:
-            Optional:
-            args: list or query set of paper primary keys to update
-        """
-
-        # Add Neighbors to PaperNeighbors
-        if not args:  # populate all neighbors associated with LSH
-            pks = self.lsh.pks
-        else:
-            pks = args[0]
-
-        for count, pk in enumerate(pks):
-
-            # if not count % np.ceil(len(pks)/100):
-            #     logger.info(
-            #         'Updating LSH ({pk}/{model_name}/{time_lapse}) - updating '
-            #         'neighbors ({perc:.0f}%)...'.format(
-            #             pk=self.id,
-            #             model_name=self.model.name,
-            #             time_lapse=self.time_lapse,
-            #             perc=np.round(count / np.ceil(len(pks)/10.) * 10)))
-            # async populate
-            # self.populate_neighbors.apply_async(args=[pk, ])
-            # self.populate_neighbors(pk)
-            # Get corresponding LSH task:
-            try:
-                lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
-                    name=self.model.name,
-                    time_lapse=self.time_lapse)]
-            except KeyError:
-                raise KeyError
-            lsh_task.delay(pk, 'populate_neighbors')
-
-    def populate_neighbors(self, paper_pk):
+    def populate_neighbors(self, paper_pk, time_lapse=-1):
         """Populate neighbors of paper
         """
 
-        vec = PaperVectors.objects\
-            .filter(paper_id=paper_pk, model=self.model)\
-            .values_list('vector', flat=True)[0][:self.model.size]
+        neighbors_pks = self.get_knn(paper_pk, time_lapse=time_lapse,
+                                     k=settings.NLP_MAX_KNN_NEIGHBORS)
 
-        pks = self.k_neighbors(vec,
-                               n_neighbors=settings.NLP_MAX_KNN_NEIGHBORS + 1)
-
-        pks = pks.flatten()[1:]     # remove first element (self)
-
-        pn, _ = PaperNeighbors.objects.get_or_create(lsh_id=self.pk,
+        pn, _ = PaperNeighbors.objects.get_or_create(model=self.model,
+                                                     time_lapse=time_lapse,
                                                      paper_id=paper_pk)
-        pn.set_neighbors(pks)
+        pn.set_neighbors(neighbors_pks)
 
-        return pks
+        return neighbors_pks
 
-    def k_neighbors(self, seed, **kwargs):
-        """Return k nearest neighbors
-
-        Arguments:
-            seed (np.array or list): A 1d or 2d array (N samples x model.size)
-
-            Optional:
-            n_neighbors (int): number of neighbors
-
-        Returns:
-            (np.array): A 2d array of indices of the k-nearest neighbors
-
-        """
-
-        if 'n_neighbors' in kwargs:
-            n_neighbors = kwargs['n_neighbors']
+    def get_clip_start(self, time_lapse):
+        if time_lapse == -1:
+            return 0
         else:
-            n_neighbors = settings.NLP_MAX_KNN_NEIGHBORS
+            cutoff_date = (timezone.now() - timezone.timedelta(days=time_lapse)).date()
+            return np.argmax(np.array(self.date) > cutoff_date)
 
-        if self.state == 'IDL':
-            if isinstance(seed, list):
-                seed = np.array(seed).squeeze()
-            if seed.ndim == 1:
-                assert len(seed) == self.model.size
-            else:
-                assert seed.shape[1] == self.model.size
+    def get_knn(self, paper_pk, time_lapse=-1, k=1):
 
-            distances, indices = self.lsh.kneighbors(seed,
-                                                     n_neighbors=n_neighbors,
-                                                     return_distance=True)
-            # convert indices to paper pk
-            for i, index in enumerate(indices):
-                for j, k in enumerate(index):
-                    indices[i][j] = self.lsh.pks[k]
+        pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
+        vec = pv.get_vector()
 
-            return indices
+        clip_start = self.get_clip_start(time_lapse)
+        res_search = self.knn_search(vec, clip_start=clip_start, top_n=k)
+
+        neighbors_pks = [item[0] for item in res_search
+                         if item[0] not in [paper_pk]]
+
+        return neighbors_pks
+
+    def get_knn_multi(self, paper_pks, time_lapse=-1, k=1):
+
+        neighbors_pks_multi = []
+        for paper_pk in paper_pks:
+            neighbors_pks_multi += self.get_knn(paper_pk, time_lapse=time_lapse,
+                                                k=k)
+        # ignore paper_pks
+        neighbors_pks_multi = [nei for nei in neighbors_pks_multi if nei not in paper_pks]
+        # ignore duplicate
+        neighbors_pks_multi = list(set(neighbors_pks_multi))
+        return neighbors_pks_multi
+
+    def knn_search(self, seed, clip_start=0, top_n=5):
+
+        # check seed
+        if isinstance(seed, list):
+            seed = np.array(seed).squeeze()
+        if seed.ndim == 1:
+            assert len(seed) == self.model.size
         else:
-            raise InvalidState('LSH is not Idle. current state is {0}'
-                               .format(self.state))
+            assert seed.shape[1] == self.model.size
 
-    def k_neighbors_pks(self, seed_pks, model_pk, **kwargs):
-        """Return k nearest neighbors
+        # compute distance
+        dists = np.dot(self.data[clip_start:], seed)
+        # sort
+        best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
+        # return paper pk and distances
+        result = [(self.index2pk[ind], float(dists[ind])) for ind in best]
+        return result
 
-        This method duplicates k_neighbors method because it is used for
-        asynchronous task so that only list of PaperVector keys is serialized
-        and not the entire 2D array (that by the way crashes celery in my test)
-
-        Arguments:
-            seed (list): list of primary PaperVector keys
-
-            Optional:
-            n_neighbors (int): number of neighbors
-
-        Returns:
-            (list): A nested list of indices of the k-nearest neighbors
-        """
-
-        data = PaperVectors.objects\
-            .filter(paper__pk__in=seed_pks,
-                    model__pk=model_pk)\
-            .values('vector')
-        model_size = Model.objects.get(pk=model_pk).size
-
-        mat = np.zeros((len(data), model_size), dtype=np.float)
-        # populate
-        for i, entry in enumerate(data):
-            mat[i] = np.array(entry['vector'][:model_size])
-
-        indices = self.k_neighbors(mat, **kwargs)
-        return indices.tolist()
-
-    def tasks(self, *args, **kwargs):
+    def tasks(self, task, **kwargs):
         """Use from tasks.py for calling task while object remains in-memory
 
         This is an odd design. This method dispatches tasks that can be run
@@ -1093,51 +898,48 @@ class LSH(TimeStampedModel, S3Mixin):
         one single thread/worker and everything is 'fast'
 
         Args:
-            task (string): A string defining the task. Either 'update',
-                'full_update', 'k_neighbors', 'populate_neighbors'
+            task (string): A string defining the task. 'update', 'populate_neighbors',
+                'get_knn', 'knn_search'
 
-            Optional Kwargs for:
-            'k_neighbors':
-                vec (np.array or list): An array corresponding to vector
-                n_neighbors (int): An int defining the number of neighbors to
-                    search
+            Optional kwargs:
             'populate_neighbors':
-                paper_pk (int): The primary key of a Paper
-
-        Returns:
-            Depends on the task
+                paper_pk (int): The primary key of a Paper instance
+                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
+            'get_knn':
+                paper_pk (int): The primary key of a Paper instance
+                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
+                k (int): number of neighbors
+            'get_knn_multi':
+                paper_pks (list): List of primary key of Paper instances
+                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
+                k (int): number of neighbors
+            'knn_search':
+                seed (np.array or list): An array of length corresponding to model
+                clip_start (int): Where to start in self.data (see get_clip_start method)
+                top_n (int): the top n results
         """
 
-        # the following check is awkward but it is related to
-        # https://github.com/celery/celery/issues/2695 and the fact that
-        # passing kwargs argument into chain is buggy currently
-        if len(args) > 1:  # case: task = 'populate_neighbors'
-            task = args[1]
-            paper_pk = args[0]
-        else:
-            task = args[0]
-
-        # update of LSH (partial or not)
         if task == 'update':
             self.update()
-            return 0
-        # full update of LSH
-        elif task == 'full_update':
-            self.full_update()
-            return 0
-        elif task == 'k_neighbors_pks':
-            try:
-                seed_pks = kwargs['seed_pks']
-                model_pk = kwargs['model_pk']
-                k = kwargs['k']
-            except KeyError as e:
-                raise e
-            pks = self.k_neighbors_pks(seed_pks, model_pk, n_neighbors=k)
-            return pks
-        # populate the PaperNeighbors for paper_pk
         elif task == 'populate_neighbors':
-            neighbors_pk = self.populate_neighbors(paper_pk)
-            return neighbors_pk
+            paper_pk = kwargs.get('paper_pk')
+            time_lapse = kwargs.get('time_lapse')
+            return self.populate_neighbors(paper_pk, time_lapse=time_lapse)
+        elif task == 'get_knn':
+            paper_pk = kwargs.get('paper_pk')
+            time_lapse = kwargs.get('time_lapse')
+            k = kwargs.get('k')
+            return self.get_knn(paper_pk, time_lapse=time_lapse, k=k)
+        elif task == 'get_knn_multi':
+            paper_pks = kwargs.get('paper_pks')
+            time_lapse = kwargs.get('time_lapse')
+            k = kwargs.get('k')
+            return self.get_knn_multi(paper_pks, time_lapse=time_lapse, k=k)
+        elif task == 'knn_search':
+            seed = kwargs.get('seed')
+            clip_start = kwargs.get('clip_start')
+            top_n = kwargs.get('top_n')
+            return self.knn_search(seed, clip_start=clip_start, top_n=top_n)
         else:
             print(task)
             raise ValueError('Unknown task action')

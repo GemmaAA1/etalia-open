@@ -23,7 +23,7 @@ from paperstream.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 from paperstream.library.forms import PaperFormFillBlanks
 from paperstream.core.models import TimeStampedModel
-from paperstream.core.tasks import embed_all_models, embed_all_models_and_find_neighbors
+from paperstream.core.tasks import embed_all_models
 
 from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
@@ -283,8 +283,7 @@ class Consumer(TimeStampedModel):
                 if paper:
                     paper_added += 1
 
-                    # Embed paper and get closest neighbors
-                    # embed_all_models_and_find_neighbors(paper.pk)
+                    # Embed paper
                     embed_all_models(paper.pk)
 
             # Update consumer_journal

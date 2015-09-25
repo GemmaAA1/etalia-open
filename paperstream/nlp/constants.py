@@ -16,9 +16,3 @@ FIELDS_FOR_MODEL = (
     ('title', 'Title'),
     ('abstract', 'Abstract'),
 )
-
-LSHF_STATES = (
-    ('NON', 'None'),
-    ('BUS', 'Busy'),
-    ('IDL', 'Idle'),
-)

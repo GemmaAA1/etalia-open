@@ -49,7 +49,7 @@ class S3Mixin(object):
                                                        ext=ext))):
                 tar.add(filename, arcname=os.path.split(filename)[1])
             tar.close()
-            logging.info('↑ {} Uploading...'.format(self.name))
+            logging.info('↑ {} Uploading on s3...'.format(self.name))
 
             # create a key to keep track of our file in the storage
             k = Key(bucket)
@@ -72,7 +72,7 @@ class S3Mixin(object):
             key = self.name + '.tar.gz'
             item = bucket.get_key(key)
             tar_path = os.path.join(self.PATH, key)
-            logging.info('↓ {0} Downloading to {1}...'.format(self.name,
+            logging.info('↓ {0} Downloading from s3 to {1}...'.format(self.name,
                                                               self.PATH))
             item.get_contents_to_filename(tar_path,
                                           cb=self.callback,
@@ -100,7 +100,7 @@ class S3Mixin(object):
             key = self.name + '.tar.gz'
             item = bucket.get_key(key)
             if item:
-                logging.info('{} Deleting...'.format(self.name))
+                logging.info('{} Deleting on s3...'.format(self.name))
                 item.delete()
                 logging.info('{} Done'.format(self.name))
         except Exception:

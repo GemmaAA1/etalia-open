@@ -14,7 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
 from paperstream.library.models import Paper
-from paperstream.nlp.models import Model, LSH
+from paperstream.nlp.models import Model, MostSimilar
 from config.celery import celery_app as app
 from .constants import FEED_STATUS_CHOICES
 from .utils import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
@@ -159,28 +159,22 @@ class UserFeed(TimeStampedModel):
             user=self.user)
 
         # get target papers (excluding userlib + not trusted + empty abstract)
-        # from LSH
-        # Get corresponding LSH task:
+        # from MostSimilar
+        # Get corresponding task:
         try:
-            lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
-                name=self.user.settings.model.name,
-                time_lapse=self.user.settings.time_lapse)]
+            ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
+                name=self.user.settings.model.name)]
         except KeyError:
             raise KeyError
 
-        seed_pks = self.papers_seed.all().values('pk')
+        seed_pks = self.papers_seed.all().values_list('pk', flat=True)
         # Submit Celery Task to get k_neighbors
-        res = lsh_task.delay('k_neighbors_pks',
-                             seed_pks=seed_pks,
-                             model_pk=self.user.settings.model.pk,
+        res = ms_task.delay('get_knn_multi',
+                             paper_pks=seed_pks,
+                             time_lapse=self.user.settings.time_lapse,
                              k=settings.FEED_K_NEIGHBORS)
         # # Wait for Results
-        results = res.get()
-        target_seed_pks = list(set([pk for sub in results for pk in sub]))
-
-        # target_seed_pks = LSH.objects.load(
-        #     model=self.user.settings.model,
-        #     time_lapse=self.user.settings.time_lapse).lsh.pks
+        target_seed_pks = res.get()
 
         # Filter exclude corresponding papers
         target_pks = Paper.objects\

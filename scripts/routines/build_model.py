@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import yaml
-from paperstream.nlp.models import Model, LSH
+from paperstream.nlp.models import Model
 from paperstream.library.models import Paper
 
 path_to_model_file = 'models.yaml'
@@ -23,5 +23,5 @@ def build(model_name, papers=None):
                                       abstract__regex=r'^.{10}.*')
     model.dump(papers)
     model.build_vocab_and_train()
-    # Propagate to LSH, journalvector, papervector
+    # Propagate to MostSimilar, journalvector, papervector
     model.propagate()

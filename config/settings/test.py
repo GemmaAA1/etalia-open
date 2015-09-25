@@ -31,7 +31,7 @@ NLP_CHUNK_SIZE = 2
 NLP_MAX_VECTOR_SIZE = 300
 NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data_test', 'data'))
 NLP_MODELS_PATH = str(ROOT_DIR.path('nlp_data_test', 'mods'))
-NLP_LSH_PATH = str(ROOT_DIR.path('nlp_data_test', 'lshfs'))
+NLP_MS_PATH = str(ROOT_DIR.path('nlp_data_test', 'ms'))
 
 # LOGGING
 LOGGING = {}
@@ -46,3 +46,6 @@ CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 BROKER_BACKEND = 'memory'
 
+NLP_DATA_BUCKET_NAME = 'paperstream-development-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
+NLP_MS_BUCKET_NAME = 'paperstream-development-nlp-ms'

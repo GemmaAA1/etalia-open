@@ -5,7 +5,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Model, LSH
+from .models import Model, MostSimilar
 
 admin.site.register(Model)
-admin.site.register(LSH)
+admin.site.register(MostSimilar)

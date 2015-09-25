@@ -10,7 +10,8 @@ from django.utils import timezone
 from paperstream.library.models import Journal, Paper
 
 from ..models import Model
-from ..tasks import register_all_models_and_lshs_tasks
+from ..tasks import register_nlp_tasks
+
 
 class NLPTestCase(TestCase):
 
@@ -22,8 +23,8 @@ class NLPTestCase(TestCase):
         if os.path.isdir(settings.NLP_DATA_PATH):
             shutil.rmtree(settings.NLP_DATA_PATH)
 
-        if os.path.isdir(settings.NLP_LSH_PATH):
-            shutil.rmtree(settings.NLP_LSH_PATH)
+        if os.path.isdir(settings.NLP_MS_PATH):
+            shutil.rmtree(settings.NLP_MS_PATH)
 
 
 class NLPDataTestCase(NLPTestCase):
@@ -75,4 +76,4 @@ class NLPDataExtendedTestCase(NLPDataTestCase):
         self.model.dump(self.papers.all())
         self.model.build_vocab_and_train()
         self.model.propagate()
-        register_all_models_and_lshs_tasks()
+        register_nlp_tasks()

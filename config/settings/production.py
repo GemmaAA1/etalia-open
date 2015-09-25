@@ -18,4 +18,4 @@ DATABASES = {
 
 NLP_DATA_BUCKET_NAME = 'paperstream-production-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'paperstream-production-nlp-models'
-NLP_LSH_BUCKET_NAME = 'paperstream-production-nlp-lshs'
+NLP_MS_BUCKET_NAME = 'paperstream-production-nlp-ms'

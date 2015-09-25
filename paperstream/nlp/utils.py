@@ -6,12 +6,12 @@ import os
 import re
 import nltk
 import glob
+import numpy as np
 from bs4 import BeautifulSoup
 
 from gensim.models import Doc2Vec
 from gensim.models import Phrases
 from gensim.models.doc2vec import TaggedDocument
-from sklearn.neighbors import LSHForest
 
 from django.conf import settings
 
@@ -98,27 +98,11 @@ class TaggedDocumentsIterator(object):
                     yield TaggedDocument(text_l, [pk, j_pk])
 
 
-class MyLSHForest(LSHForest):
-    """Adding pks attribute to store Paper pk correspondence in LSH
-    """
-
-    def __init__(self, n_estimators=10, radius=1.0, n_candidates=50,
-                 n_neighbors=5, min_hash_match=4, radius_cutoff_ratio=.9,
-                 random_state=None):
-        super(MyLSHForest, self).__init__(n_estimators=n_estimators,
-                                          radius=radius,
-                                          n_candidates=n_candidates,
-                                          n_neighbors=n_neighbors,
-                                          min_hash_match=min_hash_match,
-                                          radius_cutoff_ratio=radius_cutoff_ratio,
-                                          random_state=random_state)
-        self.pks = []
-
-
 def model_attr_getter(attr):
     def get_any(self):
         return getattr(self, attr)
     return get_any
+
 
 def model_attr_setter(attr, attr2):
     def set_any(self, value):

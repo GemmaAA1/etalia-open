@@ -64,17 +64,16 @@ class PaperView(ModalMixin, DetailView):
 
         # Get stored neighbors papers
         try:
-            neigh_data = paper_.neighbors.get(lsh__model=model, lsh__time_lapse=-1)
+            neigh_data = paper_.neighbors.get(model=model, time_lapse=-1)
             if neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
                 neighbors = neigh_data.neighbors
             else:
                 raise PaperNeighbors.DoesNotExist
         except PaperNeighbors.DoesNotExist:   # refresh
             try:
-                lsh_task = app.tasks['paperstream.nlp.tasks.lsh_{name}_{time_lapse}'.format(
-                    name=model.name,
-                    time_lapse=-1)]
-                res = lsh_task.delay(paper_.pk, 'populate_neighbors')
+                ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
+                    name=model.name)]
+                res = ms_task.delay('populate_neighbors', paper_pk=paper_.pk, time_lapse=-1)
                 neighbors = res.get()
             except KeyError:
                 raise
