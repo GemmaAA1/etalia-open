@@ -118,11 +118,11 @@ def register_nlp_tasks():
 
 
 @app.task()
-def update_ms():
-    mss = MostSimilar.objects.all()
-    for ms in mss:
+def mostsimilar_update_all():
+    models = Model.objects.all()
+    for model in models:
+        ms = MostSimilar.objecs.load(model=model)
         ms.update()
-
 
 @app.task()
 def add_nlp(x, y):

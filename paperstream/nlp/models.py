@@ -259,10 +259,9 @@ class Model(TimeStampedModel, S3Mixin):
         # push files to s3
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
-            self.save(update_fields=['upload_state'])
+            self.save_db_only(update_fields=['upload_state'])
             self.push_to_s3(ext='mod')
             self.upload_state = 'IDL'
-            self.save(update_fields=['upload_state'])
         # save to db
         self.save_db_only(*args, **kwargs)
 
@@ -779,10 +778,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # push files to s3
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
-            self.save(update_fields=['upload_state'])
+            self.save_db_only(update_fields=['upload_state'])
             self.push_to_s3(ext='ms')
             self.upload_state = 'IDL'
-            self.save(update_fields=['upload_state'])
         # save to db
         self.save_db_only()
 
