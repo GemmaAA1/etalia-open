@@ -11,12 +11,12 @@ class MyRouter(object):
         if task.startswith('paperstream.users'):
             return {'queue': 'default',
                     'routing_key': 'default.users'}
-        if task.startswith('paperstream.nlp.tasks.lsh'):
-            return {'queue': 'lsh',
-                    'routing_key': 'lsh'}
+        if task.startswith('paperstream.nlp.tasks.mostsimilar'):
+            return {'queue': 'mostsimilar',
+                    'routing_key': 'mostsimilar'}
         if task.startswith('paperstream.feeds'):
-            return {'queue': 'lsh',
-                    'routing_key': 'lsh.feeds'}
+            return {'queue': 'mostsimilar',
+                    'routing_key': 'mostsimilar.feeds'}
         if task.startswith('paperstream.nlp'):
             return {'queue': 'nlp',
                     'routing_key': 'nlp'}

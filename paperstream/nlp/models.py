@@ -8,7 +8,6 @@ from random import shuffle
 import numpy as np
 from timeit import time
 
-from config.celery import celery_app as app
 
 from sklearn.externals import joblib
 
@@ -110,6 +109,11 @@ class Model(TimeStampedModel, S3Mixin):
     # fields
     text_fields = models.ManyToManyField('TextField',
                                          related_name='text_fields')
+
+    upload_state = models.CharField(max_length=3,
+                                    choices=(('IDL', 'Idle'),
+                                             ('ING', 'Uploading')),
+                                    default='DON')
 
     objects = ModelManager()
 
@@ -254,7 +258,11 @@ class Model(TimeStampedModel, S3Mixin):
                          '{0}.mod'.format(self.name)))
         # push files to s3
         if self.BUCKET_NAME:
+            self.upload_state = 'ING'
+            self.save(update_fields=['upload_state'])
             self.push_to_s3(ext='mod')
+            self.upload_state = 'IDL'
+            self.save(update_fields=['upload_state'])
         # save to db
         self.save_db_only(*args, **kwargs)
 
@@ -732,6 +740,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
     model = models.OneToOneField(Model, related_name='ms', unique=True)
 
+    upload_state = models.CharField(max_length=3,
+                                    choices=(('IDL', 'Idle'),
+                                             ('ING', 'Uploading')),
+                                    default='DON')
+
     # 2D array of # papers x vector size
     data = np.empty(0)
     # data index to paper pk
@@ -765,7 +778,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                                             self.name + '.ms_date'))
         # push files to s3
         if self.BUCKET_NAME:
+            self.upload_state = 'ING'
+            self.save(update_fields=['upload_state'])
             self.push_to_s3(ext='ms')
+            self.upload_state = 'IDL'
+            self.save(update_fields=['upload_state'])
         # save to db
         self.save_db_only()
 
@@ -790,11 +807,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             pass
         super(MostSimilar, self).delete(*args, **kwargs)
 
-    def update(self):
-        """Update data for knn search
+    def full_update(self):
+        """Full update data for knn search
         """
 
-        logger.info('Updating MS ({pk}/{name}) - getting data...'.format(
+        logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
             pk=self.id, name=self.name))
 
         # size of the model space used for truncation of vector
@@ -802,7 +819,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         data = PaperVectors.objects\
             .filter(model=self.model)\
-            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
+            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
+                     (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
                     'paper__date_pp')
 
@@ -810,18 +828,59 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = data.order_by(Coalesce('paper__date_ep', 'paper__date_pp').asc())
 
         # Reshape data
+        nb_items = data.count()
         self.date = []
         self.index2pk = []
-        self.data = np.zeros((data.count(), vec_size))
-        for i, dat in enumerate(data):
+        self.data = np.zeros((nb_items, vec_size))
+        for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                self.date.append(dat['paper__date_ep'] or data[i]['paper__date_pp'])
+                self.date.append(dat['paper__date_ep'] or dat['paper__date_pp'])
                 # store paper pk
                 self.index2pk.append(dat['paper__pk'])
                 # build input matrix for fit
                 self.data[i, :] = dat['vector'][:vec_size]
 
         # Store
+        self.save()
+
+    def update(self):
+        """Update data for knn search for new paper
+        """
+
+        logger.info('Updating MS ({pk}/{name}) - fetching new data...'.format(
+            pk=self.id, name=self.name))
+
+        # size of the model space used for truncation of vector
+        vec_size = self.model.size
+
+        data = PaperVectors.objects\
+            .filter(model=self.model)\
+            .exclude(paper_pk__in=self.index2pk)\
+            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
+                     (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
+            .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
+                    'paper__date_pp')
+
+        # order by date
+        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_pp').asc())
+
+        # Reshape data
+        nb_items = data.count()
+        date = []
+        index2pk = []
+        data = np.zeros((nb_items, vec_size))
+        for i, dat in enumerate(data[:nb_items]):
+            if dat['vector']:
+                date.append(dat['paper__date_ep'] or dat['paper__date_pp'])
+                # store paper pk
+                index2pk.append(dat['paper__pk'])
+                # build input matrix for fit
+                data[i, :] = dat['vector'][:vec_size]
+
+        # Store
+        self.index2pk += index2pk
+        self.date += date
+        self.data = np.vstack((self.data, data))
         self.save()
 
     def populate_neighbors(self, paper_pk, time_lapse=-1):

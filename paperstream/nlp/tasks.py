@@ -44,9 +44,11 @@ class EmbedPaperTask(Task):
         if self._model is None:
             self._model = Model.objects.load(name=self.model_name)
             return self._model
-
-        last_modified = Model.objects.get(name=self.model_name).modified
-        if not self._model.modified == last_modified:
+        # if Model has been modified and currently not uploading, reload
+        model_now = Model.objects.get(name=self.model_name)
+        last_modified = model_now.modified
+        upload_state = model_now.upload_sate
+        if not self._model.modified == last_modified and upload_state == 'IDL':
             self._model = Model.objects.load(name=self.model_name)
 
         return self._model
@@ -82,9 +84,11 @@ class MostSimilarTask(Task):
         if self._ms is None:
             self._ms = MostSimilar.objects.load(model__name=self.model_name)
             return self._ms
-        # if MostSimilar has been modified, reload
-        last_modified = MostSimilar.objects.get(model__name=self.model_name).modified
-        if not self._ms.modified == last_modified:
+        # if MostSimilar has been modified and MostSimilar not uploading, reload
+        ms_now = MostSimilar.objects.get(model__name=self.model_name)
+        last_modified = ms_now.modified
+        upload_state = ms_now.upload_state
+        if not self._ms.modified == last_modified and upload_state == 'IDL':
             # remove local
             rm_files = glob.glob(
                 os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(

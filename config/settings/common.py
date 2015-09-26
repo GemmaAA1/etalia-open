@@ -326,7 +326,7 @@ CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
     Queue('default', routing_key='default.#'),
     Queue('nlp', routing_key='nlp.#'),
-    Queue('lsh', routing_key='lsh.#'),
+    Queue('mostsimilar', routing_key='mostsimilar.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
 )
