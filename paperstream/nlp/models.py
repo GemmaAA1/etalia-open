@@ -742,7 +742,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     upload_state = models.CharField(max_length=3,
                                     choices=(('IDL', 'Idle'),
                                              ('ING', 'Uploading')),
-                                    default='IDL')
+                                    default='IDL ')
 
     # 2D array of # papers x vector size
     data = np.empty(0)
