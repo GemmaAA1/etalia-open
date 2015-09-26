@@ -814,11 +814,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.index2pk = []
         self.data = np.zeros((data.count(), vec_size))
         for i, dat in enumerate(data):
-            self.date.append(data[i]['paper__date_ep'] or data[i]['paper__date_pp'])
-            # store paper pk
-            self.index2pk.append(data[i]['paper__pk'])
-            # build input matrix for fit
-            self.data[i, :] = data[i]['vector'][:vec_size]
+            if dat['vector']:
+                self.date.append(dat['paper__date_ep'] or data[i]['paper__date_pp'])
+                # store paper pk
+                self.index2pk.append(dat['paper__pk'])
+                # build input matrix for fit
+                self.data[i, :] = dat['vector'][:vec_size]
 
         # Store
         self.save()
