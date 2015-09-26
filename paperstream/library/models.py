@@ -235,6 +235,9 @@ class Paper(TimeStampedModel):
     # date of paper last revised (e.g. arxiv, or publisher with e.g grant#)
     date_lr = models.DateField(null=True, blank=True, default=None)
 
+    # date first seen
+    date_fs = models.DateField(null=True, blank=True, default=None)
+
     # url where found
     url = models.URLField(blank=True, default='')
     # language

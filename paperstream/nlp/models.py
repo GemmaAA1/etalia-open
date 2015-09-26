@@ -820,10 +820,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp')
+                    'paper__date_fs')
 
         # order by date
-        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_pp').asc())
+        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_fs').asc())
 
         # Reshape data
         nb_items = data.count()
@@ -832,7 +832,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                self.date.append(dat['paper__date_ep'] or dat['paper__date_pp'])
+                self.date.append(dat['paper__date_ep'] or dat['paper__date_fs'])
                 # store paper pk
                 self.index2pk.append(dat['paper__pk'])
                 # build input matrix for fit
@@ -857,10 +857,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp')
+                    'paper__date_pp', 'paper__date_fs')
 
         # order by date
-        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_pp').asc())
+        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_fs').asc())
 
         # Reshape data
         nb_items = data.count()
@@ -869,7 +869,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                date.append(dat['paper__date_ep'] or dat['paper__date_pp'])
+                date.append(dat['paper__date_ep'] or dat['paper__date_fs'])
                 # store paper pk
                 index2pk.append(dat['paper__pk'])
                 # build input matrix for fit
