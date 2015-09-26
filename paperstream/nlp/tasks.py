@@ -47,7 +47,7 @@ class EmbedPaperTask(Task):
         # if Model has been modified and currently not uploading, reload
         model_now = Model.objects.get(name=self.model_name)
         last_modified = model_now.modified
-        upload_state = model_now.upload_sate
+        upload_state = model_now.upload_state
         if not self._model.modified == last_modified and upload_state == 'IDL':
             self._model = Model.objects.load(name=self.model_name)
 
