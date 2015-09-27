@@ -236,7 +236,7 @@ class Paper(TimeStampedModel):
     date_lr = models.DateField(null=True, blank=True, default=None)
 
     # date first seen
-    date_fs = models.DateField(null=True, blank=True)
+    date_fs = models.DateField(auto_now_add=True)
 
     # url where found
     url = models.URLField(blank=True, default='')
