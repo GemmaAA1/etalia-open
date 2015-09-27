@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='paper',
             name='date_fs',
-            field=models.DateField(default=None, null=True, blank=True),
+            field=models.DateField(null=True, blank=True),
         ),
     ]
