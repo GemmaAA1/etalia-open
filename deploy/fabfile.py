@@ -96,13 +96,19 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     env.hosts = tags.keys()
     roles = []
     roles += [tag.get('layer', '') for tag in tags.values()]
-    roles += [tag.get('role', '') for tag in tags.values()]
+    for tag in tags.values():
+        if tag.get('layer', None):
+            roles.append(tag.get('layer'))
+        if tag.get('role', None):
+            r = tag.get('role', '').split(',')
+            for rr in r:
+                roles.append(rr)
     env.roles = list(set(roles))
     roledefs = {}
     for role in env.roles:
         roledefs[role] = [host for host in env.hosts
                           if tags[host]['layer'] == role or
-                          tags[host].get('role', '') == role]
+                          role in tags[host].get('role', '')]
     env.roledefs = roledefs
 
     # store stack used
@@ -117,15 +123,16 @@ def check_integrity():
     """Check if instance type is compatible with role"""
     for host in env.hosts:
         inst_type = env.tags[host]['type']
-        role = env.tags[host].get('role', '')
-        if role:
-            min_type = ROLE_INSTANCE_TYPE_MAP[role]
-            if not INSTANCE_TYPES_RANK[min_type] <= INSTANCE_TYPES_RANK[inst_type]:
-                raise TypeError('Instance {0} too small, type is {1} (min {2})'.format(
-                    host,
-                    inst_type,
-                    min_type
-                ))
+        roles = env.tags[host].get('role', '').split(',')
+        if roles:
+            for role in roles:
+                min_type = ROLE_INSTANCE_TYPE_MAP[role]
+                if not INSTANCE_TYPES_RANK[min_type] <= INSTANCE_TYPES_RANK[inst_type]:
+                    raise TypeError('Instance {0} too small, type is {1} (min {2})'.format(
+                        host,
+                        inst_type,
+                        min_type
+                    ))
 
 
 def get_host_roles():
