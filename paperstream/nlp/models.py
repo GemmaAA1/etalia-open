@@ -993,7 +993,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # check seeds
         if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
             seeds = np.array(seeds)
-        assert seeds.shape[1] == self.model.size
+        assert seeds.shape[0] == self.model.size
 
         # compute distance
         dists = np.dot(self.data[clip_start:, :], seeds)
