@@ -425,7 +425,7 @@ class Model(TimeStampedModel, S3Mixin):
         self.save_journal_vec_from_bulk()
         logging.info('{} Populate papers...'.format(self.name))
         self.save_paper_vec_from_bulk()
-        logging.info('{} Build LSH...'.format(self.name))
+        logging.info('{} Build MostSimilar...'.format(self.name))
         self.build_most_similar()
 
     def build_most_similar(self):
@@ -920,7 +920,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         neighbors_pks = [item[0] for item in res_search
                          if item[0] not in [paper_pk]]
 
-        return neighbors_pks
+        return neighbors_pks[:k]
 
     def get_knn_multi(self, paper_pks, time_lapse=-1, k=1):
 
@@ -946,21 +946,23 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         # compute distance
         dists = np.dot(self.data[clip_start:], seed)
-        # sort
+        # sort (NB: +1 because likely will return input seed as closest item)
         best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
         # return paper pk and distances
         result = [(self.index2pk[ind], float(dists[ind])) for ind in best]
         return result
 
     def tasks(self, task, **kwargs):
-        """Use from tasks.py for calling task while object remains in-memory
+        """Wrapper around MostSimilar tasks
 
-        This is an odd design. This method dispatches tasks that can be run
-        from LSH. It is so because we want to have the lsh object in-memory
+        Use from tasks.py for calling task while object remains in-memory.
+        Possibly an akward design.
+
+        This method dispatches tasks that can be run from MostSimilar.
+        It is so because we want to have the MostSimilar instance in-memory
         to avoid over-head of loading from file. Given the Task class of Celery
-        the work-around I found is to define a master task that dispatches to
-        sub tasks. Therefore the instance of the tasks is associated to
-        one single thread/worker and everything is 'fast'
+        the work-around I found is to define this wrapper that dispatches to
+        sub tasks.
 
         Args:
             task (string): A string defining the task. 'update', 'populate_neighbors',

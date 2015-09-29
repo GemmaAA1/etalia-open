@@ -532,3 +532,32 @@ def update_hosts_file(stack=STACK):
 @task
 def reboot_instance():
     reboot()
+
+@task
+def start_default():
+    run('supervisorctl start celery-default')
+
+@task
+def start_consumers():
+    run('supervisorctl start celery-consumers')
+
+@task
+def start_nlp():
+    run('supervisorctl start celery-nlp')
+
+@task
+def start_ms():
+    run('supervisorctl start celery-mostsimilar')
+
+@task
+def restart_flower():
+    run('supervisorctl restart flower')
+
+@task
+def stop_all():
+    run('supervisorctl stop all')
+
+@task
+def start_all():
+    run('supervisorctl start all')
+
