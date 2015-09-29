@@ -88,7 +88,7 @@ class MostSimilarTask(Task):
         ms_now = MostSimilar.objects.get(model__name=self.model_name)
         last_modified = ms_now.modified
         upload_state = ms_now.upload_state
-        if not self._ms.modified == last_modified and upload_state == 'IDL':
+        if upload_state == 'IDL' and not self._ms.modified == last_modified:
             # remove local
             rm_files = glob.glob(
                 os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
