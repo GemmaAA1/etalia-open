@@ -821,9 +821,6 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
                     'paper__date_fs')
 
-        # order by date
-        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_fs').asc())
-
         # Reshape data
         nb_items = data.count()
         self.date = []
@@ -831,11 +828,27 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                self.date.append(dat['paper__date_ep'] or dat['paper__date_fs'])
+                # manage date
+                d = dat['paper__date_ep']
+                if not d:
+                    if dat['paper__date_pp']:
+                        if dat['paper__date_ep'] > timezone.now().date():
+                            d = dat['paper__date_fs']
+                        else:
+                            d = dat['paper__date_pp']
+                    else:
+                        d = dat['paper__date_fs']
+                self.date.append(d)
                 # store paper pk
                 self.index2pk.append(dat['paper__pk'])
                 # build input matrix for fit
                 self.data[i, :] = dat['vector'][:vec_size]
+
+        # order by date
+        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
+        self.date = [self.date[i] for i in idx]
+        self.index2pk = [self.index2pk[i] for i in idx]
+        self.data = self.data[idx, :]
 
         # Store
         self.save()
@@ -945,7 +958,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = PaperVectors.objects\
             .filter(paper_id__in=paper_pks, model=self.model)\
             .values('vector')
-        mat = np.zeros(data.count(), self.model.size)
+        mat = np.zeros((data.count(), self.model.size))
         for i, row in enumerate(data):
             mat[i, :] = row['vector'][:self.model.size]
 
@@ -970,7 +983,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         assert seeds.shape[1] == self.model.size
 
         # compute distance
-        dists = np.dot(self.data[clip_start:], seeds.T)
+        dists = np.dot(self.data[clip_start:, :], seeds.T)
         # reverse order
         dists = - dists
         # get partition

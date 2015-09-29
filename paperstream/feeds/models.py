@@ -169,7 +169,7 @@ class UserFeed(TimeStampedModel):
 
         seed_pks = self.papers_seed.all().values_list('pk', flat=True)
         # Submit Celery Task to get k_neighbors
-        res = ms_task.delay('get_knn_multi',
+        res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
                              time_lapse=self.user.settings.time_lapse,
                              k=settings.FEED_K_NEIGHBORS)
