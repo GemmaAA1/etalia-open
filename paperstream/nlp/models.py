@@ -875,10 +875,17 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 # build input matrix for fit
                 data[i, :] = dat['vector'][:vec_size]
 
-        # Store
-        self.index2pk += index2pk
+        # concatenate
         self.date += date
+        self.index2pk += index2pk
         self.data = np.vstack((self.data, data))
+        # reorder
+        # argsort
+        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
+        self.date = [self.date[i] for i in idx]
+        self.index2pk = [self.index2pk[i] for i in idx]
+        self.data = self.data[idx, :]
+
         self.save()
 
     def populate_neighbors(self, paper_pk, time_lapse=-1):
