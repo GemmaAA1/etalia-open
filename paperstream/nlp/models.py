@@ -8,7 +8,7 @@ from random import shuffle
 import numpy as np
 from timeit import time
 
-
+from gensim import matutils
 from sklearn.externals import joblib
 
 from django.db import models, transaction
@@ -23,7 +23,6 @@ from django.core.exceptions import ValidationError
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec
 from gensim.models import Phrases
-from gensim import matutils
 
 from .constants import FIELDS_FOR_MODEL
 from .utils import paper2tokens, TaggedDocumentsIterator, model_attr_getter, \
@@ -922,18 +921,6 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         return neighbors_pks[:k]
 
-    def get_knn_multi(self, paper_pks, time_lapse=-1, k=1):
-
-        neighbors_pks_multi = []
-        for paper_pk in paper_pks:
-            neighbors_pks_multi += self.get_knn(paper_pk, time_lapse=time_lapse,
-                                                k=k)
-        # ignore paper_pks
-        neighbors_pks_multi = [nei for nei in neighbors_pks_multi if nei not in paper_pks]
-        # ignore duplicate
-        neighbors_pks_multi = list(set(neighbors_pks_multi))
-        return neighbors_pks_multi
-
     def knn_search(self, seed, clip_start=0, top_n=5):
 
         # check seed
@@ -951,6 +938,46 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # return paper pk and distances
         result = [(self.index2pk[ind], float(dists[ind])) for ind in best]
         return result
+
+    def get_partition(self, paper_pks, time_lapse=-1, k=1):
+
+        # get seed data
+        data = PaperVectors.objects\
+            .filter(paper_id__in=paper_pks, model=self.model)\
+            .values('vector')
+        mat = np.zeros(data.count(), self.model.size)
+        for i, row in enumerate(data):
+            mat[i, :] = row['vector'][:self.model.size]
+
+        # find clip
+        clip_start = self.get_clip_start(time_lapse)
+
+        # get partition
+        res_search = self.partition_search(mat, clip_start=clip_start, top_n=k)
+
+        # ignore paper_pks
+        neighbors_pks_multi = [nei for nei in res_search if nei not in paper_pks]
+        return neighbors_pks_multi
+
+    def partition_search(self, seeds, clip_start=0, top_n=5):
+        """Return the unsorted list of paper pk that are in the top_n neighbors
+        of vector defined as columns of 2d array seeds
+        """
+
+        # check seeds
+        if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
+            seeds = np.array(seeds)
+        assert seeds.shape[1] == self.model.size
+
+        # compute distance
+        dists = np.dot(self.data[clip_start:], seeds.T)
+        # reverse order
+        dists = - dists
+        # get partition
+        arg_part = np.argpartition(dists, top_n+1, axis=0)
+        # reshape and return unique
+        result = [(self.index2pk[ind2], float(dists[ind2])) for ind in arg_part for ind2 in ind]
+        return list(set(result))
 
     def tasks(self, task, **kwargs):
         """Wrapper around MostSimilar tasks
@@ -997,7 +1024,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             time_lapse = kwargs.get('time_lapse')
             k = kwargs.get('k')
             return self.get_knn(paper_pk, time_lapse=time_lapse, k=k)
-        elif task == 'get_knn_multi':
+        elif task == 'get_partition':
             paper_pks = kwargs.get('paper_pks')
             time_lapse = kwargs.get('time_lapse')
             k = kwargs.get('k')
