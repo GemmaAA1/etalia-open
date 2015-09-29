@@ -333,7 +333,7 @@ class Paper(TimeStampedModel):
         elif self.date_ep:
             return '{date} (online)'.format(date=self.date_ep.strftime('%Y'))
         elif self.date_fs:
-            return '{date} (first seen)'.format(date=self.date_ep.strftime('%Y'))
+            return '{date} (first seen)'.format(date=self.date_fs.strftime('%Y'))
         else:
             return 'Unknown Date'
 
