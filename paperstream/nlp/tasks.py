@@ -85,7 +85,7 @@ class MostSimilarTask(Task):
             # remove local
             rm_files = glob.glob(
                 os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
-                    name=self._ms.name)))
+                    name=self.model_name)))
             for file in rm_files:
                 os.remove(file)
             self._ms = MostSimilar.objects.load(model__name=self.model_name)
