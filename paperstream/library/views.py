@@ -65,7 +65,10 @@ class PaperView(ModalMixin, DetailView):
         # Get stored neighbors papers
         try:
             neigh_data = paper_.neighbors.get(model=model, time_lapse=-1)
-            if neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
+            if not neigh_data.neighbors:
+                neigh_data.delete()
+                raise PaperNeighbors.DoesNotExist
+            elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
                 neighbors = neigh_data.neighbors
             else:
                 raise PaperNeighbors.DoesNotExist

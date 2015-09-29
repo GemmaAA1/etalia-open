@@ -310,6 +310,8 @@ class Paper(TimeStampedModel):
             return self.date_pp.strftime('%e %b %Y')
         elif self.date_ep:
             return '{date} (epub)'.format(date=self.date_ep.strftime('%e %b %Y'))
+        elif self.date_fs:
+            return '{date} (first seen)'.format(date=self.date_fs.strftime('%e %b %Y'))
         else:
             return 'Unknown Date'
 
@@ -319,6 +321,8 @@ class Paper(TimeStampedModel):
             return self.date_pp.strftime('%B %Y')
         elif self.date_ep:
             return '{date} (online)'.format(date=self.date_ep.strftime('%B %Y'))
+        elif self.date_fs:
+            return '{date} (first seen)'.format(date=self.date_fs.strftime('%B %Y'))
         else:
             return 'Unknown Date'
 
@@ -328,6 +332,8 @@ class Paper(TimeStampedModel):
             return self.date_pp.strftime('%Y')
         elif self.date_ep:
             return '{date} (online)'.format(date=self.date_ep.strftime('%Y'))
+        elif self.date_fs:
+            return '{date} (first seen)'.format(date=self.date_ep.strftime('%Y'))
         else:
             return 'Unknown Date'
 
