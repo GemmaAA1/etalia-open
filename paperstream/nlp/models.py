@@ -1029,7 +1029,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 paper_pk (int): The primary key of a Paper instance
                 time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
                 k (int): number of neighbors
-            'get_knn_multi':
+            'get_partition':
                 paper_pks (list): List of primary key of Paper instances
                 time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
                 k (int): number of neighbors
@@ -1054,7 +1054,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             paper_pks = kwargs.get('paper_pks')
             time_lapse = kwargs.get('time_lapse')
             k = kwargs.get('k')
-            return self.get_knn_multi(paper_pks, time_lapse=time_lapse, k=k)
+            return self.get_partition(paper_pks, time_lapse=time_lapse, k=k)
         elif task == 'knn_search':
             seed = kwargs.get('seed')
             clip_start = kwargs.get('clip_start')
