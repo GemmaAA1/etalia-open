@@ -309,7 +309,7 @@ ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 
 # LANDING
 # ------------------------------------------------------------------------------
-LANDING_ACTIVE_PAPERS_NUMBER = 3
+LANDING_ACTIVE_PAPERS_NUMBER = 2
 LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
 
 # CELERY

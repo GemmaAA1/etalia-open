@@ -43,9 +43,12 @@
                                 </a>
                             </li>
                         </ul>
+                        <div style="padding-top: 20px">
+                        <h4>PapersStream is a free web application </h4>
 {#                        <div>#}
 {#                            <h4>or <a href="#">Sign-up</a> from scratch</h4>#}
 {#                        </div>#}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -59,25 +62,25 @@
     <div class="content-section-a">
         <div class="container">
             <div class="row">
-                <div class="col-lg-5 col-sm-6">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
                     <h2 class="section-heading">Connect your reference managers</h2>
                     <p class="lead">
                         PaperStream works in sync with your reference software manager.
-                        Based on the data stored in your library it gives you back a stream of recent
-                        scientific papers that match your interest.
+                        It currently supports <a href="www.zotero.org">Zotero</a> or
+                        <a href="www.mendeley.com">Mendeley</a>.
+{#                        Based on the data stored in your library it gives you back a stream of recent#}
+{#                        scientific papers that match your interest.#}
                     </p>
                     <p class="lead">
                         Not using a reference software manager yet?
-                        Check-out <a href="www.zotero.org">Zotero</a> or
-                        <a href="www.mendeley.com">Mendeley</a>.
-                        They are awesome tools to organize your library and
-                        they are free.
+                        They are incredible time-saver tools to organize your library and to help you format your references.
+                        Check it out.
                     </p>
                 </div>
-                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/zotero_mendeley_in_laptop.png' %}" alt="">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/bubble_provider.png' %}" alt="">
                 </div>
             </div>
 
@@ -89,15 +92,17 @@
     <div class="content-section-b">
         <div class="container">
             <div class="row">
-                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                <div class="col-lg-5 col-sm-push-6  col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">How does it work ?</h2>
-                    <p class="lead">PaperStream crawls the web for all recently published papers. Each paper is crunched by our natural language algorithm and individually ranked based on your interest.</p>
-                    <p class="lead">Exploring a new field? Changing focus? PaperStream will adapt as you go.</p>
+                    <h2 class="section-heading">Build your personalized stream</h2>
+                    <p class="lead">PaperStream searches the web for recently published papers.
+                        Based on your library, it streams you back the recent scientific papers that
+                        match your research interest.</p>
+                    <p class="lead">Exploring a new field? Changing focus?<br> PaperStream adapts as you go.</p>
                 </div>
-                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubles.png' %}" alt="">
+                <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/bubble_wheel.png' %}" alt="">
                 </div>
             </div>
 
@@ -109,16 +114,13 @@
     <div class="content-section-a">
         <div class="container">
             <div class="row">
-                <div class="col-lg-5 col-sm-6">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
                     <h2 class="section-heading">Multiple metrics at work</h2>
-                        <p class="lead">Your stream is curated through multiple layers.</p>
-                        <p class="lead">Document fingerprints, journal focus or article social impact with <a href="http://www.altmetric.com">
-                            Altmetric</a>, all are at work to build your personalized stream.</p>
-                </div>
-                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                    <h4>This week trending papers:</h4>
+                        <p class="lead">Article social trends, document embeddings, journal focus, all are at work to build your personalized stream.</p>
+
+                    <h5>This week trending papers with <a href="http://www.altmetric.com">Altmetric</a>:</h5>
                     {% for paper in active_papers %}
                         <div class="row" style="height:70px">
                             <div class="col-lg-3 col-sm-3">
@@ -139,38 +141,61 @@
                         </div>
                     {% endfor %}
                 </div>
+                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/bubble_altmetric.png' %}" alt="">
+                </div>
             </div>
+        </div>
+        <div class="row">
         </div>
         <!-- /.container -->
     </div>
-
-
     <!-- /.content-section-a -->
 
-    <div class="banner">
+    <div class="content-section-b">
         <div class="container">
             <div class="row">
-                <div class="col-lg-6">
-                    <h3>Give it a try, you will be surprised</h3>
+                <div class="col-lg-5 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Comment articles</h2>
+                    <p class="lead">Express your opinion on a paper. <br>Engage the community in a discussion.</p>
+                    <p class="lead">Paperstream will notify you and other researchers of new relevant comments.</p>
                 </div>
-                <div class="col-lg-6">
-                    <ul class="list-inline intro-social-buttons">
-                        <li>
-                            <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">
-                                <img src="{% static 'img/mendeley_logo_small.png' %}" class="provider-logo">
-                                Mendeley
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg provider-button">
-                                 <img src="{% static 'img/zotero_logo_small.png' %}" class="provider-logo">
-                                 Zotero
-                            </a>
-                        </li>
-                    </ul>
+                <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
+                    <img class="img-responsive" src="{% static '/static/img/bubble_comment.png' %}" alt="">
                 </div>
             </div>
 
+        </div>
+        <!-- /.container -->
+    </div>
+    <!-- /.content-section-b -->
+
+    <div class="banner">
+        <div class="container">
+            <div class="row text-center">
+                  <h2>Stay informed, simply</h2>
+{#                <div class="col-lg-5 col-lg-offset-1 col-sm-6">#}
+{#                    <h3>Just give it a try, you may be surprised</h3>#}
+{#                </div>#}
+{#                <div class="col-lg-6">#}
+{#                    <ul class="list-inline intro-social-buttons">#}
+{#                        <li>#}
+{#                            <a href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">#}
+{#                                <img src="{% static 'img/mendeley_logo_small.png' %}" class="provider-logo">#}
+{#                                Mendeley#}
+{#                            </a>#}
+{#                        </li>#}
+{#                        <li>#}
+{#                            <a href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg provider-button">#}
+{#                                 <img src="{% static 'img/zotero_logo_small.png' %}" class="provider-logo">#}
+{#                                 Zotero#}
+{#                            </a>#}
+{#                        </li>#}
+{#                    </ul>#}
+{#                </div>#}
+            </div>
         </div>
         <!-- /.container -->
     </div>

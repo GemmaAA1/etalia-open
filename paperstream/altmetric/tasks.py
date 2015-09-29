@@ -21,7 +21,7 @@ def update_altmetric_periodic():
     # Fetch paper
 
     ps_pks = Paper.objects\
-        .filter(Q(date_ep__gt=d) | (Q(date_ep=None) & Q(date_pp__gt=d)))\
+        .filter(Q(date_ep__gt=d) | (Q(date_ep=None) & Q(date_fs__gt=d)))\
         .values_list('pk', flat=True)[:settings.ALTMETRIC_MAX_PAPERS_PER_PERIOD]
 
     for pk in ps_pks:
