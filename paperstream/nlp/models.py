@@ -832,7 +832,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 d = dat['paper__date_ep']
                 if not d:
                     if dat['paper__date_pp']:
-                        if dat['paper__date_ep'] > timezone.now().date():
+                        if dat['paper__date_pp'] > timezone.now().date():
                             d = dat['paper__date_fs']
                         else:
                             d = dat['paper__date_pp']
@@ -881,7 +881,17 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                date.append(dat['paper__date_ep'] or dat['paper__date_fs'])
+                # manage date
+                d = dat['paper__date_ep']
+                if not d:
+                    if dat['paper__date_pp']:
+                        if dat['paper__date_pp'] > timezone.now().date():
+                            d = dat['paper__date_fs']
+                        else:
+                            d = dat['paper__date_pp']
+                    else:
+                        d = dat['paper__date_fs']
+                date.append(d)
                 # store paper pk
                 index2pk.append(dat['paper__pk'])
                 # build input matrix for fit
