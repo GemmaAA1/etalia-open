@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
-from django.views.generic import FormView, DeleteView, RedirectView, CreateView
+from django.views.generic import DeleteView, RedirectView, CreateView
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from django.forms.utils import ErrorList
@@ -16,7 +16,7 @@ from braces.views import LoginRequiredMixin
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper
 
-from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper
+from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper, UserTaste
 from .forms import CreateUserFeedForm
 from .tasks import update_feed as async_update_feed
 
@@ -28,8 +28,14 @@ class FeedView(LoginRequiredMixin, ModalMixin, ListView):
     template_name = 'feeds/feed.html'
 
     def get_queryset(self):
+        # get disliked paper
+        papers_disliked = UserTaste.objects\
+            .filter(user=self.userfeed.user, is_disliked=True)\
+            .values('paper')
+
         query_set = UserFeedMatchPaper.objects\
-            .filter(feed=self.userfeed, is_disliked=False)\
+            .filter(feed=self.userfeed)\
+            .exclude(paper__in=papers_disliked)\
             .select_related('paper')
         query_set = self.filter_queryset(query_set)
         return query_set

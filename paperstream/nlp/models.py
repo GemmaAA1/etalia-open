@@ -968,9 +968,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = PaperVectors.objects\
             .filter(paper_id__in=paper_pks, model=self.model)\
             .values('vector')
-        mat = np.zeros((data.count(), self.model.size))
+        mat = np.zeros((self.model.size, data.count()))
         for i, row in enumerate(data):
-            mat[i, :] = row['vector'][:self.model.size]
+            mat[:, i] = row['vector'][:self.model.size]
 
         # find clip
         clip_start = self.get_clip_start(time_lapse)
@@ -985,6 +985,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def partition_search(self, seeds, clip_start=0, top_n=5):
         """Return the unsorted list of paper pk that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
+
+        Args:
+            seeds (np.array): 2d array, vector size x # of papers
         """
 
         # check seeds
@@ -993,13 +996,13 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         assert seeds.shape[1] == self.model.size
 
         # compute distance
-        dists = np.dot(self.data[clip_start:, :], seeds.T)
+        dists = np.dot(self.data[clip_start:, :], seeds)
         # reverse order
         dists = - dists
         # get partition
-        arg_part = np.argpartition(dists, top_n+1, axis=0)
+        arg_part = np.argpartition(dists, top_n+1, axis=0)[:top_n:, :]
         # reshape and return unique
-        result = [(self.index2pk[ind2], float(dists[ind2])) for ind in arg_part for ind2 in ind]
+        result = [self.index2pk[ind] for ind in arg_part.flatten()]
         return list(set(result))
 
     def tasks(self, task, **kwargs):

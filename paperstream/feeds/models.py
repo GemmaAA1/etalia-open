@@ -248,10 +248,6 @@ class UserFeedMatchPaper(TimeStampedModel):
 
     is_score_computed = models.BooleanField(default=False)
 
-    is_disliked = models.BooleanField(default=False)
-
-    is_liked = models.BooleanField(default=False)
-
     class Meta:
         ordering = ['-score']
         unique_together = [('feed', 'paper')]
@@ -302,3 +298,13 @@ class UserFeedVector(TimeStampedModel):
         return '{feed_name}/{model_name}'.format(feed_name=self.feed.name,
                                                  model_name=self.model.name)
 
+
+class UserTaste(TimeStampedModel):
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
+
+    paper = models.ForeignKey(Paper)
+
+    is_disliked = models.BooleanField(default=False)
+
+    is_liked = models.BooleanField(default=False)
