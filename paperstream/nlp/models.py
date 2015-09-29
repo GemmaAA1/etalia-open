@@ -819,7 +819,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_fs')
+                    'paper__date_pp', 'paper__date_fs')
 
         # Reshape data
         nb_items = data.count()

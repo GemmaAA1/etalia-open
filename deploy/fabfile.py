@@ -550,6 +550,30 @@ def start_ms():
     run('supervisorctl start celery-mostsimilar')
 
 @task
+def stop_default():
+    run('supervisorctl stop celery-default')
+
+@task
+def stop_consumers():
+    run('supervisorctl stop celery-consumers')
+
+@task
+def stop_nlp():
+    run('supervisorctl stop celery-nlp')
+
+@task
+def stop_ms():
+    run('supervisorctl stop celery-mostsimilar')
+
+@task
+def start_flower():
+    run('supervisorctl start flower')
+
+@task
+def stop_flower():
+    run('supervisorctl stop flower')
+
+@task
 def restart_flower():
     run('supervisorctl restart flower')
 

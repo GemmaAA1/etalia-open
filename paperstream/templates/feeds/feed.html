@@ -52,7 +52,7 @@
                                         <span>(score: {{ufp.print_score}})</span>
                                     </span>
                                     <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
-                                    <p><i>in</i> {{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }} - {{ ufp.paper.print_ids }}</p>
+                                    <p><i>in</i> {{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }}</p>
 
                                     <a href="{% url 'library:paper' ufp.paper.pk %}#disqus_thread" data-disqus-identifier="{{ ufp.paper.pk }}">View Comments</a>
                                     {% disqus_num_replies %}
