@@ -82,6 +82,12 @@ class MostSimilarTask(Task):
     @property
     def ms(self):
         if self._ms is None:
+            # remove local
+            rm_files = glob.glob(
+                os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
+                    name=self._ms.name)))
+            for file in rm_files:
+                os.remove(file)
             self._ms = MostSimilar.objects.load(model__name=self.model_name)
             return self._ms
         # if MostSimilar has been modified and MostSimilar not uploading, reload
@@ -102,7 +108,7 @@ class MostSimilarTask(Task):
     def run(self, *args, **kwargs):
         return self.ms.tasks(*args, **kwargs)
 
-# Instantiate all task for model and Mo
+# Instantiate all task for Model and MostSimilar
 def register_nlp_tasks():
     # Create embedding task from model
     model_names = Model.objects.all().values_list('name', flat=True)
@@ -115,7 +121,6 @@ def register_nlp_tasks():
         cls = MostSimilarTask(model_name=model_name)
         app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
             model_name=model_name))
-
 
 @app.task()
 def mostsimilar_update_all():
