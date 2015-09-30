@@ -33,10 +33,9 @@ STATICFILES_DIRS = (
 )
 
 # AWS S3 Buckets
-# NLP_DATA_BUCKET_NAME = 'paperstream-development-nlp-data'
-# NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
-# NLP_LSH_BUCKET_NAME = 'paperstream-development-nlp-lshs'
-# NLP_MS_BUCKET_NAME = 'paperstream-development-nlp-ms'
+NLP_DATA_BUCKET_NAME = 'paperstream-development-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
+NLP_MS_BUCKET_NAME = 'paperstream-development-nlp-ms'
 
 
 # CELERY

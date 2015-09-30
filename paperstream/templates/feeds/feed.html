@@ -53,6 +53,12 @@
                                         <a href="{{ ufp.paper.url }}" target="_blank"><strong>(link)</strong></a>
                                         <span>(score: {{ufp.print_score}})</span>
                                     </span>
+                                    <span class="btn-group pull-right">
+                                        {% if ufp.paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ ufp.paper.id_doi }}"></div>
+                                        {% elif ufp.paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ ufp.paper.id_arx }}"></div>
+                                        {% elif ufp.paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ ufp.paper.id_pmi }}"></div>
+                                        {% endif %}
+                                    </span>
                                     <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>
                                     <p><i>in</i> {{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }}</p>
 
@@ -85,4 +91,5 @@
             </div>
         </div>
     {% endif %}
+<script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
 {% endblock content %}

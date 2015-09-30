@@ -66,22 +66,26 @@
                     </div>
                     <div class="col-lg-3">
                         <div class="neighbors">
-                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                            {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                            {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
-                            {% endif %}
                             {% if neighbors %}
                             <div>
                                 <span class="title">Similar Papers</span><br>
-                                <span style="font-size: 11px">past: year month week</span>
+                                <span style="font-size: 11px">
+                                    year month week</span>
                             </div>
                                 {% for neighbor in neighbors %}
                                     <div class="neighbor">
                                         <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
+                                        <i>in</i> {{ neighbor.print_journal_title }}
                                         <br>
-                                        <i>in</i> {{ neighbor.print_journal_title }}, {{ neighbor.print_year }}
+                                        {{ neighbor.print_month_year }}
                                     </div>
                                 {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div style="padding-top: 20px">
+                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
+                            {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                            {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                             {% endif %}
                         </div>
                     </div>
