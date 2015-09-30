@@ -314,8 +314,6 @@ class UserFeedVector(TimeStampedModel):
                                                  model_name=self.model.name)
 
 
-
-
 class UserTaste(TimeStampedModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
