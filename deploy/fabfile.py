@@ -290,13 +290,20 @@ def update_and_require_libraries():
         run("mkdir -p {virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir))
 
 
+@task
 def create_virtual_env_if_necessary():
     # Create virtual env
     with prefix("WORKON_HOME={virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir)):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
             existent_virtual_envs = run("lsvirtualenv")
             if not env.stack in existent_virtual_envs:
-                run("mkvirtualenv --python=/usr/bin/python3 {virtual_env}".format(virtual_env=env.stack))
+                run("mkvirtualenv --python=/usr/bin/python3 --system-site-packages {virtual_env}".format(virtual_env=env.stack))
+
+
+@task
+def remove_virtual_env():
+    with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
+        run("rmvirtualenv {virtual_env}".format(virtual_env=env.stack))
 
 
 def _workon():
