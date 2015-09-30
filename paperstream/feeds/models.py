@@ -230,7 +230,7 @@ class UserFeedSeedPaper(TimeStampedModel):
     paper = models.ForeignKey(Paper)
 
     class Meta:
-        unique_together = [('feed', 'paper')]
+        unique_together = ('feed', 'paper')
 
     def clean(self):
         """check if paper is in user.lib"""
@@ -249,6 +249,9 @@ class UserFeedMatchPaper(TimeStampedModel):
     is_score_computed = models.BooleanField(default=False)
 
     class Meta:
+        unique_together = ('feed', 'paper')
+
+    class Meta:
         ordering = ['-score']
         unique_together = [('feed', 'paper')]
 
@@ -259,6 +262,15 @@ class UserFeedMatchPaper(TimeStampedModel):
         return '{paper}/{score}'.format(paper=self.paper.short_title,
                                         score=self.score)
 
+    @property
+    def is_disliked(self):
+        return UserTaste.objects\
+            .get(paper=self.paper, user=self.feed.user).is_disliked
+
+    @property
+    def is_liked(self):
+        return UserTaste.objects\
+            .get(paper=self.paper, user=self.feed.user).is_liked
 
 class UserFeedVector(TimeStampedModel):
     """Feature vector for feed is defined as the averaged of paper vectors in
@@ -271,6 +283,9 @@ class UserFeedVector(TimeStampedModel):
     vector = ArrayField(models.FloatField(null=True),
                         size=settings.NLP_MAX_VECTOR_SIZE,
                         null=True)
+
+    class Meta:
+        unique_together = ('feed', 'model')
 
     def set_vector(self, vector):
         self.vector = pad_vector(vector)
@@ -299,6 +314,8 @@ class UserFeedVector(TimeStampedModel):
                                                  model_name=self.model.name)
 
 
+
+
 class UserTaste(TimeStampedModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
@@ -308,3 +325,16 @@ class UserTaste(TimeStampedModel):
     is_disliked = models.BooleanField(default=False)
 
     is_liked = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'paper')
+
+    def __str__(self):
+        if self.is_liked:
+            return '{pk}@{pk} likes'.format(user=self.user, pk=self.paper.id)
+        elif self.is_disliked:
+            return '{user}@{pk} dislikes '.format(user=self.user, pk=self.paper.id)
+        elif not self.is_disliked and not self.is_liked:
+            return '{user}@{pk} neutral'.format(user=self.user, pk=self.paper.id)
+        else:
+            return '{user}@{pk} has a problem'

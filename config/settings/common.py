@@ -298,7 +298,7 @@ FEEDS_SCORE_KEEP_N_PAPERS = 100
 FEEDS_DISPLAY_N_PAPERS = 50
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 # Number of neighbors from seed paper
-FEED_K_NEIGHBORS = 50
+FEED_K_NEIGHBORS = 10
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------

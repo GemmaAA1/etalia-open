@@ -32,12 +32,15 @@ class FeedView(LoginRequiredMixin, ModalMixin, ListView):
         papers_disliked = UserTaste.objects\
             .filter(user=self.userfeed.user, is_disliked=True)\
             .values('paper')
+        # papers_disliked = []
 
         query_set = UserFeedMatchPaper.objects\
             .filter(feed=self.userfeed)\
             .exclude(paper__in=papers_disliked)\
             .select_related('paper')
+
         query_set = self.filter_queryset(query_set)
+
         return query_set
 
     def filter_queryset(self, queryset):
@@ -57,10 +60,27 @@ class FeedView(LoginRequiredMixin, ModalMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(FeedView, self).get_context_data(**kwargs)
         context['userfeed'] = self.userfeed
+        # Get user tastes label
+        user_taste = UserTaste.objects\
+            .filter(user=self.request.user)\
+            .values_list('paper_id', 'is_liked', 'is_disliked')
+        # reformat to dict
+        user_taste = dict((key, {'liked': v1, 'disliked': v2})
+                          for key, v1, v2 in user_taste)
+        context['user_taste'] = user_taste
+
         return context
 
     def get_userfeed(self, request, **kwargs):
-        feed_pk = int(kwargs.get('pk', 0))
+        feed_pk = int(kwargs.get('pk'))
+        userfeed = get_object_or_404(UserFeed,
+                                     pk=feed_pk,
+                                     user=request.user)
+        return userfeed
+
+    def get_user_tastes(self, request, **kwargs):
+        user = request.user
+        tastes = UserTaste.objects.filter(user=user)
         if feed_pk:
             userfeed = get_object_or_404(UserFeed,
                                          pk=feed_pk,
@@ -249,14 +269,15 @@ def feed_like_view(request, pk):
         ufp_pk = int(request.POST.get('pk'))
         ufmp = get_object_or_404(UserFeedMatchPaper, pk=ufp_pk)
         assert ufmp.feed.user == request.user
-        if ufmp.is_liked:
-            ufmp.is_liked = False
+        ut, _ = UserTaste.objects.get_or_create(paper=ufmp.paper, user=request.user)
+        if ut.is_liked:
+            ut.is_liked = False
         else:
-            ufmp.is_liked = True
-            ufmp.is_disliked = False
-        ufmp.save()
-        data = {'is_liked': ufmp.is_liked,
-                'is_disliked': ufmp.is_disliked}
+            ut.is_liked = True
+            ut.is_disliked = False
+        ut.save()
+        data = {'is_liked': ut.is_liked,
+                'is_disliked': ut.is_disliked}
         return JsonResponse(data)
     else:
         redirect('feeds:feed', kwargs={'pk': pk})
@@ -268,14 +289,15 @@ def feed_dislike_view(request, pk):
         ufp_pk = int(request.POST.get('pk'))
         ufmp = get_object_or_404(UserFeedMatchPaper, pk=ufp_pk)
         assert ufmp.feed.user == request.user
-        if ufmp.is_disliked:
-            ufmp.is_disliked = False
+        ut, _ = UserTaste.objects.get_or_create(paper=ufmp.paper, user=request.user)
+        if ut.is_disliked:
+            ut.is_disliked = False
         else:
-            ufmp.is_liked = False
-            ufmp.is_disliked = True
-        ufmp.save()
-        data = {'is_liked': ufmp.is_liked,
-                'is_disliked': ufmp.is_disliked}
+            ut.is_liked = False
+            ut.is_disliked = True
+        ut.save()
+        data = {'is_liked': ut.is_liked,
+                'is_disliked': ut.is_disliked}
         return JsonResponse(data)
     else:
         redirect('feeds:feed', kwargs={'pk': pk})
