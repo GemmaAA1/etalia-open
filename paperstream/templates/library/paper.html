@@ -66,6 +66,12 @@
                     </div>
                     <div class="col-lg-3">
                         <div class="neighbors">
+                            <div style="height: 100px; padding-top: 20px">
+                                {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
+                                {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                                {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                                {% endif %}
+                            </div>
                             {% if neighbors %}
                             <div>
                                 <span class="title">Similar Papers</span><br>
@@ -80,12 +86,6 @@
                                         {{ neighbor.print_month_year }}
                                     </div>
                                 {% endfor %}
-                            {% endif %}
-                        </div>
-                        <div style="padding-top: 20px">
-                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                            {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                            {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                             {% endif %}
                         </div>
                     </div>
