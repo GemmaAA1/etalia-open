@@ -53,10 +53,14 @@ class PaperView(ModalMixin, DetailView):
 
     model = Paper
     template_name = 'library/paper.html'
+    time_lapse_map = {'year': 365,
+                      'month': 30,
+                      'week': 7}
 
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
+        time_lapse = self.time_lapse_map[self.kwargs.get('time_lapse', 'year')]
         if self.request.user.is_authenticated():
             model = self.request.user.settings.model
         else:
@@ -64,7 +68,7 @@ class PaperView(ModalMixin, DetailView):
 
         # Get stored neighbors papers
         try:
-            neigh_data = paper_.neighbors.get(model=model, time_lapse=-1)
+            neigh_data = paper_.neighbors.get(model=model, time_lapse=time_lapse)
             if not neigh_data.neighbors:
                 neigh_data.delete()
                 raise PaperNeighbors.DoesNotExist
@@ -76,7 +80,7 @@ class PaperView(ModalMixin, DetailView):
             try:
                 ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
                     name=model.name)]
-                res = ms_task.delay('populate_neighbors', paper_pk=paper_.pk, time_lapse=-1)
+                res = ms_task.delay('populate_neighbors', paper_pk=paper_.pk, time_lapse=time_lapse)
                 neighbors = res.get()
             except KeyError:
                 raise
@@ -88,10 +92,10 @@ class PaperView(ModalMixin, DetailView):
             [neigh_fetched_d[key] for key in neigh_pk]
 
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
+        context['time_lapse'] = self.kwargs.get('time_lapse', 'year')
         return context
 
 paper = PaperView.as_view()
-
 
 class PapersListView(ModalMixin, ListView):
     model = Paper

@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^journals/$', views.journals, name='journals'),
     url(r'^journal/(?P<pk>[0-9]+)/$', views.journal, name='journal'),
     url(r'^paper/(?P<pk>[0-9]+)/$', views.paper, name='paper'),
+    url(r'^paper/(?P<pk>[0-9]+)/time=(?P<time_lapse>[\w]+)$', views.paper, name='paper-time'),
     url(r'^papers/$', views.papers, name='papers'),
 ]

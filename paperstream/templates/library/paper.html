@@ -76,7 +76,9 @@
                             <div>
                                 <span class="title">Similar Papers</span><br>
                                 <span style="font-size: 11px">
-                                    year month week</span>
+                                    <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
+                                    <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
+                                    <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
                             </div>
                                 {% for neighbor in neighbors %}
                                     <div class="neighbor">
