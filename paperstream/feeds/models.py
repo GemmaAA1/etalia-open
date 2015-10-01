@@ -11,6 +11,8 @@ from django.db.models import Q
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
 
+from gensim import matutils
+
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
 from paperstream.library.models import Paper
@@ -140,8 +142,10 @@ class UserFeed(TimeStampedModel):
 
         # get paper that remain and need to be updated
         self.set_message('Fetching data')
-        ufp_pks_to_update = self.papers_match.all().values_list('pk',
-                                                                flat='True')
+        ufp_pks_to_update = self.papers_match.values_list('pk', flat=True)
+        # get user lib pks
+        lib_pks = self.user.lib.papers.values_list('pk', flat=True)
+
         # instantiate scoring
         if self.user.settings.scoring_method == 1:
             Score = SimpleAverage
@@ -172,18 +176,20 @@ class UserFeed(TimeStampedModel):
         res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
                              time_lapse=self.user.settings.time_lapse,
-                             k=2)
+                             k=settings.FEED_K_NEIGHBORS)
         # # Wait for Results
         target_seed_pks = res.get()
 
         # Filter exclude corresponding papers
-        target_pks = Paper.objects\
-            .filter(Q(pk__in=target_seed_pks) |
-                    Q(pk__in=ufp_pks_to_update))\
-            .exclude(Q(pk__in=self.user.lib.papers.values('pk')) |
-                     Q(is_trusted=False) |
-                     Q(abstract=''))\
-            .values_list('pk', flat=True)
+        # target_pks = Paper.objects\
+        #     .filter(Q(pk__in=target_seed_pks) |
+        #             Q(pk__in=ufp_pks_to_update))\
+        #     .exclude(Q(pk__in=self.user.lib.papers.values('pk')) |
+        #              Q(is_trusted=False) |
+        #              Q(abstract=''))\
+        #     .values_list('pk', flat=True)
+        target_pks = list(ufp_pks_to_update) + \
+                     [pk for pk in target_seed_pks if pk not in lib_pks]
 
         # Match target paper
         objs_list = []
@@ -194,26 +200,31 @@ class UserFeed(TimeStampedModel):
             self.set_message('Scoring {0} papers'.format(len(target_pks)))
             pks, scores = scoring.score()
             # sort scores
-            ind = np.argsort(scores)[::-1].tolist()
+            best = matutils.argsort(scores,
+                                    topn=settings.FEEDS_SCORE_KEEP_N_PAPERS,
+                                    reverse=True)
+            # reshape
+            results = [(pks[ind], float(scores[ind])) for ind in best]
+
             # create/update UserFeedPaper
             self.set_message('Storing')
-            for i in range(min([settings.FEEDS_SCORE_KEEP_N_PAPERS, len(pks)])):
+            for pk, val in results:
                 # update
                 self.set_message('Constructing {0}'.format(i))
-                if pks[ind[i]] in ufp_pks_to_update:
+                if pk in ufp_pks_to_update:
                     ufp, _ = UserFeedMatchPaper.objects.get_or_create(
                         feed=self,
-                        paper_id=pks[ind[i]])
-                    ufp.score = scores[ind[i]]
+                        paper_id=pk)
+                    ufp.score = val
                     ufp.is_score_computed = True
                     ufp.save()
                 else:  # create in bulk
                     objs_list.append(UserFeedMatchPaper(
                         feed=self,
-                        paper_id=pks[ind[i]],
-                        score=scores[ind[i]],
+                        paper_id=pk,
+                        score=val,
                         is_score_computed=True))
-            self.set_message('Bulking')
+            # bulk create
             UserFeedMatchPaper.objects.bulk_create(objs_list)
 
         self.set_state('IDL')

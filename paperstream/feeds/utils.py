@@ -40,9 +40,12 @@ class Scoring(object):
         # populate
         self.seed_pks = seed
         self.target_pks = target
-        # get_data
-        self.seed_data = self.get_data(self.seed_pks)
-        self.target_data = self.get_data(self.target_pks)
+        # get_data at once
+        pks = list(self.seed_pks) + list(self.target_pks)
+        data = self.get_data(pks)
+        # re-dispatch data
+        self.seed_data = [d for d in data if d['paper__pk'] in self.seed_pks]
+        self.target_data = [d for d in data if d['paper__pk'] in self.target_pks]
         self.is_ready = True
 
     def score(self):
@@ -179,8 +182,7 @@ class SimpleMax(Scoring):
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
         targ_mat = self.build_mat(self.target_data)
-        scores = 1. - np.max(distance.cdist(seed_mat, targ_mat, 'cosine'),
-                                 axis=0)
+        scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
         return self.target_pks, scores
 
 
@@ -189,8 +191,7 @@ class SimpleAverage(Scoring):
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
         targ_mat = self.build_mat(self.target_data)
-        scores = 1. - np.average(distance.cdist(seed_mat, targ_mat, 'cosine'),
-                                 axis=0)
+        scores = np.average(np.dot(targ_mat, seed_mat.T), axis=1)
         return self.target_pks, scores
 
 
@@ -203,9 +204,9 @@ class ThresholdAverage(Scoring):
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
         targ_mat = self.build_mat(self.target_data)
-        dis = 1. - distance.cdist(seed_mat, targ_mat, 'cosine')
+        dis = np.dot(targ_mat, seed_mat.T)
         dis = np.where(dis > self.threshold, 1, 0)
-        scores = np.sum(dis, axis=0)
+        scores = np.sum(dis, axis=1)
 
         return self.target_pks, scores
 
@@ -217,8 +218,7 @@ class WeightedJournalAverage(Scoring):
         targ_mat = self.build_mat(self.target_data)
         # weight with journal
         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-        scores = 1. - np.average(distance.cdist(seed_mat, targ_mat, 'cosine'),
-                                 axis=0)
+        scores = np.average(np.dot(targ_mat, seed_mat.T), axis=1)
         return self.target_pks, scores
 
 
@@ -231,8 +231,8 @@ class WeightedJournalCreatedDateAverage(Scoring):
         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
         date_vec = self.build_created_date_vec(self.seed_data)
 
-        dis = 1.0 - distance.cdist(seed_mat, targ_mat, 'cosine')
-        scores = np.average(dis, weights=date_vec, axis=0)
+        dis = np.dot(targ_mat, seed_mat.T)
+        scores = np.average(dis, weights=date_vec, axis=1)
 
         return self.target_pks, scores
 

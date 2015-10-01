@@ -298,7 +298,7 @@ FEEDS_SCORE_KEEP_N_PAPERS = 100
 FEEDS_DISPLAY_N_PAPERS = 50
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 # Number of neighbors from seed paper
-FEED_K_NEIGHBORS = 10
+FEED_K_NEIGHBORS = 2
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
@@ -309,7 +309,7 @@ ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 
 # LANDING
 # ------------------------------------------------------------------------------
-LANDING_ACTIVE_PAPERS_NUMBER = 2
+LANDING_ACTIVE_PAPERS_NUMBER = 3
 LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
 
 # CELERY
