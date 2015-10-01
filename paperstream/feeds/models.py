@@ -173,6 +173,9 @@ class UserFeed(TimeStampedModel):
         except KeyError:
             raise KeyError
 
+        logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- getting neighbors...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
         seed_pks = self.papers_seed.all().values_list('pk', flat=True)
         # Submit Celery Task to get k_neighbors
         res = ms_task.delay('get_partition',
@@ -181,6 +184,9 @@ class UserFeed(TimeStampedModel):
                              k=settings.FEED_K_NEIGHBORS)
         # # Wait for Results
         target_seed_pks = res.get()
+        logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- done...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
 
         # Filter exclude corresponding papers
         # target_pks = Paper.objects\
@@ -197,19 +203,38 @@ class UserFeed(TimeStampedModel):
         objs_list = []
         if target_pks:
             # compute scores
-            self.set_message('Init scoring')
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- preparing...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             scoring.prepare(seed_pks, target_pks)
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- done...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             self.set_message('Scoring {0} papers'.format(len(target_pks)))
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- scoring...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             pks, scores = scoring.score()
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- done...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             # sort scores
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- sorting...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             best = matutils.argsort(scores,
                                     topn=settings.FEEDS_SCORE_KEEP_N_PAPERS,
                                     reverse=True)
             # reshape
             results = [(pks[ind], float(scores[ind])) for ind in best]
-
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- done...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             # create/update UserFeedPaper
             self.set_message('Storing')
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- storing...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
             for pk, val in results:
                 # update
                 if pk in ufp_pks_to_update:
@@ -227,7 +252,9 @@ class UserFeed(TimeStampedModel):
                         is_score_computed=True))
             # bulk create
             UserFeedMatchPaper.objects.bulk_create(objs_list)
-
+            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
+                    '- done...'.format(pk=self.id, feed_name=self.name,
+                                           user_email=self.user.email))
         self.set_state('IDL')
 
         logger.info('Updating UserFeed ({pk}/{feed_name}@{user_email}) - DONE'
