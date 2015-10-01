@@ -80,7 +80,8 @@ class PaperView(ModalMixin, DetailView):
             try:
                 ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
                     name=model.name)]
-                res = ms_task.delay('populate_neighbors', paper_pk=paper_.pk, time_lapse=time_lapse)
+                res = ms_task.delay('populate_neighbors', paper_pk=paper_.pk,
+                                    time_lapse=time_lapse)
                 neighbors = res.get()
             except KeyError:
                 raise

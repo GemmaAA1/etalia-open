@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import os
+import socket
 import glob
 import logging
 from celery import chain, Task
@@ -110,17 +111,36 @@ class MostSimilarTask(Task):
 
 # Instantiate all task for Model and MostSimilar
 def register_nlp_tasks():
-    # Create embedding task from model
+    """Register tasks
+    Only task used by current worker are registered
+    """
     model_names = Model.objects.all().values_list('name', flat=True)
 
-    for model_name in model_names:
-        cls = EmbedPaperTask(model_name=model_name)
-        app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
-            model_name=model_name))
+    # Get current queues of hostname
+    try:
+        workers_queues = app.control.inspect().active_queues()
+        hostname = socket.gethostname()
+        local_workers = dict([(worker, queue) for worker, queue in workers_queues.items() if hostname in worker])
+        for queues in local_workers.values():
+            for queue in queues:
+                # If queue 'nlp' registered corresponding tasks
+                if queue.get('name') == 'nlp':
 
-        cls = MostSimilarTask(model_name=model_name)
-        app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
-            model_name=model_name))
+                    for model_name in model_names:
+                        cls = EmbedPaperTask(model_name=model_name)
+                        app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
+                            model_name=model_name))
+                # If queue 'mostsimilar' registered corresponding tasks
+                if queue.get('name') == 'mostsimilar':
+                    cls = MostSimilarTask(model_name=model_name)
+                    app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
+                        model_name=model_name))
+    except OSError:   # connection refused in development (i.e CELERY_ALWAYS_EAGER)
+        for model_name in model_names:
+            cls = EmbedPaperTask(model_name=model_name)
+            app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(model_name=model_name))
+            cls = MostSimilarTask(model_name=model_name)
+            app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(model_name=model_name))
 
 @app.task()
 def mostsimilar_update_all():

@@ -955,11 +955,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             assert seed.shape[1] == self.model.size
 
         # compute distance
+        index2pk = self.index2pk[clip_start:]
         dists = np.dot(self.data[clip_start:], seed)
         # sort (NB: +1 because likely will return input seed as closest item)
         best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
         # return paper pk and distances
-        result = [(self.index2pk[ind], float(dists[ind])) for ind in best]
+        result = [(index2pk[ind], float(dists[ind])) for ind in best]
         return result
 
     def get_partition(self, paper_pks, time_lapse=-1, k=1):
@@ -1019,7 +1020,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         Args:
             task (string): A string defining the task. 'update', 'populate_neighbors',
-                'get_knn', 'knn_search'
+                'get_knn', 'knn_search', 'init'
 
             Optional kwargs:
             'populate_neighbors':
@@ -1037,6 +1038,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 seed (np.array or list): An array of length corresponding to model
                 clip_start (int): Where to start in self.data (see get_clip_start method)
                 top_n (int): the top n results
+
         """
 
         if task == 'update':
