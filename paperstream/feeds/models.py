@@ -20,7 +20,7 @@ from paperstream.nlp.models import Model, MostSimilar
 from config.celery import celery_app as app
 from .constants import FEED_STATUS_CHOICES
 from .utils import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
-    WeightedJournalCreatedDateAverage
+    WeightedJournalCreatedDateAverage, SimpleMax
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,9 @@ class UserFeed(TimeStampedModel):
         lib_pks = self.user.lib.papers.values_list('pk', flat=True)
 
         # instantiate scoring
-        if self.user.settings.scoring_method == 1:
+        if self.user.settings.scoring_method == 0:
+            Score = SimpleMax
+        elif self.user.settings.scoring_method == 1:
             Score = SimpleAverage
         elif self.user.settings.scoring_method == 2:
             Score = ThresholdAverage
@@ -210,7 +212,6 @@ class UserFeed(TimeStampedModel):
             self.set_message('Storing')
             for pk, val in results:
                 # update
-                self.set_message('Constructing {0}'.format(i))
                 if pk in ufp_pks_to_update:
                     ufp, _ = UserFeedMatchPaper.objects.get_or_create(
                         feed=self,

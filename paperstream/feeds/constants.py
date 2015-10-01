@@ -9,6 +9,7 @@ FEED_STATUS_CHOICES = (
 
 
 FEED_SCORING_CHOICES = (
+    (0, 'Max'),
     (1, 'Average'),
     (2, 'Average Threshold binary'),
     (3, 'Average weighted journal'),
