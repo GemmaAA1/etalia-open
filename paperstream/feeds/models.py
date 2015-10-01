@@ -122,7 +122,20 @@ class UserFeed(TimeStampedModel):
                     (Q(paper__date_pp__lt=from_date) & Q(paper__date_ep=None))))\
             .delete()
 
-    def update(self):
+    def clear(self):
+        UserFeedMatchPaper.objects.filter(feed=self).delete()
+
+    def log(self, level, core, message):
+        if level == 'info':
+            logger.info('Feed ({pk}/{feed_name}@{user_email}): {core} - {message}'.format(
+                pk=self.id, feed_name=self.name, user_email=self.user.email, core=core, message=message))
+        elif level == 'debug':
+            logger.debug('Feed ({pk}/{feed_name}@{user_email}): {core} - {message}'.format(
+                pk=self.id, feed_name=self.name, user_email=self.user.email, core=core, message=message))
+        else:
+            raise ValueError('level unknown')
+
+    def update(self, restrict_journal=False):
         """Update UserFeed
 
         - Get all papers in time range excluding untrusted and already in user lib
@@ -131,11 +144,10 @@ class UserFeed(TimeStampedModel):
         - Get only the N top scored papers
         - Create/Update UserFeedPaper
         """
-        logger.info('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- starting...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+
 
         self.set_state('ING')
+        self.log('info', 'Updating', 'starting...')
         self.set_message('Cleaning')
 
         self.clean_old_papers()
@@ -173,29 +185,17 @@ class UserFeed(TimeStampedModel):
         except KeyError:
             raise KeyError
 
-        logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- getting neighbors...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+        self.log('debug', 'Updating', 'getting neighbors...')
         seed_pks = self.papers_seed.all().values_list('pk', flat=True)
         # Submit Celery Task to get k_neighbors
         res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
                              time_lapse=self.user.settings.time_lapse,
                              k=settings.FEED_K_NEIGHBORS)
-        # # Wait for Results
+        # Wait for Results
         target_seed_pks = res.get()
-        logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- done...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
-
+        self.log('debug', 'Updating', 'done')
         # Filter exclude corresponding papers
-        # target_pks = Paper.objects\
-        #     .filter(Q(pk__in=target_seed_pks) |
-        #             Q(pk__in=ufp_pks_to_update))\
-        #     .exclude(Q(pk__in=self.user.lib.papers.values('pk')) |
-        #              Q(is_trusted=False) |
-        #              Q(abstract=''))\
-        #     .values_list('pk', flat=True)
         target_pks = list(ufp_pks_to_update) + \
                      [pk for pk in target_seed_pks if pk not in lib_pks]
 
@@ -203,38 +203,24 @@ class UserFeed(TimeStampedModel):
         objs_list = []
         if target_pks:
             # compute scores
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- preparing...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'preparing...')
             scoring.prepare(seed_pks, target_pks)
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- done...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'done')
             self.set_message('Scoring {0} papers'.format(len(target_pks)))
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- scoring...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'scoring...')
             pks, scores = scoring.score()
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- done...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'done')
             # sort scores
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- sorting...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'sorting...')
             best = matutils.argsort(scores,
                                     topn=settings.FEEDS_SCORE_KEEP_N_PAPERS,
                                     reverse=True)
             # reshape
             results = [(pks[ind], float(scores[ind])) for ind in best]
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- done...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'done')
+
             # create/update UserFeedPaper
-            self.set_message('Storing')
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- storing...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'populating...')
             for pk, val in results:
                 # update
                 if pk in ufp_pks_to_update:
@@ -252,14 +238,11 @@ class UserFeed(TimeStampedModel):
                         is_score_computed=True))
             # bulk create
             UserFeedMatchPaper.objects.bulk_create(objs_list)
-            logger.debug('Updating UserFeed ({pk}/{feed_name}@{user_email}) '
-                    '- done...'.format(pk=self.id, feed_name=self.name,
-                                           user_email=self.user.email))
+            self.log('debug', 'Updating', 'done')
         self.set_state('IDL')
 
-        logger.info('Updating UserFeed ({pk}/{feed_name}@{user_email}) - DONE'
-                    .format(pk=self.id, feed_name=self.name,
-                            user_email=self.user.email))
+        self.info('debug', 'Updating', 'DONE')
+
 
 class UserFeedSeedPaper(TimeStampedModel):
     """Relationship table between feed and seed papers"""

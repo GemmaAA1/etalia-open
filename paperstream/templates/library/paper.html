@@ -41,11 +41,13 @@
                                 </span>
 {#                                <i>-</i>#}
                             </div>
+                            {% if paper.print_clean_ids %}
                             <div>
                                 <span class="ids">
-                                    {{ paper.print_ids }}
+                                    {{ paper.print_clean_ids }}
                                 </span>
                             </div>
+                            {% endif %}
                             {% if paper.abstract %}
                                 <div class="abstract-title">Abstract:</div>
                                 <div class="abstract-body">

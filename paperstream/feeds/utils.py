@@ -218,7 +218,8 @@ class WeightedJournalAverage(Scoring):
         targ_mat = self.build_mat(self.target_data)
         # weight with journal
         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-        scores = np.average(np.dot(targ_mat, seed_mat.T), axis=1)
+        targ_mat = self.weight_with_journal(self.target_data, targ_mat)
+        scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
         return self.target_pks, scores
 
 
@@ -229,10 +230,11 @@ class WeightedJournalCreatedDateAverage(Scoring):
         targ_mat = self.build_mat(self.target_data)
         # weight with journal
         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
+        targ_mat = self.weight_with_journal(self.target_data, targ_mat)
         date_vec = self.build_created_date_vec(self.seed_data)
 
         dis = np.dot(targ_mat, seed_mat.T)
-        scores = np.average(dis, weights=date_vec, axis=1)
+        scores = np.max(dis, weights=date_vec, axis=1)
 
         return self.target_pks, scores
 

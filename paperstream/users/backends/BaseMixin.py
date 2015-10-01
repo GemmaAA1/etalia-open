@@ -58,17 +58,25 @@ class BackendLibMixin(object):
                 form = PaperFormFillBlanks(item_paper, instance=paper)
                 if form.is_valid():
                     paper = form.save()
-                    try:
-                        # 1st and 2nd conditions are because most of providers
-                        # do not distinguish e-issn and issn
-                        journal = Journal.objects.get(
-                            Q(id_issn=item_journal['id_issn']) |
-                            Q(id_eissn=item_journal['id_issn']) |
-                            Q(id_eissn=item_journal['id_eissn']) |
-                            Q(id_arx=item_journal['id_arx']) |
-                            Q(id_oth=item_journal['id_oth']))
-                    except Journal.DoesNotExist:
-                        journal = None
+                    # get journal
+                    if self.is_journal_has_id(item_journal):
+                        try:
+                            # 1st and 2nd conditions are because most of providers
+                            # do not distinguish e-issn and issn
+                            journal = Journal.objects.get(
+                                Q(id_issn=item_journal['id_issn']) |
+                                Q(id_eissn=item_journal['id_issn']) |
+                                Q(id_eissn=item_journal['id_eissn']) |
+                                Q(id_arx=item_journal['id_arx']) |
+                                Q(id_oth=item_journal['id_oth']))
+                        except Journal.DoesNotExist:
+                            journal = None
+                    else:
+                        try:
+                            journal = Journal.objects.get(
+                                title__iexact=item_journal['title'])
+                        except Journal.DoesNotExist:
+                            journal = None
                     paper.journal = journal
                     paper.is_trusted = False  # we do not trust provider source because they can be user made
                     paper.save()
@@ -139,5 +147,10 @@ class BackendLibMixin(object):
 
     def update_lib(self, session, user):
         raise NotImplementedError('Implement in subclass')
+
+    def is_journal_has_id(self, item_journal):
+        return any([True for key, val in item_journal.items()
+                    if key.startswith('id_') and val])
+
 
 

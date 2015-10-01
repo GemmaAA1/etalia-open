@@ -341,6 +341,8 @@ class Paper(TimeStampedModel):
     def print_journal_title(self):
         if self.journal:
             return self.journal.short_title or self.journal.title
+        elif self.id_arx:
+            return 'Arxiv'
         else:
             return 'Unknown journal'
 
@@ -356,6 +358,20 @@ class Paper(TimeStampedModel):
                     id=field.verbose_name,
                     value=getattr(self, field.name))
         return ids_str
+
+    @property
+    def print_clean_ids(self):
+        """Not printing id_oth"""
+        if self.id_doi:
+            return 'DOI: {id}'.format(id=self.id_doi)
+        elif self.id_arx:
+            return 'Arxiv: {id}'.format(id=self.id_arx)
+        elif self.id_pmi:
+            return 'PMID: {id}'.format(id=self.id_pmi)
+        elif self.id_pii:
+            return 'PII: {id}'.format(id=self.id_pii)
+        else:
+            return ''
 
     def get_ids(self):
         """Return dictionary of paper ids"""
