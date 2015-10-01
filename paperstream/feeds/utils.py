@@ -123,7 +123,7 @@ class Scoring(object):
     def build_created_date_vec(self, data):
         """Return an array of weights corresponding to created_date ordered
         by paper_pk in data"""
-        date_vec = np.zeros(data.count(), dtype=np.float)
+        date_vec = np.zeros(len(data), dtype=np.float)
         for i, entry in enumerate(data):
             date_vec[i] = self.logist_weight(
                 self.created_date_dict[entry['paper__pk']])
