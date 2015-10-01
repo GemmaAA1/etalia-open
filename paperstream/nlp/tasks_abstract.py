@@ -8,6 +8,8 @@ from celery import Task
 
 from django.conf import settings
 
+from .models import Model, MostSimilar
+
 logger = logging.getLogger(__name__)
 
 
@@ -102,24 +104,3 @@ class MostSimilarTask(Task):
 
     def run(self, *args, **kwargs):
         return self.ms.tasks(*args, **kwargs)
-
-
-# Instantiate all task for Model and MostSimilar
-def register_model_tasks():
-    """Register Model tasks
-    """
-    model_names = Model.objects.all().values_list('name', flat=True)
-    for model_name in model_names:
-        cls = EmbedPaperTask(model_name=model_name, abstract=False)
-        app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
-            model_name=model_name))
-
-
-def register_mostsimilar_tasks():
-    """Register MostSimilar tasks
-    """
-    model_names = Model.objects.all().values_list('name', flat=True)
-    for model_name in model_names:
-        cls = MostSimilarTask(model_name=model_name, abstract=False)
-        app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
-            model_name=model_name))

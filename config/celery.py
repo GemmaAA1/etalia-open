@@ -7,8 +7,8 @@ located in a app/task.py files are auto detected and available to workers
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
-from paperstream.nlp.unreg_tasks import register_model_tasks, \
-    register_mostsimilar_tasks
+from paperstream.nlp.tasks_abstract import EmbedPaperTask, MostSimilarTask
+from paperstream.nlp.models import Model
 from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
@@ -46,3 +46,22 @@ celery_app.steps['worker'].add(MyBootstep)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
 
+
+def register_model_tasks():
+    """Register Model tasks
+    """
+    model_names = Model.objects.all().values_list('name', flat=True)
+    for model_name in model_names:
+        cls = EmbedPaperTask(model_name=model_name, abstract=False)
+        celery_app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
+            model_name=model_name))
+
+
+def register_mostsimilar_tasks():
+    """Register MostSimilar tasks
+    """
+    model_names = Model.objects.all().values_list('name', flat=True)
+    for model_name in model_names:
+        cls = MostSimilarTask(model_name=model_name, abstract=False)
+        celery_app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
+            model_name=model_name))

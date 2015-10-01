@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import os
-import glob
 import logging
-from celery import chain, Task
 
 from config.celery import celery_app as app
 
