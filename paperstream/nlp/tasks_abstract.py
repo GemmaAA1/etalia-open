@@ -34,6 +34,10 @@ class EmbedPaperTask(Task):
             else:
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
+        else:
+            raise ValueError('<model_name> must be in args')
+        # init task by loading data
+        _ = self.model
 
     @property
     def model(self):
@@ -75,6 +79,10 @@ class MostSimilarTask(Task):
             else:
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
+        else:
+            raise ValueError('<model_name> must be in args')
+        # init task by loading data
+        _ = self.ms
 
     @property
     def ms(self):
