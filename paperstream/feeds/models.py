@@ -150,7 +150,8 @@ class UserFeed(TimeStampedModel):
         self.log('info', 'Updating', 'starting...')
         self.set_message('Cleaning')
 
-        self.clean_old_papers()
+        # self.clean_old_papers()
+        self.clear()
 
         # get paper that remain and need to be updated
         self.set_message('Fetching data')
@@ -241,7 +242,7 @@ class UserFeed(TimeStampedModel):
             self.log('debug', 'Updating', 'done')
         self.set_state('IDL')
 
-        self.info('debug', 'Updating', 'DONE')
+        self.log('info', 'Updating', 'DONE')
 
 
 class UserFeedSeedPaper(TimeStampedModel):
