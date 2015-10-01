@@ -24,8 +24,8 @@ class EmbedPaperTask(Task):
     abstract = True
 
     def __init__(self, *args, **kwargs):
-        if 'model_name' in kwargs:
-            model_name = kwargs['model_name']
+        try:
+            model_name = kwargs.get('model_name')
             # check in model_name is known
             choices = [model['name'] for model in
                        Model.objects.all().values('name')]
@@ -34,9 +34,12 @@ class EmbedPaperTask(Task):
             else:
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
-        else:
-            raise ValueError('<model_name> must be in args')
-        # init task by loading data
+        except KeyError:
+            raise KeyError('<model_name> not in kwargs')
+
+        # init task
+        self.abstract = False
+        # load data
         _ = self.model
 
     @property
@@ -68,10 +71,9 @@ class MostSimilarTask(Task):
     abstract = True
 
     def __init__(self, *args, **kwargs):
-        if 'model_name' in kwargs:
-            model_name = kwargs['model_name']
-
-            # check if model_name is known
+        try:
+            model_name = kwargs.get('model_name')
+            # check in model_name is known
             choices = [model['name'] for model in
                        Model.objects.all().values('name')]
             if model_name in choices:
@@ -79,9 +81,12 @@ class MostSimilarTask(Task):
             else:
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
-        else:
-            raise ValueError('<model_name> must be in args')
-        # init task by loading data
+        except KeyError:
+            raise KeyError('<model_name> not in kwargs')
+
+        # init task
+        self.abstract = False
+        # load data
         _ = self.ms
 
     @property
