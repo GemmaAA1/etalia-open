@@ -174,6 +174,16 @@ class Scoring(object):
         raise NotImplementedError
 
 
+class SimpleMax(Scoring):
+
+    def _run(self):
+        seed_mat = self.build_mat(self.seed_data)
+        targ_mat = self.build_mat(self.target_data)
+        scores = 1. - np.max(distance.cdist(seed_mat, targ_mat, 'cosine'),
+                                 axis=0)
+        return self.target_pks, scores
+
+
 class SimpleAverage(Scoring):
 
     def _run(self):

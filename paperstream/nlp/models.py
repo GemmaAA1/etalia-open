@@ -955,8 +955,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             assert seed.shape[1] == self.model.size
 
         # compute distance
-        index2pk = self.index2pk[clip_start:]
         dists = np.dot(self.data[clip_start:], seed)
+        # clip index
+        index2pk = self.index2pk[clip_start:]
         # sort (NB: +1 because likely will return input seed as closest item)
         best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
         # return paper pk and distances
@@ -998,12 +999,14 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         # compute distance
         dists = np.dot(self.data[clip_start:, :], seeds)
+        # clip index
+        index2pk = self.index2pk[clip_start:]
         # reverse order
         dists = - dists
         # get partition
         arg_part = np.argpartition(dists, top_n+1, axis=0)[:top_n:, :]
         # reshape and return unique
-        result = [self.index2pk[ind] for ind in arg_part.flatten()]
+        result = [index2pk[ind] for ind in arg_part.flatten()]
         return list(set(result))
 
     def tasks(self, task, **kwargs):

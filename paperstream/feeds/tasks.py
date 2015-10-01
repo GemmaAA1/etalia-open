@@ -17,7 +17,7 @@ def init_main_feed(user_pk):
     user = User.objects.get(pk=user_pk)
 
     # get default ('main') feed
-    feed = UserFeed.objects.get(user_id=user_pk, name='main')
+    feed, _ = UserFeed.objects.get_or_create(user_id=user_pk, name='main')
 
     # add all papers
     feed.add_papers_seed(user.lib.papers.all())

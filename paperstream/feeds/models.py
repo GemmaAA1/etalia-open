@@ -172,7 +172,7 @@ class UserFeed(TimeStampedModel):
         res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
                              time_lapse=self.user.settings.time_lapse,
-                             k=settings.FEED_K_NEIGHBORS)
+                             k=2)
         # # Wait for Results
         target_seed_pks = res.get()
 
