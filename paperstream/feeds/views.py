@@ -48,11 +48,11 @@ class FeedView(LoginRequiredMixin, ModalMixin, ListView):
         q = self.request.GET.get("query")
         if q:
             # return a filtered queryset
-            return queryset.filter(Q(title__icontains=q) |
-                                   Q(abstract__icontains=q) |
-                                   Q(journal__title__icontains=q) |
-                                   Q(authors__last_name__icontains=q) |
-                                   Q(authors__first_name__icontains=q))\
+            return queryset.filter(Q(paper__title__icontains=q) |
+                                   Q(paper__abstract__icontains=q) |
+                                   Q(paper__journal__title__icontains=q) |
+                                   Q(paper__authors__last_name__icontains=q) |
+                                   Q(paper__authors__first_name__icontains=q))\
                 .distinct()
         # No q is specified so we return queryset
         return queryset
