@@ -3,14 +3,11 @@ from __future__ import unicode_literals, absolute_import
 
 import os
 import glob
-import logging
 from celery import Task
 
 from django.conf import settings
 
 from .models import Model, MostSimilar
-
-logger = logging.getLogger(__name__)
 
 
 class EmbedPaperTask(Task):
@@ -22,6 +19,7 @@ class EmbedPaperTask(Task):
     model_name = None
     _model = None
     abstract = True
+    init = False
 
     def __init__(self, *args, **kwargs):
         try:
@@ -38,9 +36,12 @@ class EmbedPaperTask(Task):
             raise KeyError('<model_name> not in kwargs')
 
         # init task
+        self.init = kwargs.get('init', False)
+        if self.init:
+            _ = self.model
+
         self.abstract = False
-        # load data
-        _ = self.model
+
 
     @property
     def model(self):
@@ -69,6 +70,7 @@ class MostSimilarTask(Task):
     model_name = None
     _ms = None
     abstract = True
+    init = False
 
     def __init__(self, *args, **kwargs):
         try:
@@ -85,9 +87,12 @@ class MostSimilarTask(Task):
             raise KeyError('<model_name> not in kwargs')
 
         # init task
+        self.init = kwargs.get('init', False)
+        if self.init:
+            _ = self.ms
+
         self.abstract = False
-        # load data
-        _ = self.ms
+
 
     @property
     def ms(self):
