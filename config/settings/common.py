@@ -443,34 +443,29 @@ LOGGING = {
         #     'handlers': ['console', 'file'],
         #     'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
         # },
-        'populate': {
+        'paperstream.populate': {
             'handlers': ['console', 'populate'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        'consumers': {
+        'paperstream.consumers': {
             'handlers': ['console', 'consumers'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        'nlp': {
+        'paperstream.nlp': {
             'handlers': ['console', 'nlp'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        'feeds': {
+        'paperstream.feeds': {
             'handlers': ['console', 'feeds'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        'users': {
+        'paperstream.users': {
             'handlers': ['console', 'users'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'celery': {
-            'handlers': ['celery', 'console'],
-            'level': 'DEBUG',
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
     }
