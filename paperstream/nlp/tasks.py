@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from .models import Model, MostSimilar
-
+from .tasks_class import EmbedPaperTask, MostSimilarTask
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
