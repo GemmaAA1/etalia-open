@@ -7,7 +7,13 @@ from paperstream.nlp.models import PaperVectors, JournalVectors, Model
 import numpy as np
 import datetime
 
-model = Model.objects.first()
+model_name = 'dbow-128'
+model_name = 'dbow-128-with-words'
+id_ex = 43566
+id_ex = 363313
+id_ex = 404717
+
+model = Model.objects.get(name=model_name)
 User = get_user_model()
 user = User.objects.first()
 feed = user.feeds.first()
@@ -28,9 +34,6 @@ for i, seed in enumerate(seeds_l):
     date.append(seed[1])
 
 # pick target
-id_ex = 43566
-id_ex = 363313
-id_ex = 404717
 pv = PaperVectors.objects.get(paper=id_ex, model=model)
 vec = np.array(pv.vector[:128])
 
@@ -38,13 +41,17 @@ vec = np.array(pv.vector[:128])
 dist = np.dot(seed_mat, vec)
 
 # save
-np.savetxt('dist{id}.npy'.format(id=id_ex), dist)
+np.savetxt('dist{id}_{model}.npy'.format(id=id_ex, model=model_name), dist)
 with open('date.txt', 'w') as file:
     for item in date:
         file.write("%s\n" % item)
 
 # load
-dist = np.loadtxt('dist{id}.npy'.format(id=id_ex))
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+dist = np.loadtxt('dist{id}_{model}.npy'.format(id=id_ex, model=model_name))
 date = []
 with open('date.txt', 'r') as file:
     while True:

@@ -467,11 +467,12 @@ def update_supervisor_conf():
 @task
 def restart_supervisor():
     # restart supervisor
-    pid = run('pgrep supervisor')
-    if pid:
-        run_as_root('kill -HUP {pid}'.format(pid=pid))
-    else:   # just start it
-        run('supervisord')
+    with settings(warn_only=True):
+        pid = run('pgrep supervisor')
+        if pid:
+            run_as_root('kill -HUP {pid}'.format(pid=pid))
+        else:   # just start it
+            run('supervisord')
 
 
 @task
