@@ -318,7 +318,7 @@ LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
-CELERY_TASK_RESULT_EXPIRES = 60  # in seconds
+CELERY_TASK_RESULT_EXPIRES = 5  # in seconds
 
 CELERY_DEFAULT_QUEUE = 'default'
 # embed_exchange = Exchange('embed', type='topic')
@@ -333,6 +333,8 @@ CELERY_QUEUES = (
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
+
+CELERY_IGNORE_RESULT = True
 
 CELERY_ROUTES = ('config.routers.MyRouter', )
 
