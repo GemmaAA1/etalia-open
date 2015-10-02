@@ -9,6 +9,7 @@ from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
 
+# NB: tasks related to embeding of paper and mostsimilar are register in celery.py
 
 @app.task()
 def mostsimilar_update_all():

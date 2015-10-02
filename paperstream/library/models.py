@@ -340,7 +340,15 @@ class Paper(TimeStampedModel):
     @property
     def print_journal_title(self):
         if self.journal:
-            return self.journal.short_title or self.journal.title
+            return self.journal.title
+        elif self.id_arx:
+            return 'Arxiv'
+        else:
+            return 'Unknown journal'
+
+    def print_journal_short_title(self):
+        if self.journal:
+            return self.journal.short_title or self.journal.title[:15] + '...'
         elif self.id_arx:
             return 'Arxiv'
         else:
