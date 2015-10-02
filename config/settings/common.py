@@ -336,8 +336,6 @@ CELERY_DEFAULT_ROUTING_KEY = 'default'
 
 CELERY_ROUTES = ('config.routers.MyRouter', )
 
-CELERYD_PREFETCH_MULTIPLIER = 64
-
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
         'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
