@@ -38,10 +38,3 @@ NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
 NLP_MS_BUCKET_NAME = 'paperstream-development-nlp-ms'
 
 
-# CELERY
-# ------------------------------------------------------------------------------
-# In development, all tasks will be executed locally by blocking until the task
-# returns
-CELERYBEAT_SCHEDULE = {}
-CELERY_ALWAYS_EAGER = True
-

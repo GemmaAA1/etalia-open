@@ -10,11 +10,7 @@ APPS_DIR = ROOT_DIR.path('paperstream')
 
 env = environ.Env()
 
-BROKER_URL = 'amqp://{username}:{password}@{host}:5672//'.format(
-    username=env.str('RABBITMQ_USERNAME'),
-    password=env.str('RABBITMQ_PASSWORD'),
-    host=env.str('RABBITMQ_HOSTNAME'),
-)
+BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_TASK_RESULT_EXPIRES = 5  # in seconds
@@ -32,8 +28,6 @@ CELERY_QUEUES = (
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
-
-CELERY_IGNORE_RESULT = True
 
 CELERY_ROUTES = ('config.routers.MyRouter', )
 

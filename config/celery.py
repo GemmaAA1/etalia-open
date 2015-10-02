@@ -18,11 +18,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 
 celery_app = Celery('paperstream')
 
-# Using a string here means the worker will not have to
-# pickle the object when using Windows.
-celery_app.config_from_object('django.conf:settings')
+# If celery_app.conf  has a broker it has been configured at launch, otherwise
+# load development settings
+if not celery_app.conf['BROKER_URL']:
+    celery_app.config_from_object('config.celery_settings.development')
 celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-
 
 # Registering Model and MostSimilar task and init them or not depending on user
 # options --init
