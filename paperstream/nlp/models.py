@@ -496,7 +496,7 @@ class Model(TimeStampedModel, S3Mixin):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=5):  # seed=seed)
+    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=10):  # seed=seed)
         """Infer model vector for paper"""
 
         self.check_active()

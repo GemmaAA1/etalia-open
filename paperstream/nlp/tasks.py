@@ -24,3 +24,8 @@ def add_nlp(x, y):
     """dummy task"""
     logger.info("--> Processing task add")
     return x + y
+
+@app.task()
+def embed_paper(pk, model_name):
+    model = Model.objects.get(name=model_name)
+    model.infer_paper(paper_pk=pk)
