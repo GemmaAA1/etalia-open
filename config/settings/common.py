@@ -325,7 +325,7 @@ CELERY_DEFAULT_QUEUE = 'default'
 # consumer_exchange = Exchange('consumer', type='topic')
 CELERY_QUEUES = (
     Queue('default', routing_key='default.#'),
-    Queue('nlp', routing_key='nlp.#', delivery_mode=1),
+    Queue('nlp', routing_key='nlp.#'),
     Queue('mostsimilar', routing_key='mostsimilar.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
@@ -333,8 +333,6 @@ CELERY_QUEUES = (
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'default'
-
-CELERY_IGNORE_RESULT = True
 
 CELERY_ROUTES = ('config.routers.MyRouter', )
 
