@@ -48,5 +48,6 @@ def embed_papers(pks, model_name, batch_size=10000):
     pks_batch.append(pks[len(pks)//batch_size*batch_size:])
 
     for batch in pks_batch:
-        embed_papers_batch.delay(batch, model_name)
+        embed_papers_batch.apply_async(args=(batch, model_name,),
+                                       routine_key='default')
 
