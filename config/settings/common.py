@@ -325,7 +325,7 @@ CELERY_DEFAULT_QUEUE = 'default'
 # consumer_exchange = Exchange('consumer', type='topic')
 CELERY_QUEUES = (
     Queue('default', routing_key='default.#'),
-    Queue('nlp', routing_key='nlp.#'),
+    Queue('nlp', routing_key='nlp.#', delivery_mode=1),
     Queue('mostsimilar', routing_key='mostsimilar.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
