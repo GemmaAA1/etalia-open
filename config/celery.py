@@ -12,6 +12,7 @@ from paperstream.nlp.tasks_class import EmbedPaperTask, MostSimilarTask
 from django.conf import settings
 from celery import bootsteps
 from celery.bin import Option
+from celery.task.control import rate_limit
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
@@ -80,3 +81,7 @@ celery_app.steps['worker'].add(NLPBootstep)
 @celery_app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+
+rate_limit('paperstream.nlp.tasks.dbow-128', '300/s')
+rate_limit('paperstream.nlp.tasks.dbow-128-with-words', '300/s')

@@ -412,6 +412,7 @@ def update_rabbit_user():
             user = run_as_root('echo $RABBITMQ_USERNAME')
             if user not in list_users:
                 run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
+                run_as_root('rabbitmqctl set_user_tags $RABBITMQ_USERNAME administrator')
                 run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
             if 'guest' in list_users:
                 run_as_root("rabbitmqctl delete_user guest")
