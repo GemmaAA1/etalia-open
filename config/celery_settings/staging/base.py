@@ -16,3 +16,7 @@ CELERY_RESULT_BACKEND = 'amqp://{username}:{password}@{host}:5672//'.format(
 )
 
 CELERY_IGNORE_RESULT = True
+
+CELERY_ANNOTATIONS = {'paperstream.nlp.tasks.dbow-128-with-words': {'rate_limit': '200/s'},
+                      'paperstream.nlp.tasks.dbow-128': {'rate_limit': '200/s'}}
+
