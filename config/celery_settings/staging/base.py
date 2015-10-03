@@ -14,3 +14,5 @@ CELERY_RESULT_BACKEND = 'amqp://{username}:{password}@{host}:5672//'.format(
     password=env.str('RABBITMQ_PASSWORD'),
     host=env.str('RABBITMQ_HOSTNAME'),
 )
+
+CELERY_IGNORE_RESULT = True
