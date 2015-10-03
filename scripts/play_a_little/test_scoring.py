@@ -50,6 +50,7 @@ with open('date.txt', 'w') as file:
 
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime
 
 dist = np.loadtxt('dist{id}_{model}.npy'.format(id=id_ex, model=model_name))
 date = []
@@ -61,5 +62,7 @@ with open('date.txt', 'r') as file:
             break
 
 import matplotlib.pyplot as plt
-plt.plot(date, dist, '.'), plt.show()
+plt.plot(date, dist1, '.')
+plt.plot(date, dist0, 'r.')
+plt.show()
 
