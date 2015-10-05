@@ -525,13 +525,15 @@ class Model(TimeStampedModel, S3Mixin):
         """
         self.check_active()
 
+        nb_pb_updates = 100
+        nb_papers = len(paper_pks)
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=len(paper_pks), redirect_stderr=True).start()
-        count = 0
-        for paper_pk in paper_pks:
+                           maxval=nb_papers, redirect_stderr=True).start()
+        paper_pks = list(paper_pks)
+        for count, paper_pk in enumerate(paper_pks):
             self.infer_paper(paper_pk, **kwargs)
-            pbar.update(count)
-            count += 1
+            if not count % nb_papers // nb_pb_updates:
+                pbar.update(count)
         # close progress bar
         pbar.finish()
 

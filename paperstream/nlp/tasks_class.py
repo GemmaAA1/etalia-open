@@ -5,6 +5,7 @@ import os
 import glob
 from celery import Task
 
+from django.db.models.query import QuerySet
 from django.conf import settings
 
 from .models import Model, MostSimilar
@@ -52,7 +53,10 @@ class EmbedPaperTask(Task):
         return self._model
 
     def run(self, paper_pk, **kwargs):
-        return self.model.infer_paper(paper_pk)
+        if isinstance(paper_pk, list or QuerySet):
+            return self.model.infer_papers(paper_pk)
+        else:
+            return self.model.infer_paper(paper_pk)
 
 
 class MostSimilarTask(Task):
