@@ -26,7 +26,7 @@ def add_nlp(x, y):
     return x + y
 
 
-def embed_papers(pks, model_name, batch_size=5000):
+def embed_papers(pks, model_name, batch_size=1000):
     try:
         embed_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
             model_name=model_name)]
