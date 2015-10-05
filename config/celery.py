@@ -47,45 +47,31 @@ class NLPBootstep(bootsteps.Step):
     def __init__(self, worker, init, **options):
         # register specific tasks
         if init:
-            args = re.findall(r'(nlp|ms):([\w\-\d,]+)', init)
-            if args:
-                if len(args) == 2:
-                    type_ = args[0]
-                    init_models = args[1].split(',')
-                else:
-                    type_ = args[0]
-                    init_models = '*'
-            if type_ == 'nlp':
-                register_model_tasks(init_models)
-            if type_ == 'ms':
-                register_mostsimilar_tasks(init_models)
+            if 'nlp' in init:
+                register_model_tasks(init=True)
+            if 'ms' in init:
+                register_mostsimilar_tasks(init=True)
         else:
             register_model_tasks()
             register_mostsimilar_tasks()
 
 
-def register_model_tasks(init_models=None):
+def register_model_tasks(init=False):
     """Register Model tasks
     """
     model_names = Model.objects.all().values_list('name', flat=True)
     for model_name in model_names:
-        if init_models == '*' or model_name in init_models:
-            cls = EmbedPaperTask(model_name=model_name, init=True)
-        else:
-            cls = EmbedPaperTask(model_name=model_name, init=False)
+        cls = EmbedPaperTask(model_name=model_name, init=init)
         celery_app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
             model_name=model_name))
 
 
-def register_mostsimilar_tasks(init_models=None):
+def register_mostsimilar_tasks(init=False):
     """Register MostSimilar tasks
     """
     model_names = Model.objects.all().values_list('name', flat=True)
     for model_name in model_names:
-        if init_models == '*' or model_name in init_models:
-            cls = MostSimilarTask(model_name=model_name, init=True)
-        else:
-            cls = MostSimilarTask(model_name=model_name, init=False)
+        cls = MostSimilarTask(model_name=model_name, init=init)
         celery_app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
             model_name=model_name))
 
