@@ -598,3 +598,8 @@ def stop_all():
 def start_all():
     run('supervisorctl start all')
 
+
+@task
+def clear_nlp_data():
+    run('rm -f /home/ubuntu/staging/source/nlp_data/mods/*')
+    run('rm -f /home/ubuntu/staging/source/nlp_data/ms/*')
