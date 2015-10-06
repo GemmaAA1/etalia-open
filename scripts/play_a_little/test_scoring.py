@@ -10,8 +10,8 @@ import os
 import datetime
 
 model_name = 'dbow-128'
-model_name = 'dm-128'
 model_name = 'dbow-128-with-words'
+model_name = 'dm-128'
 
 save_path = '/home/ubuntu/staging/test'
 id_exs = [862220, 413285, 43566, 566276, 531410]
