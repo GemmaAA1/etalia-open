@@ -1,11 +1,11 @@
 
 .intro-header {
-    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-top: 0px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 50px;
     text-align: center;
-    color: #f8f8f8;
+    color: #333333;
     /*background: url(../img/intro-bg.jpg) no-repeat center center;*/
-    background: #8ad2e7;
+    background: #f8f8f8;
     background-size: cover;
 }
 
@@ -17,7 +17,7 @@
 
 .intro-message > h1 {
     margin: 0;
-    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    /*text-shadow: 2px 2px 3px rgba(0,0,0,0.6);*/
     font-size: 5em;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .intro-message > h3 {
-    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    /*text-shadow: 2px 2px 3px rgba(0,0,0,0.6);*/
 }
 
 @media(max-width:767px) {
@@ -57,15 +57,16 @@
 
 .content-section-a {
     padding: 25px 0;
-    /*background-color: #f8f8f8;*/
-    background-color: #ffffff;
+    background-color: #f8f8f8;
+    /*background-color: #ffffff;*/
 }
 
 .content-section-b {
     padding: 25px 0;
     /*border-top: 1px solid #e7e7e7;*/
     /*border-bottom: 1px solid #e7e7e7;*/
-    background-color: #ffffff;
+    /*background-color: #ffffff;*/
+    background-color: #f8f8f8;
 }
 
 .section-heading {
@@ -74,6 +75,7 @@
 
 .section-heading-spacer {
     float: left;
+    padding-top: 30px;
     width: 200px;
     border-top: 3px solid #e7e7e7;
 }

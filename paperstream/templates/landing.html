@@ -25,6 +25,7 @@
                     <div class="intro-message">
 
                         <h1>A Stream for Researchers</h1>
+{#                        <h3>Staying tuned, made easy.</h3>#}
                         <h3>Stay tuned, simply.</h3>
 
                         <hr class="intro-divider">
@@ -43,14 +44,18 @@
                                 </a>
                             </li>
                         </ul>
+{#                        <hr class="intro-divider">#}
                         <div style="padding-top: 20px">
                             <div class="container">
                                 <div class="col-lg-8 col-lg-offset-2 col-sm-6 text-center">
                                     <h3>
-                                        <p>PaperStream is a free service for students and researchers.</p>
-                                        <p>It helps you stay up-to-date in your field by finding recently published articles that match your interest.</p>
-                                        <p>No keyword search. No alert to setup. No journal page to browse. <br>
-                                            Paperstream leverages what you store in your reference manager to feed your personalized stream.
+                                        <p>No keyword search. No journal to browse. No alerts to setup.</p>
+                                        <br>
+                                        <p><i>PaperStream leverages your reference manager and match recently published scientific articles to your interests.</i></p>
+{#                                        <p>PaperStream is a free service for students and researchers.</p>#}
+{#                                        <p>It helps you stay up-to-date in your field by finding recently published articles that match your interest.</p>#}
+{#                                        <p>No keyword search. No alert to setup. No journal page to browse. <br>#}
+{#                                            Paperstream leverages what you store in your reference manager to feed your personalized stream.#}
                                         </p>
                                     </h3>
                                 </div>
@@ -81,13 +86,12 @@
 {#                        scientific papers that match your interest.#}
                     </p>
                     <p class="lead">
-                        Not using a reference software manager yet?
-                        They are incredible time-saver tools to organize your library and to help you format your references.
-                        Check it out.
+                        Not using a reference software manager yet? Check it out.
+                        They are incredible time-saver to organize your research.
                     </p>
                 </div>
                 <div class="col-lg-5 col-lg-offset-1 col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubble_provider.png' %}" alt="">
+                    <img class="img-responsive" src="{% static '/static/img/bubble_reference.png' %}" alt="">
                 </div>
             </div>
 
@@ -124,10 +128,10 @@
                 <div class="col-lg-5 col-lg-offset-1 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Multiple metrics at work</h2>
-                        <p class="lead">Article social trends, document embeddings, journal focus, all are at work to build your personalized stream.</p>
+                    <h2 class="section-heading">Multiple gears at work</h2>
+                        <p class="lead">Article social trends, natural language processing, statistical modeling, document embedding, all are at work to build your personalized stream.</p>
 
-                    <h5>This week trending papers with <a href="http://www.altmetric.com">Altmetric</a>:</h5>
+                    <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>
                     {% for paper in active_papers %}
                         <div class="row" style="height:70px">
                             <div class="col-lg-3 col-sm-3">
@@ -149,7 +153,7 @@
                     {% endfor %}
                 </div>
                 <div class="col-lg-5 col-lg-offset-1 col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubble_altmetric.png' %}" alt="">
+                    <img class="img-responsive" src="{% static '/static/img/bubble_metric.png' %}" alt="">
                 </div>
             </div>
         </div>
@@ -182,8 +186,8 @@
     <div class="banner">
         <div class="container">
             <div class="row text-center">
-                <h2>Stay tuned, simply</h2>
-                <h5>Connect now:</h5>
+                <h2>Stay tuned, simply.</h2>
+                <h5>Try it now:</h5>
                 <ul class="list-inline intro-social-buttons">
                     <li>
                         <a id="mendeley-link" href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">
