@@ -11,7 +11,7 @@
 
 .intro-message {
     position: relative;
-    padding-top: 10%;
+    padding-top: 5%;
     padding-bottom: 5%;
 }
 
@@ -29,6 +29,21 @@
 
 .intro-message > h3 {
     /*text-shadow: 2px 2px 3px rgba(0,0,0,0.6);*/
+}
+
+.learn-more {
+    background: url(../img/arrow-more.png) left top no-repeat;
+    overflow: hidden;
+    position: absolute;
+    left: 49%;
+    bottom: -5px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 40px;
+    width: 40px;
+    z-index: 9999;
 }
 
 @media(max-width:767px) {

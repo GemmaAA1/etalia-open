@@ -1,12 +1,3 @@
-$(document).ready(function() {
-    //Modal message for lib syncing
-    applyWhenElementExists('#user-lib-count-papers', '#syncing-lib-block',
-        '/user/user-lib-count-papers/', update_message, 1000);
-    //Modal message for feed updating
-    applyWhenElementExists('#user-feed-message', '#updating-feed-block',
-        $(location).attr('href')+'user-feed-message', update_message, 2000);
-});
-
 function applyWhenElementExists(sel_to_up, sel_to_hide, url, myFunction, intervalTime) {
 
     var obj_up = jQuery(sel_to_up);
@@ -42,7 +33,20 @@ function update_message(obj_up, obj_hide, url) {
     });
 }
 
-jQuery(function ($) {
+function scrollToAnchor(aid){
+    var aTag = $("a[name='"+ aid +"']");
+    $('html,body').animate({scrollTop: aTag.offset().top},'slow');
+}
+
+$(document).ready(function() {
+
+    //Modal message for lib syncing
+    applyWhenElementExists('#user-lib-count-papers', '#syncing-lib-block',
+        '/user/user-lib-count-papers/', update_message, 1000);
+    //Modal message for feed updating
+    applyWhenElementExists('#user-feed-message', '#updating-feed-block',
+        $(location).attr('href')+'user-feed-message', update_message, 2000);
+
     // Profile update ajax call
     $('form[data-async]').on('submit', function (event) {
         var $form = $(this);
@@ -83,6 +87,9 @@ jQuery(function ($) {
         });
         event.preventDefault();
     });
+
+
+    $(".learn-more").click(function() {
+       scrollToAnchor('learn-more');
+    });
 });
-
-
