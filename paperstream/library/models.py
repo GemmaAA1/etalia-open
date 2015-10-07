@@ -430,3 +430,18 @@ class CorpAuthorPaper(TimeStampedModel):
 
     def __str__(self):
         return '{0}'.format(self.corp_author.name)
+
+
+class Stats(TimeStampedModel):
+
+    nb_papers = models.IntegerField(default=0)
+
+    nb_journal = models.IntegerField(default=0)
+
+    nb_authors = models.IntegerField(default=0)
+
+    def update(self):
+        self.nb_papers = Paper.obejcts.count()
+        self.nb_journals = Journal.obejcts.count()
+        self.nb_authors = Author.obejcts.count()
+        self.save()
