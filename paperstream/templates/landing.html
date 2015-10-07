@@ -45,9 +45,9 @@
                             </li>
                         </ul>
 {#                        <hr class="intro-divider">#}
-                        <div style="padding-top: 20px">
+                        <div style="">
                             <div class="container">
-                                <div class="col-lg-8 col-lg-offset-2 col-sm-6 text-center">
+                                <div class="col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2">
                                     <h3>
                                         <p>No keyword search. No journal to browse. No alert to setup.</p>
                                         <p><i>PaperStream leverages your reference manager and streams you back recently published scientific articles that match your interests.</i></p>
@@ -89,8 +89,8 @@
                         Not using a reference software manager yet? They are incredible time-saver to organize your research.
                     </p>
                 </div>
-                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubble_reference.png' %}" alt="">
+                <div class="col-lg-5 col-sm-6">
+                    <img class="img-responsive center-block" src="{% static '/static/img/bubble_reference.png' %}" alt="">
                 </div>
             </div>
 
@@ -102,7 +102,7 @@
     <div class="content-section-b">
         <div class="container">
             <div class="row">
-                <div class="col-lg-5 col-sm-push-6  col-sm-6">
+                <div class="col-lg-5 col-sm-push-6 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
                     <h2 class="section-heading">Build your personalized stream</h2>
@@ -112,7 +112,7 @@
                     <p class="lead">Exploring a new field? Changing focus?<br> PaperStream adapts as you go.</p>
                 </div>
                 <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubble_wheel.png' %}" alt="">
+                    <img class="img-responsive center-block" src="{% static '/static/img/bubble_wheel.png' %}" alt="">
                 </div>
             </div>
 
@@ -132,27 +132,21 @@
 
                     <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>
                     {% for paper in active_papers %}
-                        <div class="row" style="height:70px">
-                            <div class="col-lg-3 col-sm-3">
-                            {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                            {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                            {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                        <div class="col-xs-3">
+                            {% if paper.id_doi %}<span class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></span>
+                            {% elif paper.id_arx %}<span class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></span>
+                            {% elif paper.id_pmi %}<span class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></span>
                             {% endif %}
-                            </div>
-                            <div class="col-lg-9 col-sm-9">
-                                <div><a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a></div>
-                                <div>
-                                    {{ paper.print_compact_first_author }}
-                                </div>
-                                <div>
-                                    {{ paper.print_journal_title }}
-                                </div>
-                            </div>
+                        </div>
+                        <div class="col-xs-7">
+                            <a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a><br>
+                            {{ paper.print_compact_first_author }}<br>
+                            {{ paper.print_journal_title }}<br>
                         </div>
                     {% endfor %}
                 </div>
-                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubble_metric.png' %}" alt="">
+                <div class="col-lg-5 col-sm-6">
+                    <img class="img-responsive center-block" src="{% static '/static/img/bubble_metric.png' %}" alt="">
                 </div>
             </div>
         </div>
@@ -173,7 +167,7 @@
                     <p class="lead">Paperstream will notify you and other researchers of new relevant comments.</p>
                 </div>
                 <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive" src="{% static '/static/img/bubble_comment.png' %}" alt="">
+                    <img class="img-responsive center-block" src="{% static '/static/img/bubble_comment.png' %}" alt="">
                 </div>
             </div>
 
