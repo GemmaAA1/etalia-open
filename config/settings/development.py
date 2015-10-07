@@ -27,6 +27,7 @@ CACHES = {
 # Static asset configuration
 STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
 STATIC_URL = '/static/'
+# STATIC_URL = str(ROOT_DIR.path('staticfiles'))
 
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),

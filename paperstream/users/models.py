@@ -181,6 +181,10 @@ class UserLib(TimeStampedModel):
     def count_journals(self):
         return self.journals.all().count()
 
+    @property
+    def count_authors(self):
+        return self.papers.values('authors').count()
+
     def set_state(self, state):
         if state in ['NON', 'IDL', 'ING']:
             self.state = state

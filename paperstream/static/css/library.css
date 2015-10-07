@@ -2,19 +2,26 @@
 
 
 .library {
-    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
-    /*padding-bottom: 50px;*/
+    padding-top: 70px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 50px;
     text-align: left;
     color: #000000;
     background: #f8f8f8;
     margin-bottom: 0px;
 }
 
+.hoverDiv {background: #f8f8f8;}
+.hoverDiv:hover {background: #f1f1f1;}
 
 .paper, .userlib {
-    padding-top: 50px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     /*font-family: "martel",Georgia,"Times New Roman",Times,serif;*/
     font-family: 'OpenSansRegular',sans-serif;
+}
+
+.side-panel {
+    padding-top: 5px;
 }
 
 .userlib .header-column {
@@ -84,4 +91,34 @@
 
 .comment {
     padding-top: 20px;
+}
+
+.endless_more {
+    background: url(../img/triple_dots_orange.png) left top no-repeat;
+    overflow: hidden;
+    position: absolute;
+    left: 47%;
+    bottom: -60px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 60px;
+    width: 60px;
+    z-index: 9999;
+}
+
+.endless_loading {
+    background: url(../img/triple_dots_blue.png) left top no-repeat;
+    overflow: hidden;
+    position: absolute;
+    left: 47%;
+    bottom: -60px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 60px;
+    width: 60px;
+    z-index: 9999;
 }

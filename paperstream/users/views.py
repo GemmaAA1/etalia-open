@@ -14,6 +14,8 @@ from django.http import JsonResponse
 
 from braces.views import LoginRequiredMixin
 
+from endless_pagination.views import AjaxListView
+
 from paperstream.library.models import Paper
 from paperstream.core.mixins import AjaxableResponseMixin
 
@@ -21,6 +23,7 @@ from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
 from .models import Affiliation, UserLibPaper
 from .tasks import update_lib as async_update_lib
+
 
 User = get_user_model()
 
@@ -142,14 +145,20 @@ def validation_sent(request):
 
 # User Library
 # ---------------
-class UserLibraryView(LoginRequiredMixin, ListView):
+class UserLibraryView(LoginRequiredMixin, AjaxListView):
     model = UserLibPaper
     template_name = 'user/library.html'
-    paginate_by = settings.ITEMS_PER_PAGE
+    page_template = 'user/library_sub_page.html'
+    first_page = 30
+    per_page = 20
     context_object_name = 'ulp_list'
 
     def get_context_data(self, **kwargs):
         context = super(UserLibraryView, self).get_context_data(**kwargs)
+        context['first_page'] = self.first_page
+        context['per_page'] = self.per_page
+        if self.request.GET.get("query"):
+            context['current_query'] = self.request.GET.get("query")
         return context
 
     def get_queryset(self):
@@ -159,19 +168,19 @@ class UserLibraryView(LoginRequiredMixin, ListView):
 
     def filter_queryset(self, queryset):
         # Get the q GET parameter
-        q = self.request.GET.get("query")
-        if q:
-            # return a filtered queryset
-            return queryset.filter(Q(paper__title__icontains=q) |
+        qs = self.request.GET.get("query").split(' ')
+        if qs:
+            for q in qs:
+                queryset = queryset.filter(Q(paper__title__icontains=q) |
                                    Q(paper__abstract__icontains=q) |
                                    Q(paper__journal__title__icontains=q) |
                                    Q(paper__authors__last_name__icontains=q) |
-                                   Q(paper__authors__first_name__icontains=q)).distinct()
+                                   Q(paper__authors__first_name__icontains=q))
+
         # No q is specified so we return queryset
-        return queryset
+        return queryset.distinct()
 
 library = UserLibraryView.as_view()
-
 
 # User profile update
 # -------------------
@@ -277,4 +286,3 @@ def async_update_user_lib(request):
     async_update_lib.apply_async(args=[user.pk, provider_name])
     request.user.lib.set_state('ING')
     return redirect('feeds:main')
-

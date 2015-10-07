@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import re
 import requests
 from requests.exceptions import RequestException
 from django import forms
@@ -157,6 +158,7 @@ class PaperForm(forms.ModelForm):
         title = self.cleaned_data['title']
         if (title[0], title[-1]) == ('[', ']'):
             title = title[1:-1]
+
         return title
 
     def clean_abstract(self):

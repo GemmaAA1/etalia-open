@@ -15,8 +15,6 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from __future__ import absolute_import, unicode_literals
 import environ
-from kombu import Queue, Exchange
-from celery.schedules import crontab
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.path('paperstream')
@@ -50,6 +48,7 @@ DJANGO_APPS = (
 THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
     'disqus',
+    'endless_pagination',
 )
 
 LOCAL_APPS = (
@@ -113,6 +112,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     # Your stuff: custom template context processors go here
     'social.apps.django_app.context_processors.backends',
+    'django.core.context_processors.request',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
