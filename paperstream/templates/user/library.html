@@ -22,18 +22,19 @@
                     <div class="col-lg-1"></div>
                     <div class="col-lg-10">
                         <div class="userlib">
-                            <div class="title">Your Library</div>
                             <table id="papers_table_id" class="table table-hover">
                                 <tr class="header-column">
                                     <td>Authors</td>
                                     <td>Title</td>
                                     <td>Date</td>
+                                    <td>Added</td>
                                 </tr>
-                                {% for paper in paper_list %}
-                                    <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'library:paper' paper.pk %}'">
-                                        <td >{{ paper.print_compact_first_author }}</td>
-                                        <td id="paper_title">{{ paper.short_title }}</td>
-                                        <td>{{ paper.print_date }}</td>
+                                {% for ulp in ulp_list %}
+                                    <tr id="paper{{ forloop.counter }}" onclick="document.location = '{% url 'library:paper' ulp.paper.pk %}'">
+                                        <td >{{ ulp.paper.print_compact_first_author }}</td>
+                                        <td id="paper_title">{{ ulp.paper.short_title }}</td>
+                                        <td>{{ ulp.paper.print_year }}</td>
+                                        <td>{{ ulp.print_created}}</td>
                                     </tr>
                                 {% endfor %}
                             </table>

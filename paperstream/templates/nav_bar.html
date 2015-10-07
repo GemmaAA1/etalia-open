@@ -5,71 +5,73 @@
 {% block navbar %}
 <!-- Navigation -->
 {#<nav class="navbar navbar-default navbar-fixed-top" role="navigation">#}
-<nav class="navbar navbar-default" role="navigation">
-    {% if user.is_authenticated %}
-        <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-6">
+{% if user.is_authenticated %}
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
         <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand topnav" href="{% url 'core:home' %}">
-            </a>
-        </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            {% if "feed" in request.path or "user" in request.path %}
-                <form class="navbar-form navbar-left" role="search">
-                    <div class="form-group has-feedback">
-                        <input type="text" class="form-control searchbox" placeholder="Search" name="query" value="">
-                    <span class="glyphicon glyphicon-search form-control-feedback"></span>
-{#                        </button>#}
-                    </div>
-                </form>
-            {% endif %}
-            <ul class="nav navbar-nav navbar-right">
-                <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
-                    <a href="{% url 'feeds:main' %}">Your Stream</a>
-{#                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Your Streams<span class="caret"></span></a>#}
-{#                        <ul class="dropdown-menu" role="menu">#}
-{#                            {% for feed in user.feeds.all %}#}
-{#                                <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>#}
-{#                            {% endfor %}#}
-{#                          <li class="divider"></li>#}
-{#                          <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>#}
-{#                        </ul>#}
-                </li>
-                <li id="nav-bar-library" class="{% active request 'user/library.+' %}">
-                    <a href="{% url 'user:library' %}">Your Library</a>
-                </li>
-                <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
-                    <a href="#">Notifications</a>
-                </li>
-                <li class="dropdown {% active request 'accounts.+' %}">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
-                    <span class="caret"></span></a>
-                    <ul class="dropdown-menu" role="menu">
-                      <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Profile</a></li>
-                      <li><a href="#">Help</a></li>
-                      <li class="divider"></li>
-                      <li><a href="{% url 'user:logout' %}">Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    {% else %}
+        <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-6">
             <div class="navbar-header">
-                <a class="navbar-brand" href="{% url 'core:home' %}"></a>
-{#                <a class="navbar-side" href="{% url 'core:home' %}#about">About</a>#}
-{#                <a class="navbar-side" href="{% url 'core:home' %}#contact">Contact</a>#}
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'core:home' %}">
+                </a>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                {% if "feed" in request.path or "user" in request.path %}
+                    <form class="navbar-form navbar-left" role="search">
+                        <div class="form-group has-feedback">
+                            <input type="text"  style="width: 500px;" class="form-control searchbox" placeholder="Search" name="query" value="">
+                        <span class="glyphicon glyphicon-search form-control-feedback"></span>
+    {#                        </button>#}
+                        </div>
+                    </form>
+                {% endif %}
+                <ul class="nav navbar-nav navbar-right">
+                    <li id="nav-bar-feed" class="dropdown {% active request 'feed.+' %}">
+                        <a href="{% url 'feeds:main' %}">Your Stream</a>
+    {#                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Your Streams<span class="caret"></span></a>#}
+    {#                        <ul class="dropdown-menu" role="menu">#}
+    {#                            {% for feed in user.feeds.all %}#}
+    {#                                <li><a href="{% url 'feeds:feed' feed.pk %}">{{ feed.name }}</a></li>#}
+    {#                            {% endfor %}#}
+    {#                          <li class="divider"></li>#}
+    {#                          <li><a href="#" data-toggle="modal" data-target="#create-feed-modal">+ Create New</a></li>#}
+    {#                        </ul>#}
+                    </li>
+                    <li id="nav-bar-library" class="{% active request 'user/library.+' %}">
+                        <a href="{% url 'user:library' %}">Your Library</a>
+                    </li>
+                    <li id="nav-bar-comment" class="{% active request 'comment.+' %}">
+                        <a href="#">Notifications</a>
+                    </li>
+                    <li class="dropdown {% active request 'accounts.+' %}">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span>
+                        <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Profile</a></li>
+                          <li><a href="#">Help</a></li>
+                          <li class="divider"></li>
+                          <li><a href="{% url 'user:logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
+        </div>
+    </nav>
+    {% else %}
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <a class="navbar-brand navbar-brand-anonymous" href="{% url 'core:home' %}"></a>
+        </div>
+    </nav>
     {% endif %}
     </div>
-</nav>
+
 {% endblock %}
 
 

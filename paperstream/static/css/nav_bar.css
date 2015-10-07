@@ -4,7 +4,14 @@
     text-align: center;
     width: 100%;
 }
+
 .navbar-brand {
+    float:left;
+    font-size: 24px;
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+.navbar-brand-anonymous {
     float:none;
     font-size: 24px;
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -27,11 +34,10 @@
 }
 
 .navbar .searchbox {
-    background-color: #f8f8f8;
+    background-color: #FFFFFF;
     border: none;
     border-radius:0;
 }
-
 
 .topnav {
   background-color: #f8f8f8;

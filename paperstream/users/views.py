@@ -19,7 +19,7 @@ from paperstream.core.mixins import AjaxableResponseMixin
 
 from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
-from .models import Affiliation
+from .models import Affiliation, UserLibPaper
 from .tasks import update_lib as async_update_lib
 
 User = get_user_model()
@@ -143,17 +143,18 @@ def validation_sent(request):
 # User Library
 # ---------------
 class UserLibraryView(LoginRequiredMixin, ListView):
-    model = Paper
+    model = UserLibPaper
     template_name = 'user/library.html'
     paginate_by = settings.ITEMS_PER_PAGE
-    context_object_name = 'paper_list'
+    context_object_name = 'ulp_list'
 
     def get_context_data(self, **kwargs):
         context = super(UserLibraryView, self).get_context_data(**kwargs)
         return context
 
     def get_queryset(self):
-        query_set = self.request.user.lib.papers.all()
+        query_set = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib).all()
         return self.filter_queryset(query_set)
 
     def filter_queryset(self, queryset):
@@ -161,11 +162,11 @@ class UserLibraryView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("query")
         if q:
             # return a filtered queryset
-            return queryset.filter(Q(title__icontains=q) |
-                                   Q(abstract__icontains=q) |
-                                   Q(journal__title__icontains=q) |
-                                   Q(authors__last_name__icontains=q) |
-                                   Q(authors__first_name__icontains=q)).distinct()
+            return queryset.filter(Q(paper__title__icontains=q) |
+                                   Q(paper__abstract__icontains=q) |
+                                   Q(paper__journal__title__icontains=q) |
+                                   Q(paper__authors__last_name__icontains=q) |
+                                   Q(paper__authors__first_name__icontains=q)).distinct()
         # No q is specified so we return queryset
         return queryset
 

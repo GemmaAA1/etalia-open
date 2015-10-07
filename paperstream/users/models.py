@@ -215,6 +215,11 @@ class UserLibPaper(TimeStampedModel):
         return '{0}@{1}'.format(self.paper.short_title,
                                 self.userlib.user.email)
 
+    def print_created(self):
+        return '{0:02d}-{1:02d}-{2:d}'.format(self.date_created.day,
+                         self.date_created.month,
+                         self.date_created.year)
+
 
 class UserLibJournalManager(models.Manager):
 
