@@ -9,6 +9,8 @@ from paperstream.library.forms import PaperFormFillBlanks
 from paperstream.core.tasks import embed_all_models
 
 from ..models import UserLibPaper, UserLibJournal
+from ..models import UserTaste
+
 
 class BackendLibMixin(object):
     """Mixin for provider backend"""
@@ -134,6 +136,13 @@ class BackendLibMixin(object):
         ulp.starred = info.get('starred', None)
         ulp.scored = info.get('scored', 0.)
         ulp.save()
+
+        # Set Taste for paper to like
+        ut, new_ut = UserTaste.object.get_or_create(paper=paper, user=user)
+        if new_ut:
+            ut.is_liked = True
+            ut.save()
+
         return new
 
     @staticmethod

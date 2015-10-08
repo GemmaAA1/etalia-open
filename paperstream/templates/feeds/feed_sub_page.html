@@ -1,17 +1,35 @@
 {% load endless %}
+{% load user_taste %}
 
 {% paginate first_page,per_page ufmp_list %}
 {% for ufmp in ufmp_list %}
-{#    <div class="row">#}
-        <div class="paper hoverDiv" onclick="document.location = '{% url 'library:paper' ufmp.paper.pk %}'">
-            <h4>{{ ufmp.paper.title|truncatechars:93 }}</h4>
-            <h5>
-                <span style="color: #808080">
-                {{ ufmp.paper.print_full_authors|truncatechars:95 }}
-                </span>
-                {{ ufmp.paper.print_journal_title|truncatechars:20 }}
-                {{ ufmp.paper.print_year }}
-            </h5>
+        <div class="paper-list">
+            <div class="title">{{ ufmp.paper.title|truncatechars:90 }}</div>
+            <div class="authors-journal-date">
+                {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
+                {% if str|length > 90 %}
+                    <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
+                    {{ ufmp.paper.print_journal_title|truncatechars:20 }}
+                    {{ ufmp.paper.print_year }}
+                {% else %}
+                    <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
+                    {{ ufmp.paper.print_journal_title }}
+                    {{ ufmp.paper.print_year }}
+                {% endif %}
+                {% endwith %}
+            </div>
+            <span id="{{ ufmp.paper.pk }}" class="stamps">
+                <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
+                <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
+                <a href="{% url 'library:paper' ufmp.paper.pk %}">
+                    <span class="open"></span>
+                </a>
+            </span>
+            <span id="{{ ufmp.paper.pk }}" class="stamps-2">
+                <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
+                <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
+            </span>
         </div>
 {% endfor %}
 {% show_more %}
+

@@ -22,23 +22,23 @@
                         <div class="col-md-8">
                             <div class="title">{{ paper.title }}</div>
                             <div class="row">
-                            <div class="col-md-11">
-                                <div class="authors">{{ paper.print_full_authors }}</div>
-                                <div class="journal-date">{{ paper.print_journal_title }}
-                                    <span class="date">{{ paper.print_month_year }}</span>
-                                </div>
-                                {% if paper.print_clean_ids %}
-                                <div class="ids">{{ paper.print_clean_ids }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-1 hidden-xs hidden-md">
-                                <div class="altmetric">
-                                    {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                                    {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                                    {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                                <div class="col-md-10">
+                                    <div class="authors">{{ paper.print_full_authors }}</div>
+                                    <div class="journal-date">{{ paper.print_journal_title }}
+                                        <span class="date">{{ paper.print_month_year }}</span>
+                                    </div>
+                                    {% if paper.print_clean_ids %}
+                                    <div class="ids">{{ paper.print_clean_ids }}</div>
                                     {% endif %}
                                 </div>
-                            </div>
+                                <div class="col-md-2 hidden-xs hidden-md">
+                                    <div class="altmetric">
+                                        {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
+                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
 
                             {% if paper.abstract %}
@@ -63,8 +63,10 @@
                         <div class="col-lg-3">
                             <div class="stamps">
                                 <a class="go-to" href="{{ paper.url }}" target="_blank"></a>
-                                <span class="like"></span>
-                                <span class="dislike"></span>
+                                {% if user.is_authenticated %}
+                                <span class="like {% if is_liked %} active {% endif %}"></span>
+                                <span class="dislike {% if is_disliked %} active {% endif %}"></span>
+                                {% endif %}
                             </div>
                             <div class="neighbors">
                                 {% if neighbors %}

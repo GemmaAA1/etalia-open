@@ -17,19 +17,20 @@ from endless_pagination.views import AjaxListView
 
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper
+from paperstream.users.models import UserTaste
 
-from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper, UserTaste
+from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper
 from .forms import CreateUserFeedForm
 from .tasks import update_feed as async_update_feed
 
 
 class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     """ClassView for displaying a UserFeed instance"""
-    model = Paper
+    model = UserFeedMatchPaper
     template_name = 'feeds/feed.html'
     page_template = 'feeds/feed_sub_page.html'
-    first_page = 30
-    per_page = 20
+    first_page = 10
+    per_page = 5
     context_object_name = 'ufmp_list'
 
     def get_queryset(self):
@@ -42,7 +43,6 @@ class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         query_set = UserFeedMatchPaper.objects\
             .filter(feed=self.userfeed)\
             .exclude(paper__in=papers_disliked)\
-            .select_related('paper')
 
         query_set = self.filter_queryset(query_set)
 
@@ -87,19 +87,6 @@ class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         userfeed = get_object_or_404(UserFeed,
                                      pk=feed_pk,
                                      user=request.user)
-        return userfeed
-
-    def get_user_tastes(self, request, **kwargs):
-        user = request.user
-        tastes = UserTaste.objects.filter(user=user)
-        if feed_pk:
-            userfeed = get_object_or_404(UserFeed,
-                                         pk=feed_pk,
-                                         user=request.user)
-        else:
-            userfeed = get_object_or_404(UserFeed,
-                                         user=request.user,
-                                         name='main')
         return userfeed
 
     def get(self, request, *args, **kwargs):
@@ -277,10 +264,9 @@ def ajax_user_feed_message(request, pk):
 @login_required
 def feed_like_view(request, pk):
     if request.method == 'POST':
-        ufp_pk = int(request.POST.get('pk'))
-        ufmp = get_object_or_404(UserFeedMatchPaper, pk=ufp_pk)
-        assert ufmp.feed.user == request.user
-        ut, _ = UserTaste.objects.get_or_create(paper=ufmp.paper, user=request.user)
+        pk = int(request.POST.get('pk'))
+        paper = get_object_or_404(Paper, pk=pk)
+        ut, _ = UserTaste.objects.get_or_create(paper=paper, user=request.user)
         if ut.is_liked:
             ut.is_liked = False
         else:
@@ -297,10 +283,9 @@ def feed_like_view(request, pk):
 @login_required
 def feed_dislike_view(request, pk):
     if request.method == 'POST':
-        ufp_pk = int(request.POST.get('pk'))
-        ufmp = get_object_or_404(UserFeedMatchPaper, pk=ufp_pk)
-        assert ufmp.feed.user == request.user
-        ut, _ = UserTaste.objects.get_or_create(paper=ufmp.paper, user=request.user)
+        pk = int(request.POST.get('pk'))
+        paper = get_object_or_404(Paper, pk=pk)
+        ut, _ = UserTaste.objects.get_or_create(paper=paper, user=request.user)
         if ut.is_disliked:
             ut.is_disliked = False
         else:

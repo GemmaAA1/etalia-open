@@ -1,88 +1,193 @@
 /* CSS for feed app*/
 
-.feeds {
-    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+.feed {
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    padding-top: 70px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 50px;
     text-align: left;
     color: #000000;
     background: #f8f8f8;
-    margin-bottom: 100px;
+    margin-bottom: 0px;
 }
 
-.feeds .feed {
-    padding-top: 50px;
-    /*font-family: "martel",Georgia,"Times New Roman",Times,serif;*/
-    font-family: 'OpenSansRegular',sans-serif;
+.userfeed {
+    padding-top: 20px;
 }
 
-.feeds .abstract {
-    /*width: auto;*/
-    /*height: auto;*/
-    display: block;
-    -webkit-transition: max-height .5s ease;
-    -moz-transition: max-height .5s ease;
-    transition: max-height .5s ease;
+.userfeed>a {
+    text-decoration: None;
+    color: #000000;
+}
+
+.paper-list {
+    padding: 10px;
+    position: relative;
+}
+
+.paper-list a {
+    text-decoration: None;
+    color: #000000;
+}
+
+.paper-list:hover {
+    background-color: #f1f1f1;
+}
+
+.paper-list .title {
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.paper-list .authors-journal-date {
+
+}
+
+.paper-list .authors {
+    text-decoration: None;
+    color: #808080;
+}
+
+.stamps {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+}
+
+.stamps>span:before, .stamps>a:before {
+    content:"";
+    display: inline-block;
+    background-image: url(../img/paper_feed_icons_h30_s60px_alpha.png);
+    width: 50px;
+    height: 40px;
+    position: relative;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position-y: 5px;
+}
+
+.stamps>span.open:before {
+    background-position-x: -175px;
+}
+.stamps>span.like:before {
+    background-position-x: -55px;
+}
+.stamps>span.dislike:before {
+    background-position-x: -115px;
+}
+.stamps>span.like:hover:before, .stamps>span.dislike:hover:before
+{
+    background-position-y: -55px;
+}
+
+.stamps>span.active:before {
+    background-position-y: -55px;
+}
+
+/* Stamps 2 */
+.stamps-2 {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.stamps-2>span:before {
+    content:"";
+    display: none;
+    background-image: url(../img/paper_feed_icons_h30_s60px_alpha.png);
+    width: 50px;
+    height: 40px;
+    position: relative;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position-y: 5px;
+}
+
+.stamps-2>span.like:before {
+    background-position-x: -55px;
+}
+.stamps-2>span.dislike:before {
+    background-position-x: -115px;
+}
+
+.stamps-2>span.active:before {
+    display: inline-block;
+    background-position-y: -55px;
+}
+
+.side-panel {
+    padding-top: 30px;
+}
+
+.side-panel .side-panel-inner {
+    padding-left: 10px;
+}
+
+.side-panel .side-panel-title {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+/*.feeds .feed {*/
+    /*padding-top: 50px;*/
+    /*/!*font-family: "martel",Georgia,"Times New Roman",Times,serif;*!/*/
+    /*font-family: 'OpenSansRegular',sans-serif;*/
+/*}*/
+
+/*.feeds .abstract {*/
+    /*/!*width: auto;*!/*/
+    /*/!*height: auto;*!/*/
+    /*display: block;*/
+    /*-webkit-transition: max-height .5s ease;*/
+    /*-moz-transition: max-height .5s ease;*/
+    /*transition: max-height .5s ease;*/
+    /*overflow: hidden;*/
+/*}*/
+
+/*@media screen {*/
+    /*.abstract {*/
+        /*max-height: 0px;*/
+    /*}*/
+    /*.abstract.active {*/
+        /*max-height: 500px;*/
+    /*}*/
+/*}*/
+
+
+/*.feed .title {*/
+    /*color: #000;*/
+    /*font-size: 30px;*/
+    /*line-height: 1.4;*/
+/*}*/
+
+.endless_more {
+    background: url(../img/triple_dots_orange.png) left top no-repeat;
     overflow: hidden;
+    position: absolute;
+    left: 47%;
+    bottom: -80px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 60px;
+    width: 60px;
+    z-index: 9999;
 }
 
-@media screen {
-    .abstract {
-        max-height: 0px;
-    }
-    .abstract.active {
-        max-height: 500px;
-    }
-}
-
-
-.feed .title {
-    color: #000;
-    font-size: 30px;
-    line-height: 1.4;
-}
-
-.paper .authors {
-    font-size: 20px;
-    line-height: 1.4;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-left: 10px;
-}
-
-.paper .journal {
-    font-size: 12px;
-    text-transform: uppercase;
-    line-height: 1.4;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-.paper .date {
-    padding-right: 10px;
-    padding-left: 10px;
-}
-
-.paper .abstract {
-    margin-bottom:50px;
-}
-
-.paper .abstract-title {
-    margin-top: 20px;
-    font-size: 20px;
-}
-.paper .abstract-body {
-    margin-top: 10px;
-}
-
-.neighbors {
-    padding-top: 50px;
-    font-size: 20px;
-    font-family: "martel",Georgia,"Times New Roman",Times,serif;
-}
-
-.neighbors .neighbor {
-    margin-top: 5px;
-    font-size: 14px;
+.endless_loading {
+    background: url(../img/triple_dots_blue.png) left top no-repeat;
+    overflow: hidden;
+    position: absolute;
+    left: 47%;
+    bottom: -80px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 60px;
+    width: 60px;
+    z-index: 9999;
 }

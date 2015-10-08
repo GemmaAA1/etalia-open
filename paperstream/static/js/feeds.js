@@ -1,5 +1,11 @@
 $(document).ready(function() {
 
+    $( ".paper-list" ).hover(function() {
+        var $test = $(this).find('.stamps');
+        $(this).find('.stamps').toggle();
+        $(this).find('.stamps-2').toggle();
+    });
+
     $(".list-group-item").each(function() {
         $(this).click(function (event) {
             var ufp_id;
@@ -33,34 +39,33 @@ $(document).ready(function() {
 
     // Send Like/dislike ajax call
     $('.dislike').on('click', function (event) {
-        var element = this;
-        var id = $(this).parents('li').attr('id');
+        var dislike = this;
+        var id = $(this).parents('span').attr('id');
         var url = $(location).attr('href') + 'dislike';
         $.ajax({
             type: "POST",
             url: url,
             data: {pk: id},
             success: function (json) {
-                var button_dislike = $(element).children(":first");
-                console.log($(button_dislike).attr('class'));
-                var button_like = $(element).next().children(":first");
-                console.log($(button_like).attr('class'));
+                var like = $(dislike).siblings(".like");
+                var like2 = $(dislike).parents(":first").siblings(".stamps-2").children('.like');
+                var dislike2 = $(dislike).parents(":first").siblings(".stamps-2").children('.dislike');
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
-                            $(button_like).removeClass('btn-default');
-                            $(button_like).addClass('btn-info');
+                            $(like).addClass('active');
+                            $(like2).addClass('active');
                         } else {
-                            $(button_like).addClass('btn-default');
-                            $(button_like).removeClass('btn-info');
+                            $(like).removeClass('active');
+                            $(like2).removeClass('active');
                         }
                     } else if (key == 'is_disliked') {
                         if (value) {
-                            $(button_dislike).removeClass('btn-default');
-                            $(button_dislike).addClass('btn-info');
+                            $(dislike).addClass('active');
+                            $(dislike2).addClass('active');
                         } else {
-                            $(button_dislike).addClass('btn-default');
-                            $(button_dislike).removeClass('btn-info');
+                            $(dislike).removeClass('active');
+                            $(dislike2).removeClass('active');
                         }
                     }
                 });
@@ -71,34 +76,35 @@ $(document).ready(function() {
 
     // Send Like/dislike ajax call
     $('.like').on('click', function (event) {
-        var element = this;
-        var id = $(this).parents('li').attr('id');
+        var like = this;
+        var id = $(this).parents('span').attr('id');
         var url = $(location).attr('href') + 'like';
         $.ajax({
             type: "POST",
             url: url,
             data: {pk: id},
             success: function (json) {
-                var button_like = $(element).children(":first");
-                console.log($(button_dislike).attr('class'));
-                var button_dislike = $(element).prev().children(":first");
-                console.log($(button_like).attr('class'));
+                var dislike = $(like).siblings(".dislike");
+                var like2 = $(dislike).parents(":first").siblings(".stamps-2").children('.like');
+                var dislike2 = $(dislike).parents(":first").siblings(".stamps-2").children('.dislike');
+                console.log(like2);
+                console.log(dislike2);
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
-                            $(button_like).removeClass('btn-default');
-                            $(button_like).addClass('btn-info');
+                            $(like).addClass('active');
+                            $(like2).addClass('active');
                         } else {
-                            $(button_like).addClass('btn-default');
-                            $(button_like).removeClass('btn-info');
+                            $(like).removeClass('active');
+                            $(like2).removeClass('active');
                         }
                     } else if (key == 'is_disliked') {
                         if (value) {
-                            $(button_dislike).removeClass('btn-default');
-                            $(button_dislike).addClass('btn-info');
+                            $(dislike).addClass('active');
+                            $(dislike2).addClass('active');
                         } else {
-                            $(button_dislike).addClass('btn-default');
-                            $(button_dislike).removeClass('btn-info');
+                            $(dislike).removeClass('active');
+                            $(dislike2).removeClass('active');
                         }
                     }
                 });
@@ -107,25 +113,4 @@ $(document).ready(function() {
         event.preventDefault();
     });
 
-    function update_like_dislike(key, value) {
-        var $button_dislike = $(this).children('button');
-        var $button_like = $(this).closest('span').children('button');
-        if (key == 'is_liked') {
-            if (value) {
-                $button_like.removeClass('btn-default');
-                $button_like.addClass('btn-info');
-            } else {
-                $button_like.addClass('btn-default');
-                $button_like.removeClass('btn-info');
-            }
-        } else if (key == 'is_disliked') {
-            if (value) {
-                $button_dislike.removeClass('btn-default');
-                $button_dislike.addClass('btn-info');
-            } else {
-                $button_dislike.addClass('btn-default');
-                $button_dislike.removeClass('btn-info');
-            }
-        }
-    }
 });

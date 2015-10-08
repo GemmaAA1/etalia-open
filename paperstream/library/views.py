@@ -12,6 +12,7 @@ from config.celery import celery_app as app
 
 from paperstream.nlp.models import PaperNeighbors, Model
 from paperstream.core.mixins import ModalMixin
+from paperstream.users.models import UserTaste
 from .models import Journal, Paper
 from .constants import PAPER_TYPE
 
@@ -96,6 +97,15 @@ class PaperView(ModalMixin, DetailView):
 
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         context['time_lapse'] = self.kwargs.get('time_lapse', 'year')
+
+        try:
+            ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
+            context['is_liked'] = ut.is_liked
+            context['is_disliked'] = ut.is_disliked
+        except UserTaste.DoesNotExist:
+            context['is_liked'] = False
+            context['is_liked'] = False
+
         return context
 
 paper = PaperView.as_view()

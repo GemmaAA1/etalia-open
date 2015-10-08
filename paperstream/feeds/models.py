@@ -91,6 +91,7 @@ class UserFeed(TimeStampedModel):
     def __str__(self):
         return '{feed}@{username}'.format(feed=self.name, username=self.user.email)
 
+
     def add_papers_seed(self, papers):
 
         if papers:
@@ -336,26 +337,3 @@ class UserFeedVector(TimeStampedModel):
         return '{feed_name}/{model_name}'.format(feed_name=self.feed.name,
                                                  model_name=self.model.name)
 
-
-class UserTaste(TimeStampedModel):
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
-
-    paper = models.ForeignKey(Paper)
-
-    is_disliked = models.BooleanField(default=False)
-
-    is_liked = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ('user', 'paper')
-
-    def __str__(self):
-        if self.is_liked:
-            return '{pk}@{pk} likes'.format(user=self.user, pk=self.paper.id)
-        elif self.is_disliked:
-            return '{user}@{pk} dislikes '.format(user=self.user, pk=self.paper.id)
-        elif not self.is_disliked and not self.is_liked:
-            return '{user}@{pk} neutral'.format(user=self.user, pk=self.paper.id)
-        else:
-            return '{user}@{pk} has a problem'
