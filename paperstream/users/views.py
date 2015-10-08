@@ -16,8 +16,7 @@ from braces.views import LoginRequiredMixin
 
 from endless_pagination.views import AjaxListView
 
-from paperstream.library.models import Paper
-from paperstream.core.mixins import AjaxableResponseMixin
+from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
 
 from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
@@ -145,7 +144,7 @@ def validation_sent(request):
 
 # User Library
 # ---------------
-class UserLibraryView(LoginRequiredMixin, AjaxListView):
+class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
     model = UserLibPaper
     template_name = 'user/library.html'
     page_template = 'user/library_sub_page.html'
@@ -154,7 +153,9 @@ class UserLibraryView(LoginRequiredMixin, AjaxListView):
     context_object_name = 'ulp_list'
 
     def get_context_data(self, **kwargs):
-        context = super(UserLibraryView, self).get_context_data(**kwargs)
+        context = super(AjaxListView, self).get_context_data(**kwargs)
+        context = dict(context,
+                       **super(UserLibraryView, self).get_context_data(**kwargs))
         context['first_page'] = self.first_page
         context['per_page'] = self.per_page
         if self.request.GET.get("query"):
@@ -168,8 +169,8 @@ class UserLibraryView(LoginRequiredMixin, AjaxListView):
 
     def filter_queryset(self, queryset):
         # Get the q GET parameter
-        qs = self.request.GET.get("query").split(' ')
-        if qs:
+        if self.request.GET.get('query', None):
+            qs = self.request.GET.get("query").split(' ')
             for q in qs:
                 queryset = queryset.filter(Q(paper__title__icontains=q) |
                                    Q(paper__abstract__icontains=q) |

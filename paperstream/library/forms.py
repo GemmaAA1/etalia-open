@@ -158,6 +158,8 @@ class PaperForm(forms.ModelForm):
         title = self.cleaned_data['title']
         if (title[0], title[-1]) == ('[', ']'):
             title = title[1:-1]
+        # clean trailing dot
+        title = title.strip('.')
 
         return title
 

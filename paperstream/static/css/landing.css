@@ -24,6 +24,8 @@
 .intro-divider {
     width: 400px;
     border-top: 1px solid #f8f8f8;
+    /*border-bottom: 1px solid #f06f27;*/
+    /*border-bottom: 1px solid #8ad2e7;*/
     border-bottom: 1px solid rgba(0,0,0,0.2);
 }
 

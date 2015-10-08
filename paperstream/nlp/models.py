@@ -499,7 +499,10 @@ class Model(TimeStampedModel, S3Mixin):
     def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=10):  # seed=seed)
         """Infer model vector for paper"""
 
+        # sanity checks
         self.check_active()
+        if not isinstance(paper_pk, int):
+            raise TypeError('paper_pk must be int, found {0} instead'.format(type(paper_pk)))
 
         text_fields = [tx.text_field for tx in self.text_fields.all()]
 
@@ -522,17 +525,29 @@ class Model(TimeStampedModel, S3Mixin):
 
     def infer_papers(self, paper_pks, **kwargs):
         """Infer model vector for papers
-        """
-        self.check_active()
 
-        nb_pb_updates = 100
+        Args:
+            paper_pks (list or QuerySet): List of Paper primary keys
+        """
+        # sanity check
+        self.check_active()
+        if isinstance(paper_pks, QuerySet):
+            paper_pks = list(paper_pks)
+        if not isinstance(paper_pks, list):
+            raise TypeError(
+                'paper_pks must be list or QuerySet, found {0} instead'.format(
+                    type(paper_pks)))
+
+        # setup progressbar
+        nb_pbar_updates = 100
         nb_papers = len(paper_pks)
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=nb_papers, redirect_stderr=True).start()
-        paper_pks = list(paper_pks)
+
+
         for count, paper_pk in enumerate(paper_pks):
             self.infer_paper(paper_pk, **kwargs)
-            if not count % nb_papers // nb_pb_updates:
+            if not count % (nb_papers // nb_pbar_updates):
                 pbar.update(count)
         # close progress bar
         pbar.finish()

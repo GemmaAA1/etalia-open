@@ -2,14 +2,15 @@
 
 {% paginate first_page,per_page ulp_list %}
 {% for ulp in ulp_list %}
-{#    <div class="row">#}
-        <div class="paper hoverDiv">
-            <h4>{{ ulp.paper.title|truncatechars:93 }}</h4>
-            <h5>
-                {{ ulp.paper.print_full_authors|truncatechars:95 }}
-                {{ ulp.paper.print_journal_title|truncatechars:20 }}
-                {{ ulp.paper.print_year }}
-            </h5>
+    <a href="{% url 'library:paper' ulp.paper.pk %}">
+        <div class="paper-list">
+            <div class="title">{{ ulp.paper.title|truncatechars:85 }}</div>
+            <div class="authors-journal-date">
+                <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:85 }}</span>
+                {{ ulp.paper.print_journal_title|truncatechars:20 }}{{ ulp.paper.print_year }}
+            </div>
+
         </div>
+    </a>
 {% endfor %}
 {% show_more %}

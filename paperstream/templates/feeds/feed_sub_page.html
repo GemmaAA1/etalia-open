@@ -1,0 +1,17 @@
+{% load endless %}
+
+{% paginate first_page,per_page ufmp_list %}
+{% for ufmp in ufmp_list %}
+{#    <div class="row">#}
+        <div class="paper hoverDiv" onclick="document.location = '{% url 'library:paper' ufmp.paper.pk %}'">
+            <h4>{{ ufmp.paper.title|truncatechars:93 }}</h4>
+            <h5>
+                <span style="color: #808080">
+                {{ ufmp.paper.print_full_authors|truncatechars:95 }}
+                </span>
+                {{ ufmp.paper.print_journal_title|truncatechars:20 }}
+                {{ ufmp.paper.print_year }}
+            </h5>
+        </div>
+{% endfor %}
+{% show_more %}

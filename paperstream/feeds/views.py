@@ -13,6 +13,8 @@ from django.core.exceptions import ValidationError
 
 from braces.views import LoginRequiredMixin
 
+from endless_pagination.views import AjaxListView
+
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper
 
@@ -21,11 +23,14 @@ from .forms import CreateUserFeedForm
 from .tasks import update_feed as async_update_feed
 
 
-class FeedView(LoginRequiredMixin, ModalMixin, ListView):
+class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     """ClassView for displaying a UserFeed instance"""
     model = Paper
-    paginate_by = 10
     template_name = 'feeds/feed.html'
+    page_template = 'feeds/feed_sub_page.html'
+    first_page = 30
+    per_page = 20
+    context_object_name = 'ufmp_list'
 
     def get_queryset(self):
         # get disliked paper
@@ -58,8 +63,14 @@ class FeedView(LoginRequiredMixin, ModalMixin, ListView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        context = super(FeedView, self).get_context_data(**kwargs)
+        context = super(AjaxListView, self).get_context_data(**kwargs)
+        context = dict(context,
+                       **super(FeedView, self).get_context_data(**kwargs))
         context['userfeed'] = self.userfeed
+
+        context['first_page'] = self.first_page
+        context['per_page'] = self.per_page
+
         # Get user tastes label
         user_taste = UserTaste.objects\
             .filter(user=self.request.user)\

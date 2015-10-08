@@ -1,7 +1,7 @@
 /* CSS for library app*/
 
-
 .library {
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
     padding-top: 70px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 50px;
     text-align: left;
@@ -10,26 +10,64 @@
     margin-bottom: 0px;
 }
 
-.hoverDiv {background: #f8f8f8;}
-.hoverDiv:hover {background: #f1f1f1;}
+.userlib {
+    padding-top: 20px;
+}
 
-.paper, .userlib {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    /*font-family: "martel",Georgia,"Times New Roman",Times,serif;*/
-    font-family: 'OpenSansRegular',sans-serif;
+.userlib>a {
+    text-decoration: None;
+    color: #000000;
+}
+
+.paper-list {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.paper-list a {
+    text-decoration: None;
+    color: #000000;
+}
+
+.paper-list:hover {
+    background-color: #f1f1f1;
+}
+
+.paper-list .title {
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.paper-list .authors-journal-date {
+
+}
+
+.paper-list .authors {
+    text-decoration: None;
+    color: #808080;
 }
 
 .side-panel {
-    padding-top: 5px;
+    padding-top: 30px;
 }
 
-.userlib .header-column {
-    font-weight: bold;
+.side-panel .side-panel-inner {
+    padding-left: 10px;
 }
 
-.paper .title, .userlib .title {
-    color: #000;
+.side-panel .side-panel-title {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.paper {
+    padding-top: 20px;
+}
+
+.paper .title {
     font-size: 30px;
     line-height: 1.4;
 }
@@ -37,9 +75,7 @@
 .paper .authors {
     font-size: 20px;
     line-height: 1.4;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-left: 10px;
+    color: #808080;
 }
 
 .paper .journal {
@@ -47,13 +83,11 @@
     text-transform: uppercase;
     line-height: 1.4;
     margin-top: 0px;
-    margin-bottom: 0px;
-    padding-left: 10px;
+    margin-bottom: 0px;;
     padding-right: 10px;
 }
 
 .paper .date {
-    padding-right: 10px;
     padding-left: 10px;
 }
 
@@ -62,7 +96,6 @@
 }
 
 .paper .ids {
-    padding-left: 10px;
 }
 
 .paper .abstract-title {
@@ -73,20 +106,87 @@
     margin-top: 10px;
 }
 
+.altmetric {
+    float: right;
+    position: relative;
+}
+
+.stamps {
+    padding-top: 10px;
+}
+
+.stamps>span:before, .stamps>a:before {
+    content:"";
+    display: inline-block;
+    background-image: url(../img/paper_icons_h40_s80px.png);
+    width: 60px;
+    height: 60px;
+    position: relative;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position-y: 5px;
+}
+
+.stamps>a.to-go:before {
+    background-position-x: -10px;
+}
+
+.stamps>span.like:before {
+    background-position-x: -70px;
+}
+.stamps>span.like:hover:before, .stamps>span.dislike:hover:before
+{
+    background-position-y: -55px;
+}
+
+.stamps>span.dislike:before {
+    background-position-x: -150px;
+}
+
+.stamps:hover {
+    background-position-y: -80px;
+}
+
+/*.go-to:before {*/
+    /*content:"";*/
+    /*display: inline-block;*/
+    /*background-image: url(../img/paper_icons_h40_s80px.png);*/
+    /*width: 50px;*/
+    /*height: 50px;*/
+    /*position: relative;*/
+    /*background-repeat: no-repeat;*/
+    /*background-position: 5px, 5px;*/
+/*}*/
+
 .neighbors {
-    padding-top: 50px;
-    font-size: 20px;
-    /*font-family: "martel",Georgia,"Times New Roman",Times,serif;*/
-    font-family: 'OpenSansRegular',sans-serif;
+    padding-top: 30px;
 }
 
 .neighbors .title {
-    padding-top: 20px;
+    font-size: 20px;
 }
 
-.neighbors .neighbor {
-    margin-top: 5px;
-    font-size: 14px;
+.neighbors a {
+    color: #000000;
+}
+
+.neighbors-list a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.neighbor:hover {
+    background-color: #f1f1f1;
+}
+
+.neighbor {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.neighbor .authors {
+    color: #808080;
+    font-size: 13px;
 }
 
 .comment {
@@ -98,7 +198,7 @@
     overflow: hidden;
     position: absolute;
     left: 47%;
-    bottom: -60px;
+    bottom: -80px;
     margin: 0 auto;
     display: block;
     text-indent: 200%;
@@ -113,7 +213,7 @@
     overflow: hidden;
     position: absolute;
     left: 47%;
-    bottom: -60px;
+    bottom: -80px;
     margin: 0 auto;
     display: block;
     text-indent: 200%;

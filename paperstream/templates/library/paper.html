@@ -14,88 +14,84 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container"  style="margin-bottom:100px">
+    <div class="container-fluid">
         <div class="library">
-            <div class="col-lg-1"></div>
-            <div class="col-lg-10">
-                <div class="row">
-                    <div class="col-lg-9">
-                        <div class="paper">
-                            <div class="title">{{ paper.title }}
-                                <a href="{{ paper.url }}" target="_blank">(link)</a>
+            <div class="row">
+                <div class="col-lg-11 col-lg-offset-1">
+                    <div class="paper">
+                        <div class="col-md-8">
+                            <div class="title">{{ paper.title }}</div>
+                            <div class="row">
+                            <div class="col-md-11">
+                                <div class="authors">{{ paper.print_full_authors }}</div>
+                                <div class="journal-date">{{ paper.print_journal_title }}
+                                    <span class="date">{{ paper.print_month_year }}</span>
+                                </div>
+                                {% if paper.print_clean_ids %}
+                                <div class="ids">{{ paper.print_clean_ids }}</div>
+                                {% endif %}
                             </div>
-                            <div>
-                                <i>By</i>
-                                <span class="authors">
-                                    {{ paper.print_full_authors }}
-                                </span>
+                            <div class="col-md-1 hidden-xs hidden-md">
+                                <div class="altmetric">
+                                    {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
+                                    {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                                    {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div>
-                                <i>In</i>
-                                <span class="journal">
-                                    {{ paper.print_journal_title }}
-                                </span>
-                                <i>-</i>
-                                <span class="date">
-                                    {{ paper.print_month_year }}
-                                </span>
-{#                                <i>-</i>#}
                             </div>
-                            {% if paper.print_clean_ids %}
-                            <div>
-                                <span class="ids">
-                                    {{ paper.print_clean_ids }}
-                                </span>
-                            </div>
-                            {% endif %}
+
                             {% if paper.abstract %}
                                 <div class="abstract-title">Abstract:</div>
                                 <div class="abstract-body">
                                     {{ paper.abstract }}
                                 </div>
                             {% endif %}
+
+
+                            <div class="comment">
+                                <div id="disqus_thread"></div>
+                                    <!-- use sso for disqus -->
+        {#                                {% disqus_sso %}#}
+                                    {% if user.is_authenticated %}
+                                        {% get_disqus_sso request %}
+                                        <!-- comments -->
+                                        {% disqus_show_comments %}
+                                    {%  endif %}
+                            </div>
                         </div>
-                        <div class="comment">
-                            <div id="disqus_thread"></div>
-                                <!-- use sso for disqus -->
-{#                                {% disqus_sso %}#}
-                                {% if user.is_authenticated %}
-                                    {% get_disqus_sso request %}
-                                    <!-- comments -->
-                                    {% disqus_show_comments %}
-                                {%  endif %}
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="neighbors">
-                            <div style="height: 100px; padding-top: 20px">
-                                {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                                {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                                {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                        <div class="col-lg-3">
+                            <div class="stamps">
+                                <a class="go-to" href="{{ paper.url }}" target="_blank"></a>
+                                <span class="like"></span>
+                                <span class="dislike"></span>
+                            </div>
+                            <div class="neighbors">
+                                {% if neighbors %}
+                                    <div class="title">Similar Papers</div>
+                                        <span>
+                                            <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
+                                            <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
+                                            <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
+                                    </div>
+                                    <div class="neighbors-list">
+                                    {% for neighbor in neighbors %}
+                                        <a href="{% url 'library:paper' neighbor.pk %}">
+                                            <div class="neighbor">
+                                                {{ neighbor.title|truncatechars:40 }}<br>
+                                                <span class="authors">{{ neighbor.print_full_authors|truncatechars:40 }}</span><br>
+                                                {{ neighbor.print_journal_title|truncatechars:30}}
+                                                {{ neighbor.print_month_year }}
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
-                            {% if neighbors %}
-                            <div>
-                                <span class="title">Similar Papers</span><br>
-                                <span style="font-size: 11px">
-                                    <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
-                                    <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
-                                    <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
-                            </div>
-                                {% for neighbor in neighbors %}
-                                    <div class="neighbor">
-                                        <a href="{% url 'library:paper' neighbor.pk %}">{{ neighbor.title }}</a>
-                                        <i>in</i> {{ neighbor.print_journal_title }}
-                                        <br>
-                                        {{ neighbor.print_month_year }}
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-1"></div>
         </div>
     </div>
 
