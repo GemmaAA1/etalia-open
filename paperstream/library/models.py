@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from django.db import models
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from model_utils.fields import MonitorField, StatusField
 
 from paperstream.core.models import TimeStampedModel, NullableCharField
@@ -436,12 +437,51 @@ class Stats(TimeStampedModel):
 
     nb_papers = models.IntegerField(default=0)
 
-    nb_journal = models.IntegerField(default=0)
+    nb_journals = models.IntegerField(default=0)
 
     nb_authors = models.IntegerField(default=0)
 
+    nb_papers_last_week = models.IntegerField(default=0)
+
+    nb_papers_last_two_weeks = models.IntegerField(default=0)
+
+    nb_papers_last_month = models.IntegerField(default=0)
+
+    nb_papers_last_year = models.IntegerField(default=0)
+
     def update(self):
-        self.nb_papers = Paper.obejcts.count()
-        self.nb_journals = Journal.obejcts.count()
-        self.nb_authors = Author.obejcts.count()
+        self.nb_papers = Paper.objects.count()
+        self.nb_journals = Journal.objects.count()
+        self.nb_authors = Author.objects.count()
+
+        d = timezone.now().date() - timezone.timedelta(days=7)
+        self.nb_papers_last_week = Paper.objects.filter(date_fs__gt=d).count()
+        d = timezone.now().date() - timezone.timedelta(days=14)
+        self.nb_papers_last_two_weeks = Paper.objects.filter(date_fs__gt=d).count()
+        d = timezone.now().date() - timezone.timedelta(days=30)
+        self.nb_papers_last_month = Paper.objects.filter(date_fs__gt=d).count()
+        d = timezone.now().date() - timezone.timedelta(days=365)
+        self.nb_papers_last_year = Paper.objects.filter(date_fs__gt=d).count()
+
         self.save()
+
+    def __str__(self):
+        return self.created.strftime('%d %b %Y')
+
+    def print(self):
+        print('# papers: {papers}\n' \
+               '# journals: {journals}\n' \
+               '# authors: {authors}\n' \
+               '# papers last week: {week}\n' \
+               '# papers last 2 weeks: {two_weeks}\n' \
+               '# papers last month: {month}\n' \
+               '# papers last year: {year}\n'.format(
+            papers=self.nb_papers,
+            journals=self.nb_journals,
+            authors=self.nb_authors,
+            week=self.nb_papers_last_week,
+            two_weeks=self.nb_papers_last_two_weeks,
+            month=self.nb_papers_last_month,
+            year=self.nb_papers_last_year,
+        ))
+

@@ -16,8 +16,8 @@ urlpatterns = [
         name='update-feed'),
     url(r'^(?P<pk>[\d]+)/user-feed-message$', views.ajax_user_feed_message,
         name='user-feed-message'),
-    url(r'^(?P<pk>[\d]+)/dislike$', views.feed_dislike_view,
-        name='dislike'),
-    url(r'^(?P<pk>[\d]+)/like$', views.feed_like_view,
-        name='like'),
+    # url(r'^(?P<pk>[\d]+)/dislike$', views.feed_dislike_view,
+    #     name='dislike'),
+    # url(r'^(?P<pk>[\d]+)/like$', views.feed_like_view,
+    #     name='like'),
 ]

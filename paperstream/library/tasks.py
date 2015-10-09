@@ -8,5 +8,6 @@ from .models import Stats
 
 @app.task()
 def update_stats():
-    stats = Stats.objects.first()
+    stats = Stats.objects.create()
     stats.update()
+

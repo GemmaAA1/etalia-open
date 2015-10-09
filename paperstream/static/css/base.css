@@ -100,13 +100,11 @@ p.copyright {
 
 /* Modal */
 .syncing {
-    padding-top: 200px;
-    padding-bottom: 200px;
+    position: absolute;
+    top: 200px;
     text-align: center;
     color: #f8f8f8;
-    /*background: url(../img/intro-bg.jpg) no-repeat center center;*/
-    background: #39b3d7;
-    background-size: cover;
+    z-index: 9999;
 }
 
 .modal.display {

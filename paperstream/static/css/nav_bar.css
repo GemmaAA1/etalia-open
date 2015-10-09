@@ -4,6 +4,7 @@
     text-align: center;
     padding-left: 20px;
     padding-right: 20px;
+    height: 60px;
     width: 100%;
 }
 
@@ -13,8 +14,14 @@
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
+.nav-bar-anonymous {
+    margin-bottom: -60px;
+}
+
 .navbar-brand-anonymous {
-    float:none;
+    float:leftt;
+    position: relative;
+    left: 48%;
     font-size: 24px;
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
@@ -23,11 +30,10 @@
     display: inline-block;
     background: url(../img/paperstream_brand_v4_30px.png);
     width: 50px;
-    height: 30px;
+    height: 40px;
     position: relative;
-    top: 10px;
+    /*top: 15px;*/
     background-repeat: no-repeat;
-    /*background-position: 0px 0px;*/
 }
 
 .navbar-side {
@@ -88,6 +94,20 @@
     background-position-x: -290px;
 }
 
+/* Use in anonymous navbar*/
+.navbar-default .navbar-nav>.active>a.signin-icon:before,
+.navbar-nav>li>a.signin-icon:before {
+    content:"";
+    display: inline-block;
+    background-image: url(../img/main_icons_h30_s60px.png);
+    width: 50px;
+    height: 30px;
+    vertical-align: middle;
+    position: relative;
+    background-repeat: no-repeat;
+    background-position-y: px;
+    background-position-x: -350px;
+}
 
 .navbar .searchbox {
     background-color: #FFFFFF;

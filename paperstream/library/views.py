@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+
 from django.shortcuts import render
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 from config.celery import celery_app as app
 
@@ -98,17 +100,19 @@ class PaperView(ModalMixin, DetailView):
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         context['time_lapse'] = self.kwargs.get('time_lapse', 'year')
 
-        try:
-            ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
-            context['is_liked'] = ut.is_liked
-            context['is_disliked'] = ut.is_disliked
-        except UserTaste.DoesNotExist:
-            context['is_liked'] = False
-            context['is_liked'] = False
+        if not self.request.user.is_anonymous():
+            try:
+                ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
+                context['is_liked'] = ut.is_liked
+                context['is_disliked'] = ut.is_disliked
+            except UserTaste.DoesNotExist:
+                context['is_liked'] = False
+                context['is_liked'] = False
 
         return context
 
 paper = PaperView.as_view()
+
 
 class PapersListView(ModalMixin, ListView):
     model = Paper
@@ -116,4 +120,3 @@ class PapersListView(ModalMixin, ListView):
     paginate_by = settings.ITEMS_PER_PAGE
 
 papers = PapersListView.as_view()
-

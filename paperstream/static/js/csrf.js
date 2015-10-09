@@ -1,5 +1,6 @@
 // Place at /static/js/csrf.js
 // CSRF helper functions taken directly from Django docs
+
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {

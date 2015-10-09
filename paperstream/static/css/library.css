@@ -196,7 +196,7 @@
     white-space: nowrap;
     height: 60px;
     width: 60px;
-    z-index: 9999;
+    z-index: 99;
 }
 
 .endless_loading {
@@ -211,5 +211,5 @@
     white-space: nowrap;
     height: 60px;
     width: 60px;
-    z-index: 9999;
+    z-index: 99;
 }

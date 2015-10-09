@@ -33,16 +33,21 @@
     background-color: #f1f1f1;
 }
 
-.paper-list .title {
+.compact {
+    padding-right: 35px;
+    padding-left: 35px;
+}
+
+.compact .title {
     font-size: 18px;
     line-height: 1.4;
 }
 
-.paper-list .authors-journal-date {
+.compact .authors-journal-date {
 
 }
 
-.paper-list .authors {
+.compact .authors {
     text-decoration: None;
     color: #808080;
 }
@@ -85,12 +90,13 @@
 }
 
 /* Stamps 2 */
-.stamps-2 {
+.compact .stamps-2 {
     position: absolute;
     top: 10px;
-    right: 10px;
+    /*right: 10px;*/
+    left: -20px;
 }
-.stamps-2>span:before {
+.compact .stamps-2>span:before {
     content:"";
     display: none;
     background-image: url(../img/paper_feed_icons_h30_s60px_alpha.png);
@@ -102,16 +108,47 @@
     background-position-y: 5px;
 }
 
-.stamps-2>span.like:before {
+.compact .stamps-2>span.like:before {
     background-position-x: -55px;
 }
-.stamps-2>span.dislike:before {
+.compact .stamps-2>span.dislike:before {
     background-position-x: -115px;
 }
 
-.stamps-2>span.active:before {
+.compact .stamps-2>span.active:before {
     display: inline-block;
     background-position-y: -55px;
+}
+
+.extended {
+    display: none;
+    background-color: #f1f1f1;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.extended .stamps {
+    display: inline-block;
+}
+
+.extended .title {
+    width: 75%;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.extended .journal-date {
+    padding-top: 5px;
+}
+
+.extended .authors {
+    padding-top: 5px;
+    text-decoration: None;
+    color: #808080;
+}
+
+.extended .abstract {
+    padding-top: 10px;
 }
 
 .side-panel {
@@ -130,38 +167,6 @@
     margin-bottom: 0px;
 }
 
-/*.feeds .feed {*/
-    /*padding-top: 50px;*/
-    /*/!*font-family: "martel",Georgia,"Times New Roman",Times,serif;*!/*/
-    /*font-family: 'OpenSansRegular',sans-serif;*/
-/*}*/
-
-/*.feeds .abstract {*/
-    /*/!*width: auto;*!/*/
-    /*/!*height: auto;*!/*/
-    /*display: block;*/
-    /*-webkit-transition: max-height .5s ease;*/
-    /*-moz-transition: max-height .5s ease;*/
-    /*transition: max-height .5s ease;*/
-    /*overflow: hidden;*/
-/*}*/
-
-/*@media screen {*/
-    /*.abstract {*/
-        /*max-height: 0px;*/
-    /*}*/
-    /*.abstract.active {*/
-        /*max-height: 500px;*/
-    /*}*/
-/*}*/
-
-
-/*.feed .title {*/
-    /*color: #000;*/
-    /*font-size: 30px;*/
-    /*line-height: 1.4;*/
-/*}*/
-
 .endless_more {
     background: url(../img/triple_dots_orange.png) left top no-repeat;
     overflow: hidden;
@@ -174,7 +179,7 @@
     white-space: nowrap;
     height: 60px;
     width: 60px;
-    z-index: 9999;
+    z-index: 99;
 }
 
 .endless_loading {
@@ -189,5 +194,5 @@
     white-space: nowrap;
     height: 60px;
     width: 60px;
-    z-index: 9999;
+    z-index: 99;
 }

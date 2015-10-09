@@ -1,10 +1,7 @@
 $(document).ready(function() {
 
-    $( ".paper-list" ).hover(function() {
-        var $test = $(this).find('.stamps');
-        $(this).find('.stamps').toggle();
-        $(this).find('.stamps-2').toggle();
-    });
+    toggleStamps();
+    extendPaper();
 
     $(".list-group-item").each(function() {
         $(this).click(function (event) {
@@ -38,18 +35,67 @@ $(document).ready(function() {
     });
 
     // Send Like/dislike ajax call
+    dislike();
+
+    // Send Like/dislike ajax call
+    like();
+});
+
+
+function toggleStamps(){
+    $('.paper-list').on({
+        mouseenter: function () {
+            $(this).find('.stamps').show();
+            $(this).find('.stamps-2').hide();
+        },
+        mouseleave: function () {
+            $(this).find('.stamps').hide();
+            $(this).find('.stamps-2').show();
+        }
+    });
+}
+
+function extendPaper(){
+    $('.paper-list').click( function () {
+        $(this).children('.compact').toggle();
+        $(this).children('.extended').toggle();
+        if ($(this).children('.extended').is(":visible")) {
+            $(this).unbind('mouseenter mouseleave');
+            $(this).children('.stamps').show();
+        } else {
+            $(this).on({
+                mouseenter: function () {
+                    $(this).find('.stamps').show();
+                    $(this).find('.stamps-2').hide();
+                },
+                mouseleave: function () {
+                    $(this).find('.stamps').hide();
+                    $(this).find('.stamps-2').show();
+                }
+            });
+        }
+    }).children('.stamps').click(function(e) {
+        e.stopPropagation();
+    });
+}
+
+function dislike () {
     $('.dislike').on('click', function (event) {
         var dislike = this;
         var id = $(this).parents('span').attr('id');
-        var url = $(location).attr('href') + 'dislike';
+        var url = $(location).attr('protocol') + '//' +
+            $(location).attr('host') + '/user/paper/dislike';
+        console.log(url);
         $.ajax({
             type: "POST",
             url: url,
             data: {pk: id},
             success: function (json) {
                 var like = $(dislike).siblings(".like");
-                var like2 = $(dislike).parents(":first").siblings(".stamps-2").children('.like');
-                var dislike2 = $(dislike).parents(":first").siblings(".stamps-2").children('.dislike');
+                var like2 = $(dislike).parent().siblings('.compact').find('.like');
+                var dislike2 = $(dislike).parent().siblings('.compact').find('.dislike');
+                console.log(like);
+                console.log(like);
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
@@ -73,22 +119,22 @@ $(document).ready(function() {
         });
         event.preventDefault();
     });
+}
 
-    // Send Like/dislike ajax call
+function like () {
     $('.like').on('click', function (event) {
         var like = this;
         var id = $(this).parents('span').attr('id');
-        var url = $(location).attr('href') + 'like';
+        var url = $(location).attr('protocol') + '//' +
+            $(location).attr('host') + '/user/paper/like';
         $.ajax({
             type: "POST",
             url: url,
             data: {pk: id},
             success: function (json) {
                 var dislike = $(like).siblings(".dislike");
-                var like2 = $(dislike).parents(":first").siblings(".stamps-2").children('.like');
-                var dislike2 = $(dislike).parents(":first").siblings(".stamps-2").children('.dislike');
-                console.log(like2);
-                console.log(dislike2);
+                var like2 = $(dislike).parent().siblings('.compact').find('.like');
+                var dislike2 = $(dislike).parent().siblings('.compact').find('.dislike');
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
@@ -112,5 +158,4 @@ $(document).ready(function() {
         });
         event.preventDefault();
     });
-
-});
+}

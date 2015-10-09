@@ -137,11 +137,13 @@ class BackendLibMixin(object):
         ulp.scored = info.get('scored', 0.)
         ulp.save()
 
-        # Set Taste for paper to like
-        ut, new_ut = UserTaste.object.get_or_create(paper=paper, user=user)
-        if new_ut:
-            ut.is_liked = True
-            ut.save()
+        # Set Taste for paper to like if new unless it has been already
+        # like/dislike previously (not new_ut)
+        if new:
+            ut, new_ut = UserTaste.object.get_or_create(paper=paper, user=user)
+            if new_ut:
+                ut.is_liked = True
+                ut.save()
 
         return new
 

@@ -24,4 +24,8 @@ urlpatterns = [
         name='user-lib-count-papers'),
     url(r'^update-user-lib/$', views.async_update_user_lib,
         name='update-user-lib'),
+    url(r'^paper/dislike$', views.dislike_call,
+        name='dislike'),
+    url(r'^paper/like$', views.like_call,
+        name='like'),
 ]

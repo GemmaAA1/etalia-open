@@ -3,11 +3,10 @@ from __future__ import unicode_literals, absolute_import
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView
-from django.views.generic.list import ListView
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -17,10 +16,11 @@ from braces.views import LoginRequiredMixin
 from endless_pagination.views import AjaxListView
 
 from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
+from paperstream.library.models import Paper
 
 from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
-from .models import Affiliation, UserLibPaper
+from .models import Affiliation, UserLibPaper, UserTaste
 from .tasks import update_lib as async_update_lib
 
 
@@ -269,6 +269,7 @@ class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
 
 ajax_update_settings = UserSettingsUpdateView.as_view()
 
+
 @login_required
 def ajax_user_lib_count_papers(request):
     if request.method == 'GET':
@@ -280,6 +281,7 @@ def ajax_user_lib_count_papers(request):
                     'message': request.user.lib.count_papers}
         return JsonResponse(data)
 
+
 @login_required
 def async_update_user_lib(request):
     user = request.user
@@ -287,3 +289,42 @@ def async_update_user_lib(request):
     async_update_lib.apply_async(args=[user.pk, provider_name])
     request.user.lib.set_state('ING')
     return redirect('feeds:main')
+
+
+@login_required
+def like_call(request):
+    if request.method == 'POST':
+        pk = int(request.POST.get('pk'))
+        paper = get_object_or_404(Paper, pk=pk)
+        ut, _ = UserTaste.objects.get_or_create(paper=paper, user=request.user)
+        if ut.is_liked:
+            ut.is_liked = False
+        else:
+            ut.is_liked = True
+            ut.is_disliked = False
+        ut.save()
+        data = {'is_liked': ut.is_liked,
+                'is_disliked': ut.is_disliked}
+        return JsonResponse(data)
+    else:
+        return redirect('feeds:main')
+
+
+@login_required
+def dislike_call(request):
+    if request.method == 'POST':
+        pk = int(request.POST.get('pk'))
+        paper_ = get_object_or_404(Paper, pk=pk)
+        ut, _ = UserTaste.objects.get_or_create(paper=paper_, user=request.user)
+        if ut.is_disliked:
+            ut.is_disliked = False
+        else:
+            ut.is_liked = False
+            ut.is_disliked = True
+        ut.save()
+        data = {'is_liked': ut.is_liked,
+                'is_disliked': ut.is_disliked}
+        return JsonResponse(data)
+    else:
+        return redirect('feeds:main')
+

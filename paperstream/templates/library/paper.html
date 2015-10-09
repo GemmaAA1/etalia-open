@@ -52,7 +52,7 @@
                             <div class="comment">
                                 <div id="disqus_thread"></div>
                                     <!-- use sso for disqus -->
-        {#                                {% disqus_sso %}#}
+                                        {% disqus_sso %}
                                     {% if user.is_authenticated %}
                                         {% get_disqus_sso request %}
                                         <!-- comments -->
@@ -61,7 +61,7 @@
                             </div>
                         </div>
                         <div class="col-lg-3">
-                            <div class="stamps">
+                            <div class="stamps" id="{{ paper.pk }}">
                                 <a class="go-to" href="{{ paper.url }}" target="_blank"></a>
                                 {% if user.is_authenticated %}
                                 <span class="like {% if is_liked %} active {% endif %}"></span>
@@ -82,8 +82,17 @@
                                             <div class="neighbor">
                                                 {{ neighbor.title|truncatechars:40 }}<br>
                                                 <span class="authors">{{ neighbor.print_full_authors|truncatechars:40 }}</span><br>
-                                                {{ neighbor.print_journal_title|truncatechars:30}}
-                                                {{ neighbor.print_month_year }}
+
+                                                {% with neighbor.print_journal_title|add:neighbor.print_month_year as str %}
+                                                {% if str|length > 40 %}
+                                                    {{ neighbor.print_journal_title|truncatechars:23}}
+                                                    {{ neighbor.print_month_year }}
+                                                {% else %}
+                                                    {{ neighbor.print_journal_title}}
+                                                    {{ neighbor.print_month_year }}
+                                                {% endif %}
+                                                {% endwith %}
+
                                             </div>
                                         </a>
                                     {% endfor %}
@@ -96,6 +105,10 @@
             </div>
         </div>
     </div>
-
-    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
 {% endblock content %}
+
+{% block js %}
+    {{ block.super }}
+    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
+    <script type="text/javascript" src="{% static 'js/library.js' %}"></script>
+{% endblock js %}

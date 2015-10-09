@@ -16,7 +16,7 @@ from braces.views import LoginRequiredMixin
 from endless_pagination.views import AjaxListView
 
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
-from paperstream.library.models import Paper
+from paperstream.library.models import Paper, Stats
 from paperstream.users.models import UserTaste
 
 from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper
@@ -79,6 +79,9 @@ class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         user_taste = dict((key, {'liked': v1, 'disliked': v2})
                           for key, v1, v2 in user_taste)
         context['user_taste'] = user_taste
+
+        # Get library stats
+        context['stats'] = Stats.objects.last()
 
         return context
 
@@ -260,41 +263,3 @@ def ajax_user_feed_message(request, pk):
             data = {'done': False,
                     'message': userfeed.message}
         return JsonResponse(data)
-
-@login_required
-def feed_like_view(request, pk):
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        paper = get_object_or_404(Paper, pk=pk)
-        ut, _ = UserTaste.objects.get_or_create(paper=paper, user=request.user)
-        if ut.is_liked:
-            ut.is_liked = False
-        else:
-            ut.is_liked = True
-            ut.is_disliked = False
-        ut.save()
-        data = {'is_liked': ut.is_liked,
-                'is_disliked': ut.is_disliked}
-        return JsonResponse(data)
-    else:
-        redirect('feeds:feed', kwargs={'pk': pk})
-
-
-@login_required
-def feed_dislike_view(request, pk):
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        paper = get_object_or_404(Paper, pk=pk)
-        ut, _ = UserTaste.objects.get_or_create(paper=paper, user=request.user)
-        if ut.is_disliked:
-            ut.is_disliked = False
-        else:
-            ut.is_liked = False
-            ut.is_disliked = True
-        ut.save()
-        data = {'is_liked': ut.is_liked,
-                'is_disliked': ut.is_disliked}
-        return JsonResponse(data)
-    else:
-        redirect('feeds:feed', kwargs={'pk': pk})
-

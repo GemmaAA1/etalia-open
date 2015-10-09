@@ -3,7 +3,8 @@
 
 {% paginate first_page,per_page ufmp_list %}
 {% for ufmp in ufmp_list %}
-        <div class="paper-list">
+    <div class="paper-list">
+        <div class="compact">
             <div class="title">{{ ufmp.paper.title|truncatechars:90 }}</div>
             <div class="authors-journal-date">
                 {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
@@ -18,18 +19,28 @@
                 {% endif %}
                 {% endwith %}
             </div>
-            <span id="{{ ufmp.paper.pk }}" class="stamps">
-                <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
-                <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
-                <a href="{% url 'library:paper' ufmp.paper.pk %}">
-                    <span class="open"></span>
-                </a>
-            </span>
             <span id="{{ ufmp.paper.pk }}" class="stamps-2">
                 <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
                 <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
             </span>
         </div>
+        <div class="extended">
+            <div class="title">{{ ufmp.paper.title }}</div>
+            <div class="authors">{{ ufmp.paper.print_full_authors}}</div>
+            <div class="journal-date">
+                {{ ufmp.paper.print_journal_title}}
+                {{ ufmp.paper.print_year }}
+            </div>
+            <div class="abstract">{{ ufmp.paper.abstract }}</div>
+        </div>
+        <span id="{{ ufmp.paper.pk }}" class="stamps">
+            <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
+            <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
+            <a href="{% url 'library:paper' ufmp.paper.pk %}">
+                <span class="open"></span>
+            </a>
+        </span>
+    </div>
 {% endfor %}
 {% show_more %}
 
