@@ -20,7 +20,7 @@
 }
 
 .paper-list {
-    padding: 10px;
+    padding: 5px;
 }
 
 .paper-list a {
@@ -44,6 +44,13 @@
 .paper-list .authors {
     text-decoration: None;
     color: #808080;
+}
+
+.compact {
+    padding-right: 35px;
+    padding-left: 35px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .side-panel {
@@ -113,12 +120,14 @@
     padding-top: 10px;
 }
 
-.stamps>span:before, .stamps>a:before {
+.stamps>a:before {
     content:"";
     display: inline-block;
-    background-image: url(../img/paper_icons_h30_s60px.png);
-    width: 45px;
+    background-image: url(../img/paper_icons_h30_s80px.png);
+    width: 50px;
     height: 50px;
+    padding-left: 10px;
+    padding-right: 10px;
     position: relative;
     vertical-align: middle;
     background-repeat: no-repeat;
@@ -129,24 +138,20 @@
     background-position-x: -10px;
 }
 
-.stamps>span.like:before {
-    background-position-x: -50px;
+.stamps>a.like:before {
+    background-position-x: -70px;
 }
-.stamps>span.like:hover:before, .stamps>span.dislike:hover:before
-{
+
+.stamps>a.dislike:before {
+    background-position-x: -150px;
+}
+
+.stamps>a.active:before {
     background-position-y: -55px;
 }
 
-.stamps>span.dislike:before {
-    background-position-x: -110px;
-}
-
-.stamps>span.active:before {
+.stamps>a:hover:before {
     background-position-y: -55px;
-}
-
-.stamps:hover {
-    background-position-y: -80px;
 }
 
 .neighbors {

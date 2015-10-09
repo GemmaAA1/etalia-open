@@ -5,11 +5,11 @@
 {% for ufmp in ufmp_list %}
     <div class="paper-list">
         <div class="compact">
-            <div class="title">{{ ufmp.paper.title|truncatechars:90 }}</div>
+            <div class="title">{{ ufmp.paper.title|truncatechars:75 }}</div>
             <div class="authors-journal-date">
                 {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
-                {% if str|length > 90 %}
-                    <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
+                {% if str|length > 85 %}
+                    <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:65 }}</span>
                     {{ ufmp.paper.print_journal_title|truncatechars:20 }}
                     {{ ufmp.paper.print_year }}
                 {% else %}
@@ -34,11 +34,9 @@
             <div class="abstract">{{ ufmp.paper.abstract }}</div>
         </div>
         <span id="{{ ufmp.paper.pk }}" class="stamps">
-            <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
-            <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
-            <a href="{% url 'library:paper' ufmp.paper.pk %}">
-                <span class="open"></span>
-            </a>
+            <a class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
+            <a class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
+            <a class="open" href="{% url 'library:paper' ufmp.paper.pk %}"></a>
         </span>
     </div>
 {% endfor %}

@@ -6,6 +6,7 @@ from paperstream.library.models import Paper, Journal, Author, CorpAuthor
 from paperstream.library.forms import PaperForm, JournalForm, AuthorForm, \
     CorpAuthorForm
 from abc import abstractmethod
+import hashlib
 
 
 class Parser(object):
@@ -67,5 +68,19 @@ class Parser(object):
         authors = self.parse_authors(entry)
         corp_authors = self.parse_corp_authors(entry)
 
+        # create id_oth based on parsed data if tagged accordingly
+        if paper['id_oth'] == 'to-be-generated':
+            paper['id_oth'] = 'gen' + self.generated_hash_id(paper,
+                                                             journal,
+                                                             authors)
+
         return {'journal': journal, 'authors': authors, 'paper': paper,
                 'corp_authors': corp_authors}
+
+    @staticmethod
+    def generated_hash_id(paper, journal, authors):
+        str_ = ''
+        str_ += paper['title']
+        str_ += ' '.join([author['last_name'] for author in authors])
+        str_ += journal.title
+        return hashlib.sha1(str_.encode('utf-8')).hexdigest()

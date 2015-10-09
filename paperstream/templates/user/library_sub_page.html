@@ -4,6 +4,7 @@
 {% for ulp in ulp_list %}
     <a href="{% url 'library:paper' ulp.paper.pk %}">
         <div class="paper-list">
+        <div class="compact">
             <div class="title">{{ ulp.paper.title|truncatechars:85 }}</div>
             <div class="authors-journal-date">
                 {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title as str %}
@@ -18,6 +19,7 @@
                 {% endif %}
                 {% endwith %}
             </div>
+        </div>
         </div>
     </a>
 {% endfor %}

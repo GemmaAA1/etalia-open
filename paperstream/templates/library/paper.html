@@ -64,8 +64,8 @@
                             <div class="stamps" id="{{ paper.pk }}">
                                 <a class="go-to" href="{{ paper.url }}" target="_blank"></a>
                                 {% if user.is_authenticated %}
-                                <span class="like {% if is_liked %} active {% endif %}"></span>
-                                <span class="dislike {% if is_disliked %} active {% endif %}"></span>
+                                <a class="like {% if is_liked %} active {% endif %}" href="#"></a>
+                                <a class="dislike {% if is_disliked %} active {% endif %}" href=#"></a>
                                 {% endif %}
                             </div>
                             <div class="neighbors">

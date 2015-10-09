@@ -8,6 +8,7 @@ from .models import Stats
 
 @app.task()
 def update_stats():
+    """Create a new line of stats for the library"""
     stats = Stats.objects.create()
     stats.update()
 

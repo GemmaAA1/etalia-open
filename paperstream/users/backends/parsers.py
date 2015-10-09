@@ -90,7 +90,7 @@ class ParserMendeley(ParserBackend):
 
         if not any([paper[key] for key in ['id_doi', 'id_pmi', 'id_pii',
                                            'id_arx', 'id_oth']]):
-            paper['id_oth'] = 'rand{0}'.format(self.id_oth_generator())
+            paper['id_oth'] = 'to-be-generated'
 
         # URL
         if entry.websites:
@@ -216,7 +216,7 @@ class ParserZotero(ParserBackend):
         # generate id_oth is no doi
         if not any([paper[key] for key in ['id_doi', 'id_pmi', 'id_pii',
                                            'id_arx', 'id_oth', 'id_isbn']]):
-            paper['id_oth'] = 'rand{0}'.format(self.id_oth_generator())
+            paper['id_oth'] = 'to-be-generated'
 
         # URL
         if entry.get('url', ''):
