@@ -150,7 +150,7 @@
     background-position-y: -55px;
 }
 
-.stamps>a:hover:before {
+.stamps>a.like:hover:before, .stamps>a.dislike:hover:before{
     background-position-y: -55px;
 }
 

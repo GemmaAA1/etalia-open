@@ -19,21 +19,11 @@
 }
 
 .navbar-brand-anonymous {
-    float:leftt;
+    float:left;
     position: relative;
-    left: 48%;
+    left: 45%;
     font-size: 24px;
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
-}
-.navbar-brand-anonymous:before {
-    content:"";
-    display: inline-block;
-    background: url(../img/paperstream_brand_v4_30px.png);
-    width: 50px;
-    height: 40px;
-    position: relative;
-    /*top: 15px;*/
-    background-repeat: no-repeat;
 }
 
 .navbar-side {
@@ -45,9 +35,10 @@
 .navbar-brand:before {
     content:"";
     display: inline-block;
-    background: url(../img/paperstream_brand_v4_30px.png);
-    width: 50px;
+    background: url(../img/paperstream_brand_v5_20px.png);
+    width: 100px;
     height: 40px;
+    background-position-y: 5px;
     background-repeat: no-repeat;
 }
 
