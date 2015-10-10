@@ -25,6 +25,7 @@
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
                         <div class="userfeed">
+                            <h3>What's new for you</h3>
                             {% include page_template %}
                         </div>
                     </div>
@@ -50,59 +51,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-
-{#                    <div class="col-lg-1"></div>#}
-{#                    <div class="col-lg-10">#}
-{#                        <ul class="list-group">#}
-{#                            <div>#}
-{#                                <span  class="title">{{ userfeed.name }}</span>#}
-{#                                <a href="{% url 'feeds:modify-feed' userfeed.pk %}">(Settings)</a>#}
-{#                                {% if not userfeed.name == 'main' %}#}
-{#                                    <a href="{% url 'feeds:delete-feed' userfeed.pk %}">(Delete)</a>#}
-{#                                {% endif %}#}
-{#                                <a href="{% url 'feeds:update-feed' userfeed.pk %}">(Update)</a>#}
-{#                            </div>#}
-{##}
-{#                            {% for ufp in object_list %}#}
-{#                                <li id="{{ ufp.id }}" class="list-group-item">#}
-{#                                    <div class="btn-group pull-right" role="group" aria-label="...">#}
-{#                                        <span class="btn-group dislike"  role="group">#}
-{#                                            <button class="btn {% if user_taste|get_is_disliked:ufp.paper.pk %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button">#}
-{#                                                <span class="glyphicon glyphicon-minus"></span>#}
-{#                                            </button>#}
-{#                                        </span>#}
-{#                                        <span class="btn-group like" role="group">#}
-{#                                            <button class="btn {% if user_taste|get_is_liked:ufp.paper.pk %} btn-info {% else %} btn-default {% endif %} btn-sm" type="button">#}
-{#                                                <span class="glyphicon glyphicon-plus"></span></button>#}
-{#                                        </span>#}
-{#                                    </div>#}
-{##}
-{#                                    <span class="paper-link" id="paper-link{{ ufp.id }}" data-ufpid="{{ ufp.id }}">#}
-{#                                        <a id="paper-title{{ ufp.id }}" class="list-group-item-heading" href="{% url 'library:paper' ufp.paper.pk %}"> <strong>{{ ufp.paper.title }}</strong></a>#}
-{#                                        <a href="{{ ufp.paper.url }}" target="_blank"><strong>(link)</strong></a>#}
-{#                                        <span>(score: {{ufp.print_score}})</span>#}
-{#                                    </span>#}
-{#                                    <span class="btn-group pull-right">#}
-{#                                        {% if ufp.paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ ufp.paper.id_doi }}"></div>#}
-{#                                        {% elif ufp.paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ ufp.paper.id_arx }}"></div>#}
-{#                                        {% elif ufp.paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ ufp.paper.id_pmi }}"></div>#}
-{#                                        {% endif %}#}
-{#                                    </span>#}
-{#                                    <p class="list-group-item-text"><em>{{ ufp.paper.print_full_authors }}</em></p>#}
-{#                                    <p><i>in</i> {{ ufp.paper.print_journal_title }} -  {{ ufp.paper.print_date }}</p>#}
-{##}
-{#                                    <a href="{% url 'library:paper' ufp.paper.pk %}#disqus_thread" data-disqus-identifier="{{ ufp.paper.pk }}">View Comments</a>#}
-{#                                    {% disqus_num_replies %}#}
-{##}
-{#                                    <p id="abstract{{ ufp.id }}" class="abstract list-group-item-text"><b>Abstract:</b> {{ ufp.paper.abstract }}</p>#}
-{#                                </li>#}
-{#                                <br>#}
-{#                            {% endfor %}#}
-{#                        </ul>#}
-{#                    </div>#}
-{#                    <div class="col-lg-1"></div>#}
             </div>
         </div>
     </div>

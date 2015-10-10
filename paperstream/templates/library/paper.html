@@ -62,9 +62,9 @@
                         </div>
                         <div class="col-lg-3">
                             <div class="stamps" id="{{ paper.pk }}">
-                                <a class="go-to" href="{{ paper.url }}" target="_blank"></a>
+                                <a class="go-to" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
                                 {% if user.is_authenticated %}
-                                <a class="like {% if is_liked %} active {% endif %}" href="#"></a>
+                                <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
                                 {% endif %}
                             </div>
                             <div class="neighbors">

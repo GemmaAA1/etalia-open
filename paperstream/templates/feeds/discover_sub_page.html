@@ -40,9 +40,9 @@
             <div class="abstract">{{ dfp.paper.abstract }}</div>
         </div>
         <span id="{{ dfp.paper.pk }}" class="stamps">
+            <a class="open" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank"></a>
             <a class="like {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="#"></a>
             <a class="tick {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="#"></a>
-            <a class="open" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank"></a>
         </span>
     </div>
 {% endfor %}

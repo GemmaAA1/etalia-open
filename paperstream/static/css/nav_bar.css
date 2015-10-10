@@ -35,10 +35,12 @@
 .navbar-brand:before {
     content:"";
     display: inline-block;
-    background: url(../img/paperstream_brand_v5_20px.png);
+    /*background: url(../img/paperstream_brand_v5_20px.png);*/
+    background: url(../img/mark.svg);
+    background-size: auto 20px;
     width: 100px;
     height: 40px;
-    background-position-y: 5px;
+    background-position-y: 6px;
     background-repeat: no-repeat;
 }
 
@@ -51,8 +53,10 @@
 .navbar-nav>li>a:before {
     content:"";
     display: inline-block;
-    background-image: url(../img/main_icons_h30_s60px.png);
-    width: 50px;
+    /*background-image: url(../img/main_icons_h30_s60px.png);*/
+    background-image: url(../img/main_icons.svg);
+    background-size: auto 30px;
+    width: 40px;
     height: 30px;
     vertical-align: middle;
     position: relative;
@@ -62,27 +66,27 @@
 
 .navbar-default .navbar-nav>.active>a.stream-icon:before,
 .navbar-nav>li>a.stream-icon:before {
-    background-position-x: -50px;
+    background-position-x: 0px;
 }
 
 .navbar-default .navbar-nav>.active>a.discover-icon:before,
 .navbar-nav>li>a.discover-icon:before {
-    background-position-x: -110px;
+    background-position-x: -60px;
 }
 
 .navbar-default .navbar-nav>.active>a.library-icon:before,
 .navbar-nav>li>a.library-icon:before {
-    background-position-x: -170px;
+    background-position-x: -120px;
 }
 
 .navbar-default .navbar-nav>.active>a.notifications-icon:before,
 .navbar-nav>li>a.notifications-icon:before {
-    background-position-x: -230px;
+    background-position-x: -178px;
 }
 
 .navbar-default .navbar-nav>.active>a.profile-icon:before,
 .navbar-nav>li>a.profile-icon:before {
-    background-position-x: -290px;
+    background-position-x: -240px;
 }
 
 /* Use in anonymous navbar*/

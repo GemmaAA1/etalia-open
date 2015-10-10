@@ -125,34 +125,40 @@
     padding-top: 10px;
 }
 
+.stamps>a {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
 .stamps>a:before {
     content:"";
     display: inline-block;
-    background-image: url(../img/paper_icons_h30_s80px.png);
-    width: 50px;
-    height: 50px;
-    padding-left: 10px;
-    padding-right: 10px;
+    /*background-image: url(../img/paper_icons_h30_s80px.png);*/
+    background-image: url(../img/paper_icons.svg);
+    background-size: auto 81px;
+    width: 40px;
+    height: 40px;
     position: relative;
     vertical-align: middle;
     background-repeat: no-repeat;
-    background-position-y: 5px;
+    background-position-y: 0px;
 }
 
-.stamps>a.to-go:before {
-    background-position-x: -10px;
+.stamps>a.go-to:before {
+    background-position-x: -190px;
+    background-position-y: -47px;
 }
 
 .stamps>a.like:before {
-    background-position-x: -70px;
+    background-position-x: -60px;
 }
 
 .stamps>a.active:before {
-    background-position-y: -55px;
+    background-position-y: -45px;
 }
 
 .stamps>a.like:hover:before {
-    background-position-y: -55px;
+    background-position-y: -45px;
 }
 
 .neighbors {

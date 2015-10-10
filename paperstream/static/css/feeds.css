@@ -56,7 +56,7 @@
 
 .stamps {
     position: absolute;
-    top: 10px;
+    top: 20px;
     right: 10px;
     display: none;
 }
@@ -64,48 +64,49 @@
 .stamps>a:before {
     content:"";
     display: inline-block;
-    background-image: url(../img/paper_feed_icons_h25_s60px_alpha.png);
-    width: 50px;
-    height: 50px;
-    /*position: relative;*/
+    /*background-image: url(../img/paper_feed_icons_h25_s60px_alpha.png);*/
+    background-image: url(../img/paper_icons.svg);
+    background-size: auto 65px;
+    width: 40px;
+    height: 40px;
     vertical-align: middle;
     background-repeat: no-repeat;
-    background-position-y: 10px;
+    background-position-y: 5px;
 }
 
 .stamps>a.open:before {
-    background-position-x: -175px;
+    background-position-x: -0px;
 }
 .stamps>a.like:before {
-    background-position-x: -55px;
+    background-position-x: -50px;
 }
 /*.stamps>a.dislike:before {*/
     /*background-position-x: -115px;*/
 /*}*/
 .stamps>a.tick:before {
-    background-position-x: -235px;
+    background-position-x: -100px;
 }
 .stamps>a:hover:before
 {
-    background-position-y: -50px;
+    background-position-y: -31px;
 }
 
 .stamps>a.active:before {
-    background-position-y: -50px;
+    background-position-y: -31px;
 }
 
 /* Stamps 2 */
 .compact .stamps-2 {
     position: absolute;
-    top: 10px;
+    top: 20px;
     right: 10px;
-    /*left: -20px;*/
 }
 .compact .stamps-2>span:before {
     content:"";
     display: none;
-    background-image: url(../img/paper_feed_icons_h25_s60px_alpha.png);
-    width: 50px;
+    background-image: url(../img/paper_icons.svg);
+    background-size: auto 65px;
+    width: 40px;
     height: 40px;
     position: relative;
     vertical-align: middle;
@@ -114,15 +115,12 @@
 }
 
 .compact .stamps-2>span.like:before {
-    background-position-x: -55px;
-}
-.compact .stamps-2>span.tick:before {
-    background-position-x: -235px;
+    background-position-x: -50px;
 }
 
 .compact .stamps-2>span.active:before {
     display: inline-block;
-    background-position-y: -55px;
+    background-position-y: -31px;
 }
 
 .extended {
