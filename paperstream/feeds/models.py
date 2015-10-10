@@ -94,14 +94,15 @@ class UserFeed(TimeStampedModel):
     def __str__(self):
         return '{feed}@{username}'.format(feed=self.name, username=self.user.email)
 
-
     def add_papers_seed(self, papers):
 
         if papers:
             objs = []
+            seed_paper_pks = feed.papers_seed.all().values_list('pk', flat=True)
             for paper in papers:
-                objs.append(UserFeedSeedPaper(feed=self,
-                                              paper=paper))
+                if paper.pk not in seed_paper_pks:
+                    objs.append(UserFeedSeedPaper(feed=self,
+                                                  paper=paper))
             UserFeedSeedPaper.objects.bulk_create(objs)
 
         # Update feed vector

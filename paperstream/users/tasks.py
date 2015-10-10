@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from celery.canvas import chain
 
 from config.celery import celery_app as app
-from paperstream.feeds.tasks import init_main_feed
+from paperstream.feeds.tasks import update_main
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def init_user(user_pk, provider_name):
     """Task init user / Chain user library update, and main feed initialization
     """
     task = chain(update_lib.s(user_pk, provider_name),
-                 init_main_feed.s())
+                 update_main.s())
 
     task.delay()
     return user_pk

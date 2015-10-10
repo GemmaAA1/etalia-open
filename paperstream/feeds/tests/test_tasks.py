@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from ..tasks import update_feed, init_main_feed
+from ..tasks import update_feed, init_main
 from ..models import UserFeed
 
 from .base import UserFeedTestCase
@@ -26,5 +26,5 @@ class InitMainFeed(UserFeedTestCase):
 
     def test_init_main_feed(self):
         user_pk = self.user.id
-        res = init_main_feed.delay(user_pk)
+        res = init_main.delay(user_pk)
         self.assertTrue(res.successful())

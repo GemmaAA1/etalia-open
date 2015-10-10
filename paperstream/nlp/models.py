@@ -264,7 +264,7 @@ class Model(TimeStampedModel, S3Mixin):
         # save to db
         self.save_db_only(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, s3=False, **kwargs):
         try:
             for filename in glob.glob(os.path.join(settings.NLP_MODELS_PATH,
                                                    '{0}.mod*'.format(self.name))):
@@ -273,12 +273,13 @@ class Model(TimeStampedModel, S3Mixin):
             pass
 
         # delete on amazon s3
-        try:
-            if self.BUCKET_NAME:
-                self.delete_on_s3()
-        except IOError:
-            pass
-        super(Model, self).delete(*args, **kwargs)
+        if s3:
+            try:
+                if self.BUCKET_NAME:
+                    self.delete_on_s3()
+            except IOError:
+                pass
+        super(Model, self).delete(**kwargs)
 
     def dump(self, papers, data_path=None):
         """Dump papers data to pre-process text files.
@@ -803,7 +804,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def save_db_only(self, *args, **kwargs):
         super(MostSimilar, self).save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, s3=False, **kwargs):
         # delete on local volume
         try:
             # remove local
@@ -813,13 +814,15 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 os.remove(file)
         except IOError:
             pass
+
         # delete on amazon s3
-        try:
-            if self.BUCKET_NAME:
-                self.delete_on_s3()
-        except IOError:
-            pass
-        super(MostSimilar, self).delete(*args, **kwargs)
+        if s3:
+            try:
+                if self.BUCKET_NAME:
+                    self.delete_on_s3()
+            except IOError:
+                pass
+        super(MostSimilar, self).delete(**kwargs)
 
     def full_update(self):
         """Full update data for knn search
