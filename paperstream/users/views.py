@@ -301,29 +301,27 @@ def like_call(request):
             ut.is_liked = False
         else:
             ut.is_liked = True
-            ut.is_disliked = False
         ut.save()
         data = {'is_liked': ut.is_liked,
-                'is_disliked': ut.is_disliked}
+                'is_ticked': ut.is_ticked}
         return JsonResponse(data)
     else:
         return redirect('feeds:main')
 
 
 @login_required
-def dislike_call(request):
+def tick_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
         paper_ = get_object_or_404(Paper, pk=pk)
         ut, _ = UserTaste.objects.get_or_create(paper=paper_, user=request.user)
-        if ut.is_disliked:
-            ut.is_disliked = False
+        if ut.is_ticked:
+            ut.is_ticked = False
         else:
-            ut.is_liked = False
-            ut.is_disliked = True
+            ut.is_ticked = True
         ut.save()
         data = {'is_liked': ut.is_liked,
-                'is_disliked': ut.is_disliked}
+                'is_ticked': ut.is_ticked}
         return JsonResponse(data)
     else:
         return redirect('feeds:main')

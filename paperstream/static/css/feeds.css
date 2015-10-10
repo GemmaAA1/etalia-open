@@ -79,8 +79,11 @@
 .stamps>a.like:before {
     background-position-x: -55px;
 }
-.stamps>a.dislike:before {
-    background-position-x: -115px;
+/*.stamps>a.dislike:before {*/
+    /*background-position-x: -115px;*/
+/*}*/
+.stamps>a.tick:before {
+    background-position-x: -235px;
 }
 .stamps>a:hover:before
 {
@@ -113,8 +116,8 @@
 .compact .stamps-2>span.like:before {
     background-position-x: -55px;
 }
-.compact .stamps-2>span.dislike:before {
-    background-position-x: -115px;
+.compact .stamps-2>span.tick:before {
+    background-position-x: -235px;
 }
 
 .compact .stamps-2>span.active:before {
@@ -198,4 +201,9 @@
     height: 60px;
     width: 60px;
     z-index: 99;
+}
+
+.altmetric {
+    position: absolute;
+    left: -70px;
 }

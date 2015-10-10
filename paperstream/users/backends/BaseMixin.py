@@ -143,6 +143,7 @@ class BackendLibMixin(object):
             ut, new_ut = UserTaste.object.get_or_create(paper=paper, user=user)
             if new_ut:
                 ut.is_liked = True
+                ut.is_ticked = True
                 ut.save()
 
         return new

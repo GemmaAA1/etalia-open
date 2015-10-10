@@ -3,12 +3,14 @@ from __future__ import unicode_literals, absolute_import
 
 
 from django.shortcuts import render
+from django.views.generic import RedirectView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.utils.text import slugify
+from django.core.urlresolvers import reverse
 
 from config.celery import celery_app as app
 
@@ -104,14 +106,38 @@ class PaperView(ModalMixin, DetailView):
             try:
                 ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
                 context['is_liked'] = ut.is_liked
-                context['is_disliked'] = ut.is_disliked
             except UserTaste.DoesNotExist:
-                context['is_liked'] = False
-                context['is_liked'] = False
+                pass
 
         return context
 
-paper = PaperView.as_view()
+paper_slug = PaperView.as_view()
+
+
+class PaperViewPk(RedirectView):
+    """Redirect to slug paper url for SEO"""
+
+    permanent = True
+
+    def get_redirect_url(self, *args, **kwargs):
+        paper = Paper.objects.get(pk=kwargs['pk'])
+        return paper.get_absolute_url()
+
+paper = PaperViewPk.as_view()
+
+
+class PaperViewPkTime(RedirectView):
+
+    permanent = True
+
+    def get_redirect_url(self, *args, **kwargs):
+        paper = Paper.objects.get(pk=kwargs['pk'])
+        return reverse('library:paper-slug-time',
+                       kwargs={'pk': paper.pk,
+                               'slug': slugify(paper.title),
+                               'time_lapse': kwargs.get('time_lapse')})
+
+paper_time = PaperViewPkTime.as_view()
 
 
 class PapersListView(ModalMixin, ListView):

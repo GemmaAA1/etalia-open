@@ -23,6 +23,11 @@
     padding: 5px;
 }
 
+.paper-list .altmetric {
+    position: absolute;
+    left: -70px;
+}
+
 .paper-list a {
     text-decoration: None;
     color: #000000;
@@ -112,7 +117,7 @@
     margin-top: 10px;
 }
 
-.altmetric {
+.paper .altmetric {
     position: relative;
 }
 
@@ -142,15 +147,11 @@
     background-position-x: -70px;
 }
 
-.stamps>a.dislike:before {
-    background-position-x: -150px;
-}
-
 .stamps>a.active:before {
     background-position-y: -55px;
 }
 
-.stamps>a.like:hover:before, .stamps>a.dislike:hover:before{
+.stamps>a.like:hover:before {
     background-position-y: -55px;
 }
 

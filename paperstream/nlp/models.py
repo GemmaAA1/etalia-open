@@ -961,7 +961,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         return neighbors_pks[:k]
 
-    def knn_search(self, seed, clip_start=0, top_n=5):
+    def knn_search(self, seed, clip_start=0, top_n=5, clip_start_reverse=False):
 
         # check seed
         if isinstance(seed, list):
@@ -971,8 +971,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         else:
             assert seed.shape[1] == self.model.size
 
+        # Reverse clip_start if flagged
+        if clip_start_reverse:
+            clip_start = len(self.index2pk) - clip_start
+
         # compute distance
-        dists = np.dot(self.data[clip_start:], seed)
+        dists = np.dot(self.data[clip_start:, :], seed)
         # clip index
         index2pk = self.index2pk[clip_start:]
         # sort (NB: +1 because likely will return input seed as closest item)
@@ -1001,7 +1005,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         neighbors_pks_multi = [nei for nei in res_search if nei not in paper_pks]
         return neighbors_pks_multi
 
-    def partition_search(self, seeds, clip_start=0, top_n=5):
+    def partition_search(self, seeds, clip_start=0, top_n=5, clip_start_reverse=False):
         """Return the unsorted list of paper pk that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
 
@@ -1013,6 +1017,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
             seeds = np.array(seeds)
         assert seeds.shape[0] == self.model.size
+
+        # Reverse clip_start if flagged
+        if clip_start_reverse:
+            clip_start = len(self.index2pk) - clip_start
 
         # compute distance
         dists = np.dot(self.data[clip_start:, :], seeds)
@@ -1080,8 +1088,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         elif task == 'knn_search':
             seed = kwargs.get('seed')
             clip_start = kwargs.get('clip_start')
+            clip_start_reverse = kwargs.get('clip_start', False)
             top_n = kwargs.get('top_n')
-            return self.knn_search(seed, clip_start=clip_start, top_n=top_n)
+            return self.knn_search(seed, clip_start=clip_start, top_n=top_n,
+                                   clip_start_reverse=clip_start_reverse)
         else:
             print(task)
             raise ValueError('Unknown task action')

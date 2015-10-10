@@ -11,8 +11,8 @@ def get_is_liked(dictionary, key):
         return False
 
 @register.filter
-def get_is_disliked(dictionary, key):
+def get_is_ticked(dictionary, key):
     if dictionary.get(key, None):
-        return dictionary.get(key).get('disliked')
+        return dictionary.get(key).get('ticked')
     else:
         return False

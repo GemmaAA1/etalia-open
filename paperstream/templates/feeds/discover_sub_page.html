@@ -1,0 +1,50 @@
+{% load endless %}
+{% load user_taste %}
+
+{% paginate first_page,per_page dfp_list %}
+{% for dfp in dfp_list %}
+    <div class="paper-list">
+        <div class="altmetric">
+            {% if dfp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ dfp.paper.id_doi }}"></div>
+            {% elif dfp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-arxiv="{{ dfp.paper.id_arx }}"></div>
+            {% elif dfp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ dfp.paper.id_pmi }}"></div>
+            {% endif %}
+        </div>
+        <div class="compact">
+            <div class="title">{{ dfp.paper.title|truncatechars:75 }}</div>
+            <div class="authors-journal-date">
+                {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title as str %}
+                {% if str|length > 85 %}
+                    <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:65 }}</span>
+                    {{ dfp.paper.print_journal_title|truncatechars:20 }}
+                    {{ dfp.paper.print_year }}
+                {% else %}
+                    <span class="authors">{{ dfp.paper.print_full_authors }}</span>
+                    {{ dfp.paper.print_journal_title }}
+                    {{ dfp.paper.print_year }}
+                {% endif %}
+                {% endwith %}
+            </div>
+            <span id="{{ dfp.paper.pk }}" class="stamps-2">
+                <span class="like {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}"></span>
+                <span class="tick {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}"></span>
+            </span>
+        </div>
+        <div class="extended">
+            <div class="title">{{ dfp.paper.title }}</div>
+            <div class="authors">{{ dfp.paper.print_full_authors}}</div>
+            <div class="journal-date">
+                {{ dfp.paper.print_journal_title}}
+                {{ dfp.paper.print_year }}
+            </div>
+            <div class="abstract">{{ dfp.paper.abstract }}</div>
+        </div>
+        <span id="{{ dfp.paper.pk }}" class="stamps">
+            <a class="like {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="#"></a>
+            <a class="tick {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="#"></a>
+            <a class="open" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank"></a>
+        </span>
+    </div>
+{% endfor %}
+{% show_more %}
+

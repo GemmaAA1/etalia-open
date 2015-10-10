@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from model_utils.fields import MonitorField, StatusField
 
 from paperstream.core.models import TimeStampedModel, NullableCharField
@@ -15,6 +16,7 @@ from .utils import langcode_to_langpap
 from langdetect import detect
 
 # Source from where Paper are created (tuple(set()) to make unique)
+
 
 class Publisher(TimeStampedModel):
     """Publisher group
@@ -251,10 +253,11 @@ class Paper(TimeStampedModel):
 
     # Boolean
     # locked if all field have been verified or paper from 'trusted' source
-    is_trusted = models.BooleanField(default=False)
+    is_trusted = models.BooleanField(default=False, db_index=True)
 
     def get_absolute_url(self):
-        return reverse('library:paper', args=[self.pk])
+        return reverse('library:paper-slug', kwargs={'pk': self.pk,
+                                                     'slug': slugify(self.title)})
 
     @property
     def short_title(self):

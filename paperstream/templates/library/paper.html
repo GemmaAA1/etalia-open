@@ -33,9 +33,9 @@
                                 </div>
                                 <div class="col-md-2 hidden-xs hidden-md">
                                     <div class="altmetric">
-                                        {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
+                                        {% if paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="1" data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
+                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="1" data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="1" data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -65,7 +65,6 @@
                                 <a class="go-to" href="{{ paper.url }}" target="_blank"></a>
                                 {% if user.is_authenticated %}
                                 <a class="like {% if is_liked %} active {% endif %}" href="#"></a>
-                                <a class="dislike {% if is_disliked %} active {% endif %}" href=#"></a>
                                 {% endif %}
                             </div>
                             <div class="neighbors">
@@ -75,6 +74,7 @@
                                             <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
                                             <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
                                             <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
+                                        <span>
                                     </div>
                                     <div class="neighbors-list">
                                     {% for neighbor in neighbors %}

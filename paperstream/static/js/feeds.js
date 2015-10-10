@@ -8,7 +8,7 @@ $(document).ready(function() {
             var ufp_id;
             ufp_id = $(this).attr("id");
             if(!$(event.target).closest('.like').length &&
-               !$(event.target).closest('.dislike').length &&
+               !$(event.target).closest('.tick').length &&
                !$(event.target).closest('#paper-title'+ufp_id).length){
                 $("#abstract"+ufp_id).toggleClass('active');
             }
@@ -34,10 +34,10 @@ $(document).ready(function() {
         event.preventDefault();
     });
 
-    // Send Like/dislike ajax call
-    dislike();
+    // Send Like/tick ajax call
+    tick();
 
-    // Send Like/dislike ajax call
+    // Send Like/tick ajax call
     like();
 });
 
@@ -79,21 +79,21 @@ function extendPaper(){
     });
 }
 
-function dislike () {
-    $('.dislike').on('click', function (event) {
-        var dislike = this;
+function tick () {
+    $('.tick').on('click', function (event) {
+        var tick = this;
         var id = $(this).parents('span').attr('id');
         var url = $(location).attr('protocol') + '//' +
-            $(location).attr('host') + '/user/paper/dislike';
+            $(location).attr('host') + '/user/paper/tick';
         console.log(url);
         $.ajax({
             type: "POST",
             url: url,
             data: {pk: id},
             success: function (json) {
-                var like = $(dislike).siblings(".like");
-                var like2 = $(dislike).parent().siblings('.compact').find('.like');
-                var dislike2 = $(dislike).parent().siblings('.compact').find('.dislike');
+                var like = $(tick).siblings(".like");
+                var like2 = $(tick).parent().siblings('.compact').find('.like');
+                var tick2 = $(tick).parent().siblings('.compact').find('.tick');
                 console.log(like);
                 console.log(like);
                 $.each(json, function (key, value) {
@@ -105,13 +105,14 @@ function dislike () {
                             $(like).removeClass('active');
                             $(like2).removeClass('active');
                         }
-                    } else if (key == 'is_disliked') {
+                    } else if (key == 'is_ticked') {
+                        $(tick).parents('.paper-list').slideUp(250);
                         if (value) {
-                            $(dislike).addClass('active');
-                            $(dislike2).addClass('active');
+                            $(tick).addClass('active');
+                            $(tick2).addClass('active');
                         } else {
-                            $(dislike).removeClass('active');
-                            $(dislike2).removeClass('active');
+                            $(tick).removeClass('active');
+                            $(tick2).removeClass('active');
                         }
                     }
                 });
@@ -132,9 +133,9 @@ function like () {
             url: url,
             data: {pk: id},
             success: function (json) {
-                var dislike = $(like).siblings(".dislike");
-                var like2 = $(dislike).parent().siblings('.compact').find('.like');
-                var dislike2 = $(dislike).parent().siblings('.compact').find('.dislike');
+                var tick = $(like).siblings(".tick");
+                var like2 = $(tick).parent().siblings('.compact').find('.like');
+                var tick2 = $(tick).parent().siblings('.compact').find('.tick');
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
@@ -144,13 +145,13 @@ function like () {
                             $(like).removeClass('active');
                             $(like2).removeClass('active');
                         }
-                    } else if (key == 'is_disliked') {
+                    } else if (key == 'is_ticked') {
                         if (value) {
-                            $(dislike).addClass('active');
-                            $(dislike2).addClass('active');
+                            $(tick).addClass('active');
+                            $(tick2).addClass('active');
                         } else {
-                            $(dislike).removeClass('active');
-                            $(dislike2).removeClass('active');
+                            $(tick).removeClass('active');
+                            $(tick2).removeClass('active');
                         }
                     }
                 });

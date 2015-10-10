@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load disqus_tags %}
+{% load user_taste %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
+    {{ block.super }}
+{% endblock css %}
+
+{% block title %}
+    Discover
+{% endblock title %}
+
+{% block content %}
+    {% if user.lib.state == 'ING' %}
+        {% include "user/sync_lib_modal.html" %}
+   {% endif %}
+    <div class="container-fluid">
+        <div class="feed">
+            <div class="row">
+                <div class="col-lg-11 col-lg-offset-1">
+                    <div class="col-md-9">
+                        <div class="userfeed">
+                            {% include page_template %}
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-sm">
+                        <div class="side-panel">
+                            <div class="side-panel-title">Statistics</div>
+                            <div class="side-panel-inner">
+                                <h5>Paperstream Library</h5>
+                                <div class="side-panel-inner">
+                                    <h5>{{ stats.nb_papers }} papers </h5>
+                                    <h5>{{ stats.nb_journals }} journals </h5>
+                                    <h5>{{ stats.nb_authors }} authors </h5>
+                                    <h5>{{ stats.nb_papers_last_week }} papers last week</h5>
+                                    <h5>{{ stats.nb_papers_last_month }} papers last month</h5>
+                                </div>
+                                <h5>My Library</h5>
+                                <div class="side-panel-inner">
+                                    <h5>{{ user.lib.count_papers }} papers</h5>
+                                    <h5>{{ user.lib.count_journals }} journals</h5>
+                                    <h5>{{ user.lib.count_authors }} authors</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block js %}
+    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
+    <script type="text/javascript" src="{% static 'js/feeds.js' %}"></script>
+    <script>$.endlessPaginate({
+        paginateOnScroll: true,
+        paginateOnScrollMargin: 10,
+        onClick: function () {
+            extendPaper();
+            toggleStamps();
+        },
+        onCompleted: function () {
+            extendPaper();
+            toggleStamps();
+            like();
+            dislike();
+        }
+    });
+    </script>
+
+    {{ block.super }}
+{% endblock js %}
+

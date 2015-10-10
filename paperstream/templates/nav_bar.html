@@ -29,11 +29,11 @@
                     </form>
                 {% endif %}
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="{% active request 'feed.+' %}">
+                    <li class="{% active request '(?!feed/discover)(feed.+)' %}">
                         <a class="stream-icon" href="{% url 'feeds:main' %}">Stream</a>
                     </li>
-                    <li class="{% active request 'discover.+' %}">
-                        <a class="discover-icon" href="#">Discover</a>
+                    <li class="{% active request 'feed/discover' %}">
+                        <a class="discover-icon" href="{% url 'feeds:discover' %}">Discover</a>
                     </li>
                     <li class="{% active request 'user/library.+' %}">
                         <a class="library-icon" href="{% url 'user:library' %}">Library</a>

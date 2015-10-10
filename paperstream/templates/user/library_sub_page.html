@@ -4,22 +4,28 @@
 {% for ulp in ulp_list %}
     <a href="{% url 'library:paper' ulp.paper.pk %}">
         <div class="paper-list">
-        <div class="compact">
-            <div class="title">{{ ulp.paper.title|truncatechars:85 }}</div>
-            <div class="authors-journal-date">
-                {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title as str %}
-                {% if str|length > 105 %}
-                    <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:85 }}</span>
-                    {{ ulp.paper.print_journal_title|truncatechars:20 }}
-                    {{ ulp.paper.print_year }}
-                {% else %}
-                    <span class="authors">{{ ulp.paper.print_full_authors }}</span>
-                    {{ ulp.paper.print_journal_title }}
-                    {{ ulp.paper.print_year }}
+            <div class="altmetric">
+                {% if ulp.paper.id_doi %}<div class='altmetric-embed'  data-badge-type='donut' data-doi="{{ ulp.paper.id_doi }}"></div>
+                {% elif ulp.paper.id_arx %}<div class='altmetric-embed'  data-badge-type='donut' data-arxiv="{{ ulp.paper.id_arx }}"></div>
+                {% elif ulp.paper.id_pmi %}<div class='altmetric-embed'  data-badge-type='donut' data-pmid="{{ ulp.paper.id_pmi }}"></div>
                 {% endif %}
-                {% endwith %}
             </div>
-        </div>
+            <div class="compact">
+                <div class="title">{{ ulp.paper.title|truncatechars:85 }}</div>
+                <div class="authors-journal-date">
+                    {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title as str %}
+                    {% if str|length > 105 %}
+                        <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:85 }}</span>
+                        {{ ulp.paper.print_journal_title|truncatechars:20 }}
+                        {{ ulp.paper.print_year }}
+                    {% else %}
+                        <span class="authors">{{ ulp.paper.print_full_authors }}</span>
+                        {{ ulp.paper.print_journal_title }}
+                        {{ ulp.paper.print_year }}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
         </div>
     </a>
 {% endfor %}

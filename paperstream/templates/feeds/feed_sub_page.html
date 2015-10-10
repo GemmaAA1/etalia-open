@@ -4,6 +4,12 @@
 {% paginate first_page,per_page ufmp_list %}
 {% for ufmp in ufmp_list %}
     <div class="paper-list">
+        <div class="altmetric">
+            {% if ufmp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="20" data-badge-type='donut' data-doi="{{ ufmp.paper.id_doi }}"></div>
+            {% elif ufmp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="20" data-badge-type='donut' data-arxiv="{{ ufmp.paper.id_arx }}"></div>
+            {% elif ufmp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="20" data-badge-type='donut' data-pmid="{{ ufmp.paper.id_pmi }}"></div>
+            {% endif %}
+        </div>
         <div class="compact">
             <div class="title">{{ ufmp.paper.title|truncatechars:75 }}</div>
             <div class="authors-journal-date">
@@ -21,7 +27,7 @@
             </div>
             <span id="{{ ufmp.paper.pk }}" class="stamps-2">
                 <span class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}"></span>
-                <span class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}"></span>
+                <span class="tick {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}"></span>
             </span>
         </div>
         <div class="extended">
@@ -35,8 +41,8 @@
         </div>
         <span id="{{ ufmp.paper.pk }}" class="stamps">
             <a class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
-            <a class="dislike {% if user_taste|get_is_disliked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
-            <a class="open" href="{% url 'library:paper' ufmp.paper.pk %}"></a>
+            <a class="tick {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
+            <a class="open" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank"></a>
         </span>
     </div>
 {% endfor %}

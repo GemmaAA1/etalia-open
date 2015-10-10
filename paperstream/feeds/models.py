@@ -3,7 +3,6 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-import numpy as np
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
@@ -16,6 +15,7 @@ from gensim import matutils
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
 from paperstream.library.models import Paper
+from paperstream.altmetric.models import AltmetricModel
 from paperstream.nlp.models import Model, MostSimilar
 from config.celery import celery_app as app
 from .constants import FEED_STATUS_CHOICES
@@ -53,7 +53,10 @@ class UserFeedManager(BaseUserManager):
 
 
 class UserFeed(TimeStampedModel):
-    """User Feed model"""
+    """User Feed model
+
+    NB: Design to have multiple feed per user, but currently using only the main one
+    """
 
     # feed name
     name = models.CharField(max_length=100, default='main')
@@ -296,6 +299,7 @@ class UserFeedMatchPaper(TimeStampedModel):
         return UserTaste.objects\
             .get(paper=self.paper, user=self.feed.user).is_liked
 
+
 class UserFeedVector(TimeStampedModel):
     """Feature vector for feed is defined as the averaged of paper vectors in
     feed
@@ -329,6 +333,7 @@ class UserFeedVector(TimeStampedModel):
         # sum of vectors
         vector = [sum(x) for x in zip(*vectors) if x[0]]  # not considering None
         self.set_vector(vector)
+        return vector[:self.model.size]
 
     class Meta:
         unique_together = [('feed', 'model'), ]
@@ -336,4 +341,91 @@ class UserFeedVector(TimeStampedModel):
     def __str__(self):
         return '{feed_name}/{model_name}'.format(feed_name=self.feed.name,
                                                  model_name=self.model.name)
+
+
+class DiscoverFeed(TimeStampedModel):
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='discover')
+
+    papers = models.ManyToManyField(Paper, through='DiscoverFeedPaper')
+
+    # look for paper in the past n days
+    time_lapse = models.IntegerField(default=60)
+
+    # number of papers in stream
+    size = models.IntegerField(default=400)
+
+    # last n papers
+    past_n_papers = models.IntegerField(default=200000)
+
+    # top n closest papers
+    top_n_closest = models.IntegerField(default=5000)
+
+    # look for trendy altmetric in the past n days
+    time_lapse_top_altmetric = models.IntegerField(default=15)
+
+    def __str__(self):
+        return self.user.email
+
+    def clear(self):
+        """Remove all paper relations"""
+        DiscoverFeedPaper.objects.filter(discover_feed=self).all().delete()
+
+    def update(self):
+
+        # clear stream
+        self.clear()
+
+        # Get mostsimilar task
+        try:
+            ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
+                name=self.user.settings.model.name)]
+        except KeyError:
+            raise KeyError
+
+        # get main userfeed signature vector
+        feed = UserFeed.objects.get(user=self.user, name='main')
+        ufv, _ = UserFeedVector.objects\
+            .get_or_create(feed=feed, model=self.user.settings.model)
+        vec = ufv.update_vector()
+
+        # Submit Celery Task to get k_neighbors from userfeed signature
+        res = ms_task.delay('knn_search', seed=vec,
+                            clip_start=self.past_n_papers,
+                            top_n=self.top_n_closest,
+                            clip_start_reverse=True)
+        target_seed_pks = res.get()
+
+        # Get altmetric scores for target_seed_pks and top papers
+        d = timezone.now().date() - \
+            timezone.timedelta(days=self.time_lapse_top_altmetric)
+        # exclude paper in userfeed
+        pk_in_userfeed = self.user.feeds.first().papers_match.all().values('pk')
+        data_altm = AltmetricModel.objects\
+            .filter(Q(paper_id__in=target_seed_pks) |
+                    (Q(paper__date_fs__gt=d) & Q(score__gt=1000.0)))\
+            .exclude(paper_id__in=pk_in_userfeed)\
+            .order_by('-score')\
+            .values('paper__pk', 'score')[:self.size]
+
+        # Populate discoverfeedpaper
+        obj_list = []
+        for p in data_altm:
+            obj_list.append(DiscoverFeedPaper(
+                        discover_feed=self,
+                        paper_id=p['paper__pk'],
+                        score=p['score']))
+        DiscoverFeedPaper.objects.bulk_create(obj_list)
+
+
+class DiscoverFeedPaper(TimeStampedModel):
+
+    discover_feed = models.ForeignKey(DiscoverFeed)
+
+    paper = models.ForeignKey(Paper)
+
+    score = models.FloatField(default=0.0)
+
+    class Meta:
+        unique_together = [('discover_feed', 'paper'), ]
 

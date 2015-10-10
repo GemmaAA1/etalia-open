@@ -371,7 +371,7 @@ class UserTaste(TimeStampedModel):
 
     paper = models.ForeignKey(Paper)
 
-    is_disliked = models.BooleanField(default=False)
+    is_ticked = models.BooleanField(default=False)
 
     is_liked = models.BooleanField(default=False)
 
@@ -381,9 +381,7 @@ class UserTaste(TimeStampedModel):
     def __str__(self):
         if self.is_liked:
             return '{pk}@{pk} likes'.format(user=self.user, pk=self.paper.id)
-        elif self.is_disliked:
-            return '{user}@{pk} dislikes '.format(user=self.user, pk=self.paper.id)
-        elif not self.is_disliked and not self.is_liked:
-            return '{user}@{pk} neutral'.format(user=self.user, pk=self.paper.id)
+        elif self.is_ticked:
+            return '{user}@{pk} ticked '.format(user=self.user, pk=self.paper.id)
         else:
             return '{user}@{pk} has a problem'
