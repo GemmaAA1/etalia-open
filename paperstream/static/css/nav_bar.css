@@ -21,7 +21,7 @@
 .navbar-brand-anonymous {
     float:left;
     position: relative;
-    left: 45%;
+    left: 40%;
     font-size: 24px;
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
@@ -36,11 +36,12 @@
     content:"";
     display: inline-block;
     /*background: url(../img/paperstream_brand_v5_20px.png);*/
-    background: url(../img/mark.svg);
-    background-size: auto 20px;
-    width: 100px;
+    background: url(../img/mark_v2.svg);
+    background-size: auto 35px;
+    width: 200px;
     height: 40px;
-    background-position-y: 6px;
+    background-position-y: -0px;
+    background-position-x: -0px;
     background-repeat: no-repeat;
 }
 
