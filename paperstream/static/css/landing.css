@@ -11,7 +11,7 @@
 
 .intro-message {
     position: relative;
-    padding-top: 5%;
+    padding-top: 10%;
     padding-bottom: 5%;
 }
 
@@ -34,7 +34,8 @@
 }
 
 .learn-more {
-    background: url(../img/arrow-more-orange.png) left top no-repeat;
+    background: url(../img/arrow_down.svg) left top no-repeat;
+    background-size: auto 140px;
     overflow: hidden;
     position: absolute;
     left: 47%;
@@ -43,8 +44,8 @@
     display: block;
     text-indent: 200%;
     white-space: nowrap;
-    height: 60px;
-    width: 60px;
+    height: 70px;
+    width: 70px;
     z-index: 9999;
 }
 
