@@ -69,7 +69,7 @@
                             <p></p>
                             <ul class="list-group">
                                 {% for feed in user.feeds.all %}
-                                <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.pk %}"> (update)</a></li>
+                                <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.name %}"> (update)</a></li>
                                 {% endfor %}
                             </ul>
                         </div>
