@@ -26,17 +26,6 @@ def add_nlp(x, y):
     return x + y
 
 
-# def embed_papers(pks, model_name):
-#     try:
-#         embed_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
-#             model_name=model_name)]
-#     except KeyError:
-#         logger.error('Embeding task for {model_name} not defined'.format(
-#             model_name=model_name))
-#         raise KeyError
-#     for pk in pks:
-#         embed_task.apply_async(args=(pk, ))
-
 def embed_papers(pks, model_name, batch_size=1000):
     try:
         embed_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
