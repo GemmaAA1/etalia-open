@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
 from django.views.generic import DeleteView, RedirectView, CreateView
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.forms.utils import ErrorList
 from django.core.exceptions import ValidationError
@@ -241,12 +241,9 @@ class UpdateFeedView(LoginRequiredMixin, ModalMixin, RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         # Check if userfeed pk matched db and current logged user
-        userfeed = get_object_or_404(UserFeed,
-                              name=kwargs.get('name', ''),
-                              user=self.request.user)
+        feed_name = kwargs.get('name', '')
         # update feed async
-        userfeed.set_state('ING')
-        async_update_feed.delay(userfeed.id)
+        async_update_feed.delay(self.request.user.pk, feed_name=feed_name)
         return super(UpdateFeedView, self).get_redirect_url(*args, **kwargs)
 
 update_feed_view = UpdateFeedView.as_view()
