@@ -22,6 +22,7 @@ CELERY_QUEUES = (
     Queue('default', routing_key='default.#'),
     Queue('nlp', routing_key='nlp.#'),
     Queue('mostsimilar', routing_key='mostsimilar.#'),
+    Queue('feed', routing_key='feed.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
 )

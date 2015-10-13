@@ -15,8 +15,8 @@ class MyRouter(object):
             return {'queue': 'mostsimilar',
                     'routing_key': 'mostsimilar'}
         if task.startswith('paperstream.feeds'):
-            return {'queue': 'mostsimilar',
-                    'routing_key': 'mostsimilar.feeds'}
+            return {'queue': 'feed',
+                    'routing_key': 'feed'}
         if task.startswith('paperstream.nlp'):
             return {'queue': 'nlp',
                     'routing_key': 'nlp'}
