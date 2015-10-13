@@ -94,25 +94,25 @@ class MostSimilarTask(Task):
             self._ms = MostSimilar.objects.load(model__name=self.model_name)
             return self._ms
 
-        # if MostSimilar has been modified and MostSimilar not uploading/downloading, reload
-        t0 = time.time()
-        while MostSimilarStatus.objects.get(host=socket.gethostname(),
-                                            ms=self._ms).is_dowloading\
-                and time.time() - t0 < 100:
-            time.sleep(1)
-        ms_now = MostSimilar.objects.get(model__name=self.model_name)
-        last_modified = ms_now.modified
-        upload_state = ms_now.upload_state
-        if upload_state == 'IDL' and not self._ms.modified == last_modified:
-            # remove local
-            rm_files = glob.glob(
-                os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
-                    name=self._ms.name)))
-            for file in rm_files:
-                os.remove(file)
+        # if MostSimilarStatus is 'is_downloading', use current
+        if MostSimilarStatus.objects.get(host=socket.gethostname(),
+                                            ms=self._ms).is_dowloading:
+            return self._ms
+        else:   # if MostSimilar has been modified and MostSimilar not uploading reload
+            # check timing now
+            ms_now = MostSimilar.objects.get(model__name=self.model_name)
+            last_modified = ms_now.modified
+            upload_state = ms_now.upload_state
+            if upload_state == 'IDL' and not self._ms.modified == last_modified:
+                # remove local
+                rm_files = glob.glob(
+                    os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
+                        name=self._ms.name)))
+                for file in rm_files:
+                    os.remove(file)
 
-            self._ms = MostSimilar.objects.load(model__name=self.model_name)
-        return self._ms
+                self._ms = MostSimilar.objects.load(model__name=self.model_name)
+            return self._ms
 
     def run(self, *args, **kwargs):
         return self.ms.tasks(*args, **kwargs)
