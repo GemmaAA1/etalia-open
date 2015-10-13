@@ -3,14 +3,12 @@ from __future__ import unicode_literals, absolute_import
 
 import os
 import glob
-import time
-import socket
 from celery import Task
 
 from django.db.models.query import QuerySet
 from django.conf import settings
 
-from .models import Model, MostSimilar, MostSimilarStatus
+from .models import Model, MostSimilar
 
 
 class EmbedPaperTask(Task):
