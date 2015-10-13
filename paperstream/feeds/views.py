@@ -264,7 +264,6 @@ class DiscoverView(LoginRequiredMixin, ModalMixin, AjaxListView):
     per_page = 20
     context_object_name = 'dfp_list'
 
-
     def get_queryset(self):
         # get ticked paper
         papers_ticked = UserTaste.objects\
