@@ -82,13 +82,7 @@ class Journal(TimeStampedModel):
         ordering = ['title']
 
     def __str__(self):
-        if self.short_title:
-            return self.short_title
-        else:
-            if len(self.title) > 30:
-                return self.title[:30]+'...'
-            else:
-                return self.title[:30]
+        return self.print_short_title
 
     def get_absolute_url(self):
         return reverse('library:journal', args=[self.id])
@@ -117,6 +111,16 @@ class Journal(TimeStampedModel):
                     id=field.verbose_name,
                     value=getattr(self, field.name))
         return ids_str
+
+    @property
+    def print_short_title(self):
+        if len(self.short_title) > 2:
+            return self.short_title
+        else:
+            if len(self.title) > 30:
+                return self.title[:30]+'...'
+            else:
+                return self.title[:30]
 
 
 class Author(TimeStampedModel):

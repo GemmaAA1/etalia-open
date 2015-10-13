@@ -247,6 +247,7 @@ class UserLibJournal(TimeStampedModel):
 
     class Meta:
         unique_together = ('userlib', 'journal')
+        ordering = ('-papers_in_journal', )
 
     def update_papers_in_journal(self):
         self.papers_in_journal = self.userlib.papers.filter(

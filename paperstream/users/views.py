@@ -151,6 +151,7 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
     first_page = 30
     per_page = 20
     context_object_name = 'ulp_list'
+    list_n_ujl = 10
 
     def get_context_data(self, **kwargs):
         context = super(AjaxListView, self).get_context_data(**kwargs)
@@ -160,6 +161,11 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
         context['per_page'] = self.per_page
         if self.request.GET.get("query"):
             context['current_query'] = self.request.GET.get("query")
+
+        # Get main user journal
+        uljs = self.request.user.lib.userlibjournal_set.all()
+        context['uljs'] = uljs[:self.list_n_ujl]
+
         return context
 
     def get_queryset(self):
@@ -182,6 +188,7 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
         return queryset.distinct()
 
 library = UserLibraryView.as_view()
+
 
 # User profile update
 # -------------------

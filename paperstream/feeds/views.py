@@ -35,6 +35,7 @@ class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     first_page = 10
     per_page = 5
     context_object_name = 'ufmp_list'
+    list_n_ujl = 10
 
     def get_queryset(self):
         # get ticked paper
@@ -88,6 +89,11 @@ class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         if self.request.GET.get("query"):
             context['current_query'] = self.request.GET.get("query")
+
+        # Get main user journal
+        uljs = self.request.user.lib.userlibjournal_set.all()
+
+        context['uljs'] = uljs[:self.list_n_ujl]
 
         return context
 
@@ -257,6 +263,7 @@ class DiscoverView(LoginRequiredMixin, ModalMixin, AjaxListView):
     first_page = 30
     per_page = 20
     context_object_name = 'dfp_list'
+
 
     def get_queryset(self):
         # get ticked paper
