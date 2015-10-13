@@ -3,12 +3,14 @@ from __future__ import unicode_literals, absolute_import
 
 import os
 import glob
+import time
+import socket
 from celery import Task
 
 from django.db.models.query import QuerySet
 from django.conf import settings
 
-from .models import Model, MostSimilar
+from .models import Model, MostSimilar, MostSimilarStatus
 
 
 class EmbedPaperTask(Task):
@@ -89,15 +91,15 @@ class MostSimilarTask(Task):
     @property
     def ms(self):
         if self._ms is None:
-            # remove local
-            rm_files = glob.glob(
-                os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
-                    name=self.model_name)))
-            for file in rm_files:
-                os.remove(file)
             self._ms = MostSimilar.objects.load(model__name=self.model_name)
             return self._ms
-        # if MostSimilar has been modified and MostSimilar not uploading, reload
+
+        # if MostSimilar has been modified and MostSimilar not uploading/downloading, reload
+        t0 = time.time()
+        while MostSimilarStatus.objects.get(host=socket.gethostname(),
+                                            ms=self._ms).is_dowloading\
+                and time.time() - t0 < 100:
+            time.sleep(1)
         ms_now = MostSimilar.objects.get(model__name=self.model_name)
         last_modified = ms_now.modified
         upload_state = ms_now.upload_state

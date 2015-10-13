@@ -6,6 +6,7 @@ import logging
 import glob
 from random import shuffle
 import numpy as np
+import socket
 from timeit import time
 
 from gensim import matutils
@@ -731,7 +732,23 @@ class MostSimilarManager(models.Manager):
             if not os.path.isfile(os.path.join(settings.NLP_MS_PATH,
                                                '{0}.ms_data'.format(obj.name))):
                 if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
-                    obj.pull_from_s3()
+                    mss, new = MostSimilarStatus.objects.get_or_create(
+                        ms=obj,
+                        host=socket.gethostname())
+
+                    # if status is 'is_downloading' wait
+                    if not new and mss.is_downloading:
+                        t0 = time.time()
+                        while MostSimilarStatus.objects.get(ms=ms, host=socket.gethostname()).is_downloading\
+                                and time.time() - t0 < 100:
+                            time.sleep(1)
+                    else:
+                        mss.is_downloading = True
+                        mss.save()
+                        obj.pull_from_s3()
+                        mss.is_downloading = False
+                        mss.save()
+
             obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
                                                 '{0}.ms_data'.format(obj.name)))
             obj.index2pk = joblib.load(os.path.join(settings.NLP_MS_PATH,
@@ -1127,3 +1144,18 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         else:
             print(task)
             raise ValueError('Unknown task action')
+
+
+class MostSimilarStatus(TimeStampedModel):
+
+    # host name
+    host = models.CharField(max_length=512)
+
+    # mostsimilar
+    ms = models.ForeignKey(MostSimilar, related_name='status')
+
+    # flags
+    is_downloading = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('host', 'ms')
