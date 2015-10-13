@@ -234,7 +234,7 @@ class WeightedJournalCreatedDateAverage(Scoring):
         date_vec = self.build_created_date_vec(self.seed_data)
 
         dis = np.dot(targ_mat, seed_mat.T)
-        scores = np.max(dis, weights=date_vec, axis=1)
+        scores = np.average(dis, weights=date_vec, axis=1)
 
         return self.target_pks, scores
 
