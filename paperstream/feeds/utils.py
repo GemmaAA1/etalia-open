@@ -15,7 +15,7 @@ class Scoring(object):
     def __init__(self, model, user, **kwargs):
         self.model = model
         self.user = user
-        self.journal_ratio = kwargs.get('journal_ratio', 0.2)
+        self.journal_ratio = kwargs.get('journal_ratio', 0.5)
 
         self.seed_pks = []
         self.target_pks = []

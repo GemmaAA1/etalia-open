@@ -59,6 +59,7 @@ function extendPaper(){
     $('.paper-list').click( function () {
         $(this).children('.compact').toggle();
         $(this).children('.extended').toggle();
+        //$(this).children('.extended').slideToggle();
         if ($(this).children('.extended').is(":visible")) {
             $(this).unbind('mouseenter mouseleave');
             $(this).children('.stamps').show();
