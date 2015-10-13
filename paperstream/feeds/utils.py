@@ -199,7 +199,7 @@ class ThresholdAverage(Scoring):
 
     def __init__(self, **kwargs):
         super(ThresholdAverage, self).__init__(**kwargs)
-        self.threshold = kwargs.get('threshold', 0.6)
+        self.threshold = kwargs.get('threshold', 0.4)
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
