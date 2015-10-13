@@ -736,6 +736,8 @@ class MostSimilarManager(models.Manager):
                                                 '{0}.ms_data'.format(obj.name)))
             obj.index2pk = joblib.load(os.path.join(settings.NLP_MS_PATH,
                                                 '{0}.ms_ind2pk'.format(obj.name)))
+            obj.index2journalpk = joblib.load(os.path.join(settings.NLP_MS_PATH,
+                                                '{0}.ms_ind2journalpk'.format(obj.name)))
             obj.date = joblib.load(os.path.join(settings.NLP_MS_PATH,
                                                 '{0}.ms_date'.format(obj.name)))
         except EnvironmentError:      # OSError or IOError...
@@ -767,6 +769,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     index2pk = []
     # index date
     date = []
+    # data index to journal pk
+    index2journalpk = []
 
     objects = MostSimilarManager()
 
@@ -790,6 +794,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                                             self.name + '.ms_data'))
         joblib.dump(self.index2pk, os.path.join(settings.NLP_MS_PATH,
                                             self.name + '.ms_ind2pk'))
+        joblib.dump(self.index2journalpk, os.path.join(settings.NLP_MS_PATH,
+                                            self.name + '.ms_ind2journalpk'))
         joblib.dump(self.date, os.path.join(settings.NLP_MS_PATH,
                                             self.name + '.ms_date'))
         # push files to s3
@@ -839,12 +845,13 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp', 'paper__date_fs')
+                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')
 
         # Reshape data
         nb_items = data.count()
         self.date = []
         self.index2pk = []
+        self.index2journalpk = []
         self.data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
@@ -861,6 +868,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 self.date.append(d)
                 # store paper pk
                 self.index2pk.append(dat['paper__pk'])
+                # store journal pk
+                self.index2journalpk.append(dat['paper__journal__pk'])
                 # build input matrix for fit
                 self.data[i, :] = dat['vector'][:vec_size]
 
@@ -868,6 +877,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         idx = sorted(range(len(self.date)), key=self.date.__getitem__)
         self.date = [self.date[i] for i in idx]
         self.index2pk = [self.index2pk[i] for i in idx]
+        self.index2journalpk = [self.index2journalpk[i] for i in idx]
         self.data = self.data[idx, :]
 
         # Store
@@ -889,7 +899,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp', 'paper__date_fs')
+                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')
 
         # order by date
         data = data.order_by(Coalesce('paper__date_ep', 'paper__date_fs').asc())
@@ -898,6 +908,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         nb_items = data.count()
         date = []
         index2pk = []
+        index2journalpk = []
         data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
@@ -914,18 +925,22 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 date.append(d)
                 # store paper pk
                 index2pk.append(dat['paper__pk'])
+                # store journal pk
+                index2journalpk.append(dat['paper__journal__pk'])
                 # build input matrix for fit
                 data[i, :] = dat['vector'][:vec_size]
 
         # concatenate
         self.date += date
         self.index2pk += index2pk
+        self.index2journalpk += index2journalpk
         self.data = np.vstack((self.data, data))
         # reorder
         # argsort
         idx = sorted(range(len(self.date)), key=self.date.__getitem__)
         self.date = [self.date[i] for i in idx]
         self.index2pk = [self.index2pk[i] for i in idx]
+        self.index2journalpk = [self.index2journalpk[i] for i in idx]
         self.data = self.data[idx, :]
 
         self.save()
@@ -988,7 +1003,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         result = [(index2pk[ind], float(dists[ind])) for ind in best]
         return result
 
-    def get_partition(self, paper_pks, time_lapse=-1, k=1):
+    def get_partition(self, paper_pks, time_lapse=-1, k=1, journal_pks=None):
 
         # get seed data
         data = PaperVectors.objects\
@@ -1002,13 +1017,15 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         clip_start = self.get_clip_start(time_lapse)
 
         # get partition
-        res_search = self.partition_search(mat, clip_start=clip_start, top_n=k)
+        res_search = self.partition_search(mat, clip_start=clip_start, top_n=k,
+                                           journal_pks=journal_pks)
 
         # ignore paper_pks
         neighbors_pks_multi = [nei for nei in res_search if nei not in paper_pks]
         return neighbors_pks_multi
 
-    def partition_search(self, seeds, clip_start=0, top_n=5, clip_start_reverse=False):
+    def partition_search(self, seeds, clip_start=0, top_n=5, clip_start_reverse=False,
+                         journal_pks=None):
         """Return the unsorted list of paper pk that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
 
@@ -1025,10 +1042,20 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         if clip_start_reverse:
             clip_start = len(self.index2pk) - clip_start
 
-        # compute distance
-        dists = np.dot(self.data[clip_start:, :], seeds)
-        # clip index
+        # clip
+        data = self.data[clip_start:, :]
         index2pk = self.index2pk[clip_start:]
+        index2journalpk = self.index2journalpk[clip_start:]
+
+        # filter by journal is defined
+        if journal_pks:
+            idx = list(map(lambda x: x in journal_pks, index2journalpk))
+            data = data[np.array(idx), :]
+            index2pk = [x for i, x in enumerate(index2pk) if idx[i]]
+            # index2journalpk = [x for i, x in enumerate(index2journalpk) if idx[i]]
+        # compute distance
+        dists = np.dot(data, seeds)
+
         # reverse order
         dists = - dists
         # get partition
@@ -1085,9 +1112,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             return self.get_knn(paper_pk, time_lapse=time_lapse, k=k)
         elif task == 'get_partition':
             paper_pks = kwargs.get('paper_pks')
+            journal_pks = kwargs.get('journal_pks', None)
             time_lapse = kwargs.get('time_lapse')
             k = kwargs.get('k')
-            return self.get_partition(paper_pks, time_lapse=time_lapse, k=k)
+            return self.get_partition(paper_pks, time_lapse=time_lapse, k=k,
+                                      journal_pks=journal_pks)
         elif task == 'knn_search':
             seed = kwargs.get('seed')
             clip_start = kwargs.get('clip_start')

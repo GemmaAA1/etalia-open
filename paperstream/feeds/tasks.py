@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 @app.task()
-def update_feed(user_pk, feed_name='main'):
+def update_feed(user_pk, feed_name='main', restrict_journal=False):
     """Async task / Update user feed"""
     # create/update main feed
     feed, _ = UserFeed.objects.get_or_create(user_id=user_pk, name=feed_name)
@@ -22,7 +22,7 @@ def update_feed(user_pk, feed_name='main'):
         user = User.objects.get(pk=user_pk)
         feed.add_papers_seed(user.lib.papers.all())
     # update
-    feed.update()
+    feed.update(restrict_journal=restrict_journal)
 
     return user_pk
 

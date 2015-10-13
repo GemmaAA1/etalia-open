@@ -150,7 +150,6 @@ class UserFeed(TimeStampedModel):
         - Create/Update UserFeedPaper
         """
 
-
         self.set_state('ING')
         self.log('info', 'Updating', 'starting...')
         self.set_message('Cleaning')
@@ -191,13 +190,21 @@ class UserFeed(TimeStampedModel):
         except KeyError:
             raise KeyError
 
+        # Get user journals
+        if restrict_journal:
+            journal_pks = self.user.lib.journals.all().values_list('pk', flat=True)
+        else:
+            journal_pks = None
+
+
         self.log('debug', 'Updating', 'getting neighbors...')
         seed_pks = self.papers_seed.all().values_list('pk', flat=True)
         # Submit Celery Task to get k_neighbors
         res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
                              time_lapse=self.user.settings.time_lapse,
-                             k=settings.FEED_K_NEIGHBORS)
+                             k=settings.FEED_K_NEIGHBORS,
+                             journal_pks=journal_pks)
         # Wait for Results
         target_seed_pks = res.get()
         self.log('debug', 'Updating', 'done')
@@ -289,16 +296,6 @@ class UserFeedMatchPaper(TimeStampedModel):
     def __str__(self):
         return '{paper}/{score}'.format(paper=self.paper.short_title,
                                         score=self.score)
-
-    @property
-    def is_disliked(self):
-        return UserTaste.objects\
-            .get(paper=self.paper, user=self.feed.user).is_disliked
-
-    @property
-    def is_liked(self):
-        return UserTaste.objects\
-            .get(paper=self.paper, user=self.feed.user).is_liked
 
 
 class UserFeedVector(TimeStampedModel):
