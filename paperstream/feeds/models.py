@@ -98,7 +98,7 @@ class UserFeed(TimeStampedModel):
 
         if papers:
             objs = []
-            seed_paper_pks = feed.papers_seed.all().values_list('pk', flat=True)
+            seed_paper_pks = self.papers_seed.all().values_list('pk', flat=True)
             for paper in papers:
                 if paper.pk not in seed_paper_pks:
                     objs.append(UserFeedSeedPaper(feed=self,

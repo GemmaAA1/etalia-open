@@ -55,11 +55,11 @@ def update_user_lib(backend, social, user, *args, **kwargs):
                                      serializer='json')
     return {}
 
+
 @partial
 def init_user(social, user, *args, **kwargs):
-    async_init_user(user.pk, social.provider)
-    user.lib.set_state('ING')
-    user.feeds.first().set_state('ING')
+    if user.lib.state == 'NON':  # user non-initialized yet
+        async_init_user(user.pk, social.provider)
     return {}
 
 

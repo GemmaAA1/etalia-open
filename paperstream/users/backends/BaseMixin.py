@@ -140,7 +140,7 @@ class BackendLibMixin(object):
         # Set Taste for paper to like if new unless it has been already
         # like/dislike previously (not new_ut)
         if new:
-            ut, new_ut = UserTaste.object.get_or_create(paper=paper, user=user)
+            ut, new_ut = UserTaste.objects.get_or_create(paper=paper, user=user)
             if new_ut:
                 ut.is_liked = True
                 ut.is_ticked = True

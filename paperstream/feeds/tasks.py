@@ -13,36 +13,23 @@ User = get_user_model()
 
 
 @app.task()
-def update_main(user_pk):
-    """Async task / Init main default feed"""
-    user = User.objects.get(pk=user_pk)
-
+def update_feed(user_pk, feed_name='main'):
+    """Async task / Update user feed"""
     # create/update main feed
-    feed, _ = UserFeed.objects.get_or_create(user_id=user_pk, name='main')
-    # add all papers
-    feed.add_papers_seed(user.lib.papers.all())
+    feed, _ = UserFeed.objects.get_or_create(user_id=user_pk, name=feed_name)
+    if feed_name == 'main':
+        # add all papers
+        user = User.objects.get(pk=user_pk)
+        feed.add_papers_seed(user.lib.papers.all())
     # update
-    update_feed.delay(feed.pk)
-
-    # Create/update Discover stream
-    df, _ = DiscoverFeed.objects.get_or_create(user_id=user_pk)
-    update_discover.delay(df.pk)
+    feed.update()
 
     return user_pk
 
 
 @app.task()
-def update_feed(pk):
-    """Async task / Update user feed"""
-    feed = UserFeed.objects.get(pk=pk)
-    feed.update()
-
-
-@app.task()
-def update_discover(pk):
-    df = DiscoverFeed.objects.get(pk=pk)
+def update_discover(user_pk):
+    df, _ = DiscoverFeed.objects.get_or_create(user_id=user_pk)
     df.update()
 
-
-
-
+    return user_pk
