@@ -33,13 +33,13 @@
                         <a class="stream-icon" href="{% url 'feeds:main' %}">Stream</a>
                     </li>
                     <li class="{% active request 'feed/discover' %}">
-                        <a class="discover-icon" href="{% url 'feeds:discover' %}">Discover</a>
-                    </li>
-                    <li class="{% active request 'user/library.+' %}">
-                        <a class="library-icon" href="{% url 'user:library' %}">Library</a>
+                        <a class="discover-icon" href="{% url 'feeds:discover' %}">Trends</a>
                     </li>
                     <li class="{% active request 'comment.+' %}">
                         <a class="notifications-icon" href="#">Notifications</a>
+                    </li>
+                    <li class="{% active request 'user/library.+' %}">
+                        <a class="library-icon" href="{% url 'user:library' %}">Library</a>
                     </li>
                     <li class="dropdown {% active request 'accounts.+' %}">
                         <a class="profile-icon dropdown-toggle" data-toggle="dropdown" href="#"></a>

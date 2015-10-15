@@ -33,6 +33,10 @@
     background-color: #f1f1f1;
 }
 
+.bg-active {
+    background-color: #ffece5;
+}
+
 .compact {
     padding-right: 35px;
     padding-left: 35px;
@@ -54,89 +58,30 @@
     color: #808080;
 }
 
-.stamps {
-    position: absolute;
-    top: 20px;
-    right: 10px;
+.long {
+
+}
+
+.short {
     display: none;
 }
 
-.stamps>a:before {
-    content:"";
-    display: inline-block;
-    /*background-image: url(../img/paper_feed_icons_h25_s60px_alpha.png);*/
-    background-image: url(../img/paper_icons.svg);
-    background-size: auto 65px;
-    width: 40px;
-    height: 40px;
-    vertical-align: middle;
-    background-repeat: no-repeat;
-    background-position-y: 5px;
-}
 
-.stamps>a.open:before {
-    background-position-x: -0px;
-}
-.stamps>a.like:before {
-    background-position-x: -50px;
-}
-/*.stamps>a.dislike:before {*/
-    /*background-position-x: -115px;*/
-/*}*/
-.stamps>a.tick:before {
-    background-position-x: -100px;
-}
-.stamps>a:hover:before
-{
-    background-position-y: -31px;
-}
-
-.stamps>a.active:before {
-    background-position-y: -31px;
-}
-
-/* Stamps 2 */
-.compact .stamps-2 {
-    position: absolute;
-    top: 20px;
-    right: 10px;
-}
-.compact .stamps-2>span:before {
-    content:"";
-    display: none;
-    background-image: url(../img/paper_icons.svg);
-    background-size: auto 65px;
-    width: 40px;
-    height: 40px;
-    position: relative;
-    vertical-align: middle;
-    background-repeat: no-repeat;
-    background-position-y: 5px;
-}
-
-.compact .stamps-2>span.like:before {
-    background-position-x: -50px;
-}
-
-.compact .stamps-2>span.active:before {
-    display: inline-block;
-    background-position-y: -31px;
+.nopadding {
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .extended {
     display: none;
     background-color: #f1f1f1;
-    padding: 20px;
-    /*padding-left: 20px;*/
-    /*padding-right: 20px;*/
-}
-
-.extended .stamps {
-    display: inline-block;
+    padding-right: 35px;
+    padding-left: 35px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .extended .title {
-    width: 75%;
     font-size: 18px;
     line-height: 1.4;
 }
@@ -146,7 +91,7 @@
 }
 
 .extended .authors {
-    padding-top: 5px;
+    /*padding-top: 5px;*/
     text-decoration: None;
     color: #808080;
 }
@@ -155,6 +100,106 @@
     padding-top: 10px;
 }
 
+.stamps {
+    /*position: relative;*/
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    padding-left: 0px;
+    display: none;
+}
+
+.stamps>li {
+    display: inline;
+    list-style: none;
+}
+
+.stamps>li>a:before {
+    content:"";
+    display: inline-block;
+    background-image: url(../img/paper_icons.svg);
+    background-size: auto 85px;
+    width: 30px;
+    height: 40px;
+    background-repeat: no-repeat;
+    background-position-y: 0px;
+}
+
+.stamps>li>a.open:before {
+    background-position-x: -0px;
+}
+.stamps>li>a.like:before {
+    background-position-x: -45px;
+}
+.stamps>li>a.tick:before {
+background-position-x: -93px;
+}
+.stamps>li>a.more:before {
+    width: 20px;
+    background-position-x: -190px;
+}
+.stamps>li>a:hover:before
+{
+    background-position-y: -48px;
+}
+.stamps>li>a.active:before {
+    background-position-y: -48px;
+}
+
+/*stamps extended*/
+.stamps-ext {
+    position: relative;
+    padding-top: 50px;
+    padding-left: 20px;
+    font-size: 0.8em;
+}
+
+.stamps-ext>li {
+    list-style: none;
+}
+
+
+.stamps-ext>li>a:before {
+    content:"";
+    display: inline-block;
+    vertical-align: -100%;
+    background-image: url(../img/paper_icons.svg);
+    background-size: auto 85px;
+    width: 40px;
+    height: 40px;
+    background-repeat: no-repeat;
+}
+
+.stamps-ext>li>a.go-to-pdf:before {
+    background-position-x: -230px;
+}
+
+.stamps-ext>li>a.add-to-library:before, .stamps-ext>li>span.add-to-library:before {
+    background-position-x: -280px;
+}
+
+.stamps-ext>li>a.comment:before {
+    background-position-x: -330px;
+}
+
+.stamps-ext>li>a.email:before {
+    background-position-x: -380px;
+}
+
+.stamps-ext>li>a.tweet:before {
+    background-position-x: -430px;
+}
+
+.stamps-ext>li>a.google-plus:before {
+    background-position-x: -480px;
+}
+
+.stamps-ext>li>a:hover:before {
+    background-position-y: -48px;
+}
+
+
+/* side panel */
 .side-panel {
     padding-top: 30px;
 }

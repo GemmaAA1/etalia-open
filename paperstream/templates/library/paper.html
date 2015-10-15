@@ -64,12 +64,31 @@
                             </div>
                         </div>
                         <div class="col-lg-3">
-                            <div class="stamps" id="{{ paper.pk }}">
-                                <a class="go-to" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
+                            <ul class="stamps" id="{{ paper.pk }}">
+                                <li>
+                                    <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
+                                </li>
                                 {% if user.is_authenticated %}
-                                <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
+                                <li>
+                                    <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
+                                </li>
+                                <li>
+                                    {% if is_in_lib %}
+                                        <span class="in-library active" title="In library"></span>
+                                    {% else %}
+                                        <a class="in-library" href="#" title="Add to library"></a>
+                                    {% endif %}
+
+                                </li>
+                                <li>
+                                    <a class="tweet" href="#" title="Tweet"></a>
+                                </li>
+                                <li>
+                                    <a class="google-plus" href="#" title="Google+"></a>
+                                </li>
+
                                 {% endif %}
-                            </div>
+                            </ul>
                             <div class="neighbors">
                                 {% if neighbors %}
                                     <div class="title">Similar Papers</div>

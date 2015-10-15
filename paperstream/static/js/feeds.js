@@ -3,37 +3,6 @@ $(document).ready(function() {
     toggleStamps();
     extendPaper();
 
-    $(".list-group-item").each(function() {
-        $(this).click(function (event) {
-            var ufp_id;
-            ufp_id = $(this).attr("id");
-            if(!$(event.target).closest('.like').length &&
-               !$(event.target).closest('.tick').length &&
-               !$(event.target).closest('#paper-title'+ufp_id).length){
-                $("#abstract"+ufp_id).toggleClass('active');
-            }
-        });
-    });
-
-    // To update seed-paper from modify-seed
-    $('tr[seed-paper]').on('click', function (event) {
-        var $tr = $(this);
-        //console.log('form submitted!');
-        $.ajax({
-            type: "POST",
-            url: $(location).attr('href'),
-            data: {pk: $tr.attr('id')},
-            success: function (json) {
-                $.each(json, function (key, value) {
-                    var $tr2 = $('#' + key);
-                    $tr2.removeClass();
-                    $tr2.addClass(value);
-                });
-            }
-        });
-        event.preventDefault();
-    });
-
     // Send Like/tick ajax call
     tick();
 
@@ -46,11 +15,13 @@ function toggleStamps(){
     $('.paper-list').on({
         mouseenter: function () {
             $(this).find('.stamps').show();
-            $(this).find('.stamps-2').hide();
+            $(this).find('.short').show();
+            $(this).find('.long').hide();
         },
         mouseleave: function () {
             $(this).find('.stamps').hide();
-            $(this).find('.stamps-2').show();
+            $(this).find('.short').hide();
+            $(this).find('.long').show();
         }
     });
 }
@@ -59,23 +30,24 @@ function extendPaper(){
     $('.paper-list').click( function () {
         $(this).children('.compact').toggle();
         $(this).children('.extended').toggle();
-        //$(this).children('.extended').slideToggle();
-        if ($(this).children('.extended').is(":visible")) {
+        if ($(this).children('.extended').is(':visible')) {
             $(this).unbind('mouseenter mouseleave');
-            $(this).children('.stamps').show();
+            $(this).find('.more').addClass('active');
         } else {
+            $(this).find('.more').removeClass('active');
             $(this).on({
                 mouseenter: function () {
                     $(this).find('.stamps').show();
-                    $(this).find('.stamps-2').hide();
+                    $(this).find('.stamps-lock').hide();
                 },
                 mouseleave: function () {
                     $(this).find('.stamps').hide();
-                    $(this).find('.stamps-2').show();
+                    $(this).find('.stamps-lock').show();
                 }
             });
         }
-    }).children('.stamps').click(function(e) {
+    }).find('.open, .like, .tick, .go-to-pdf, .add-to-library' +
+        '.comment, .email, .tweet, .google-plus').click(function(e) {
         e.stopPropagation();
     });
 }
@@ -83,16 +55,16 @@ function extendPaper(){
 function tick () {
     $('.tick').on('click', function (event) {
         var tick = this;
-        var id = $(this).parents('span').attr('id');
+        var id = $(this).parents('.paper-list').attr('id');
         var url = $(location).attr('protocol') + '//' +
             $(location).attr('host') + '/user/paper/tick';
         console.log(url);
         $.ajax({
-            type: "POST",
+            type: 'POST',
             url: url,
             data: {pk: id},
             success: function (json) {
-                var like = $(tick).siblings(".like");
+                var like = $(tick).siblings('.like');
                 var like2 = $(tick).parent().siblings('.compact').find('.like');
                 var tick2 = $(tick).parent().siblings('.compact').find('.tick');
                 console.log(like);
@@ -126,15 +98,15 @@ function tick () {
 function like () {
     $('.like').on('click', function (event) {
         var like = this;
-        var id = $(this).parents('span').attr('id');
+        var id = $(this).parents('.paper-list').attr('id');
         var url = $(location).attr('protocol') + '//' +
             $(location).attr('host') + '/user/paper/like';
         $.ajax({
-            type: "POST",
+            type: 'POST',
             url: url,
             data: {pk: id},
             success: function (json) {
-                var tick = $(like).siblings(".tick");
+                var tick = $(like).siblings('.tick');
                 var like2 = $(tick).parent().siblings('.compact').find('.like');
                 var tick2 = $(tick).parent().siblings('.compact').find('.tick');
                 $.each(json, function (key, value) {
@@ -142,9 +114,12 @@ function like () {
                         if (value) {
                             $(like).addClass('active');
                             $(like2).addClass('active');
+                            console.log($(like).parents('.paper-list'));
+                            $(like).parents('.paper-list').addClass('bg-active');
                         } else {
                             $(like).removeClass('active');
                             $(like2).removeClass('active');
+                            $(like).closest('.paper-list').removeClass('bg-active');
                         }
                     } else if (key == 'is_ticked') {
                         if (value) {

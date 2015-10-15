@@ -109,6 +109,11 @@ class PaperView(ModalMixin, DetailView):
             except UserTaste.DoesNotExist:
                 pass
 
+        if paper_ in self.request.user.lib.papers.all():
+            context['is_in_lib'] = True
+        else:
+            context['is_in_lib'] = False
+
         return context
 
 paper_slug = PaperView.as_view()
