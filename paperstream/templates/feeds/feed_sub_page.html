@@ -13,7 +13,7 @@
         <div class="compact">
             <div class="row">
                 <div class="long">
-                    <div class="title">{{ ufmp.paper.title|truncatechars:95 }}</div>
+                    <div class="title">{{ ufmp.paper.title|truncatechars:90 }}</div>
                     <div class="authors-journal-date">
                         {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title|add:ufmp.paper.print_date as str %}
                         {% if str|length > 110 %}

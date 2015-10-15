@@ -16,20 +16,26 @@
 {% block content %}
 
 {% if not user.is_authenticated %}
-
-    <!-- Header -->
     <div class="intro-header">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <div class="intro-message">
-
-                        <h1>An Intelligent Stream for Research</h1>
-{#                        <h3>Staying tuned, made easy.</h3>#}
-                        <h3>Stay tuned, simply.</h3>
-
-                        <hr class="intro-divider">
-                        <h5>Sign-in:</h5>
+                <div class="intro-message">
+                    <h1>Your Guide to Scientific News</h1>
+                    <div class="col-lg-10 col-lg-offset-1 col-md-8 col-md-offset-2">
+                        <h3>
+                            <p>Scientific publications recommended daily. </br> Fully automated and curated based on your reference library.</p>
+                            <p><i>No search queries. No journal browsing. No alert setup.</i></p>
+                            {#                                        <p>Get personalized scientific publication streams. </br>#}
+                            {#                                        <p>PaperStream is a free service for students and researchers.</p>#}
+                            {#                                        <p>It helps you stay up-to-date in your field by finding recently published articles that match your interest.</p>#}
+                            {#                                        <p>No keyword search. No alert to setup. No journal page to browse. <br>#}
+                            {#                                            Paperstream leverages what you store in your reference manager to feed your personalized stream.#}
+                            {#                                    </p>#}
+                        </h3>
+                    </div>
+                    <hr class="intro-divider">
+                    <div class="sign-in-panel">
+                        <h4>Sign-in:</h4>
                         <ul class="list-inline intro-social-buttons">
                             <li>
                                 <a id="mendeley-link" href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">
@@ -44,49 +50,52 @@
                                 </a>
                             </li>
                         </ul>
-{#                        <hr class="intro-divider">#}
-                        <div style="">
-                            <div class="container">
-                                <div class="col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2">
-                                    <h3>
-                                        <p><i>No keyword search. No journal to browse. No alert to setup.</i></p>
-                                        <p>PaperStream leverages your reference manager and streams you back recently published scientific articles that match your interests.</p>
-{#                                        <p>PaperStream is a free service for students and researchers.</p>#}
-{#                                        <p>It helps you stay up-to-date in your field by finding recently published articles that match your interest.</p>#}
-{#                                        <p>No keyword search. No alert to setup. No journal page to browse. <br>#}
-{#                                            Paperstream leverages what you store in your reference manager to feed your personalized stream.#}
-                                        </p>
-                                    </h3>
-                                </div>
-                            </div>
-                        </div>
-                    <a class="learn-more" href="#" title="Learn more">Learn more</a>
                     </div>
                 </div>
+                <a  href="#" class="learn-more" title="Learn more">Learn more</a>
             </div>
         </div>
         <!-- /.container -->
     </div>
     <!-- /.intro-header -->
 
-    <!-- Page Content -->
     <a name="learn-more"></a>
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-sm-push-6 col-sm-6">
+                    <div class="clearfix"></div>
+                        <h2 class="section-heading">Follow progress in your field</h2>
+                        <p class="lead">
+                            About 20,000 papers are published weekly in thousand of journals.
+                            PubStream finds the most important publications for you, no matter
+                            where they're published.
+                        </p>
+                </div>
+                <div class="col-sm-pull-6  col-sm-6 hidden-sm">
+                    <img class="paper-mosaic"  src="{% static '/static/img/paper_mosaic.png' %}" alt="Paper mosaic">
+                </div>
+            </div>
+        </div>
+        <!-- /.container -->
+    </div>
+    <!-- /.content-section-b -->
+
+    <!-- Page Content -->
+
+    <div class="jumbotron how">
+    <h1 class="title">How PubStream works</h1>
     <div class="content-section-a">
         <div class="container">
             <div class="row">
                 <div class="col-lg-5 col-lg-offset-1 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Connect your reference managers</h2>
+                    <h2 class="section-heading">Connecting to your library</h2>
                     <p class="lead">
-                        PaperStream works in sync with your reference software manager.
-                        It currently supports <a href="www.zotero.org">Zotero</a> or
-                        <a href="www.mendeley.com">Mendeley</a>.
-{#                        Based on the data stored in your library it gives you back a stream of recent#}
-{#                        scientific papers that match your interest.#}
-                    </p>
-                    <p class="lead">
-                        Not using a reference software manager yet? They are incredible time-saver to organize your research.
+                        PubStream works in sync with your reference software manager.
+                        <a href="www.zotero.org">Zotero</a> or
+                        <a href="www.mendeley.com">Mendeley</a> are currently supported.
                     </p>
                 </div>
                 <div class="col-lg-5 col-sm-6">
@@ -105,17 +114,16 @@
                 <div class="col-lg-5 col-sm-push-6 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Build your personalized stream</h2>
-                    <p class="lead">PaperStream searches the web for recently published papers.
-                        Based on your library, it streams you back the recent scientific papers that
-                        match your research interest.</p>
-                    <p class="lead">Exploring a new field? Changing focus?<br> PaperStream adapts as you go.</p>
+{#                    <h2 class="section-heading">How your personalized stream is built</h2>#}
+                        <h2 class="section-heading">Building personalized streams</h2>
+                        <p class="lead">PaperStream searches the web for recent publications and find
+                        those that match your research interest.</p>
+                    <p class="lead">Exploring a new field? Changing focus?<br> The stream adapts as you go.</p>
                 </div>
                 <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
                     <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_wheel.svg' %}" alt="">
                 </div>
             </div>
-
         </div>
         <!-- /.container -->
     </div>
@@ -127,8 +135,8 @@
                 <div class="col-lg-5 col-lg-offset-1 col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Multiple gears at work</h2>
-                        <p class="lead">Article social trends, natural language processing, statistical modeling, document embedding, all are at work to build your personalized stream.</p>
+                    <h2 class="section-heading">Using multiple gears</h2>
+                        <p class="lead">Your personalized stream is generated using natural language processing, statistical modeling and multiple article metrics.</p>
 
                     <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>
                     {% for paper in active_papers %}
@@ -155,6 +163,7 @@
         <!-- /.container -->
     </div>
     <!-- /.content-section-a -->
+    </div>
 
     <div class="content-section-b">
         <div class="container">
@@ -162,8 +171,8 @@
                 <div class="col-lg-5 col-sm-push-6  col-sm-6">
                     <hr class="section-heading-spacer">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Comment on articles</h2>
-                    <p class="lead">Express your opinion on a paper. <br>Engage the community in a discussion.</p>
+                    <h2 class="section-heading">Get engage</h2>
+                    <p class="lead">Express your opinion on a publication.</p>
                     <p class="lead">Paperstream will notify you and other researchers of new relevant comments.</p>
                 </div>
                 <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
@@ -175,12 +184,11 @@
         <!-- /.container -->
     </div>
     <!-- /.content-section-b -->
-
+    <hr class="intro-divider">
     <div class="banner">
         <div class="container">
             <div class="row text-center">
-                <h2>Stay tuned, simply.</h2>
-                <h5>Try it now:</h5>
+                <h3>Try it now:</h3>
                 <ul class="list-inline intro-social-buttons">
                     <li>
                         <a id="mendeley-link" href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">
@@ -199,6 +207,7 @@
         </div>
         <!-- /.container -->
     </div>
+    <hr class="intro-divider">
     <!-- /.banner -->
 {% else %}
 
