@@ -163,11 +163,10 @@ background-position-x: -93px;
     content:"";
     display: inline-block;
     vertical-align: -100%;
-    background-image: url(../img/paper_icons.svg);
+    background: transparent url(../img/paper_icons.svg) 0 0 no-repeat scroll;
     background-size: auto 85px;
     width: 40px;
     height: 40px;
-    background-repeat: no-repeat;
 }
 
 .stamps-ext>li>a.go-to-pdf:before {
@@ -198,7 +197,8 @@ background-position-x: -93px;
     background-position-y: -48px;
 }
 
-.stamps-ext>li>a.active:before, .stamps-ext>li>span.active:before {
+.stamps-ext>li>a.active:before,
+.stamps-ext>li>span.active:before {
     background-position-y: -48px;
 }
 

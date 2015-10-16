@@ -16,6 +16,7 @@
 {% block content %}
 
 {% if not user.is_authenticated %}
+<div class="landing">
     <div class="intro-header">
         <div class="container">
             <div class="row">
@@ -52,16 +53,10 @@
                 </div>
                 <a  href="#" class="learn-more" title="Learn more">Learn more</a>
             </div>
-        </div>
-        <!-- /.container -->
-    </div>
-    <!-- /.intro-header -->
-    <a name="learn-more"></a>
-    <div class="content-section-b">
-        <div class="container">
-            <div class="row">
+            <!-- /.intro-header -->
+            <a name="learn-more"></a>
+            <div class="row text-left">
                 <div class="col-lg-5 col-sm-push-6 col-sm-6">
-                    <div class="clearfix"></div>
                         <h2 class="section-heading">Follow progress in your field</h2>
                         <p class="lead">
                             About 20,000 papers are published weekly in thousand of journals.
@@ -70,107 +65,100 @@
                         </p>
                 </div>
                 <div class="col-sm-pull-6 col-sm-6 hidden-sm">
-{#                    <img class="img-responsive"  src="{% static '/static/img/paper_mosaic.png' %}" alt="Paper mosaic">#}
-{#                    <span class="paper-mosaic"></span>#}
+
+
                 </div>
             </div>
         </div>
-        <!-- /.container -->
     </div>
-    <!-- /.content-section-b -->
 
-    <!-- Page Content -->
-
-    <div class="jumbotron how">
-    <h1 class="title">How PubStream works</h1>
-    <div class="content-section-a">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
-                    <hr class="section-heading-spacer">
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">Connecting to your library</h2>
-                    <p class="lead">
-                        PubStream works in sync with your reference software manager.
-                        <a href="www.zotero.org">Zotero</a> or
-                        <a href="www.mendeley.com">Mendeley</a> are currently supported.
-                    </p>
+    <div class="how">
+        <h1>How PubStream works</h1>
+        <div class="content-section-a">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-5 col-lg-offset-1 col-sm-6">
+                        <hr class="section-heading-spacer">
+                        <div class="clearfix"></div>
+                        <h2 class="section-heading">Connecting to your library</h2>
+                        <p class="lead">
+                            PubStream works in sync with your reference software manager.
+                            <a href="www.zotero.org">Zotero</a> or
+                            <a href="www.mendeley.com">Mendeley</a> are currently supported.
+                        </p>
+                    </div>
+                    <div class="col-lg-5 col-sm-6">
+                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_reference.svg' %}" alt="reference manager software hook to paperstream">
+                    </div>
                 </div>
-                <div class="col-lg-5 col-sm-6">
-                    <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_reference.svg' %}" alt="reference manager software hook to paperstream">
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /.content-section-a -->
+
+        <div class="content-section-b">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-5 col-sm-push-6 col-sm-6">
+                        <hr class="section-heading-spacer">
+                        <div class="clearfix"></div>
+    {#                    <h2 class="section-heading">How your personalized stream is built</h2>#}
+                            <h2 class="section-heading">Building personalized streams</h2>
+                            <p class="lead">PubStream searches the web for recent publications and find
+                            those that match your research interest.</p>
+                        <p class="lead">Exploring a new field? Changing focus?<br> The stream adapts as you go.</p>
+                    </div>
+                    <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
+                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_wheel.svg' %}" alt="">
+                    </div>
                 </div>
             </div>
-
+            <!-- /.container -->
         </div>
-        <!-- /.container -->
-    </div>
-    <!-- /.content-section-a -->
+        <!-- /.content-section-b -->
 
-    <div class="content-section-b">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-5 col-sm-push-6 col-sm-6">
-                    <hr class="section-heading-spacer">
-                    <div class="clearfix"></div>
-{#                    <h2 class="section-heading">How your personalized stream is built</h2>#}
-                        <h2 class="section-heading">Building personalized streams</h2>
-                        <p class="lead">PubStream searches the web for recent publications and find
-                        those that match your research interest.</p>
-                    <p class="lead">Exploring a new field? Changing focus?<br> The stream adapts as you go.</p>
-                </div>
-                <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_wheel.svg' %}" alt="">
-                </div>
-            </div>
-        </div>
-        <!-- /.container -->
-    </div>
-    <!-- /.content-section-b -->
+        <div class="content-section-a">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-5 col-lg-offset-1 col-sm-6">
+                        <hr class="section-heading-spacer">
+                        <div class="clearfix"></div>
+                        <h2 class="section-heading">Using multiple gears</h2>
+                            <p class="lead">Your personalized stream is generated using natural language processing, statistical modeling and multiple article metrics.</p>
 
-    <div class="content-section-a">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-5 col-lg-offset-1 col-sm-6">
-                    <hr class="section-heading-spacer">
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">Using multiple gears</h2>
-                        <p class="lead">Your personalized stream is generated using natural language processing, statistical modeling and multiple article metrics.</p>
-
-                    <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>
-                    {% for paper in active_papers %}
-                        <div class="col-xs-3">
-                            {% if paper.id_doi %}<span class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></span>
-                            {% elif paper.id_arx %}<span class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></span>
-                            {% elif paper.id_pmi %}<span class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></span>
-                            {% endif %}
-                        </div>
-                        <div class="col-xs-9">
-                            <a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a><br>
-                            {{ paper.print_compact_first_author }}<br>
-                            {{ paper.print_journal_title }}<br>
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="col-lg-5 col-sm-6">
-                    <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_metrics.svg' %}" alt="">
+                        <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>
+                        {% for paper in active_papers %}
+                            <div class="col-xs-3">
+                                {% if paper.id_doi %}<span class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></span>
+                                {% elif paper.id_arx %}<span class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></span>
+                                {% elif paper.id_pmi %}<span class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></span>
+                                {% endif %}
+                            </div>
+                            <div class="col-xs-9">
+                                <a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a><br>
+                                {{ paper.print_compact_first_author }}<br>
+                                {{ paper.print_journal_title }}<br>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-lg-5 col-sm-6">
+                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_metrics.svg' %}" alt="">
+                    </div>
                 </div>
             </div>
+            <div class="row"></div>
         </div>
-        <div class="row">
-        </div>
-        <!-- /.container -->
-    </div>
-    <!-- /.content-section-a -->
     </div>
 
     <div class="content-section-b">
         <div class="container">
             <div class="row">
                 <div class="col-lg-5 col-sm-push-6  col-sm-6">
-                    <hr class="section-heading-spacer">
+                    <hr class="section-heading-spacer no-border">
                     <div class="clearfix"></div>
                     <h2 class="section-heading">Get engage</h2>
-                    <p class="lead">Comment on a publication.</p>
+                    <p class="lead">Comment on publications. Start discussions.</p>
                     <p class="lead">PubStream will notify you and other researchers of new relevant comments.</p>
                 </div>
                 <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
@@ -182,7 +170,6 @@
         <!-- /.container -->
     </div>
     <!-- /.content-section-b -->
-    <hr class="intro-divider">
     <div class="banner">
         <div class="container">
             <div class="row text-center">
@@ -203,10 +190,8 @@
                 </ul>
             </div>
         </div>
-        <!-- /.container -->
     </div>
-    <hr class="intro-divider">
-    <!-- /.banner -->
+</div>
 {% else %}
 
 {% endif %}

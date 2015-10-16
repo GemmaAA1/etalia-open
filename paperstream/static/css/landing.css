@@ -1,11 +1,13 @@
+.landing {
+    background: #f8f8f8 url('../img/paper_mosaic.png') -60px 360px no-repeat;
+    background-size: auto 600px;
+}
+
 .intro-header {
     padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 50px;
     text-align: center;
     color: #333333;
-    /*background: url(../img/intro-bg.jpg) no-repeat center center;*/
-    background: #f8f8f8;
-    background-size: cover;
 }
 
 .intro-message {
@@ -83,14 +85,15 @@
     }
 }
 
-.paper-mosaic {
-    top: -150px;
-    left: 0px;
-}
-
 .lead {
     font-size: 21px;
     font-weight: 200;
+}
+
+.how {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background: #d3f0f4;
 }
 
 .how>h1 {
@@ -101,11 +104,11 @@
 
 
 .content-section-a {
-    padding: 25px 0;
+    padding: 5px 0;
 }
 
 .content-section-b {
-    padding: 25px 0;
+    padding: 5px 0;
     /*border-top: 1px solid #e7e7e7;*/
     /*border-bottom: 1px solid #e7e7e7;*/
 }
@@ -117,9 +120,13 @@
 
 .section-heading-spacer {
     float: left;
-    padding-top: 30px;
+    padding-top: 10px;
     width: 200px;
     border-top: 1px solid #adadad;
+}
+
+.no-border {
+    border-top: 0;
 }
 
 .borderless {
@@ -143,4 +150,49 @@
 .bubble
 {
     width: 350px;
+}
+
+.banner {
+    padding: 30px;
+    background-color: #d3f0f4;
+}
+
+.banner h2 {
+    margin: 0;
+    /*text-shadow: 2px 2px 3px rgba(0,0,0,0.6);*/
+    font-size: 3em;
+}
+
+.banner ul {
+    margin-bottom: 0;
+}
+
+.banner-social-buttons {
+    float: right;
+    margin-top: 0;
+}
+
+@media(max-width:1199px) {
+    ul.banner-social-buttons {
+        float: left;
+        margin-top: 15px;
+    }
+}
+
+@media(max-width:767px) {
+    .banner h2 {
+        margin: 0;
+        text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+        font-size: 3em;
+    }
+
+    ul.banner-social-buttons > li {
+        display: block;
+        margin-bottom: 20px;
+        padding: 0;
+    }
+
+    ul.banner-social-buttons > li:last-child {
+        margin-bottom: 0;
+    }
 }

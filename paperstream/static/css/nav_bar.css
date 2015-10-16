@@ -33,15 +33,11 @@
 
 .navbar-brand:before {
     content:"";
-    display: inline-block;
-    /*background: url(../img/paperstream_brand_v5_20px.png);*/
-    background: url(../img/mark_v3.svg);
-    background-size: auto 35px;
+    display: block;
+    background: url(../img/mark_v3.png) 0 5px no-repeat;
+    background-size: auto 25px;
     width: 200px;
     height: 40px;
-    background-position-y: -0px;
-    background-position-x: -0px;
-    background-repeat: no-repeat;
 }
 
 .navbar-nav {

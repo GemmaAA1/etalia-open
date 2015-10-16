@@ -34,59 +34,11 @@ h6 {
     font-weight: 400;
 }
 
-.banner {
-    padding: 0px 0;
-    color: #333333;
-    /*background: url(../img/banner-bg.jpg) no-repeat center center;*/
-    background: #f8f8f8;
-    background-size: cover;
-}
-
 .form-control::-webkit-input-placeholder {color: white;}
 .form-control:-moz-placeholder {color: white;}
 .form-control::-moz-placeholder {color: white;}
 .form-control::-ms-input-placeholder {color: white;}
 
-
-.banner h2 {
-    margin: 0;
-    /*text-shadow: 2px 2px 3px rgba(0,0,0,0.6);*/
-    font-size: 3em;
-}
-
-.banner ul {
-    margin-bottom: 0;
-}
-
-.banner-social-buttons {
-    float: right;
-    margin-top: 0;
-}
-
-@media(max-width:1199px) {
-    ul.banner-social-buttons {
-        float: left;
-        margin-top: 15px;
-    }
-}
-
-@media(max-width:767px) {
-    .banner h2 {
-        margin: 0;
-        text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
-        font-size: 3em;
-    }
-
-    ul.banner-social-buttons > li {
-        display: block;
-        margin-bottom: 20px;
-        padding: 0;
-    }
-
-    ul.banner-social-buttons > li:last-child {
-        margin-bottom: 0;
-    }
-}
 
 footer {
     padding-top: 30px;
