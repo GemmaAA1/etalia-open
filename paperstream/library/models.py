@@ -375,6 +375,21 @@ class Paper(TimeStampedModel):
                     value=getattr(self, field.name))
         return ids_str
 
+    def build_mendeley_identifiers(self):
+        identifiers = {}
+        if self.id_doi:
+            identifiers['doi'] = self.id_doi
+        if self.id_pii:
+            identifiers['pii'] = self.id_pii
+        if self.id_pmi:
+            identifiers['pmid'] = self.id_pmi
+        if self.id_arx:
+            identifiers['arxiv'] = self.id_arx
+        if self.journal.id_issn or self.journal.id_issn:
+            identifiers['issn'] = self.journal.id_issn or self.journal.id_issn
+        return identifiers
+
+
     @property
     def print_clean_ids(self):
         """Not printing id_oth"""

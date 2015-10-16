@@ -116,7 +116,7 @@ class ParserMendeley(ParserBackend):
         year = entry.year
 
         if year:
-            if paper['id_arx']:  # well this is an early view for sure
+            if paper['id_arx']:  # this is an early view for sure
                 paper['date_ep'] = datetime.date(year, month, day)
             else:
                 paper['date_pp'] = datetime.date(year, month, day)

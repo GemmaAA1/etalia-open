@@ -8,6 +8,9 @@ $(document).ready(function() {
 
     // Send Like/tick ajax call
     like();
+
+    //
+    add_to_lib()
 });
 
 
@@ -28,12 +31,15 @@ function toggleStamps(){
 
 function extendPaper(){
     $('.paper-list').click( function () {
+        console.log('toggle extend');
         $(this).children('.compact').toggle();
         $(this).children('.extended').toggle();
         if ($(this).children('.extended').is(':visible')) {
+            console.log('toggle extend off');
             $(this).unbind('mouseenter mouseleave');
             $(this).find('.more').addClass('active');
         } else {
+            console.log('toggle extend on');
             $(this).find('.more').removeClass('active');
             $(this).on({
                 mouseenter: function () {
@@ -65,28 +71,15 @@ function tick () {
             data: {pk: id},
             success: function (json) {
                 var like = $(tick).siblings('.like');
-                var like2 = $(tick).parent().siblings('.compact').find('.like');
-                var tick2 = $(tick).parent().siblings('.compact').find('.tick');
-                console.log(like);
-                console.log(like);
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
                             $(like).addClass('active');
-                            $(like2).addClass('active');
                         } else {
                             $(like).removeClass('active');
-                            $(like2).removeClass('active');
                         }
                     } else if (key == 'is_ticked') {
                         $(tick).parents('.paper-list').slideUp(250);
-                        if (value) {
-                            $(tick).addClass('active');
-                            $(tick2).addClass('active');
-                        } else {
-                            $(tick).removeClass('active');
-                            $(tick2).removeClass('active');
-                        }
                     }
                 });
             }
@@ -107,32 +100,50 @@ function like () {
             data: {pk: id},
             success: function (json) {
                 var tick = $(like).siblings('.tick');
-                var like2 = $(tick).parent().siblings('.compact').find('.like');
-                var tick2 = $(tick).parent().siblings('.compact').find('.tick');
                 $.each(json, function (key, value) {
                     if (key == 'is_liked') {
                         if (value) {
                             $(like).addClass('active');
-                            $(like2).addClass('active');
-                            console.log($(like).parents('.paper-list'));
                             $(like).parents('.paper-list').addClass('bg-active');
                         } else {
                             $(like).removeClass('active');
-                            $(like2).removeClass('active');
                             $(like).closest('.paper-list').removeClass('bg-active');
-                        }
-                    } else if (key == 'is_ticked') {
-                        if (value) {
-                            $(tick).addClass('active');
-                            $(tick2).addClass('active');
-                        } else {
-                            $(tick).removeClass('active');
-                            $(tick2).removeClass('active');
                         }
                     }
                 });
             }
         });
         event.preventDefault();
+    });
+}
+
+function add_to_lib () {
+    $('.add-to-library').on('click', function (event) {
+        console.log('add-to-lib');
+        var add = this;
+        var id = $(this).parents('.paper-list').attr('id');
+        var url = $(location).attr('protocol') + '//' +
+            $(location).attr('host') + '/user/paper/add';
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: {pk: id},
+            success: function (json) {
+                $.each(json, function (key, value) {
+                    if (key == 'success') {
+                        if (value) {
+                            $(add).parents('.paper-list').addClass('bg-active');
+                            $(add).parents('.paper-list').find('.like').addClass('active');
+                            $(add).replaceWith('<span class="add-to-library active">Library</a>');
+                        } else {}
+                    } else if (key == 'message') {
+                        if (value) {
+                            console.log(value);
+                        }
+                    }
+                });
+            }
+        });
+        event.stopPropagation();
     });
 }

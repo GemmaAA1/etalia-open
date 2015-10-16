@@ -145,40 +145,40 @@
 
 .stamps>li>a.go-to-pdf:before {
     background-position-x: -270px;
-    background-position-y: -55px;
+    /*background-position-y: -55px;*/
 }
 
 .stamps>li>a.like:before {
     background-position-x: -50px;
 }
 
-.stamps>li>a.in-library:before, .stamps>li>span.in-library:before {
+.stamps>li>a.add-to-library:before, .stamps>li>span.add-to-library:before {
     background-position-x: -330px;
     background-position-y: 5px;
 }
 
 .stamps>li>a.tweet:before {
     background-position-x: -500px;
-    background-position-y: -55px;
+    /*background-position-y: -55px;*/
 }
 
 .stamps>li>a.google-plus:before {
     background-position-x: -560px;
-    background-position-y: -55px;
+    /*background-position-y: -55px;*/
 }
 
 .stamps>li>a.active:before {
     background-position-y: -57px;
 }
 
-.stamps>li>a.like:hover:before {
+.stamps>li>a:hover:before {
     background-position-y: -57px;
 }
-.stamps>li>a.in-library:hover:before {
+.stamps>li>a.add-to-library:hover:before {
     background-position-y: -52px;
 }
 
-.stamps>li>span.in-library.active:before {
+.stamps>li>span.add-to-library.active:before {
     background-position-y: -52px;
 }
 

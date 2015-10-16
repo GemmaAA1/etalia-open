@@ -22,6 +22,7 @@ from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
 from .models import Affiliation, UserLibPaper, UserTaste
 from .tasks import update_lib as async_update_lib
+from .tasks import add_paper_to_lib
 
 
 User = get_user_model()
@@ -190,6 +191,9 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
 library = UserLibraryView.as_view()
 
 
+
+
+
 # User profile update
 # -------------------
 class UpdateUserBasicInfoView(LoginRequiredMixin, AjaxableResponseMixin,
@@ -333,3 +337,19 @@ def tick_call(request):
     else:
         return redirect('feeds:main')
 
+
+@login_required
+def add_call(request):
+    """Push paper to user reference manager and add to local library"""
+    if request.method == 'POST':
+        pk = int(request.POST.get('pk'))
+        user = request.user
+        provider_name = user.social_auth.first().provider
+        err = add_paper_to_lib(user.pk, provider_name, pk)
+        if not err:
+            data = {'success': True,
+                    'message': ''}
+        else:
+            data = {'success': False,
+                    'message': 'We cannot add this paper to your library. Something went wrong'}
+        return JsonResponse(data)

@@ -34,7 +34,7 @@
 }
 
 .bg-active {
-    background-color: #ffece5;
+    background-color: #feefee;
 }
 
 .compact {
@@ -159,7 +159,7 @@ background-position-x: -93px;
 }
 
 
-.stamps-ext>li>a:before {
+.stamps-ext>li>a:before, .stamps-ext>li>span:before {
     content:"";
     display: inline-block;
     vertical-align: -100%;
@@ -195,6 +195,10 @@ background-position-x: -93px;
 }
 
 .stamps-ext>li>a:hover:before {
+    background-position-y: -48px;
+}
+
+.stamps-ext>li>a.active:before, .stamps-ext>li>span.active:before {
     background-position-y: -48px;
 }
 

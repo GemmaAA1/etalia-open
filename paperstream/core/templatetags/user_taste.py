@@ -16,3 +16,10 @@ def get_is_ticked(dictionary, key):
         return dictionary.get(key).get('ticked')
     else:
         return False
+
+@register.filter
+def get_is_in_lib(dictionary, key):
+    if dictionary.get(key, None):
+        return dictionary.get(key).get('in_lib')
+    else:
+        return False

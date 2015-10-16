@@ -84,6 +84,9 @@ class FeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
                           for key, v1, v2 in user_taste)
         context['user_taste'] = user_taste
 
+        # Get paper is_in_lib
+        context['user_lib'] = self.request.user.lib.papers.all().values_list('pk', flat=True)
+
         # Get library stats
         context['stats'] = Stats.objects.last()
 

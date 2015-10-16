@@ -51,7 +51,6 @@
                                 </div>
                             {% endif %}
 
-
                             <div class="comment">
                                 <div id="disqus_thread"></div>
                                     <!-- use sso for disqus -->
@@ -65,28 +64,31 @@
                         </div>
                         <div class="col-lg-3">
                             <ul class="stamps" id="{{ paper.pk }}">
-                                <li>
-                                    <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
-                                </li>
                                 {% if user.is_authenticated %}
-                                <li>
-                                    <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
-                                </li>
-                                <li>
-                                    {% if is_in_lib %}
-                                        <span class="in-library active" title="In library"></span>
-                                    {% else %}
-                                        <a class="in-library" href="#" title="Add to library"></a>
-                                    {% endif %}
+                                    <li>
+                                        {% if is_in_lib %}
+                                            <span class="add-to-library active"></span>
+                                        {% else %}
+                                            <a class="add-to-library" href="javascript:void(0)"></a>
+                                        {% endif %}
 
-                                </li>
-                                <li>
-                                    <a class="tweet" href="#" title="Tweet"></a>
-                                </li>
-                                <li>
-                                    <a class="google-plus" href="#" title="Google+"></a>
-                                </li>
-
+                                    </li>
+                                    <li>
+                                        <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
+                                    </li>
+                                    <li>
+                                        <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
+                                    </li>
+                                    <li>
+                                        <a class="tweet" href="javascript:void(0)" title="Tweet"></a>
+                                    </li>
+                                    <li>
+                                        <a class="google-plus" href="javascript:void(0)" title="Google+"></a>
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
+                                    </li>
                                 {% endif %}
                             </ul>
                             <div class="neighbors">

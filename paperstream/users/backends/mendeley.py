@@ -5,10 +5,12 @@ import logging
 from social.backends.oauth import BaseOAuth2
 from social.backends.mendeley import MendeleyMixin
 from mendeley import Mendeley
+from mendeley.models.common import Person
 from mendeley.auth import MendeleySession, \
     MendeleyAuthorizationCodeTokenRefresher
 from mendeley.exception import MendeleyApiException
 
+from ..constants import MENDELEY_PT
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserMendeley
 
@@ -22,7 +24,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
     parser = ParserMendeley()
 
     # base
-    name = 'custom-mendeley-oauth2'
+    name = 'mendeley'
     print_name = 'Mendeley'
     REQUIRES_EMAIL_VALIDATION = True
     AUTHORIZATION_URL = 'https://api-oauth2.mendeley.com/oauth/authorize'
@@ -95,7 +97,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return mendeley_session
 
-    def update_lib(self, user, mendeley_session):
+    def update_lib(self, user, session):
 
         # Init
         new = True
@@ -107,7 +109,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         user.lib.set_state('ING')
 
         # retrieve list of documents per page
-        page = mendeley_session.documents.list(
+        page = session.documents.list(
             page_size=self.CHUNK_SIZE,
             sort='created',
             order='desc',
@@ -156,6 +158,44 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         user.stats.log_lib_ends_sync(user, count)
         user.lib.set_state('IDL')
         return count
+
+    @staticmethod
+    def add_paper(session, paper):
+
+        mend_doc_type = dict([(doctype[1], doctype[0]) for doctype in MENDELEY_PT])
+        if paper.type:
+            type_ = mend_doc_type[paper.type]
+        else:
+            type_ = 'journal'
+
+        published_date = paper.date_ep or paper.date_pp or paper.date_fs
+
+        authors = paper.authors.all()
+        mend_authors = []
+        for auth in authors:
+            mend_authors.append(Person.create(auth.first_name, auth.last_name))
+        try:
+            session.documents.create(
+                paper.title,
+                type_,
+                identifiers=paper.build_mendeley_identifiers(),
+                websites=[paper.url],
+                day=published_date.day,
+                month=published_date.month,
+                year=published_date.year,
+                volume=paper.volume,
+                issue=paper.issue,
+                pages=paper.page,
+                abstract=paper.abstract,
+                source=paper.journal.title,
+                authors=mend_authors
+            )
+        except MendeleyApiException:
+            logger.exception()
+            return 1
+
+        return 0
+
 
 
 

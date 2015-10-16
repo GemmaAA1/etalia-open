@@ -7,6 +7,7 @@ import logging
 
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserZotero
+from ..constants import ZOTERO_PT
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +20,13 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
     parser = ParserZotero()
 
     # base
-    name = 'custom-zotero'
+    name = 'zotero'
     print_name = 'Zotero'
     REQUIRES_EMAIL_VALIDATION = True
     AUTHORIZATION_URL = 'https://www.zotero.org/oauth/authorize'
     REQUEST_TOKEN_URL = 'https://www.zotero.org/oauth/request'
     ACCESS_TOKEN_URL = 'https://www.zotero.org/oauth/access'
+    GET = {'write_access': '1'}
 
     def get_user_id(self, details, response):
         """Return user unique id provided by service"""
@@ -108,3 +110,48 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         user.stats.log_lib_ends_sync(user, count)
         user.lib.set_state('IDL')
         return count
+
+    @staticmethod
+    def add_paper(session, paper):
+
+        zot_doc_type = dict([(doctype[1], doctype[0]) for doctype in ZOTERO_PT])
+        # if paper.type:
+        #     type_ = zot_doc_type[paper.type]
+        # else:
+        type_ = 'journalArticle'
+
+        template = session.item_template(type_)
+
+        template['title'] = paper.title
+        template['DOI'] = paper.id_doi
+        template['url'] = paper.url
+        template['date'] = (paper.date_ep or paper.date_pp or paper.date_fs).strftime('%m/%d/%Y')
+        template['volume'] = paper.volume
+        template['issue'] = paper.issue
+        template['pages'] = paper.page
+        template['publicationTitle'] = paper.journal.title
+        if paper.journal.id_issn and paper.journal.id_eissn:
+            template['ISSN'] = '{issn},{e_issn}'.format(issn=paper.journal.id_issn,
+                                                        e_issn=paper.journal.id_eissn)
+        elif paper.journal.id_issn:
+            template['ISSN'] = paper.journal.id_issn
+        elif paper.journa.id_eissn:
+            template['ISSN'] = paper.journal.id_eissn
+        else:
+            template['ISSN'] = ''
+        authors = paper.authors.all()
+        template['creators'] = []
+        for auth in authors:
+            template['creators'].append({'creatorType': 'author',
+                                         'firstName': auth.first_name,
+                                         'lastName': auth.last_name})
+        if paper.id_arx:
+            template['libraryCatalog'] = 'arXiv.org'
+
+        # push
+        resp = session.create_items([template])
+        if not resp['failed']:
+            return 0
+        else:
+            logger.warning(resp['failed'])
+            return 1
