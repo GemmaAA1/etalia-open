@@ -120,10 +120,9 @@ function like () {
 function add_to_lib () {
     $('.add-to-library').on('click', function (event) {
         console.log('add-to-lib');
-        var add = this;
+        var $add = $(this);
         var id = $(this).parents('.paper-list').attr('id');
-        var url = $(location).attr('protocol') + '//' +
-            $(location).attr('host') + '/user/paper/add';
+        var url = '/user/paper/add';
         $.ajax({
             type: 'POST',
             url: url,
@@ -132,9 +131,11 @@ function add_to_lib () {
                 $.each(json, function (key, value) {
                     if (key == 'success') {
                         if (value) {
-                            $(add).parents('.paper-list').addClass('bg-active');
-                            $(add).parents('.paper-list').find('.like').addClass('active');
-                            $(add).replaceWith('<span class="add-to-library active">Library</a>');
+                            $add.parents('.paper-list')
+                                .addClass('bg-active')
+                                .find('.like')
+                                .addClass('active');
+                            $add.replaceWith('<span class="add-to-library active">Library</a>');
                         } else {}
                     } else if (key == 'message') {
                         if (value) {

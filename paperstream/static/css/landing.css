@@ -84,9 +84,8 @@
 }
 
 .paper-mosaic {
-    position:absolute;
-    width: 650px;
-    top: -250px;
+    top: -150px;
+    left: 0px;
 }
 
 .lead {
