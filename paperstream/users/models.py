@@ -211,6 +211,8 @@ class UserLibPaper(TimeStampedModel):
 
     scored = models.FloatField(default=0.)
 
+    paper_provider_id = models.CharField(max_length=64, default='')
+
     class Meta:
         ordering = ['-date_created']
         unique_together = [('userlib', 'paper')]

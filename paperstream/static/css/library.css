@@ -124,63 +124,74 @@
 .stamps {
     position: relative;
     padding-top: 10px;
-    padding-left: 0px;
+    padding-left: 0;
 }
 
 .stamps>li {
     display: inline;
-    padding-right: 10px;
+    padding: 0;
     list-style: none;
 }
 
-.stamps>li>a:before, .stamps>li>span:before {
+.stamps>li>a:before {
     content:"";
     display: inline-block;
-    background-image: url(../img/paper_icons.svg);
-    background-size: auto 100px;
+    background: transparent url(../img/paper_icons.png) 0 0 no-repeat;
+    background-size: auto 70px;
     width: 40px;
     height: 40px;
-    background-repeat: no-repeat;
-}
-
-.stamps>li>a.go-to-pdf:before {
-    background-position-x: -270px;
-    /*background-position-y: -55px;*/
-}
-
-.stamps>li>a.like:before {
-    background-position-x: -50px;
-}
-
-.stamps>li>a.add-to-library:before, .stamps>li>span.add-to-library:before {
-    background-position-x: -330px;
     background-position-y: 5px;
 }
 
-.stamps>li>a.tweet:before {
-    background-position-x: -500px;
-    /*background-position-y: -55px;*/
-}
-
-.stamps>li>a.google-plus:before {
-    background-position-x: -560px;
-    /*background-position-y: -55px;*/
-}
-
-.stamps>li>a.active:before {
-    background-position-y: -57px;
-}
-
 .stamps>li>a:hover:before {
-    background-position-y: -57px;
-}
-.stamps>li>a.add-to-library:hover:before {
-    background-position-y: -52px;
+    background-color: #f1f1f1;
 }
 
-.stamps>li>span.add-to-library.active:before {
-    background-position-y: -52px;
+.stamps>li>a.add-to-library:before {
+    background-position-x: -235px;
 }
+
+.stamps>li>a.loading:before {
+    pointer-events: none;
+    background-position-x: -611px;
+    background-position-y: 7px;
+    animation-name: fa-spin;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-delay: initial;
+    animation-iteration-count: infinite;
+    animation-direction: initial;
+    animation-fill-mode: initial;
+    animation-play-state: initial;
+}
+.stamps>li>a.loading:hover:before {
+    background-color: transparent;
+}
+.stamps>li>a.like:before {
+    background-position-y: -33px;
+    background-position-x: -40px;
+}
+.stamps>li>.like.active:before {
+    background-position-y: 5px;
+}
+
+.stamps>li>a.go-to-pdf:before {
+    background-position-x: -182px;
+}
+.stamps>li>a.trash:before {
+    background-position-x: -375px;
+}
+.stamps>li>a.email:before {
+    background-position-x: -328px;
+}
+.stamps>li>a.tweet:before {
+    background-position-x: -420px;
+}
+.stamps>li>a.google-plus:before {
+    background-position-x: -468px;
+}
+
+
 
 .neighbors {
     padding-top: 10px;

@@ -4,12 +4,6 @@
 {% paginate first_page,per_page ufmp_list %}
 {% for ufmp in ufmp_list %}
     <div id="{{ ufmp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
-{#        <div class="altmetric">#}
-{#            {% if ufmp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="20" data-badge-type='donut' data-doi="{{ ufmp.paper.id_doi }}"></div>#}
-{#            {% elif ufmp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="20" data-badge-type='donut' data-arxiv="{{ ufmp.paper.id_arx }}"></div>#}
-{#            {% elif ufmp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="20" data-badge-type='donut' data-pmid="{{ ufmp.paper.id_pmi }}"></div>#}
-{#            {% endif %}#}
-{#        </div>#}
         <div class="compact">
             <div class="row">
                 <div class="long">
@@ -59,19 +53,15 @@
                     <div class="abstract">{{ ufmp.paper.abstract }}</div>
                 </div>
                 <div class="col-lg-2 nopadding">
-                    <ul class="stamps-ext">
+                    <ul class="stamps-ext no-toggling">
                         <li>
                             <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank">Pdf</a>
                         </li>
                         <li>
-                            {% if ufmp.paper.pk in user_lib %}
-                                <span class="add-to-library active">Library</span>
-                            {% else %}
-                                <a class="add-to-library" href="javascript:void(0)">Library</a>
-                            {% endif %}
+                            <a class="{% if ufmp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)">Library</a>
                         </li>
                         <li>
-                            <a class="comment" href="{% url 'library:paper' ufmp.paper.pk %}#comment">Comment</a>
+                            <a class="comment" href="javascript:void(0)">Comment</a>
                         </li>
                         <li>
                             <a  class="email" href="javascript:void(0)">Email</a>
@@ -89,16 +79,16 @@
         <span>
             <ul class="stamps">
                 <li>
-                    <a class="open" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank"></a>
+                    <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank"></a>
                 </li>
                 <li>
-                    <a class="like {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
                 </li>
                 <li>
-                    <a class="tick {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
+                    <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="#"></a>
                 </li>
                 <li>
-                    <a class="more" href="#"></a>
+                    <a class="more" href="javascript:void(0)"></a>
                 </li>
             </ul>
         </span>

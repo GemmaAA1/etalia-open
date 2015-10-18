@@ -271,7 +271,6 @@ CONSUMER_PUBMED_EMAIL = env('CONSUMER_PUBMED_EMAIL')
 CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 
 
-
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
@@ -312,3 +311,116 @@ ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 # ------------------------------------------------------------------------------
 LANDING_ACTIVE_PAPERS_NUMBER = 1
 LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
+
+
+# LOGGING CONFIGURATION
+# ------------------------------------------------------------------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "[%(asctime)s.%(msecs)03d] %(levelname)s (%(name)s:%(funcName)s) %(message)s",
+            'datefmt': "%Y-%m-%d %H:%M:%S",
+        },
+        'simple': {
+            'format': '%(levelname)s %(module)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'paperstream.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+        'populate': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'populate.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+        'nlp': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'nlp.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+        'feeds': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'feeds.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+        'users': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'users.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+        'consumers': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'consumers.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+        'celery': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(ROOT_DIR.path('logs', 'celery.log')),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 mb
+        },
+    },
+    'loggers': {
+        # 'django': {
+        #     'handlers': ['null'],
+        #     'propagate': True,
+        #     'level': 'INFO',
+        # },
+        # 'paperstream': {
+        #     'handlers': ['console', 'file'],
+        #     'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+        # },
+        'paperstream.populate': {
+            'handlers': ['console', 'populate'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'paperstream.consumers': {
+            'handlers': ['console', 'consumers'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'paperstream.nlp': {
+            'handlers': ['console', 'nlp'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'paperstream.feeds': {
+            'handlers': ['console', 'feeds'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'paperstream.users': {
+            'handlers': ['console', 'users'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    }
+}

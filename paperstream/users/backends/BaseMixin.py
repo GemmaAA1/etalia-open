@@ -115,7 +115,7 @@ class BackendLibMixin(object):
         return paper, journal
 
     @staticmethod
-    def associate_paper(paper, user, info):
+    def associate_paper(paper, user, info, id):
         """Update Paper/User.Lib relationship
 
         Args:
@@ -135,6 +135,7 @@ class BackendLibMixin(object):
         ulp.authored = info.get('authored', None)
         ulp.starred = info.get('starred', None)
         ulp.scored = info.get('scored', 0.)
+        ulp.paper_provider_id = id
         ulp.save()
 
         # Set Taste for paper to like if new unless it has been already

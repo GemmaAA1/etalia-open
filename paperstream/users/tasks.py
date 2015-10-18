@@ -38,31 +38,9 @@ def update_lib(user_pk, provider_name):
 
 
 @app.task()
-def add_paper_to_lib(user_pk, provider_name, paper_pk):
+def add_paper_to_lib(user_pk, paper_pk):
     """Async add paper to usr library"""
-    # get user
-    user = User.objects.get(pk=user_pk)
-
-    # get social
-    social = user.social_auth.get(provider=provider_name)
-
-    # get backend
-    backend = social.get_backend_instance()
-
-    # build session
-    session = backend.get_session(social, user)
-
-    # Get paper
-    paper = Paper.objects.get(pk=paper_pk)
-
-    # push paper to lib
-    err = backend.add_paper(session, paper)
-
-    # add paper locally
-    backend.associate_paper(paper, user, {'created': timezone.now().date()})
-    backend.associate_journal(paper.journal, user)
-
-    return err
+    pass
 
 
 def init_user(user_pk, provider_name):

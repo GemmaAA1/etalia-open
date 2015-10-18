@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^paper/tick', views.tick_call, name='tick'),
     url(r'^paper/like$', views.like_call, name='like'),
     url(r'^paper/add$', views.add_call, name='add'),
+    url(r'^paper/trash$', views.trash_call, name='trash'),
 ]

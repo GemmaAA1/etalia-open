@@ -131,7 +131,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info']) and new
+                    new = self.associate_paper(paper, user, entry['user_info'],
+                                               item.id) and new
                     if new:
                         count += 1
                         not_new_stack_count = 0
@@ -175,10 +176,11 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         for auth in authors:
             mend_authors.append(Person.create(auth.first_name, auth.last_name))
         try:
-            session.documents.create(
+            ids = paper.build_mendeley_identifiers()
+            resp = session.documents.create(
                 paper.title,
                 type_,
-                identifiers=paper.build_mendeley_identifiers(),
+                identifiers=ids,
                 websites=[paper.url],
                 day=published_date.day,
                 month=published_date.month,
@@ -191,10 +193,19 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 authors=mend_authors
             )
         except MendeleyApiException:
-            logger.exception()
             return 1
 
-        return 0
+        return None, resp.id
+
+    @staticmethod
+    def trash_paper(session, ulp):
+        try:
+            doc = session.documents.get(id=ulp.paper_provider_id)
+            if doc:
+                resp = doc.move_to_trash()
+                return 0
+        except MendeleyApiException:
+            return 1
 
 
 

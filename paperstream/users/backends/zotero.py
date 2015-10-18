@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
+from pyzotero.zotero_errors import ResourceNotFound
 import logging
 
 from .BaseMixin import BackendLibMixin
@@ -85,7 +86,8 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info'])
+                    new = self.associate_paper(paper, user, entry['user_info'],
+                                               item['key']) and new
                     if new:
                         count += 1
                         not_new_stack_count = 0
@@ -151,7 +153,22 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         # push
         resp = session.create_items([template])
         if not resp['failed']:
-            return 0
+            return None, resp['success']['0']
         else:
             logger.warning(resp['failed'])
             return 1
+
+    @staticmethod
+    def trash_paper(session, ulp):
+        """Trash item from zotero library"""
+        try:  # retrieve item by id
+            item = session.item(ulp.paper_provider_id)
+            if session.delete_item(item):
+                return 0
+            else:
+                logger.error('Trashing ulp {pk} failed'.format(ulp,pk))
+        except ResourceNotFound:
+            return 1
+
+
+

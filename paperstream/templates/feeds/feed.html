@@ -73,14 +73,24 @@
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,
         onClick: function () {
-            extendPaper();
-            toggleStamps();
+            $('.paper-list')
+                .on('mouseenter', stamps_mouseenter)
+                .on('mouseleave', stamps_mouseleave)
+                .on('click', extendPaper).find('.no-toggling').click(function(event) {
+                    event.stopPropagation();
+                });
         },
         onCompleted: function () {
-            extendPaper();
-            toggleStamps();
-            like();
-            tick();
+            $('.paper-list')
+                .on('mouseenter', stamps_mouseenter)
+                .on('mouseleave', stamps_mouseleave)
+                .on('click', extendPaper).find('.no-toggling').click(function(event) {
+                    event.stopPropagation();
+                });
+            $('.tick').on('click', tick);
+            $('.like').on('click', like);
+            $('.add-to-library').on('click', add_to_lib);
+            $('.trash').on('click', trash_paper);
         }
     });
     </script>

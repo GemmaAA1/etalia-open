@@ -380,7 +380,7 @@ class Paper(TimeStampedModel):
         if self.id_doi:
             identifiers['doi'] = self.id_doi
         if self.id_pii:
-            identifiers['pii'] = self.id_pii
+            identifiers['scopus'] = self.id_pii
         if self.id_pmi:
             identifiers['pmid'] = self.id_pmi
         if self.id_arx:

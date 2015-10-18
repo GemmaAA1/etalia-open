@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import logging
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,6 +11,7 @@ from django.views.generic import UpdateView, FormView
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.utils import timezone
 
 from braces.views import LoginRequiredMixin
 
@@ -22,18 +24,20 @@ from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
     UserAuthenticationForm, UserSettingsForm
 from .models import Affiliation, UserLibPaper, UserTaste
 from .tasks import update_lib as async_update_lib
-from .tasks import add_paper_to_lib
 
-
+logger = logging.getLogger(__name__)
 User = get_user_model()
+
 
 def logout(request):
     """Logs out user"""
     auth_logout(request)
     return redirect('/')
 
+
 def done(request):
     redirect('landing')
+
 
 # User authentication
 # ---------------
@@ -191,9 +195,6 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
 library = UserLibraryView.as_view()
 
 
-
-
-
 # User profile update
 # -------------------
 class UpdateUserBasicInfoView(LoginRequiredMixin, AjaxableResponseMixin,
@@ -345,11 +346,67 @@ def add_call(request):
         pk = int(request.POST.get('pk'))
         user = request.user
         provider_name = user.social_auth.first().provider
-        err = add_paper_to_lib(user.pk, provider_name, pk)
+
+        # get social
+        social = user.social_auth.get(provider=provider_name)
+
+        # get backend
+        backend = social.get_backend_instance()
+
+        # build session
+        session = backend.get_session(social, user)
+
+        # Get paper
+        paper = Paper.objects.get(pk=pk)
+
+        # push paper to lib
+        err, paper_provider_id = backend.add_paper(session, paper)
+
+        # return JSON data
         if not err:
+            # add paper locally
+            backend.associate_paper(paper, user, {'created': timezone.now().date()},
+                                paper_provider_id)
+            backend.associate_journal(paper.journal, user)
             data = {'success': True,
                     'message': ''}
         else:
             data = {'success': False,
-                    'message': 'We cannot add this paper to your library. Something went wrong'}
+                    'message': 'Cannot add this paper to your library. Something went wrong'}
+        return JsonResponse(data)
+
+
+@login_required
+def trash_call(request):
+    """Trash paper from user library"""
+    if request.method == 'POST':
+        pk = int(request.POST.get('pk'))
+        user = request.user
+
+        # get social
+        social = user.social_auth.first()
+
+        # get backend
+        backend = social.get_backend_instance()
+
+        # build session
+        session = backend.get_session(social, user)
+
+        # Get userlibpaper
+        ulp = user.lib.userlib_paper.get(paper_id=pk)
+
+        # remove paper from provider lib
+        err = backend.trash_paper(session, ulp)
+
+        if not err:
+            # remove paper locally from user library
+            ulp.delete()
+            data = {'success': True,
+                    'message': ''}
+        else:
+            data = {'success': False,
+                    'message': 'Cannot remove this paper to your library. Something went wrong'}
+            logger.error('Fail trashing paper {pk} for user {pk_user}'.format(
+                pk=pk,
+                pk_user=user.pk))
         return JsonResponse(data)

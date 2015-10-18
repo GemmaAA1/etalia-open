@@ -117,14 +117,12 @@
 .stamps>li>a:before {
     content:"";
     display: inline-block;
-    background-image: url(../img/paper_icons.svg);
-    background-size: auto 85px;
+    background: transparent url(../img/paper_icons.png) 0 0 no-repeat;
+    background-size: auto 70px;
     width: 30px;
     height: 40px;
-    background-repeat: no-repeat;
-    background-position-y: 0px;
+    background-position-y: -30px;
 }
-
 .stamps>li>a.open:before {
     background-position-x: -0px;
 }
@@ -136,14 +134,14 @@ background-position-x: -93px;
 }
 .stamps>li>a.more:before {
     width: 20px;
-    background-position-x: -190px;
+    background-position-x: -140px;
 }
 .stamps>li>a:hover:before
 {
-    background-position-y: -48px;
+    background-position-y: 8px;
 }
 .stamps>li>a.active:before {
-    background-position-y: -48px;
+    background-position-y: 8px;
 }
 
 /*stamps extended*/
@@ -157,49 +155,67 @@ background-position-x: -93px;
 .stamps-ext>li {
     list-style: none;
 }
-
-
-.stamps-ext>li>a:before, .stamps-ext>li>span:before {
+.stamps-ext>li>a:before {
     content:"";
     display: inline-block;
-    vertical-align: -100%;
-    background: transparent url(../img/paper_icons.svg) 0 0 no-repeat scroll;
-    background-size: auto 85px;
+    vertical-align: -80%;
+    background: transparent url(../img/paper_icons.png) 0 0 no-repeat scroll;
+    background-size: auto 60px;
     width: 40px;
-    height: 40px;
+    height: 35px;
+    /*background-position-y: -25px;*/
+    background-position-y: 5px;
 }
 
 .stamps-ext>li>a.go-to-pdf:before {
-    background-position-x: -230px;
+    background-position-x: -155px;
 }
 
-.stamps-ext>li>a.add-to-library:before, .stamps-ext>li>span.add-to-library:before {
-    background-position-x: -280px;
+.stamps-ext>li>a.add-to-library:before {
+    background-position-x: -198px;
+    /*background-position-y: -27px;*/
+}
+.stamps-ext>li>a.trash:before {
+    background-position-x: -319px;
 }
 
 .stamps-ext>li>a.comment:before {
-    background-position-x: -330px;
+    background-position-x: -236px;
 }
 
 .stamps-ext>li>a.email:before {
-    background-position-x: -380px;
+    background-position-x: -277px;
 }
 
 .stamps-ext>li>a.tweet:before {
-    background-position-x: -430px;
+    background-position-x: -358px;
 }
 
 .stamps-ext>li>a.google-plus:before {
-    background-position-x: -480px;
+    background-position-x: -398px;
 }
 
-.stamps-ext>li>a:hover:before {
+.stamps-ext>li:hover {
+    /*background-position-y: -48px;*/
+    background-color: #ebebeb;
+}
+
+.stamps-ext>li>a.active:before {
     background-position-y: -48px;
 }
 
-.stamps-ext>li>a.active:before,
-.stamps-ext>li>span.active:before {
-    background-position-y: -48px;
+.stamps-ext>li>a.loading:before {
+    pointer-events: none;
+    background-position-x: -522px;
+    background-position-y: 6px;
+    animation-name: fa-spin;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-delay: initial;
+    animation-iteration-count: infinite;
+    animation-direction: initial;
+    animation-fill-mode: initial;
+    animation-play-state: initial;
 }
 
 
