@@ -10,6 +10,8 @@
     margin-bottom: 0px;
 }
 
+/* User Library List Page */
+
 .userlib {
     padding-top: 20px;
 }
@@ -74,6 +76,38 @@
     margin-bottom: 0px;
 }
 
+.endless_more {
+    background: url(../img/triple_dots_orange.png) left top no-repeat;
+    overflow: hidden;
+    position: absolute;
+    left: 47%;
+    bottom: -80px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 60px;
+    width: 60px;
+    z-index: 99;
+}
+
+.endless_loading {
+    background: url(../img/triple_dots_blue.png) left top no-repeat;
+    overflow: hidden;
+    position: absolute;
+    left: 47%;
+    bottom: -80px;
+    margin: 0 auto;
+    display: block;
+    text-indent: 200%;
+    white-space: nowrap;
+    height: 60px;
+    width: 60px;
+    z-index: 99;
+}
+
+
+/* Library Paper Page */
 .paper {
     padding-top: 20px;
 }
@@ -133,7 +167,7 @@
     list-style: none;
 }
 
-.stamps>li>a:before {
+.stamps>li>a::before {
     content:"";
     display: inline-block;
     background: transparent url(../img/paper_icons.png) 0 0 no-repeat;
@@ -143,15 +177,15 @@
     background-position-y: 5px;
 }
 
-.stamps>li>a:hover:before {
+.stamps>li>a:hover::before {
     background-color: #f1f1f1;
 }
 
-.stamps>li>a.add-to-library:before {
+.stamps>li>a.add-to-library::before {
     background-position-x: -235px;
 }
 
-.stamps>li>a.loading:before {
+.stamps>li>a.loading::before {
     pointer-events: none;
     background-position-x: -611px;
     background-position-y: 7px;
@@ -164,30 +198,30 @@
     animation-fill-mode: initial;
     animation-play-state: initial;
 }
-.stamps>li>a.loading:hover:before {
+.stamps>li>a.loading:hover::before {
     background-color: transparent;
 }
-.stamps>li>a.like:before {
+.stamps>li>a.like::before {
     background-position-y: -33px;
     background-position-x: -40px;
 }
-.stamps>li>.like.active:before {
+.stamps>li>.like.active::before {
     background-position-y: 5px;
 }
 
-.stamps>li>a.go-to-pdf:before {
+.stamps>li>a.go-to-pdf::before {
     background-position-x: -182px;
 }
-.stamps>li>a.trash:before {
+.stamps>li>a.trash::before {
     background-position-x: -375px;
 }
-.stamps>li>a.email:before {
+.stamps>li>a.email::before {
     background-position-x: -328px;
 }
-.stamps>li>a.tweet:before {
+.stamps>li>a.tweet::before {
     background-position-x: -420px;
 }
-.stamps>li>a.google-plus:before {
+.stamps>li>a.google-plus::before {
     background-position-x: -468px;
 }
 
@@ -226,34 +260,4 @@
 
 .comment {
     padding-top: 20px;
-}
-
-.endless_more {
-    background: url(../img/triple_dots_orange.png) left top no-repeat;
-    overflow: hidden;
-    position: absolute;
-    left: 47%;
-    bottom: -80px;
-    margin: 0 auto;
-    display: block;
-    text-indent: 200%;
-    white-space: nowrap;
-    height: 60px;
-    width: 60px;
-    z-index: 99;
-}
-
-.endless_loading {
-    background: url(../img/triple_dots_blue.png) left top no-repeat;
-    overflow: hidden;
-    position: absolute;
-    left: 47%;
-    bottom: -80px;
-    margin: 0 auto;
-    display: block;
-    text-indent: 200%;
-    white-space: nowrap;
-    height: 60px;
-    width: 60px;
-    z-index: 99;
 }

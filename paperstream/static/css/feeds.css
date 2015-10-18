@@ -114,7 +114,7 @@
     list-style: none;
 }
 
-.stamps>li>a:before {
+.stamps>li>a::before {
     content:"";
     display: inline-block;
     background: transparent url(../img/paper_icons.png) 0 0 no-repeat;
@@ -123,24 +123,24 @@
     height: 40px;
     background-position-y: -30px;
 }
-.stamps>li>a.open:before {
+.stamps>li>a.open::before {
     background-position-x: -0px;
 }
-.stamps>li>a.like:before {
+.stamps>li>a.like::before {
     background-position-x: -45px;
 }
-.stamps>li>a.tick:before {
+.stamps>li>a.tick::before {
 background-position-x: -93px;
 }
-.stamps>li>a.more:before {
+.stamps>li>a.more::before {
     width: 20px;
     background-position-x: -140px;
 }
-.stamps>li>a:hover:before
+.stamps>li>a:hover::before
 {
     background-position-y: 8px;
 }
-.stamps>li>a.active:before {
+.stamps>li>a.active::before {
     background-position-y: 8px;
 }
 
@@ -155,7 +155,7 @@ background-position-x: -93px;
 .stamps-ext>li {
     list-style: none;
 }
-.stamps-ext>li>a:before {
+.stamps-ext>li>a::before {
     content:"";
     display: inline-block;
     vertical-align: -80%;
@@ -167,31 +167,31 @@ background-position-x: -93px;
     background-position-y: 5px;
 }
 
-.stamps-ext>li>a.go-to-pdf:before {
+.stamps-ext>li>a.go-to-pdf::before {
     background-position-x: -155px;
 }
 
-.stamps-ext>li>a.add-to-library:before {
+.stamps-ext>li>a.add-to-library::before {
     background-position-x: -198px;
     /*background-position-y: -27px;*/
 }
-.stamps-ext>li>a.trash:before {
+.stamps-ext>li>a.trash::before {
     background-position-x: -319px;
 }
 
-.stamps-ext>li>a.comment:before {
+.stamps-ext>li>a.comment::before {
     background-position-x: -236px;
 }
 
-.stamps-ext>li>a.email:before {
+.stamps-ext>li>a.email::before {
     background-position-x: -277px;
 }
 
-.stamps-ext>li>a.tweet:before {
+.stamps-ext>li>a.tweet::before {
     background-position-x: -358px;
 }
 
-.stamps-ext>li>a.google-plus:before {
+.stamps-ext>li>a.google-plus::before {
     background-position-x: -398px;
 }
 
@@ -200,11 +200,11 @@ background-position-x: -93px;
     background-color: #ebebeb;
 }
 
-.stamps-ext>li>a.active:before {
+.stamps-ext>li>a.active::before {
     background-position-y: -48px;
 }
 
-.stamps-ext>li>a.loading:before {
+.stamps-ext>li>a.loading::before {
     pointer-events: none;
     background-position-x: -522px;
     background-position-y: 6px;

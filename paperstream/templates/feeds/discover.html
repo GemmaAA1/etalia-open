@@ -23,7 +23,7 @@
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
                         <div class="userfeed">
-                            <h3>Trendy articles in your neighborhood interest</h3>
+                            <h3>Trendy articles you may be interested in</h3>
                             {% include page_template %}
                         </div>
                     </div>
@@ -63,14 +63,24 @@
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,
         onClick: function () {
-            extendPaper();
-            toggleStamps();
+            $('.paper-list')
+                .on('mouseenter', stamps_mouseenter)
+                .on('mouseleave', stamps_mouseleave)
+                .on('click', extendPaper).find('.no-toggling').click(function(event) {
+                    event.stopPropagation();
+                });
         },
         onCompleted: function () {
-            extendPaper();
-            toggleStamps();
-            like();
-            dislike();
+            $('.paper-list')
+                .on('mouseenter', stamps_mouseenter)
+                .on('mouseleave', stamps_mouseleave)
+                .on('click', extendPaper).find('.no-toggling').click(function(event) {
+                    event.stopPropagation();
+                });
+            $('.tick').on('click', tick);
+            $('.like').on('click', like);
+            $('.add-to-library').on('click', add_to_lib);
+            $('.trash').on('click', trash_paper);
         }
     });
     </script>
