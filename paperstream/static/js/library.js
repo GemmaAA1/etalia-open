@@ -72,11 +72,11 @@ function add_to_lib (event) {
 }
 
 function trash_paper (event) {
-    var $add = $(this);
-    $add.removeClass('trash')
+    var $trash = $(this);
+    $trash.removeClass('trash')
         .addClass('loading');
     var id = $(this).parents('ul').attr('id');
-    var url = '/user/paper/add';
+    var url = '/user/paper/trash';
     $.ajax({
         type: 'POST',
         url: url,
@@ -85,9 +85,9 @@ function trash_paper (event) {
             $.each(json, function (key, value) {
                 if (key == 'success') {
                     if (value) {
-                        $add.removeClass('loading')
+                        $trash.removeClass('loading')
                             .addClass('add-to-library');
-                        $add.on('click', add_to_lib)
+                        $trash.on('click', add_to_lib)
                             .off('click', trash_paper);
                     } else {}
                 } else if (key == 'message') {
