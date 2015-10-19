@@ -13,7 +13,7 @@ class LibraryViewTest(TestCase):
 
     def test_library_page_render_library_template(self):
         response = self.client.get('/library/')
-        self.assertTemplateUsed(response, 'library/library.html')
+        self.assertTemplateUsed(response, 'library/user_library.html')
 
 
 class JournalsViewTest(TestCase):

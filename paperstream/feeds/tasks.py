@@ -6,7 +6,7 @@ import logging
 from django.contrib.auth import get_user_model
 
 from config.celery import celery_app as app
-from .models import UserFeed, DiscoverFeed
+from .models import UserFeed, TrendFeed
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
@@ -29,7 +29,7 @@ def update_feed(user_pk, feed_name='main', restrict_journal=False):
 
 @app.task()
 def update_discover(user_pk):
-    df, _ = DiscoverFeed.objects.get_or_create(user_id=user_pk)
+    df, _ = TrendFeed.objects.get_or_create(user_id=user_pk)
     df.update()
 
     return user_pk

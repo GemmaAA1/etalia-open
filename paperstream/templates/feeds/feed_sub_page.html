@@ -1,8 +1,8 @@
 {% load endless %}
 {% load user_taste %}
 
-{% paginate first_page,per_page ufmp_list %}
-{% for ufmp in ufmp_list %}
+{% paginate first_page,per_page object_list %}
+{% for ufmp in object_list %}
     <div id="{{ ufmp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
         <div class="compact">
             <div class="row">
@@ -55,13 +55,17 @@
                 <div class="col-lg-2 nopadding">
                     <ul class="stamps-ext no-toggling">
                         <li>
-                            <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank">Pdf</a>
+                            <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank" title="Go to journal page">Pdf</a>
                         </li>
                         <li>
-                            <a class="{% if ufmp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)">Library</a>
+                            <a class="{% if ufmp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}"
+                               href="javascript:void(0)"
+                               title="{% if ufmp.paper.pk in user_lib %} Move to trash {% else %} Add to your library {% endif %}">
+                                Library
+                            </a>
                         </li>
                         <li>
-                            <a class="comment" href="javascript:void(0)">Comment</a>
+                            <a class="comment" href="javascript:void(0)" title="Follow comments">Comment</a>
                         </li>
                         <li>
                             <a  class="email" href="javascript:void(0)">Email</a>
@@ -79,13 +83,13 @@
         <span>
             <ul class="stamps">
                 <li>
-                    <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank"></a>
+                    <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank" text="Open in new window"></a>
                 </li>
                 <li>
-                    <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
                 </li>
                 <li>
-                    <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
+                    <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Remove from stream"></a>
                 </li>
                 <li>
                     <a class="more" href="javascript:void(0)"></a>

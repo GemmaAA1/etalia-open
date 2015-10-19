@@ -122,6 +122,12 @@ class Journal(TimeStampedModel):
             else:
                 return self.title[:30]
 
+    def print_title(self, trunc):
+        if len(self.title) > trunc:
+            return self.title[:]+'...'
+        else:
+            return self.title
+
 
 class Author(TimeStampedModel):
     """Creators (authors) of papers

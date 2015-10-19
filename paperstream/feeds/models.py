@@ -341,11 +341,11 @@ class UserFeedVector(TimeStampedModel):
                                                  model_name=self.model.name)
 
 
-class DiscoverFeed(TimeStampedModel):
+class TrendFeed(TimeStampedModel):
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='discover')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='trend')
 
-    papers = models.ManyToManyField(Paper, through='DiscoverFeedPaper')
+    papers = models.ManyToManyField(Paper, through='TrendFeedPaper')
 
     # look for paper in the past n days
     time_lapse = models.IntegerField(default=60)
@@ -367,7 +367,7 @@ class DiscoverFeed(TimeStampedModel):
 
     def clear(self):
         """Remove all paper relations"""
-        DiscoverFeedPaper.objects.filter(discover_feed=self).all().delete()
+        TrendFeedPaper.objects.filter(trend_feed=self).all().delete()
 
     def update(self):
 
@@ -406,24 +406,24 @@ class DiscoverFeed(TimeStampedModel):
             .order_by('-score')\
             .values('paper__pk', 'score')[:self.size]
 
-        # Populate discoverfeedpaper
+        # Populate trendfeedpaper
         obj_list = []
         for p in data_altm:
-            obj_list.append(DiscoverFeedPaper(
-                        discover_feed=self,
+            obj_list.append(TrendFeedPaper(
+                        trend_feed=self,
                         paper_id=p['paper__pk'],
                         score=p['score']))
-        DiscoverFeedPaper.objects.bulk_create(obj_list)
+        TrendFeedPaper.objects.bulk_create(obj_list)
 
 
-class DiscoverFeedPaper(TimeStampedModel):
+class TrendFeedPaper(TimeStampedModel):
 
-    discover_feed = models.ForeignKey(DiscoverFeed)
+    trend_feed = models.ForeignKey(TrendFeed)
 
     paper = models.ForeignKey(Paper)
 
     score = models.FloatField(default=0.0)
 
     class Meta:
-        unique_together = [('discover_feed', 'paper'), ]
+        unique_together = [('trend_feed', 'paper'), ]
 

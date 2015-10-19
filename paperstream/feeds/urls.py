@@ -6,7 +6,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.feed_main, name='main'),
-    url(r'^discover$', views.discover, name='discover'),
+    url(r'^discover$', views.trend_view, name='trend'),
     url(r'^create-feed$', views.create_feed_view, name='create-feed'),
     url(r'^(?P<name>[\w-]+)/$', views.feed_view, name='feed'),
     url(r'^(?P<name>[\w-]+)/modify$', views.modify_feed_view,

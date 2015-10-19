@@ -151,8 +151,8 @@ def validation_sent(request):
 # ---------------
 class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
     model = UserLibPaper
-    template_name = 'user/library.html'
-    page_template = 'user/library_sub_page.html'
+    template_name = 'user/user_library.html'
+    page_template = 'user/user_library_sub_page.html'
     first_page = 30
     per_page = 20
     context_object_name = 'ulp_list'
@@ -213,7 +213,7 @@ library = UserLibraryView.as_view()
 # class UserLibraryTrashView(LoginRequiredMixin, ModalMixin, AjaxListView):
 #     model = UserLibPaper
 #     template_name = 'user/trash.html'
-#     page_template = 'user/library_sub_page.html'
+#     page_template = 'user/user_library_sub_page.html'
 #     first_page = 30
 #     per_page = 20
 #     context_object_name = 'ulp_list'

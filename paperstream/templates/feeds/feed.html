@@ -27,36 +27,32 @@
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
                         <div class="userfeed">
-                            <h3>What's new in your field</h3>
+                            <h3>Out of {{ stats.nb_papers_last_month }} papers published last month, </br>Here is what we curated for you:</h3>
                             {% include page_template %}
                         </div>
                     </div>
                     <div class="col-md-2 hidden-sm">
                         <div class="side-panel">
-{#                            <div class="side-panel-title">Statistics</div>#}
-                            <div class="side-panel-title">Main journals</div>
+                            <div class="side-panel-title">Journals</div>
                             <div class="side-panel-inner">
-{#                                <h5>Paperstream Library</h5>#}
-{#                                <div class="side-panel-inner">#}
-{#                                    <h5>{{ stats.nb_papers }} papers </h5>#}
-{#                                    <h5>{{ stats.nb_journals }} journals </h5>#}
-{#                                    <h5>{{ stats.nb_authors }} authors </h5>#}
-{#                                    <h5>{{ stats.nb_papers_last_week }} papers last week</h5>#}
-{#                                    <h5>{{ stats.nb_papers_last_month }} papers last month</h5>#}
-{#                                </div>#}
-{#                                <h5>My Library</h5>#}
-{#                                <div class="side-panel-inner">#}
-{#                                    <h5>{{ user.lib.count_papers }} papers</h5>#}
-{#                                    <h5>{{ user.lib.count_journals }} journals</h5>#}
-{#                                    <h5>{{ user.lib.count_authors }} authors</h5>#}
-{#                                </div>#}
-{#                                <h5>Main journals</h5>#}
-{#                                <div class="side-panel-inner">#}
-                                    {% for ulj in uljs %}
-                                    <h5>{{ ulj.journal.print_short_title| truncatechars:20 }}
-                                        ({{ ulj.papers_in_journal }})</h5>
-                                    {% endfor %}
-{#                                </div>#}
+                                {% for journal, count in journals %}
+                                <h5 id="{{ journal.pk }}">
+                                    <a href="">
+                                        {{ journal.title }}
+                                        ({{ count }})
+                                    </a>
+                                </h5>
+                                {% endfor %}
+                            </div>
+                            <div class="side-panel-title">Authors</div>
+                            <div class="side-panel-inner">
+                                {% for author in authors %}
+                                <h5>
+                                    <a href="">
+                                        {{ author.print_compact }}
+                                    </a>
+                                </h5>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

@@ -33,22 +33,21 @@
                     </div>
                     <div class="col-md-2 hidden-sm">
                         <div class="side-panel">
-                            <div class="side-panel-title">Statistics</div>
+                            <div class="side-panel-title">Journals</div>
                             <div class="side-panel-inner">
-                                <h5>Paperstream Library</h5>
-                                <div class="side-panel-inner">
-                                    <h5>{{ stats.nb_papers }} papers </h5>
-                                    <h5>{{ stats.nb_journals }} journals </h5>
-                                    <h5>{{ stats.nb_authors }} authors </h5>
-                                    <h5>{{ stats.nb_papers_last_week }} papers last week</h5>
-                                    <h5>{{ stats.nb_papers_last_month }} papers last month</h5>
-                                </div>
-                                <h5>My Library</h5>
-                                <div class="side-panel-inner">
-                                    <h5>{{ user.lib.count_papers }} papers</h5>
-                                    <h5>{{ user.lib.count_journals }} journals</h5>
-                                    <h5>{{ user.lib.count_authors }} authors</h5>
-                                </div>
+                                {% for journal in journals %}
+                                <h5>
+                                    {{ journal.title }}
+                                </h5>
+                                {% endfor %}
+                            </div>
+                            <div class="side-panel-title">Authors</div>
+                            <div class="side-panel-inner">
+                                {% for author in authors %}
+                                <h5>
+                                    {{ author.print_compact }}
+                                </h5>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

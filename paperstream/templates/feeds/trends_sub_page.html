@@ -1,8 +1,8 @@
 {% load endless %}
 {% load user_taste %}
 
-{% paginate first_page,per_page dfp_list %}
-{% for dfp in dfp_list %}
+{% paginate first_page,per_page object_list %}
+{% for dfp in object_list %}
     <div id="{{ dfp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
         <div class="altmetric">
             {% if dfp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ dfp.paper.id_doi }}"></div>
@@ -85,13 +85,13 @@
         <span>
             <ul class="stamps">
                 <li>
-                    <a class="open no-toggling" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank"></a>
+                    <a class="open no-toggling" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank" text="Open in new window"></a>
                 </li>
                 <li>
-                    <a class="like no-toggling {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
                 </li>
                 <li>
-                    <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
+                    <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0) text="Remove from stream"></a>
                 </li>
                 <li>
                     <a class="more" href="javascript:void(0)"></a>

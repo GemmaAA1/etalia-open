@@ -112,6 +112,7 @@ function add_to_lib () {
                     if (value) {  // success
                         $add.removeClass('loading')
                             .addClass('trash')
+                            .attr('title', 'Move to trash')
                             .parents('.paper-list')
                             .addClass('bg-active')
                             .find('.like')
@@ -150,7 +151,8 @@ function trash_paper () {
                             $trash.parents('.paper-list').slideUp(250);
                         } else {
                             $trash.removeClass('loading')
-                                .addClass('add-to-library');
+                                .addClass('add-to-library')
+                                .attr('title', 'Add to your library');
                             $trash.on('click', add_to_lib)
                                 .off('click', trash_paper);
                         }

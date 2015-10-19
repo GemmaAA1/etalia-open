@@ -82,13 +82,13 @@
         <span>
             <ul class="stamps">
                 <li>
-                    <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank"></a>
+                    <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank" text="Open in new window"></a>
                 </li>
                 <li>
-                    <a class="like no-toggling {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
                 </li>
                 <li>
-                    <a class="trash no-toggling" href="javascript:void(0)"></a>
+                    <a class="trash no-toggling" href="javascript:void(0)" text="Move to trash"></a>
 {#                    <a class="add-to-lib no-toggling" href="javascript:void(0)"></a>#}
                 </li>
                 <li>
