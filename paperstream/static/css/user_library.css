@@ -1,0 +1,23 @@
+.library {
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    padding-top: 70px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 50px;
+    text-align: left;
+    color: #000000;
+    background: #f8f8f8;
+    margin-bottom: 0px;
+}
+
+.userlib {
+    padding-top: 20px;
+}
+
+.userlib>a {
+    text-decoration: None;
+    color: #000000;
+}
+
+.altmetric {
+    position: absolute;
+    left: -70px;
+}

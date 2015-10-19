@@ -213,6 +213,8 @@ class UserLibPaper(TimeStampedModel):
 
     paper_provider_id = models.CharField(max_length=64, default='')
 
+    is_trashed = models.BooleanField(default=False)
+
     class Meta:
         ordering = ['-date_created']
         unique_together = [('userlib', 'paper')]

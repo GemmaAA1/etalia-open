@@ -136,6 +136,7 @@ class BackendLibMixin(object):
         ulp.starred = info.get('starred', None)
         ulp.scored = info.get('scored', 0.)
         ulp.paper_provider_id = id
+        ulp.is_trashed = False
         ulp.save()
 
         # Set Taste for paper to like if new unless it has been already

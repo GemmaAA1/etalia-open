@@ -45,7 +45,7 @@ function extendPaper(){
         }
 }
 
-function tick (event) {
+function tick () {
     var $tick = $(this);
     var id = $(this).parents('.paper-list').attr('id');
     var url = '/user/paper/tick';
@@ -62,11 +62,12 @@ function tick (event) {
             });
         }
     });
-    event.preventDefault();
 }
 
-function like (event) {
+function like () {
     var $like = $(this);
+    $like.removeClass('like')
+        .addClass('loading');
     var id = $(this).parents('.paper-list').attr('id');
     var url = '/user/paper/like';
     $.ajax({
@@ -74,15 +75,18 @@ function like (event) {
         url: url,
         data: {pk: id},
         success: function (json) {
-            var tick = $(like).siblings('.tick');
             $.each(json, function (key, value) {
                 if (key == 'is_liked') {
                     if (value) {
-                        $like.addClass('active')
+                        $like.removeClass('loading')
+                            .addClass('like')
+                            .addClass('active')
                             .parents('.paper-list')
                             .addClass('bg-active');
                     } else {
-                        $like.removeClass('active')
+                        $like.removeClass('loading')
+                            .addClass('like')
+                            .removeClass('active')
                             .closest('.paper-list')
                             .removeClass('bg-active');
                     }
@@ -90,10 +94,9 @@ function like (event) {
             });
         }
     });
-    event.preventDefault();
 }
 
-function add_to_lib (event) {
+function add_to_lib () {
     var $add = $(this);
     $add.removeClass('add-to-library')
         .addClass('loading');
@@ -127,15 +130,14 @@ function add_to_lib (event) {
             });
         }
     });
-    //event.stopPropagation();
 }
 
-function trash_paper (event) {
-    var $add = $(this);
-    $add.removeClass('trash')
+function trash_paper () {
+    var $trash = $(this);
+    $trash.removeClass('trash')
         .addClass('loading');
     var id = $(this).parents('.paper-list').attr('id');
-    var url = '/user/paper/add';
+    var url = '/user/paper/trash';
     $.ajax({
         type: 'POST',
         url: url,
@@ -144,10 +146,15 @@ function trash_paper (event) {
             $.each(json, function (key, value) {
                 if (key == 'success') {
                     if (value) {
-                        $add.removeClass('loading')
-                            .addClass('add-to-library');
-                        $add.on('click', add_to_lib)
-                            .off('click', trash_paper);
+                        if(window.location.href.indexOf("library") > -1) {
+                            $trash.parents('.paper-list').slideUp(250);
+                        } else {
+                            $trash.removeClass('loading')
+                                .addClass('add-to-library');
+                            $trash.on('click', add_to_lib)
+                                .off('click', trash_paper);
+                        }
+
                     } else {}
                 } else if (key == 'message') {
                     if (value) {
@@ -157,5 +164,4 @@ function trash_paper (event) {
             });
         }
     });
-    event.stopPropagation();
 }

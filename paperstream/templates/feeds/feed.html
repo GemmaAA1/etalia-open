@@ -5,7 +5,9 @@
 {% load user_taste %}
 
 {% block css %}
-    <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/streams.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/paper_list.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/side_panel.css' %}" type="text/css" >
     {{ block.super }}
 {% endblock css %}
 
@@ -68,7 +70,7 @@
     <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
-    <script type="text/javascript" src="{% static 'js/feeds.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
     <script>$.endlessPaginate({
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,

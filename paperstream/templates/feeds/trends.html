@@ -5,7 +5,9 @@
 {% load user_taste %}
 
 {% block css %}
-    <link rel="stylesheet" href="{% static 'css/feeds.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/trends.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/paper_list.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/side_panel.css' %}" type="text/css" >
     {{ block.super }}
 {% endblock css %}
 
@@ -16,13 +18,15 @@
 {% block content %}
     {% if user.lib.state == 'ING' %}
         {% include "user/sync_lib_modal.html" %}
-   {% endif %}
+    {% elif userfeed.state == 'ING' %}
+        {% include "feeds/update_feed_modal.html" %}
+    {% endif %}
     <div class="container-fluid">
-        <div class="feed">
+        <div class="trend">
             <div class="row">
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
-                        <div class="userfeed">
+                        <div class="usertrend">
                             <h3>Trendy articles you may be interested in</h3>
                             {% include page_template %}
                         </div>
@@ -58,7 +62,7 @@
     <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
-    <script type="text/javascript" src="{% static 'js/feeds.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
     <script>$.endlessPaginate({
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,

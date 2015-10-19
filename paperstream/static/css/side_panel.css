@@ -1,0 +1,16 @@
+/* side panel */
+.side-panel {
+    padding-top: 30px;
+}
+
+.side-panel .side-panel-inner {
+    padding-left: 10px;
+}
+
+.side-panel .side-panel-title {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}

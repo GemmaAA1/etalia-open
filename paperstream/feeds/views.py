@@ -261,8 +261,8 @@ update_feed_view = UpdateFeedView.as_view()
 class DiscoverView(LoginRequiredMixin, ModalMixin, AjaxListView):
     """ClassView for displaying a UserFeed instance"""
     model = DiscoverFeedPaper
-    template_name = 'feeds/discover.html'
-    page_template = 'feeds/discover_sub_page.html'
+    template_name = 'feeds/trends.html'
+    page_template = 'feeds/trends_sub_page.html'
     first_page = 30
     per_page = 20
     context_object_name = 'dfp_list'

@@ -4,7 +4,9 @@
 
 {% block css %}
     {{ block.super }}
-    <link href="{% static 'css/library.css' %}" rel="stylesheet">
+    <link href="{% static 'css/user_library.css' %}" rel="stylesheet">
+    <link href="{% static 'css/paper_list.css' %}" rel="stylesheet">
+    <link href="{% static 'css/side_panel.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block title %}
@@ -28,6 +30,7 @@
                     </div>
                     <div class="col-md-2 hidden-sm">
                         <div class="side-panel">
+                            <h4>Trash ({{ trash_counter }})</h4>
                             <div class="side-panel-title">My library statistics</div>
                             <div class="side-panel-inner">
                                 <h5>{{ user.lib.count_papers }} papers</h5>
@@ -47,14 +50,36 @@
             </div>
         </div>
     </div>
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
-    <script>$.endlessPaginate({paginateOnScroll: true, paginateOnScrollMargin: 10});</script>
 {% endblock content %}
 
-{#{% block js %}#}
-{#    {{ block.super }}#}
-{#    <script src="http://code.jquery.com/jquery-latest.js"></script>#}
-{#    <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>#}
-{#    <script>$.endlessPaginate({paginateOnScroll: true, paginateOnScrollMargin: 40});</script>#}
-{#{% endblock js %}#}
+{% block js %}
+    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
+    <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
+    <script>$.endlessPaginate({
+        paginateOnScroll: true,
+        paginateOnScrollMargin: 10,
+        onClick: function () {
+            $('.paper-list')
+                .on('mouseenter', stamps_mouseenter)
+                .on('mouseleave', stamps_mouseleave)
+                .on('click', extendPaper).find('.no-toggling').click(function(event) {
+                    event.stopPropagation();
+                });
+        },
+        onCompleted: function () {
+            $('.paper-list')
+                .on('mouseenter', stamps_mouseenter)
+                .on('mouseleave', stamps_mouseleave)
+                .on('click', extendPaper).find('.no-toggling').click(function(event) {
+                    event.stopPropagation();
+                });
+            $('.like').on('click', like);
+            $('.trash').on('click', trash_paper);
+        }
+    });
+    </script>
+
+    {{ block.super }}
+{% endblock js %}

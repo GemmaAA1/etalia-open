@@ -88,10 +88,10 @@
                     <a class="open no-toggling" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank"></a>
                 </li>
                 <li>
-                    <a class="like no-toggling {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="#"></a>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
                 </li>
                 <li>
-                    <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="#"></a>
+                    <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
                 </li>
                 <li>
                     <a class="more" href="javascript:void(0)"></a>

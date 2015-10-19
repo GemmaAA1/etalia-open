@@ -1,32 +1,101 @@
 {% load endless %}
+{% load user_taste %}
 
 {% paginate first_page,per_page ulp_list %}
 {% for ulp in ulp_list %}
-    <a href="{% url 'library:paper' ulp.paper.pk %}">
-        <div class="paper-list">
-            <div class="altmetric">
-                {% if ulp.paper.id_doi %}<div class='altmetric-embed'  data-badge-type='donut' data-doi="{{ ulp.paper.id_doi }}"></div>
-                {% elif ulp.paper.id_arx %}<div class='altmetric-embed'  data-badge-type='donut' data-arxiv="{{ ulp.paper.id_arx }}"></div>
-                {% elif ulp.paper.id_pmi %}<div class='altmetric-embed'  data-badge-type='donut' data-pmid="{{ ulp.paper.id_pmi }}"></div>
-                {% endif %}
+    <div id="{{ ulp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
+        <div class="altmetric">
+            {% if ulp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ ulp.paper.id_doi }}"></div>
+            {% elif ulp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-arxiv="{{ ulp.paper.id_arx }}"></div>
+            {% elif ulp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ ulp.paper.id_pmi }}"></div>
+            {% endif %}
+        </div>
+        <div class="compact">
+            <div class="row">
+                <div class="long">
+                    <div class="title">{{ ulp.paper.title|truncatechars:90 }}</div>
+                    <div class="authors-journal-date">
+                        {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title|add:ulp.paper.print_date as str %}
+                        {% if str|length > 110 %}
+                            <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:75 }}</span>
+                            {{ ulp.paper.print_journal_title|truncatechars:20 }}
+                            {{ ulp.paper.print_date }}
+                        {% else %}
+                            <span class="authors">{{ ulp.paper.print_full_authors }}</span>
+                            {{ ulp.paper.print_journal_title }}
+                            {{ ulp.paper.print_date }}
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+                <div class="short">
+                    <div class="title">{{ ulp.paper.title|truncatechars:75 }}</div>
+                    <div class="authors-journal-date">
+                        {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title as str %}
+                        {% if str|length > 100 %}
+                            <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:60 }}</span>
+                            {{ ulp.paper.print_journal_title|truncatechars:20 }}
+                            {{ ulp.paper.print_date }}
+                        {% else %}
+                            <span class="authors">{{ ulp.paper.print_full_authors }}</span>
+                            {{ ulp.paper.print_journal_title }}
+                            {{ ulp.paper.print_date }}
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+
             </div>
-            <div class="compact">
-                <div class="title">{{ ulp.paper.title|truncatechars:85 }}</div>
-                <div class="authors-journal-date">
-                    {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title as str %}
-                    {% if str|length > 105 %}
-                        <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:85 }}</span>
-                        {{ ulp.paper.print_journal_title|truncatechars:20 }}
-                        {{ ulp.paper.print_year }}
-                    {% else %}
-                        <span class="authors">{{ ulp.paper.print_full_authors }}</span>
-                        {{ ulp.paper.print_journal_title }}
-                        {{ ulp.paper.print_year }}
-                    {% endif %}
-                    {% endwith %}
+        </div>
+        <div class="extended">
+            <div class="row">
+                <div class="col-lg-10 nopadding">
+                    <div class="title">{{ ulp.paper.title }}</div>
+                    <div class="authors">{{ ulp.paper.print_full_authors}}</div>
+                    <div class="journal-date">
+                        {{ ulp.paper.print_journal_title}}
+                        {{ ulp.paper.print_date }}
+                    </div>
+                    <div class="abstract">{{ ulp.paper.abstract }}</div>
+                </div>
+                <div class="col-lg-2 nopadding">
+                    <ul class="stamps-ext no-toggling">
+                        <li>
+                            <a class="go-to-pdf" href="{{ ulp.paper.url }}" target="_blank">Pdf</a>
+                        </li>
+                        <li>
+                            <a class="comment" href="javascript:void(0)">Comment</a>
+                        </li>
+                        <li>
+                            <a  class="email" href="javascript:void(0)">Email</a>
+                        </li>
+                        <li>
+                            <a class="tweet" href="javascript:void(0)">Tweet</a>
+                        </li>
+                        <li>
+                            <a class="google-plus" href="javascript:void(0)">Google+</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </a>
+        <span>
+            <ul class="stamps">
+                <li>
+                    <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank"></a>
+                </li>
+                <li>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %}" href="javascript:void(0)"></a>
+                </li>
+                <li>
+                    <a class="trash no-toggling" href="javascript:void(0)"></a>
+{#                    <a class="add-to-lib no-toggling" href="javascript:void(0)"></a>#}
+                </li>
+                <li>
+                    <a class="more" href="javascript:void(0)"></a>
+                </li>
+            </ul>
+        </span>
+    </div>
 {% endfor %}
 {% show_more %}
