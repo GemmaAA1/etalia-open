@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.db import models
+from django.db import models, connection
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-from model_utils.fields import MonitorField, StatusField
+from model_utils.fields import MonitorField
 
 from paperstream.core.models import TimeStampedModel, NullableCharField
 
@@ -482,14 +482,26 @@ class Stats(TimeStampedModel):
         self.nb_journals = Journal.objects.count()
         self.nb_authors = Author.objects.count()
 
+        # Count papers by time range
+        cursor = connection.cursor()
+        query = "SELECT COUNT(*) FROM library_paper " \
+                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+
         d = timezone.now().date() - timezone.timedelta(days=7)
-        self.nb_papers_last_week = Paper.objects.filter(date_fs__gt=d).count()
+        cursor.execute(query, [d])
+        self.nb_papers_last_week = cursor.fetchone()[0]
+
         d = timezone.now().date() - timezone.timedelta(days=14)
-        self.nb_papers_last_two_weeks = Paper.objects.filter(date_fs__gt=d).count()
+        cursor.execute(query, [d])
+        self.nb_papers_last_two_weeks = cursor.fetchone()[0]
+
         d = timezone.now().date() - timezone.timedelta(days=30)
-        self.nb_papers_last_month = Paper.objects.filter(date_fs__gt=d).count()
+        cursor.execute(query, [d])
+        self.nb_papers_last_month = cursor.fetchone()[0]
+
         d = timezone.now().date() - timezone.timedelta(days=365)
-        self.nb_papers_last_year = Paper.objects.filter(date_fs__gt=d).count()
+        cursor.execute(query, [d])
+        self.nb_papers_last_year = cursor.fetchone()[0]
 
         self.save()
 

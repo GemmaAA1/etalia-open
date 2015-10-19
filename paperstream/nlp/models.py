@@ -6,8 +6,6 @@ import logging
 import glob
 from random import shuffle
 import numpy as np
-import socket
-from timeit import time
 
 from gensim import matutils
 from sklearn.externals import joblib
@@ -857,16 +855,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                # manage date
-                d = dat['paper__date_ep']
-                if not d:
-                    if dat['paper__date_pp']:
-                        if dat['paper__date_pp'] > timezone.now().date():
-                            d = dat['paper__date_fs']
-                        else:
-                            d = dat['paper__date_pp']
-                    else:
-                        d = dat['paper__date_fs']
+                # get min date
+                dates = [dat['paper__date_fs'],
+                         dat['paper__date_ep'],
+                         dat['paper__date_pp']]
+                dates = [d for d in dates if d is not None]
+                d = min(dates)
                 self.date.append(d)
                 # store paper pk
                 self.index2pk.append(dat['paper__pk'])
