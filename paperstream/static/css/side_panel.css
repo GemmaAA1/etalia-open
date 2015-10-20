@@ -14,13 +14,12 @@
     padding: 5px;
 }
 .side-panel .side-panel-title:hover {
-    background-color: #ebebeb;
+    /*background-color: #ebebeb;*/
 }
 .side-panel .side-panel-title .all {
-    display: none;
+    /*display: none;*/
     font-size: 14px;
     padding-right: 5px;
-    /*float: right;*/
 }
 
 .side-panel .side-panel-title>a:hover {

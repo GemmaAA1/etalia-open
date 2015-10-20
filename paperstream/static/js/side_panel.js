@@ -53,13 +53,13 @@ $(document).ready(function() {
             $(this).find('.remove').hide();
         });
 
-    $('.side-panel-title')
-        .on('mouseenter', function (){
-            $(this).find('.all').show();
-        })
-        .on('mouseleave', function () {
-            $(this).find('.all').hide();
-        });
+    //$('.side-panel-title')
+    //    .on('mouseenter', function (){
+    //        $(this).find('.all').show();
+    //    })
+    //    .on('mouseleave', function () {
+    //        $(this).find('.all').hide();
+    //    });
 
     $('.journals .all').on('click', function () {
         console.log($(this).find('.journal'));
