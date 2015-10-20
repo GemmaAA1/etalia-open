@@ -199,13 +199,13 @@ class ThresholdAverage(Scoring):
 
     def __init__(self, **kwargs):
         super(ThresholdAverage, self).__init__(**kwargs)
-        self.threshold = kwargs.get('threshold', 0.4)
+        self.threshold = kwargs.get('threshold', 0.25)
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
         targ_mat = self.build_mat(self.target_data)
         dis = np.dot(targ_mat, seed_mat.T)
-        dis = np.where(dis > self.threshold, 1, 0)
+        dis = np.where(dis > self.threshold, dis, 0)
         scores = np.sum(dis, axis=1)
 
         return self.target_pks, scores
@@ -225,6 +225,10 @@ class WeightedJournalAverage(Scoring):
 
 class WeightedJournalCreatedDateAverage(Scoring):
 
+    def __init__(self, **kwargs):
+        super(WeightedJournalCreatedDateAverage, self).__init__(**kwargs)
+        self.threshold = kwargs.get('threshold', 0.25)
+
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
         targ_mat = self.build_mat(self.target_data)
@@ -234,6 +238,7 @@ class WeightedJournalCreatedDateAverage(Scoring):
         date_vec = self.build_created_date_vec(self.seed_data)
 
         dis = np.dot(targ_mat, seed_mat.T)
+        dis = np.where(dis > self.threshold, dis, 0)
         scores = np.average(dis, weights=date_vec, axis=1)
 
         return self.target_pks, scores
