@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from nameparser import HumanName
-
+from jsonfield import JSONField
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
@@ -374,6 +374,10 @@ class UserTaste(TimeStampedModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
 
+    scoring_method = models.IntegerField(verbose_name='Scoring Algo',
+                                         choices=FEED_SCORING_CHOICES,
+                                         default=1)
+
     paper = models.ForeignKey(Paper)
 
     is_ticked = models.BooleanField(default=False)
@@ -390,3 +394,16 @@ class UserTaste(TimeStampedModel):
             return '{user}@{pk} ticked '.format(user=self.user, pk=self.paper.id)
         else:
             return '{user}@{pk} has a problem'
+
+
+class UserFeedLayout(TimeStampedModel):
+    """Store settings for stream display"""
+
+    user = models.OneToOneField(User)
+
+    stream_filter = JSONField()
+
+    trend_filter = JSONField()
+
+
+

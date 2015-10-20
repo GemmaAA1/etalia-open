@@ -11,6 +11,79 @@
     font-size: 20px;
     font-weight: 500;
     line-height: 1.1;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    padding: 5px;
+}
+.side-panel .side-panel-title:hover {
+    background-color: #ebebeb;
+}
+.side-panel .side-panel-title .all {
+    display: none;
+    font-size: 14px;
+    padding-right: 5px;
+    /*float: right;*/
+}
+
+.side-panel .side-panel-title>a:hover {
+    text-decoration: underline;
+}
+
+.side-panel a {
+    text-decoration: None;
+    color: #000000;
+}
+.side-panel li {
+    list-style: none;
+    padding: 5px;
+}
+.side-panel ul {
+    padding-left: 0px;
+}
+
+.side-panel .active {
+    background-color: #feefee;
+}
+
+.side-panel .journal:hover {
+    background-color: #ebebeb;
+}
+
+.side-panel .long>a:hover {
+    text-decoration: underline;
+}
+.side-panel .short {
+    display: none;
+}
+.side-panel .short>a:hover {
+    text-decoration: underline;
+}
+
+.side-panel .remove {
+    display: none;
+}
+.side-panel .remove::before {
+    content:"";
+    float: right;
+    /*display: inline-block;*/
+    vertical-align: -20%;
+    background: transparent url(../img/paper_icons.png) 0 -20px no-repeat;
+    background-size: auto 40px;
+    width: 18px;
+    height: 18px;
+    background-position-x: -53px;
+}
+.side-panel .remove:hover::before {
+    background-position-y: 2px;
+}
+
+.side-panel .only {
+    display: none;
+    padding-left: 5px;
+    float: right;
+}
+.side-panel .only:hover {
+    text-decoration: underline;
+}
+
+.side-panel .author:hover {
+    background-color: #ebebeb;
 }

@@ -188,7 +188,6 @@ class Paper(TimeStampedModel):
     type = models.CharField(max_length=3, choices=PAPER_TYPE, blank=True,
                             default='')
 
-    # TODO: Test if db_index=True improve performance
     # identifiers (uniqueness defined thereafter)
     # NullableCharField is used to enforced uniqueness at the database level,
     # by default django save None charfield as '' which is considered as a string
@@ -394,7 +393,6 @@ class Paper(TimeStampedModel):
         if self.journal.id_issn or self.journal.id_issn:
             identifiers['issn'] = self.journal.id_issn or self.journal.id_issn
         return identifiers
-
 
     @property
     def print_clean_ids(self):

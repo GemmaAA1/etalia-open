@@ -22,7 +22,7 @@
                 {% if "feed" in request.path or "user" in request.path %}
                     <form class="navbar-form navbar-left" role="search">
                         <div class="form-group has-feedback searchbox">
-                            <input type="text" class="form-control" placeholder="Search" name="query" value={% if current_query %}"{{ current_query }}"{% else %}""{% endif %}>
+                            <input type="text" class="form-control" placeholder="Search" name="query" value={% if get_query %}"{{ get_query }}"{% else %}""{% endif %}>
                         <span class="glyphicon glyphicon-search form-control-feedback"></span>
     {#                        </button>#}
                         </div>

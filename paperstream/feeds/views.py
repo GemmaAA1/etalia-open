@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import random
+import operator
+import json
+from functools import reduce
 from collections import Counter
 
 from django.http import JsonResponse
@@ -20,7 +22,7 @@ from endless_pagination.views import AjaxListView
 
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper, Stats, Journal, Author
-from paperstream.users.models import UserTaste
+from paperstream.users.models import UserTaste, UserFeedLayout
 
 from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper, \
     TrendFeedPaper
@@ -34,20 +36,45 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     per_page = 5
     context_object_name = 'object_list'
     side_max_journal_filter = 10
-    side_max_author_filter = 20
+    side_max_author_filter = 15
+    original_qs = None
+    journals_filter = None
+    authors_filter = None
+    journal_flag = 'all'
+    author_flag = 'all'
+
+    def update_filter(self):
+        raise NotImplemented
 
     def filter_queryset(self, queryset):
-        # Get the q GET parameter
+        self.update_filter()
+
+        # journals
+        if self.journals_filter and not self.journal_flag == 'all':
+            subset = []
+            for journal in self.journals_filter:
+                subset.append(Q(paper__journal__title__icontains=journal))
+            queryset = queryset.filter(reduce(operator.or_, subset))
+
+        # authors
+        if self.authors_filter and not self.author_flag == 'all':
+            subset = []
+            for author in self.authors_filter:
+                subset.append(Q(paper__authors__first_name__icontains=author['first_name']) &
+                              Q(paper__authors__last_name__icontains=author['last_name']))
+            queryset = queryset.filter(reduce(operator.or_, subset))
+
+        # from query
         q = self.request.GET.get("query")
         if q:
             # return a filtered queryset
-            return queryset.filter(Q(paper__title__icontains=q) |
+            queryset = queryset.filter(Q(paper__title__icontains=q) |
                                    Q(paper__abstract__icontains=q) |
                                    Q(paper__journal__title__icontains=q) |
                                    Q(paper__authors__last_name__icontains=q) |
                                    Q(paper__authors__first_name__icontains=q))\
                 .distinct()
-        # No q is specified so we return queryset
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -72,26 +99,26 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         # Get library stats
         context['stats'] = Stats.objects.last()
 
-        # Get query is exists
-        if self.request.GET.get("query"):
-            context['current_query'] = self.request.GET.get("query")
+        # Get data for filter
+        data = self.original_qs.values('paper',
+                                       'paper__journal__title',
+                                       'paper__authors')
+        journals = []
+        authors = []
+        check_papers = []
+        for d in data:
+            if d['paper'] not in check_papers:  # rows are for different authors
+                journals.append(d['paper__journal__title'])
+                check_papers.append(d['paper'])
+            authors.append(d['paper__authors'])
 
-        # Get journal filter
-        journals = self.object_list.values_list('paper__journal', flat=True)
+        # journal filter
         journals_counter = Counter(journals)
-        journals_pks = sorted(journals_counter, key=journals_counter.get,
-                              reverse=True)
-        clauses = ' '.join(['WHEN id=%s THEN %s' %
-                            (pk, i) for i, pk in enumerate(journals_pks)])
-        ordering = 'CASE %s END' % clauses
-        journals_ordered = Journal.objects.filter(pk__in=journals_pks).extra(
-            select={'ordering': ordering},
-            order_by=('ordering',))[:self.side_max_journal_filter]
-        context['journals'] = [(j, journals_counter[j.pk]) for j in journals_ordered]
+        journals = sorted(journals_counter, key=journals_counter.get,
+                          reverse=True)
+        context['journals'] = [(title, journals_counter[title]) for title in journals]
 
-
-        # Get author filter (sorted based on authors found is user library)
-        authors = self.object_list.values_list('paper__authors', flat=True)
+        # author filter
         # get user lib authors
         authors_user_lib = self.request.user.lib.papers.all()\
             .values_list('authors', flat=True)
@@ -115,6 +142,22 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             order_by=('ordering',))[:self.side_max_author_filter]
         context['authors'] = authors_ordered
 
+        # Set GET context
+        if self.request.GET.get('query'):
+            context['get_query'] = self.request.GET.get('query')
+        if self.journal_flag == 'all':
+            context['journals_filter'] = [title for title in journals]
+        else:
+            context['journals_filter'] = self.journals_filter
+        if self.author_flag == 'all':
+            context['authors_filter'] = \
+                [auth.first_name + ' ' + auth.last_name
+                 for auth in authors_ordered]
+        else:
+            context['authors_filter'] = \
+                [auth['first_name'] + ' ' + auth['last_name']
+                 for auth in self.authors_filter]
+
         return context
 
 
@@ -124,19 +167,53 @@ class FeedView(BaseFeedView):
     template_name = 'feeds/feed.html'
     page_template = 'feeds/feed_sub_page.html'
 
+    def update_filter(self):
+       # Load user specific filter
+        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        if new:
+            ufl.trend_filter = {'journal_flag': self.journal_flag,
+                                 'author_flag': self.author_flag}
+            ufl.stream_filter = {'journal_flag': self.journal_flag,
+                                 'author_flag': self.author_flag}
+            ufl.save()
+        else:
+            self.journals_filter = ufl.stream_filter.get('journals')
+            self.authors_filter = ufl.stream_filter.get('authors')
+            self.journal_flag = ufl.stream_filter.get('journal_flag')
+            self.author_flag = ufl.stream_filter.get('author_flag')
+
+        # From ajaxable filter
+        if self.request.is_ajax():
+            try:
+                data = json.loads(list(self.request.GET)[0])
+                if data['action'] == 'filter':
+                    # store new filter in db
+                    ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+                    data['author_flag'] = data.get('author_flag') or self.author_flag
+                    data['journal_flag'] = data.get('journal_flag') or self.journal_flag
+                    ufl.stream_filter = data
+                    ufl.save()
+                    # get data
+                    self.journals_filter = data.get('journals')
+                    self.authors_filter = data.get('authors')
+                    self.author_flag = data.get('author_flag')
+                    self.journal_flag = data.get('journal_flag')
+            except ValueError:  # likely data from AjaxListView
+                pass
+
     def get_queryset(self):
         # get ticked paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user, is_ticked=True)\
             .values('paper')
 
-        query_set = self.model.objects\
+        self.original_qs = self.model.objects\
             .filter(feed__name=self.kwargs.get('name', 'main'),
                     feed__user=self.request.user)\
             .exclude(paper__in=papers_ticked)\
             .select_related('paper', 'paper__journal')
 
-        query_set = self.filter_queryset(query_set)
+        query_set = self.filter_queryset(self.original_qs)
 
         return query_set
 
@@ -162,18 +239,53 @@ class TrendView(BaseFeedView):
     template_name = 'feeds/trends.html'
     page_template = 'feeds/trends_sub_page.html'
 
+    def update_filter(self):
+       # Load user specific filter
+        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        if new:
+            ufl.trend_filter = {'journal_flag': self.journal_flag,
+                                 'author_flag': self.author_flag}
+            ufl.stream_filter = {'journal_flag': self.journal_flag,
+                                 'author_flag': self.author_flag}
+            ufl.save()
+        else:
+            self.journals_filter = ufl.trend_filter.get('journals')
+            self.authors_filter = ufl.trend_filter.get('authors')
+            self.journal_flag = ufl.trend_filter.get('journal_flag')
+            self.author_flag = ufl.trend_filter.get('author_flag')
+
+        # From ajaxable filter
+        if self.request.is_ajax():
+            try:
+                data = json.loads(list(self.request.GET)[0])
+                if data['action'] == 'filter':
+                    # store new filter in db
+                    ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+                    data['author_flag'] = data.get('author_flag') or self.author_flag
+                    data['journal_flag'] = data.get('journal_flag') or self.journal_flag
+                    ufl.trend_filter = data
+                    ufl.save()
+                    # get data
+                    self.journals_filter = data.get('journals')
+                    self.authors_filter = data.get('authors')
+                    self.author_flag = data.get('author_flag')
+                    self.journal_flag = data.get('journal_flag')
+            except ValueError:  # likely data from AjaxListView
+                pass
+
     def get_queryset(self):
         # get ticked paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user, is_ticked=True)\
             .values('paper')
 
-        query_set = self.model.objects\
+        self.original_qs = self.model.objects\
             .filter(trend_feed=self.request.user.trend)\
             .exclude(paper__in=papers_ticked)
 
+
         # filter from searchbox
-        query_set = self.filter_queryset(query_set)
+        query_set = self.filter_queryset(self.original_qs)
 
         # let's shuffle the results
         return query_set.order_by("?")

@@ -27,33 +27,74 @@
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
                         <div class="userfeed">
-                            <h3>Here is what we curated for you</h3>
+                            <h3>Here are the recent published papers we found for you</h3>
                             <h4><em>Out of {{ stats.nb_papers_last_month }} papers published last month</em></h4>
+                            <div class="endless_data">
                             {% include page_template %}
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-2 hidden-sm">
+                    <div class="col-md-3 hidden-sm">
                         <div class="side-panel">
-                            <div class="side-panel-title">Journals</div>
-                            <div class="side-panel-inner">
-                                {% for journal, count in journals %}
-                                <h5 id="{{ journal.pk }}">
-                                    <a href="">
-                                        {{ journal.title }}
-                                        ({{ count }})
-                                    </a>
-                                </h5>
-                                {% endfor %}
+                            <div class="journals">
+                                <div class="side-panel-title">
+                                    Journals
+                                    <a class='all' href="javascript:void(0)">(select all)</a>
+                                </div>
+                                <div class="side-panel-inner">
+                                    <ul>
+                                    {% for journal, count in journals %}
+                                        <li class="journal {% if journal.title in journals_filter %} active {% endif %}" data-journal-title="{{ journal.title }}">
+                                            <span class="long">
+                                                <a href="javascript:void(0)">
+                                                    {{ journal.title|truncatechars:25 }}
+                                                </a>
+                                                ({{ count }})
+                                            </span>
+                                            <span class="short">
+                                                <a href="javascript:void(0)">
+                                                    {{ journal.title|truncatechars:25 }}
+                                                </a>
+                                                {% if journal.title|length <= 20 %}
+                                                    ({{ count }})
+                                                {% endif %}
+                                            </span>
+                                            <a class="only" href="javascript:void(0)">only</a>
+                                            <a class="remove" href="javascript:void(0)"></a>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="side-panel-title">Authors</div>
-                            <div class="side-panel-inner">
-                                {% for author in authors %}
-                                <h5>
-                                    <a href="">
-                                        {{ author.print_compact }}
-                                    </a>
-                                </h5>
-                                {% endfor %}
+                            <div class="authors">
+                                <div class="side-panel-title">
+                                    Authors
+                                    <a class='all' href="javascript:void(0)">(select all)</a>
+                                </div>
+                                <div class="side-panel-inner">
+                                    <ul >
+                                    {% for author in authors %}
+                                        {% with author.first_name|add:' '|add:author.last_name as author_full %}
+                                        <li class="author {% if author_full in authors_filter %} active {% endif %}"
+                                            data-first-name="{{ author.first_name }}"
+                                            data-last-name="{{ author.last_name }}">
+                                            <span class="long">
+                                                <a href="javascript:void(0)">
+                                                    {{ author_full|truncatechars:35 }}
+                                                </a>
+                                            </span>
+                                            <span class="short">
+                                                <a href="javascript:void(0)">
+                                                    {{ author_full|truncatechars:25 }}
+                                                </a>
+                                            </span>
+                                            <a class="only" href="javascript:void(0)">only</a>
+                                            <a class="remove" href="javascript:void(0)"></a>
+                                        </li>
+                                        {% endwith %}
+                                    {% endfor %}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -67,6 +108,7 @@
     <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
+    <script type="text/javascript" src="{% static 'js/side_panel.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
     <script>$.endlessPaginate({
         paginateOnScroll: true,

@@ -7,11 +7,11 @@
         <div class="compact">
             <div class="row">
                 <div class="long">
-                    <div class="title">{{ ufmp.paper.title|truncatechars:90 }}</div>
+                    <div class="title">{{ ufmp.paper.title|truncatechars:95 }}</div>
                     <div class="authors-journal-date">
                         {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title|add:ufmp.paper.print_date as str %}
-                        {% if str|length > 110 %}
-                            <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:75 }}</span>
+                        {% if str|length > 115 %}
+                            <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:80 }}</span>
                             {{ ufmp.paper.print_journal_title|truncatechars:20 }}
                             {{ ufmp.paper.print_date }}
                         {% else %}
