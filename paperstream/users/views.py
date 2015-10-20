@@ -377,8 +377,11 @@ def async_update_user_lib(request):
 def like_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
-        paper = get_object_or_404(Paper, pk=pk)
-        ut, _ = UserTaste.objects.get_or_create(paper=paper, user=request.user)
+        paper_ = get_object_or_404(Paper, pk=pk)
+        ut, _ = UserTaste.objects.get_or_create(
+            paper=paper_,
+            user=request.user,
+            scoring_method=request.user.settings.scoring_method)
         if ut.is_liked:
             ut.is_liked = False
         else:
@@ -396,7 +399,10 @@ def tick_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
         paper_ = get_object_or_404(Paper, pk=pk)
-        ut, _ = UserTaste.objects.get_or_create(paper=paper_, user=request.user)
+        ut, _ = UserTaste.objects.get_or_create(
+            paper=paper_,
+            user=request.user,
+            scoring_method=request.user.settings.scoring_method)
         if ut.is_ticked:
             ut.is_ticked = False
         else:
