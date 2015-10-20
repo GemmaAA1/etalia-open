@@ -115,7 +115,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         # journal filter
         journals_counter = Counter(journals)
         journals = sorted(journals_counter, key=journals_counter.get,
-                          reverse=True)
+                          reverse=True)[:self.side_max_journal_filter]
         context['journals'] = [(title, journals_counter[title]) for title in journals]
 
         # author filter
