@@ -47,6 +47,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         raise NotImplemented
 
     def filter_queryset(self, queryset):
+        # filter based on json filter / ajax call
         self.update_filter()
 
         # journals
@@ -149,6 +150,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             context['journals_filter'] = [title for title in journals]
         else:
             context['journals_filter'] = self.journals_filter
+        context['journals_filter'] = list(map(str.lower, context['journals_filter']))
         if self.author_flag == 'all':
             context['authors_filter'] = \
                 [auth.first_name + ' ' + auth.last_name
@@ -157,6 +159,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             context['authors_filter'] = \
                 [auth['first_name'] + ' ' + auth['last_name']
                  for auth in self.authors_filter]
+        context['authors_filter'] = list(map(str.lower, context['authors_filter']))
 
         return context
 

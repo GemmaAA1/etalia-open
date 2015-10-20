@@ -44,10 +44,10 @@
                                 <div class="side-panel-inner">
                                     <ul>
                                     {% for journal, count in journals %}
-                                        <li class="journal {% if journal.title in journals_filter %} active {% endif %}" data-journal-title="{{ journal.title }}">
+                                        <li class="journal {% if journal.title|lower in journals_filter %} active {% endif %}" data-journal-title="{{ journal.title }}">
                                             <span class="long">
                                                 <a href="javascript:void(0)" title="{{ journal.title  }}">
-                                                    {{ journal.title|truncatechars:25 }}
+                                                    {{ journal.title|truncatechars:30 }}
                                                 </a>
                                                 ({{ count }})
                                             </span>
@@ -75,7 +75,7 @@
                                     <ul >
                                     {% for author in authors %}
                                         {% with author.first_name|add:' '|add:author.last_name as author_full %}
-                                        <li class="author {% if author_full in authors_filter %} active {% endif %}"
+                                        <li class="author {% if author_full|lower in authors_filter %} active {% endif %}"
                                             data-first-name="{{ author.first_name }}"
                                             data-last-name="{{ author.last_name }}">
                                             <span class="long">
