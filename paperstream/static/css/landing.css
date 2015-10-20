@@ -48,7 +48,7 @@
     white-space: nowrap;
     height: 70px;
     width: 70px;
-    z-index: 9999;
+    margin-bottom: 30px;
 }
 
 .intro-header h3 {

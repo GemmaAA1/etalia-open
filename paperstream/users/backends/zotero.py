@@ -50,12 +50,14 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return session
 
-    def update_lib(self, user, session):
+    def update_lib(self, user, session, full=False):
         """Update User Lib
 
         Args:
             user (User): A User instance
             session: An OAuth session as provided by get_session()
+            full (bool): if True, run a full update on library. If false, only
+                update new added added papers
 
         Returns:
             (int): Number of papers added
@@ -87,7 +89,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             user=user.email,
                             backend=self.name))
                     new = self.associate_paper(paper, user, entry['user_info'],
-                                               item['key']) and new
+                                               item['key'])
                     if new:
                         count += 1
                         not_new_stack_count = 0
@@ -101,8 +103,9 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             type_=item['data']['itemType'],
                             user=user.email,
                             backend=self.name))
-            if not_new_stack_count > 10:
-                break  # exit when reaching a stack of 10 already uploaded references
+            if not full:
+                if not_new_stack_count > 10:
+                    break  # exit when reaching a stack of 10 already uploaded references
             try:
                 items = session.follow()
             except:

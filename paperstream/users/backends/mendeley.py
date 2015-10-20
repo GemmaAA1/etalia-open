@@ -97,8 +97,18 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return mendeley_session
 
-    def update_lib(self, user, session):
+    def update_lib(self, user, session, full=False):
+        """Update User Lib
 
+        Args:
+            user (User): A User instance
+            session: An OAuth session as provided by get_session()
+            full (bool): if True, run a full update on library. If false, only
+                update new added added papers
+
+        Returns:
+            (int): Number of papers added
+        """
         # Init
         new = True
         count = 0
@@ -147,8 +157,9 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             user=user.email,
                             backend=self.name))
 
-            if not_new_stack_count > 10:
-                break  # exit when reaching 10 already uploaded references
+            if not full:
+                if not_new_stack_count > 10:
+                    break  # exit when reaching 10 already uploaded references
 
             if page.next_page:
                 page = page.next_page
