@@ -115,7 +115,7 @@ class BackendLibMixin(object):
         return paper, journal
 
     @staticmethod
-    def bassociate_paper(paper, user, info, id):
+    def associate_paper(paper, user, info, id):
         """Update Paper/User.Lib relationship
 
         Args:
