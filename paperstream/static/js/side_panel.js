@@ -5,23 +5,26 @@
 $(document).ready(function() {
 
     $('.checkbox').on('click', function () {
+        console.log('test');
         send_filter(undefined, undefined);
     });
 
-    $('.journals .only').on('click', function () {
+    $('.journals .only').on('click', function (event) {
         $(this).closest('.side-panel-section').find('input').each(function () {
             $(this).prop('checked', false);
         });
         $(this).parents().siblings('input').prop('checked', true);
         send_filter('only', undefined);
+        event.stopPropagation();
     });
 
-    $('.authors .only').on('click', function () {
+    $('.authors .only').on('click', function (event) {
         $(this).closest('.side-panel-section').find('input').each(function () {
             $(this).prop('checked', false);
         });
         $(this).parents().siblings('input').prop('checked', true);
         send_filter(undefined, 'only');
+        event.stopPropagation();
     });
 
     $('.journals .all').on('click', function () {
