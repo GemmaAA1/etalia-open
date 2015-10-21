@@ -9,9 +9,6 @@
     color: #000000;
 }
 
-.paper-list:hover {
-
-}
 
 .bg-active {
     background-color: #feefee;
@@ -32,6 +29,10 @@
 
 .compact:hover {
     background-color: #f1f1f1;
+}
+
+.bg-active {
+    background-color: #feefee;
 }
 
 .compact .title {

@@ -3,14 +3,14 @@
 
 {% paginate first_page,per_page object_list %}
 {% for dfp in object_list %}
-    <div id="{{ dfp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
+    <div id="{{ dfp.paper.pk }}" class="paper-list">
         <div class="altmetric">
             {% if dfp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ dfp.paper.id_doi }}"></div>
             {% elif dfp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-arxiv="{{ dfp.paper.id_arx }}"></div>
             {% elif dfp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ dfp.paper.id_pmi }}"></div>
             {% endif %}
         </div>
-        <div class="compact">
+        <div class="compact {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="long">
                     <div class="title">{{ dfp.paper.title|truncatechars:90 }}</div>
@@ -47,7 +47,7 @@
 
             </div>
         </div>
-        <div class="extended">
+        <div class="extended {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="col-lg-10 nopadding">
                     <div class="title">{{ dfp.paper.title }}</div>

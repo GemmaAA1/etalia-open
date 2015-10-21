@@ -3,14 +3,14 @@
 
 {% paginate first_page,per_page ulp_list %}
 {% for ulp in ulp_list %}
-    <div id="{{ ulp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
+    <div id="{{ ulp.paper.pk }}" class="paper-list">
         <div class="altmetric">
             {% if ulp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ ulp.paper.id_doi }}"></div>
             {% elif ulp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-arxiv="{{ ulp.paper.id_arx }}"></div>
             {% elif ulp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ ulp.paper.id_pmi }}"></div>
             {% endif %}
         </div>
-        <div class="compact">
+        <div class="compact {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="long">
                     <div class="title">{{ ulp.paper.title|truncatechars:90 }}</div>
@@ -47,7 +47,7 @@
 
             </div>
         </div>
-        <div class="extended">
+        <div class="extended  {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="col-lg-10 nopadding">
                     <div class="title">{{ ulp.paper.title }}</div>

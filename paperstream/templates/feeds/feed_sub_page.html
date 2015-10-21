@@ -3,8 +3,8 @@
 
 {% paginate first_page,per_page object_list %}
 {% for ufmp in object_list %}
-    <div id="{{ ufmp.paper.pk }}" class="paper-list {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
-        <div class="compact">
+    <div id="{{ ufmp.paper.pk }}" class="paper-list">
+        <div class="compact {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="long">
                     <div class="title">{{ ufmp.paper.title|truncatechars:95 }}</div>
@@ -41,7 +41,7 @@
 
             </div>
         </div>
-        <div class="extended">
+        <div class="extended {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="col-lg-10 nopadding">
                     <div class="title">{{ ufmp.paper.title }}</div>

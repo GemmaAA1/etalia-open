@@ -34,11 +34,8 @@
                                 <div class="col-md-2 hidden-xs hidden-md">
                                     <div class="altmetric">
                                         {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="1" data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="1" data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
-{#                                        {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>#}
-{#                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>#}
-{#                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>#}
+                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
+                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
                                         {% endif %}
                                         <div class="altmetric-no"></div>
                                     </div>

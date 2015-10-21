@@ -84,12 +84,14 @@ function like () {
                             .addClass('like')
                             .addClass('active')
                             .parents('.paper-list')
+                            .find('.compact, .extended')
                             .addClass('bg-active');
                     } else {
                         $like.removeClass('loading')
                             .addClass('like')
                             .removeClass('active')
                             .closest('.paper-list')
+                            .find('.compact, .extended')
                             .removeClass('bg-active');
                     }
                 }
