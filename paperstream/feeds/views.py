@@ -35,37 +35,98 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     first_page = 10
     per_page = 5
     context_object_name = 'object_list'
-    side_max_journal_filter = 10
-    side_max_author_filter = 15
+    size_max_journal_filter = 40
+    size_load_journal_filter = 10
+    size_max_author_filter = 40
+    size_load_author_filter = 10
     original_qs = None
     journals_filter = None
+    journals_filter_flag = 'all'
     authors_filter = None
-    journal_flag = 'all'
-    author_flag = 'all'
+    authors_filter_flag = 'all'
 
     def update_filter(self):
         raise NotImplemented
 
     def filter_queryset(self, queryset):
-        # filter based on json filter / ajax call
-        self.update_filter()
+
+        # load stored filter
+        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        if new:
+            ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
+                                 'authors_flag': self.authors_filter_flag}
+            ufl.save()
+        else:
+            self.journals_filter = ufl.stream_filter.get('journals')
+            self.authors_filter = ufl.stream_filter.get('authors')
+            self.authors_filter_flag = ufl.stream_filter.get('authors_flag') or self.authors_filter_flag
+            self.journals_filter_flag = ufl.stream_filter.get('journals_flag') or self.journals_filter_flag
+
+        # From ajaxable filter
+        if self.request.is_ajax():
+            try:
+                data = json.loads(list(self.request.GET)[0])
+                if data['action'] == 'filter':
+                    # get data
+                    self.journals_filter = data.get('journals')
+                    self.authors_filter = data.get('authors')
+                    self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
+                    self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+                    ufl.stream_filter = {
+                        'journals': self.journals_filter,
+                        'authors': self.authors_filter,
+                        'journals_flag': self.journals_filter_flag,
+                        'authors_flag': self.authors_filter_flag,
+                    }
+                    ufl.save()
+            except ValueError:  # likely data from AjaxListView
+                pass
 
         # journals
-        if self.journals_filter and not self.journal_flag == 'all':
-            subset = []
-            for journal in self.journals_filter:
-                subset.append(Q(paper__journal__title__icontains=journal))
-            queryset = queryset.filter(reduce(operator.or_, subset))
+        if self.journals_filter_flag == 'all':
+            if self.journals_filter:
+                subset = []
+                for journal, val in self.journals_filter:
+                    if not val:
+                        subset.append(Q(paper__journal__title__icontains=journal))
+                if subset:
+                    queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
+        if self.journals_filter_flag == 'only':
+            if self.journals_filter:
+                subset = []
+                for journal, val in self.journals_filter:
+                    if val:
+                        subset.append(Q(paper__journal__title__icontains=journal))
+                if subset:
+                    queryset = queryset.filter(reduce(operator.or_, subset)).distinct()
+                else:
+                    queryset = None
+            else:
+                queryset = None
 
         # authors
-        if self.authors_filter and not self.author_flag == 'all':
-            subset = []
-            for author in self.authors_filter:
-                subset.append(Q(paper__authors__first_name__icontains=author['first_name']) &
-                              Q(paper__authors__last_name__icontains=author['last_name']))
-            queryset = queryset.filter(reduce(operator.or_, subset))
+        if self.authors_filter_flag == 'all':
+            if self.authors_filter:
+                subset = []
+                for pk, val in self.authors_filter:
+                    if not val:
+                        subset.append(Q(paper__authors__pk=pk))
+                if subset:
+                    queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
+        if self.authors_filter_flag == 'only':
+            if self.authors_filter:
+                subset = []
+                for pk, val in self.authors_filter:
+                    if val:
+                        subset.append(Q(paper__authors__pk=pk))
+                if subset:
+                    queryset = queryset.filter(reduce(operator.or_, subset)).distinct()
+                else:
+                    queryset = None
+            else:
+                queryset = None
 
-        # from query
+        # search query
         q = self.request.GET.get("query")
         if q:
             # return a filtered queryset
@@ -104,20 +165,30 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         data = self.original_qs.values('paper',
                                        'paper__journal__title',
                                        'paper__authors')
-        journals = []
+        j_titles = []
         authors = []
         check_papers = []
         for d in data:
             if d['paper'] not in check_papers:  # rows are for different authors
-                journals.append(d['paper__journal__title'])
+                j_titles.append(d['paper__journal__title'])
                 check_papers.append(d['paper'])
             authors.append(d['paper__authors'])
 
         # journal filter
-        journals_counter = Counter(journals)
-        journals = sorted(journals_counter, key=journals_counter.get,
-                          reverse=True)[:self.side_max_journal_filter]
-        context['journals'] = [(title, journals_counter[title]) for title in journals]
+        journals_counter = Counter(j_titles)
+        j_titles = sorted(journals_counter, key=journals_counter.get,
+                          reverse=True)[:self.size_max_journal_filter]
+        # group authors by block identified with block tag
+        block = 0
+        context['journals'] = []
+        for i, title in enumerate(j_titles):
+            if not i % self.size_load_journal_filter:
+                block += 1
+            context['journals'].append((title, journals_counter[title], block))
+        if len(context['journals']) <= self.size_load_journal_filter:
+            context['journals_show_more'] = False
+        else:
+            context['journals_show_more'] = True
 
         # author filter
         # get user lib authors
@@ -140,26 +211,42 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         ordering = 'CASE %s END' % clauses
         authors_ordered = Author.objects.filter(pk__in=authors_pks).extra(
             select={'ordering': ordering},
-            order_by=('ordering',))[:self.side_max_author_filter]
-        context['authors'] = authors_ordered
+            order_by=('ordering',))[:self.size_max_author_filter]
+        # group authors by block identified with block tag
+        block = 0
+        context['authors'] = []
+        for i, auth in enumerate(authors_ordered):
+            if not i % 10:
+                block += 1
+            context['authors'].append((auth, auth.print_full, block))
+        if len(context['authors']) <= self.size_load_author_filter:
+            context['authors_show_more'] = False
+        else:
+            context['authors_show_more'] = True
 
-        # Set GET context
+        # Set filter context
         if self.request.GET.get('query'):
             context['get_query'] = self.request.GET.get('query')
-        if self.journal_flag == 'all':
-            context['journals_filter'] = [title for title in journals]
+
+        if self.journals_filter:
+            context['journals_filter'] = [title.lower() for title, val in self.journals_filter if val]
         else:
-            context['journals_filter'] = self.journals_filter
-        context['journals_filter'] = list(map(str.lower, context['journals_filter']))
-        if self.author_flag == 'all':
-            context['authors_filter'] = \
-                [auth.first_name + ' ' + auth.last_name
-                 for auth in authors_ordered]
+            context['journals_filter'] = [title.lower() for title in j_titles]
+        if self.authors_filter:
+            context['authors_filter'] = [pk for pk, val in self.authors_filter if val]
         else:
-            context['authors_filter'] = \
-                [auth['first_name'] + ' ' + auth['last_name']
-                 for auth in self.authors_filter]
-        context['authors_filter'] = list(map(str.lower, context['authors_filter']))
+            context['authors_filter'] = authors_pks
+
+        #
+        # if self.author_flag == 'all':
+        #     context['authors_filter'] = \
+        #         [auth.first_name + ' ' + auth.last_name
+        #          for auth in authors_ordered]
+        # else:
+        #     context['authors_filter'] = \
+        #         [auth['first_name'] + ' ' + auth['last_name']
+        #          for auth in self.authors_filter]
+        # context['authors_filter'] = list(map(str.lower, context['authors_filter']))
 
         return context
 
@@ -169,40 +256,6 @@ class FeedView(BaseFeedView):
     model = UserFeedMatchPaper
     template_name = 'feeds/feed.html'
     page_template = 'feeds/feed_sub_page.html'
-
-    def update_filter(self):
-       # Load user specific filter
-        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
-        if new:
-            ufl.trend_filter = {'journal_flag': self.journal_flag,
-                                 'author_flag': self.author_flag}
-            ufl.stream_filter = {'journal_flag': self.journal_flag,
-                                 'author_flag': self.author_flag}
-            ufl.save()
-        else:
-            self.journals_filter = ufl.stream_filter.get('journals')
-            self.authors_filter = ufl.stream_filter.get('authors')
-            self.journal_flag = ufl.stream_filter.get('journal_flag')
-            self.author_flag = ufl.stream_filter.get('author_flag')
-
-        # From ajaxable filter
-        if self.request.is_ajax():
-            try:
-                data = json.loads(list(self.request.GET)[0])
-                if data['action'] == 'filter':
-                    # store new filter in db
-                    ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
-                    data['author_flag'] = data.get('author_flag') or self.author_flag
-                    data['journal_flag'] = data.get('journal_flag') or self.journal_flag
-                    ufl.stream_filter = data
-                    ufl.save()
-                    # get data
-                    self.journals_filter = data.get('journals')
-                    self.authors_filter = data.get('authors')
-                    self.author_flag = data.get('author_flag')
-                    self.journal_flag = data.get('journal_flag')
-            except ValueError:  # likely data from AjaxListView
-                pass
 
     def get_queryset(self):
         # get ticked paper

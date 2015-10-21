@@ -403,8 +403,8 @@ class Model(TimeStampedModel, S3Mixin):
             self._doc2vec.alpha = alpha
             self._doc2vec.min_alpha = alpha
             self._doc2vec.train(documents)
-            self.save()
             alpha -= alpha_delta
+        self.save()
 
     def build_vocab_and_train(self, **kwargs):
         """Build vocabulary (with phraser is set) and train model"""
@@ -718,6 +718,38 @@ class PaperNeighbors(TimeStampedModel):
 
     class Meta:
         unique_together = ('time_lapse', 'paper', 'model')
+
+
+class JournalNeighbors(TimeStampedModel):
+    """ Table of papers nearest neighbors"""
+
+    journal = models.ForeignKey(Journal, related_name='neighbors')
+
+    model = models.ForeignKey(Model)
+
+    # Primary keys of the k-nearest neighbors papers
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)
+
+    def __str__(self):
+        return '{model_name}/{time_lapse}'.format(
+            model_name=self.model.name,
+            time_lapse=self.time_lapse)
+
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
+
+    def get_neighbors(self):
+        return self.neighbors[:self.model.size]
+
+    def update(self):
+        model
+
+
+    class Meta:
+        unique_together = ('journal', 'model')
 
 
 class MostSimilarManager(models.Manager):

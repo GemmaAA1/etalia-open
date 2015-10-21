@@ -26,7 +26,7 @@
                     <div class="title">{{ ufmp.paper.title|truncatechars:75 }}</div>
                     <div class="authors-journal-date">
                         {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
-                        {% if str|length > 100 %}
+                        {% if str|length > 90 %}
                             <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:60 }}</span>
                             {{ ufmp.paper.print_journal_title|truncatechars:20 }}
                             {{ ufmp.paper.print_date }}

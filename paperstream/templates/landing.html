@@ -23,16 +23,9 @@
                 <div class="intro-message">
                     <h1>Your Guide to Scientific News</h1>
                     <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1">
-                        <h3>
-                            <p>Scientific publications recommended daily. </br> Fully automated and curated based on your reference library.</p>
-                            <p><i>No search queries. No journal browsing. No alert setup.</i></p>
-                            {#                                        <p>Get personalized scientific publication streams. </br>#}
-                            {#                                        <p>PaperStream is a free service for students and researchers.</p>#}
-                            {#                                        <p>It helps you stay up-to-date in your field by finding recently published articles that match your interest.</p>#}
-                            {#                                        <p>No keyword search. No alert to setup. No journal page to browse. <br>#}
-                            {#                                            Paperstream leverages what you store in your reference manager to feed your personalized stream.#}
-                            {#                                    </p>#}
-                        </h3>
+                        <h3>Scientific publications recommended daily. </br>
+                            Fully automated and curated based on your reference library.</h3>
+                        <h4><i>No search queries. No journal browsing. No alert setup.</i></h4>
                     </div>
                     <hr class="intro-divider">
                     <h4>Sign-in:</h4>
@@ -176,13 +169,13 @@
                 <h3>Try it now:</h3>
                 <ul class="list-inline intro-social-buttons">
                     <li>
-                        <a id="mendeley-link" href="{% url "social:begin" backend="custom-mendeley-oauth2" %}" class="btn btn-default btn-lg provider-button">
+                        <a id="mendeley-link" href="{% url "social:begin" backend="mendeley" %}" class="btn btn-default btn-lg provider-button">
                             <img src="{% static 'img/mendeley_logo_small.png' %}" class="provider-logo">
                             Mendeley
                         </a>
                     </li>
                     <li>
-                        <a id="zotero-link" href="{% url "social:begin" backend="custom-zotero" %}" class="btn btn-default btn-lg provider-button">
+                        <a id="zotero-link" href="{% url "social:begin" backend="zotero" %}" class="btn btn-default btn-lg provider-button">
                              <img src="{% static 'img/zotero_logo_small.png' %}" class="provider-logo">
                              Zotero
                         </a>

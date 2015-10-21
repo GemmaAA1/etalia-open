@@ -100,6 +100,27 @@ class Scoring(object):
         """
         return baseline + (1-baseline) / (1 + np.exp(- (day_lapse - delay) * k))
 
+    @staticmethod
+    def logist_weight_time_score(day_lapse, score, b0=0.5, k0=0.1, d0=-60.0, b1=0, k1=20,
+                      d1=0.3):
+        """2D Logistic (product of 2 1d-logit)
+
+        Args:
+            day_lapse (int, float): time in days (in the past form now i.e. <0)
+            b0 (float): baseline
+            k0 (float): steepness
+            d0 (float): logistic function kicks off at that time from now
+            score (int, float): score / distance
+            b1 (float): baseline
+            k1 (float): steepness
+            d1 (float): logistic function kicks off at that time from now
+
+        Returns:
+            (float): weighted date by logistic function
+        """
+        return (b0 + (1-b0) / (1 + np.exp(- (day_lapse - d0) * k0))) * \
+               (b1 + (1-b1) / (1 + np.exp(- (score - d1) * k1)))
+
     @property
     def created_date_dict(self):
         """Return dictionary of paper primary key and created date
