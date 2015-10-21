@@ -51,36 +51,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     def filter_queryset(self, queryset):
 
         # load stored filter
-        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
-        if new:
-            ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag}
-            ufl.save()
-        else:
-            self.journals_filter = ufl.stream_filter.get('journals')
-            self.authors_filter = ufl.stream_filter.get('authors')
-            self.authors_filter_flag = ufl.stream_filter.get('authors_flag') or self.authors_filter_flag
-            self.journals_filter_flag = ufl.stream_filter.get('journals_flag') or self.journals_filter_flag
-
-        # From ajaxable filter
-        if self.request.is_ajax():
-            try:
-                data = json.loads(list(self.request.GET)[0])
-                if data['action'] == 'filter':
-                    # get data
-                    self.journals_filter = data.get('journals')
-                    self.authors_filter = data.get('authors')
-                    self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
-                    self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
-                    ufl.stream_filter = {
-                        'journals': self.journals_filter,
-                        'authors': self.authors_filter,
-                        'journals_flag': self.journals_filter_flag,
-                        'authors_flag': self.authors_filter_flag,
-                    }
-                    ufl.save()
-            except ValueError:  # likely data from AjaxListView
-                pass
+        self.update_from_filter()
 
         # journals
         if self.journals_filter_flag == 'all':
@@ -246,6 +217,40 @@ class FeedView(BaseFeedView):
     template_name = 'feeds/feed.html'
     page_template = 'feeds/feed_sub_page.html'
 
+    def update_from_filter(self):
+        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        if new:
+            ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
+                                 'authors_flag': self.authors_filter_flag}
+            ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
+                                 'authors_flag': self.authors_filter_flag}
+            ufl.save()
+        else:
+            self.journals_filter = ufl.stream_filter.get('journals')
+            self.authors_filter = ufl.stream_filter.get('authors')
+            self.authors_filter_flag = ufl.stream_filter.get('authors_flag') or self.authors_filter_flag
+            self.journals_filter_flag = ufl.stream_filter.get('journals_flag') or self.journals_filter_flag
+
+        # From ajaxable filter
+        if self.request.is_ajax():
+            try:
+                data = json.loads(list(self.request.GET)[0])
+                if data['action'] == 'filter':
+                    # get data
+                    self.journals_filter = data.get('journals')
+                    self.authors_filter = data.get('authors')
+                    self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
+                    self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+                    ufl.stream_filter = {
+                        'journals': self.journals_filter,
+                        'authors': self.authors_filter,
+                        'journals_flag': self.journals_filter_flag,
+                        'authors_flag': self.authors_filter_flag,
+                    }
+                    ufl.save()
+            except ValueError:  # likely data from AjaxListView
+                pass
+
     def get_queryset(self):
         # get ticked paper
         papers_ticked = UserTaste.objects\
@@ -284,37 +289,37 @@ class TrendView(BaseFeedView):
     template_name = 'feeds/trends.html'
     page_template = 'feeds/trends_sub_page.html'
 
-    def update_filter(self):
-       # Load user specific filter
+    def update_from_filter(self):
         ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
         if new:
-            ufl.trend_filter = {'journal_flag': self.journal_flag,
-                                 'author_flag': self.author_flag}
-            ufl.stream_filter = {'journal_flag': self.journal_flag,
-                                 'author_flag': self.author_flag}
+            ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
+                                 'authors_flag': self.authors_filter_flag}
+            ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
+                                 'authors_flag': self.authors_filter_flag}
             ufl.save()
         else:
             self.journals_filter = ufl.trend_filter.get('journals')
             self.authors_filter = ufl.trend_filter.get('authors')
-            self.journal_flag = ufl.trend_filter.get('journal_flag')
-            self.author_flag = ufl.trend_filter.get('author_flag')
+            self.authors_filter_flag = ufl.trend_filter.get('authors_flag') or self.authors_filter_flag
+            self.journals_filter_flag = ufl.trend_filter.get('journals_flag') or self.journals_filter_flag
 
         # From ajaxable filter
         if self.request.is_ajax():
             try:
                 data = json.loads(list(self.request.GET)[0])
                 if data['action'] == 'filter':
-                    # store new filter in db
-                    ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
-                    data['author_flag'] = data.get('author_flag') or self.author_flag
-                    data['journal_flag'] = data.get('journal_flag') or self.journal_flag
-                    ufl.trend_filter = data
-                    ufl.save()
                     # get data
                     self.journals_filter = data.get('journals')
                     self.authors_filter = data.get('authors')
-                    self.author_flag = data.get('author_flag')
-                    self.journal_flag = data.get('journal_flag')
+                    self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
+                    self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+                    ufl.trend_filter = {
+                        'journals': self.journals_filter,
+                        'authors': self.authors_filter,
+                        'journals_flag': self.journals_filter_flag,
+                        'authors_flag': self.authors_filter_flag,
+                    }
+                    ufl.save()
             except ValueError:  # likely data from AjaxListView
                 pass
 

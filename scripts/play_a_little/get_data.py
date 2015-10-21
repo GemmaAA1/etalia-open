@@ -21,6 +21,7 @@ library = user.lib.papers.all()
 # Store vector user library
 user_title = []
 user_vectors = []
+user_date = []
 user_j_vectors = []
 for paper in library:
     user_title.append(paper.title)

@@ -27,7 +27,7 @@
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
                         <div class="userfeed">
-                            <h3>Recent published papers</h3>
+                            <h3>Recent publications</h3>
                             <h5><em>Out of {{ stats.nb_papers_last_month }} published last month</em></h5>
                             <div class="endless_data">
                             {% include page_template %}
@@ -66,7 +66,8 @@
                                     {% endfor %}
                                     </ul>
                                     {% if journals_show_more %}
-                                    <button class="show-more">show more</button>
+                                        <button class="show-more">show more</button>
+                                        <button class="show-less">/show less</button>
                                     {% endif %}
                                 </div>
                             </div>
@@ -98,6 +99,7 @@
                                     </ul>
                                     {% if authors_show_more %}
                                         <button class="show-more">show more</button>
+                                        <button class="show-less">/show less</button>
                                     {% endif %}
                                 </div>
                             </div>

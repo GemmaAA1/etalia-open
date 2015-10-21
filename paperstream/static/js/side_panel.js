@@ -57,13 +57,29 @@ $(document).ready(function() {
         var last_vis_block = $(this).siblings('ul')
             .children('li:visible:last')
             .data('block');
-        console.log(last_vis_block);
         // build next id to display
         var next = parseInt(last_vis_block) + 1;
-        console.log(next);
         $(this).siblings('ul')
             .find("[data-block='" + next + "']")
             .show();
+
+        // display show-less and bind onclick
+        $(this).siblings('.show-less')
+            .show()
+            .on('click', function () {
+                // get display block
+                var last_vis_block = $(this).siblings('ul')
+                    .children('li:visible:last')
+                    .data('block');
+                // build next id to display
+                $(this).siblings('ul')
+                    .find("[data-block='" + last_vis_block + "']")
+                    .hide();
+                // remove show-less if reach top
+                if (last_vis_block == "2") {
+                    $(this).hide();
+                }
+            });
 
         // remove show-more if reach bottom
         var last_block = $(this).siblings('ul')
@@ -73,6 +89,8 @@ $(document).ready(function() {
             $(this).hide();
         }
     });
+
+
 
 
 });
