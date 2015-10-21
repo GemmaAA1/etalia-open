@@ -18,7 +18,9 @@ $(document).ready(function() {
 
     // Send trash paper from user library ajax call
     $('.trash').on('click', trash_paper);
+
 });
+
 
 
 function stamps_mouseenter (){

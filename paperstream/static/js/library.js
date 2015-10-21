@@ -9,6 +9,18 @@ $(document).ready(function() {
     // Send trash paper from user library ajax call
     $('.trash').on('click', trash_paper);
 
+    // update altmetric stamp with local if undefined
+    // wait for element to exist
+    var checkExist = setInterval(function() {
+        if ($('.altmetric-embed').children('a').length) {
+            clearInterval(checkExist);
+            var bg = $('.altmetric-embed').children('a').css('background-image');
+            if (bg == 'url(https://altmetric-badges.a.ssl.fastly.net/?size=64&score=?&types=????????&style=donut)') {
+                $('.altmetric-embed').hide();
+                $('.altmetric-no').show();
+            }
+        }
+    }, 100);
 });
 
 function like (event) {

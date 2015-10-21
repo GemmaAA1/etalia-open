@@ -58,6 +58,13 @@
     position: relative;
 }
 
+.paper .altmetric-no {
+    display: none;
+    width: 64px;
+    height: 64px;
+    background: transparent url(../img/altmetric-no.png) 0 0 no-repeat;
+}
+
 .stamps {
     position: relative;
     padding-top: 10px;

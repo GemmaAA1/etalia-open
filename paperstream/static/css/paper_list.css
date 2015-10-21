@@ -1,7 +1,7 @@
 
 .paper-list {
-    padding: 5px;
     position: relative;
+    cursor: pointer;
 }
 
 .paper-list a {
@@ -10,7 +10,7 @@
 }
 
 .paper-list:hover {
-    background-color: #f1f1f1;
+
 }
 
 .bg-active {
@@ -24,6 +24,14 @@
     padding-left: 35px;
     padding-top: 10px;
     padding-bottom: 10px;
+    margin: 15px;
+    -moz-box-shadow: 0 0 3px #ccc;
+    -webkit-box-shadow: 0 0 3px #ccc;
+    box-shadow: 0 0 3px #ccc;
+}
+
+.compact:hover {
+    background-color: #f1f1f1;
 }
 
 .compact .title {
@@ -38,10 +46,6 @@
 .compact .authors {
     text-decoration: None;
     color: #808080;
-}
-
-.long {
-
 }
 
 .short {
@@ -60,6 +64,12 @@
     padding-left: 35px;
     padding-top: 10px;
     padding-bottom: 10px;
+
+    margin-top: 20px;
+    margin-bottom: 20px;
+    -moz-box-shadow: 0 0 20px #ccc;
+    -webkit-box-shadow: 0 0 20px #ccc;
+    box-shadow: 0 0 20px #ccc;
 }
 
 .extended .title {
@@ -249,4 +259,9 @@
     animation-direction: initial;
     animation-fill-mode: initial;
     animation-play-state: initial;
+}
+
+.altmetric {
+    position: absolute;
+    left: -70px;
 }
