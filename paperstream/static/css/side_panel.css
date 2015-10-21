@@ -83,7 +83,8 @@
     outline: none;
 }
 
-.side-panel .author {
+
+.side-panel .author, .side-panel .journal {
     display: none;
 }
 

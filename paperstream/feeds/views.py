@@ -237,17 +237,6 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         else:
             context['authors_filter'] = authors_pks
 
-        #
-        # if self.author_flag == 'all':
-        #     context['authors_filter'] = \
-        #         [auth.first_name + ' ' + auth.last_name
-        #          for auth in authors_ordered]
-        # else:
-        #     context['authors_filter'] = \
-        #         [auth['first_name'] + ' ' + auth['last_name']
-        #          for auth in self.authors_filter]
-        # context['authors_filter'] = list(map(str.lower, context['authors_filter']))
-
         return context
 
 
