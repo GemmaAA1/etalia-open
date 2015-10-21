@@ -51,47 +51,45 @@ $(document).ready(function() {
     // display first block at load
     $('ul').find('[data-block="1"]').show();
 
-    // show more block by block
+    //// show more block by block
     $('.show-more').on('click', function () {
-        // get display block
+         //get display block
         var last_vis_block = $(this).siblings('ul')
             .children('li:visible:last')
             .data('block');
-        // build next id to display
+        // hide show-more when reaching bottom
+        var last_block = $(this).siblings('ul')
+            .children('li:last')
+            .data('block');
         var next = parseInt(last_vis_block) + 1;
         $(this).siblings('ul')
             .find("[data-block='" + next + "']")
             .show();
 
-        // display show-less and bind onclick
-        $(this).siblings('.show-less')
-            .show()
-            .on('click', function () {
-                // get display block
-                var last_vis_block = $(this).siblings('ul')
-                    .children('li:visible:last')
-                    .data('block');
-                // build next id to display
-                $(this).siblings('ul')
-                    .find("[data-block='" + last_vis_block + "']")
-                    .hide();
-                // remove show-less if reach top
-                if (last_vis_block == "2") {
-                    $(this).hide();
-                }
-            });
-
-        // remove show-more if reach bottom
-        var last_block = $(this).siblings('ul')
-            .children('li:last')
-            .data('block');
         if (last_block == next) {
             $(this).hide();
         }
+         //show show-less
+        $(this).siblings('.show-less').show();
     });
 
-
-
+    // display show-less and bind onclick
+    $('.show-less').on('click', function () {
+        // get last vis block
+        var last_vis_block = $(this).siblings('ul')
+            .children('li:visible:last')
+            .data('block');
+        // hide block
+        $(this).siblings('ul')
+            .find("[data-block='" + last_vis_block + "']")
+            .hide();
+        // add show more if not visible
+        $(this).siblings('.show-more').show();
+        // remove show-less if reach top
+        if (last_vis_block == "2") {
+            $(this).hide();
+        }
+    });
 
 });
 
