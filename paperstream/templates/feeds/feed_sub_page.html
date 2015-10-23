@@ -29,7 +29,7 @@
                 <div class="abstract">{{ ufmp.paper.abstract }}</div>
             </div>
             <div class="col-lg-2 nopadding">
-                <ul class="stamps-ext no-toggling">
+                <ul class="stamps-ext no-toggling" data-url="{{ ufmp.paper.url }}"  data-title="{{ ufmp.paper.title }}" data-first-compact="{{ ufmp.paper.print_compact_first_author }}">
                     <li>
                         <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank" title="Go to journal page">Pdf</a>
                     </li>
@@ -47,7 +47,7 @@
                         <a  class="email" href="javascript:void(0)" title="Email paper">Email</a>
                     </li>
                     <li>
-                        <a class="tweet" href="javascript:void(0)" title="Share on tweeter">Tweet</a>
+                        <a class="tweet" href="https://twitter.com/intent/tweet?text={{ ufmp.paper.title|truncatechars:70 }}" title="Share on tweeter" target="popup">Tweet</a>
                     </li>
                     <li>
                         <a class="google-plus" href="javascript:void(0)" title="Share on Google+">Google+</a>
@@ -74,6 +74,13 @@
     </div>
 
 {% endfor %}
+
+{#<script> twttr.events.bind('tweet', function (event) {#}
+{#      // Do something there#}
+{#      alert('Tweeted');#}
+{#    });#}
+{#</script>#}
+
 {% show_more %}
 
 

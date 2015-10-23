@@ -29,7 +29,41 @@ $(document).ready(function() {
     // send ajax with filter
     $('#most-recent').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'recent');});
     $('#most-relevant').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'relevant');});
+
+    // tweet
+    $('.tweet').on('click', function () {
+        var title = $(this).closest('.stamps-ext').data('title');
+        var url = $(this).closest('.stamps-ext').data('url');
+        var first_author = $(this).closest('.stamps-ext').data('first-compact');
+        console.log(url);
+        var tinyurl = makeTinyUrl(url);
+        window.open('https://twitter.com/intent/tweet?text=' +
+            title +
+            ' by ' +
+            first_author +
+            tinyurl,'name','width=600,height=400');
+    });
+
 });
+
+function makeTinyUrl(url)
+{
+    //$.get("http://tinyurl.com/api-create.php?url=" + url, function(shorturl){
+    //    alert(shorturl)
+    //});
+    $.getJSON('http://api.bitly.com/v3/shorten?callback=?',
+        {
+            format: "json",
+            apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
+            login: "nicolaspannetier",
+            longUrl: url
+        },
+        function(response) {
+            return response.data.url;
+        }
+);
+
+}
 
 function stamps_mouseenter (){
     $(this).find('.stamps').show();

@@ -61,15 +61,19 @@
     </nav>
 {% else %}
     <nav class="navbar navbar-default nav-bar-anonymous" role="navigation">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-sign-in">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand navbar-brand-anonymous" href="{% url 'core:home' %}"></a>
-            <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-sign-in">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'core:home' %}">
+                    <img class="brand-image" alt="PubStream" src="{% static 'img/mark_v4.png' %}">
+                </a>
+            </div>
+                <!-- Collect the nav links, forms, and other content for toggling -->
 
             <div class="collapse navbar-collapse" id="navbar-collapse-sign-in">
                 <ul class="nav navbar-nav navbar-right">
@@ -83,7 +87,6 @@
                 </ul>
             </div>
         </div>
-
     </nav>
 {% endif %}
 {% endblock %}

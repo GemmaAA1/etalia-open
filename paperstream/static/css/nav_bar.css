@@ -127,7 +127,7 @@
     background-position-y: -25px;
 }
 
-.navbar-default .navbar-nav>.active>a.profile-icon:before,
+.navbar-nav>.active>a.profile-icon:before,
 .navbar-nav>li>a.profile-icon:before {
     background: transparent url(../img/main_icons_navbar_color.svg) -218px 0px no-repeat;
     background-size: auto 61px;
@@ -143,10 +143,19 @@
 }
 
 /* Use in anonymous navbar*/
-.navbar-default .navbar-nav>.active>a.signin-icon:before,
+.navbar-nav>.active>a.signin-icon:before,
 .navbar-nav>li>a.signin-icon:before {
-    background-position-y: 0px;
-    background-position-x: -250px;
+    background: transparent url(../img/main_icons_navbar_color.svg) -270px 0px no-repeat;
+    background-size: auto 61px;
+    margin: -10px 0 -10px 0;
+    width: 40px;
+    height: 30px;
+}
+
+.navbar-nav>.active>a.signin-icon:before,
+.navbar-nav>li>a.signin-icon:hover:before,
+.navbar-nav>li>a.profile-icon:focus::before {
+    background-position-y: -33px;;
 }
 
 
