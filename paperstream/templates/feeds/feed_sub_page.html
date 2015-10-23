@@ -4,80 +4,75 @@
 {% paginate first_page,per_page object_list %}
 {% for ufmp in object_list %}
     <div id="{{ ufmp.paper.pk }}" class="paper-list">
-        <div class="compact {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
-            <div class="row">
-                <div class="long">
-                    <div class="title">{{ ufmp.paper.title|truncatechars:95 }}</div>
-                    <div class="authors-journal-date">
-                        {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title|add:ufmp.paper.print_date as str %}
-                        {% if str|length > 115 %}
-                            <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:80 }}</span>
-                            {{ ufmp.paper.print_journal_title|truncatechars:20 }}
-                            {{ ufmp.paper.print_date }}
-                        {% else %}
-                            <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
-                            {{ ufmp.paper.print_journal_title }}
-                            {{ ufmp.paper.print_date }}
-                        {% endif %}
-                        {% endwith %}
-                    </div>
+        <div class="row compact {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
+            <div class="long">
+                <div class="title">{{ ufmp.paper.title|truncatechars:80 }}</div>
+                <div class="authors-journal-date">
+                    {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title|add:ufmp.paper.print_date as str %}
+                    {% if str|length > 100 %}
+                        <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
+                        {{ ufmp.paper.print_journal_title|truncatechars:20 }}
+                        {{ ufmp.paper.print_date }}
+                    {% else %}
+                        <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
+                        {{ ufmp.paper.print_journal_title }}
+                        {{ ufmp.paper.print_date }}
+                    {% endif %}
+                    {% endwith %}
                 </div>
-                <div class="short">
-                    <div class="title">{{ ufmp.paper.title|truncatechars:75 }}</div>
-                    <div class="authors-journal-date">
-                        {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
-                        {% if str|length > 90 %}
-                            <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:60 }}</span>
-                            {{ ufmp.paper.print_journal_title|truncatechars:20 }}
-                            {{ ufmp.paper.print_date }}
-                        {% else %}
-                            <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
-                            {{ ufmp.paper.print_journal_title }}
-                            {{ ufmp.paper.print_date }}
-                        {% endif %}
-                        {% endwith %}
-                    </div>
+            </div>
+            <div class="short">
+                <div class="title">{{ ufmp.paper.title|truncatechars:67 }}</div>
+                <div class="authors-journal-date">
+                    {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
+                    {% if str|length > 90 %}
+                        <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
+                        {{ ufmp.paper.print_journal_title|truncatechars:20 }}
+{#                        {{ ufmp.paper.print_date }}#}
+                    {% else %}
+                        <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
+                        {{ ufmp.paper.print_journal_title }}
+                        {{ ufmp.paper.print_date }}
+                    {% endif %}
+                    {% endwith %}
                 </div>
-
             </div>
         </div>
-        <div class="extended {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
-            <div class="row">
-                <div class="col-lg-10 nopadding">
-                    <div class="title">{{ ufmp.paper.title }}</div>
-                    <div class="authors">{{ ufmp.paper.print_full_authors}}</div>
-                    <div class="journal-date">
-                        {{ ufmp.paper.print_journal_title}}
-                        {{ ufmp.paper.print_date }}
-                    </div>
-                    <div class="abstract">{{ ufmp.paper.abstract }}</div>
+        <div class="row extended {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
+            <div class="col-lg-10 nopadding">
+                <div class="title">{{ ufmp.paper.title }}</div>
+                <div class="authors">{{ ufmp.paper.print_full_authors}}</div>
+                <div class="journal-date">
+                    {{ ufmp.paper.print_journal_title}}
+                    <em>{{ ufmp.paper.print_date }}</em>
                 </div>
-                <div class="col-lg-2 nopadding">
-                    <ul class="stamps-ext no-toggling">
-                        <li>
-                            <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank" title="Go to journal page">Pdf</a>
-                        </li>
-                        <li>
-                            <a class="{% if ufmp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}"
-                               href="javascript:void(0)"
-                               title="{% if ufmp.paper.pk in user_lib %} Move to trash {% else %} Add to your library {% endif %}">
-                                Library
-                            </a>
-                        </li>
-                        <li>
-                            <a class="comment" href="javascript:void(0)" title="Follow comments">Comment</a>
-                        </li>
-                        <li>
-                            <a  class="email" href="javascript:void(0)">Email</a>
-                        </li>
-                        <li>
-                            <a class="tweet" href="javascript:void(0)">Tweet</a>
-                        </li>
-                        <li>
-                            <a class="google-plus" href="javascript:void(0)">Google+</a>
-                        </li>
-                    </ul>
-                </div>
+                <div class="abstract">{{ ufmp.paper.abstract }}</div>
+            </div>
+            <div class="col-lg-2 nopadding">
+                <ul class="stamps-ext no-toggling">
+                    <li>
+                        <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank" title="Go to journal page">Pdf</a>
+                    </li>
+                    <li>
+                        <a class="{% if ufmp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}"
+                           href="javascript:void(0)"
+                           title="{% if ufmp.paper.pk in user_lib %} Move to trash {% else %} Add to your library {% endif %}">
+                            Library
+                        </a>
+                    </li>
+                    <li>
+                        <a class="comment" href="javascript:void(0)" title="Follow comments">Comment</a>
+                    </li>
+                    <li>
+                        <a  class="email" href="javascript:void(0)">Email</a>
+                    </li>
+                    <li>
+                        <a class="tweet" href="javascript:void(0)">Tweet</a>
+                    </li>
+                    <li>
+                        <a class="google-plus" href="javascript:void(0)">Google+</a>
+                    </li>
+                </ul>
             </div>
         </div>
         <span>

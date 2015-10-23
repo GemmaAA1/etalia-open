@@ -10,7 +10,8 @@ from paperstream.nlp.models import PaperVectors
 
 email = 'norbert.schuff@gmail.com'
 email = 'nicolas.pannetier@gmail.com'
-out_path = '~/.'
+email = 'tosca4m@hotmail.com'
+out_path = '/home/ubuntu/'
 
 User = get_user_model()
 
@@ -54,7 +55,7 @@ with open(os.path.join(out_path, 'sample_library.csv'), 'w') as csvfile:
         row = tuple([title] + [str(val) for val in ps_vectors[i]])
         writer.writerow(row)
 
-with open(os.path.join(out_path, 'user_library.csv'), 'w') as csvfile:
+with open(os.path.join(out_path, '{email}_library.csv'.format(email=email)), 'w+') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(tuple(['title'] + ['v%s' % i for i in range(128)]))
     for i, title in enumerate(user_title):

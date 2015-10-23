@@ -10,44 +10,41 @@
             {% elif dfp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ dfp.paper.id_pmi }}"></div>
             {% endif %}
         </div>
-        <div class="compact {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
-            <div class="row">
-                <div class="long">
-                    <div class="title">{{ dfp.paper.title|truncatechars:90 }}</div>
-                    <div class="authors-journal-date">
-                        {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title|add:dfp.paper.print_date as str %}
-                        {% if str|length > 110 %}
-                            <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:75 }}</span>
-                            {{ dfp.paper.print_journal_title|truncatechars:20 }}
-                            {{ dfp.paper.print_date }}
-                        {% else %}
-                            <span class="authors">{{ dfp.paper.print_full_authors }}</span>
-                            {{ dfp.paper.print_journal_title }}
-                            {{ dfp.paper.print_date }}
-                        {% endif %}
-                        {% endwith %}
-                    </div>
+        <div class="row compact {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
+            <div class="long">
+                <div class="title">{{ dfp.paper.title|truncatechars:80 }}</div>
+                <div class="authors-journal-date">
+                    {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title|add:dfp.paper.print_date as str %}
+                    {% if str|length > 100 %}
+                        <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
+                        {{ dfp.paper.print_journal_title|truncatechars:20 }}
+                        {{ dfp.paper.print_date }}
+                    {% else %}
+                        <span class="authors">{{ dfp.paper.print_full_authors }}</span>
+                        {{ dfp.paper.print_journal_title }}
+                        {{ dfp.paper.print_date }}
+                    {% endif %}
+                    {% endwith %}
                 </div>
-                <div class="short">
-                    <div class="title">{{ dfp.paper.title|truncatechars:75 }}</div>
-                    <div class="authors-journal-date">
-                        {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title as str %}
-                        {% if str|length > 100 %}
-                            <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:60 }}</span>
-                            {{ dfp.paper.print_journal_title|truncatechars:20 }}
-                            {{ dfp.paper.print_date }}
-                        {% else %}
-                            <span class="authors">{{ dfp.paper.print_full_authors }}</span>
-                            {{ dfp.paper.print_journal_title }}
-                            {{ dfp.paper.print_date }}
-                        {% endif %}
-                        {% endwith %}
-                    </div>
+            </div>
+            <div class="short">
+                <div class="title">{{ dfp.paper.title|truncatechars:67 }}</div>
+                <div class="authors-journal-date">
+                    {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title as str %}
+                    {% if str|length > 100 %}
+                        <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
+                        {{ dfp.paper.print_journal_title|truncatechars:20 }}
+{#                        {{ dfp.paper.print_date }}#}
+                    {% else %}
+                        <span class="authors">{{ dfp.paper.print_full_authors }}</span>
+                        {{ dfp.paper.print_journal_title }}
+                        {{ dfp.paper.print_date }}
+                    {% endif %}
+                    {% endwith %}
                 </div>
-
             </div>
         </div>
-        <div class="extended {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
+        <div class="row extended {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
             <div class="row">
                 <div class="col-lg-10 nopadding">
                     <div class="title">{{ dfp.paper.title }}</div>

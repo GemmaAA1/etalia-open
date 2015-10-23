@@ -18,8 +18,8 @@
         <div class="library">
             <div class="row">
                 <div class="col-lg-11 col-lg-offset-1">
-                    <div class="paper">
-                        <div class="col-md-8">
+                    <div class="col-md-8">
+                        <div class="paper">
                             <div class="title">{{ paper.title }}</div>
                             <div class="row">
                                 <div class="col-md-10">
@@ -44,84 +44,82 @@
                             </div>
 
                             {% if paper.abstract %}
-                                <div class="abstract-title">Abstract:</div>
-                                <div class="abstract-body">
-                                    {{ paper.abstract }}
-                                </div>
+                            <div class="abstract-title">Abstract:</div>
+                            <div class="abstract-body">
+                                {{ paper.abstract }}
+                            </div>
                             {% endif %}
-
-                            <div class="comment">
-                                <div id="disqus_thread"></div>
-                                    <!-- use sso for disqus -->
-
-                                    {% if user.is_authenticated %}
-                                        {% disqus_sso %}
-                                        {% get_disqus_sso request %}
-                                        <!-- comments -->
-                                        {% disqus_show_comments %}
-                                    {%  endif %}
-                            </div>
                         </div>
-                        <div class="col-lg-3">
-                            <ul class="stamps" id="{{ paper.pk }}">
-                                {% if user.is_authenticated %}
-                                    <li>
-                                        <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
-                                    </li>
-                                    <li>
-                                        <a class="{% if is_in_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)"></a>
-                                    </li>
-                                    <li>
-                                        <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
-                                    </li>
-                                    </br>
-                                    <li>
-                                        <a class="email" href="javascript:void(0)" title="Email"></a>
-                                    </li>
-                                    <li>
-                                        <a class="tweet" href="javascript:void(0)" title="Tweet"></a>
-                                    </li>
-                                    <li>
-                                        <a class="google-plus" href="javascript:void(0)" title="Google+"></a>
-                                    </li>
-                                {% else %}
-                                    <li>
-                                        <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                            <div class="neighbors">
-                                {% if neighbors %}
-                                    <div class="title">Similar Papers</div>
-                                        <span>
-                                            <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
-                                            <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
-                                            <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
-                                        <span>
-                                    </div>
-                                    <div class="neighbors-list">
-                                    {% for neighbor in neighbors %}
-                                        <a href="{% url 'library:paper' neighbor.pk %}">
-                                            <div class="neighbor">
-                                                {{ neighbor.title|truncatechars:40 }}<br>
-                                                <span class="authors">{{ neighbor.print_full_authors|truncatechars:40 }}</span><br>
-
-                                                {% with neighbor.print_journal_title|add:neighbor.print_month_year as str %}
-                                                {% if str|length > 40 %}
-                                                    {{ neighbor.print_journal_title|truncatechars:23}}
-                                                    {{ neighbor.print_month_year }}
-                                                {% else %}
-                                                    {{ neighbor.print_journal_title}}
-                                                    {{ neighbor.print_month_year }}
-                                                {% endif %}
-                                                {% endwith %}
-
-                                            </div>
-                                        </a>
-                                    {% endfor %}
-                                    </div>
-                                {% endif %}
+                        <div class="comment">
+                            <div id="disqus_thread">
                             </div>
+                                <!-- use sso for disqus -->
+
+                                {% if user.is_authenticated %}
+                                    {% disqus_sso %}
+                                    {% get_disqus_sso request %}
+                                    <!-- comments -->
+                                    {% disqus_show_comments %}
+                                {%  endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <ul class="stamps" id="{{ paper.pk }}">
+                            {% if user.is_authenticated %}
+                                <li>
+                                    <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
+                                </li>
+                                <li>
+                                    <a class="{% if is_in_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)"></a>
+                                </li>
+                                <li>
+                                    <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
+                                </li>
+                                </br>
+                                <li>
+                                    <a class="email" href="javascript:void(0)" title="Email"></a>
+                                </li>
+                                <li>
+                                    <a class="tweet" href="javascript:void(0)" title="Tweet"></a>
+                                </li>
+                                <li>
+                                    <a class="google-plus" href="javascript:void(0)" title="Google+"></a>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="neighbors">
+                            {% if neighbors %}
+                            <div class="title">Similar Papers</div>
+                            <span>
+                                <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
+                                <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
+                                <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
+                            <span>
+                            <div class="neighbors-list">
+                                {% for neighbor in neighbors %}
+                                <a href="{% url 'library:paper' neighbor.pk %}">
+                                    <div class="neighbor">
+                                        {{ neighbor.title|truncatechars:40 }}<br>
+                                        <span class="authors">{{ neighbor.print_full_authors|truncatechars:40 }}</span><br>
+
+                                        {% with neighbor.print_journal_title|add:neighbor.print_month_year as str %}
+                                        {% if str|length > 40 %}
+                                            {{ neighbor.print_journal_title|truncatechars:23}}
+                                            {{ neighbor.print_month_year }}
+                                        {% else %}
+                                            {{ neighbor.print_journal_title}}
+                                            {{ neighbor.print_month_year }}
+                                        {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
