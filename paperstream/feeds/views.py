@@ -113,13 +113,16 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         # sort queryset
         if self.sorting_flag == 'relevant':
-            # queryset = queryset.order_by('')
+            # this is by default
             pass
         elif self.sorting_flag == 'recent':
             # order by date
             queryset = queryset.order_by(Coalesce('paper__date_ep',
                                                   'paper__date_pp',
                                                   'paper__date_fs').desc())
+        elif self.sorting_flag == 'trendy':
+            # order by altmetric score
+            queryset = queryset.order_by('-paper__altmetric__score')
 
         return queryset
 
@@ -221,6 +224,8 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         else:
             context['authors_filter'] = authors_pks
 
+        context['sorting_flag'] = self.sorting_flag
+
         return context
 
 
@@ -314,15 +319,21 @@ class TrendView(BaseFeedView):
         ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
         if new:
             ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag}
+                                 'authors_flag': self.authors_filter_flag,
+                                 'sorting_flag': self.sorting_flag}
             ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag}
+                                 'authors_flag': self.authors_filter_flag,
+                                 'sorting_flag': self.sorting_flag}
+            ufl.library_filter = {'journals_flag': self.journals_filter_flag,
+                                  'authors_flag': self.authors_filter_flag,
+                                  'sorting_flag': self.sorting_flag}
             ufl.save()
         else:
             self.journals_filter = ufl.trend_filter.get('journals')
             self.authors_filter = ufl.trend_filter.get('authors')
             self.authors_filter_flag = ufl.trend_filter.get('authors_flag') or self.authors_filter_flag
             self.journals_filter_flag = ufl.trend_filter.get('journals_flag') or self.journals_filter_flag
+            self.sorting_flag = ufl.trend_filter.get('sorting_flag') or self.sorting_flag
 
         # From ajaxable filter
         if self.request.is_ajax():
@@ -334,11 +345,13 @@ class TrendView(BaseFeedView):
                     self.authors_filter = data.get('authors')
                     self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
                     self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+                    self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
                     ufl.trend_filter = {
                         'journals': self.journals_filter,
                         'authors': self.authors_filter,
                         'journals_flag': self.journals_filter_flag,
                         'authors_flag': self.authors_filter_flag,
+                        'sorting_flag': self.sorting_flag
                     }
                     ufl.save()
             except ValueError:  # likely data from AjaxListView
@@ -359,7 +372,8 @@ class TrendView(BaseFeedView):
         query_set = self.filter_queryset(self.original_qs)
 
         # let's shuffle the results
-        return query_set.order_by("?")
+        # return query_set.order_by("?")
+        return query_set
 
 trend_view = TrendView.as_view()
 

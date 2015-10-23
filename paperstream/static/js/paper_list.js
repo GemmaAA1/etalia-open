@@ -27,31 +27,39 @@ $(document).ready(function() {
     $('.trash').on('click', trash_paper);
 
     // send ajax with filter
-    $('#most-recent').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'recent');});
-    $('#most-relevant').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'relevant');});
+    $('#most-recent').on('click', function (e) {
+        e.preventDefault();
+        send_filter(undefined, undefined, 'recent');
+        $(this).closest('.dropdown-menu')
+            .find('.sort-option')
+            .removeClass('active');
+        $(this).addClass('active');
+    });
+
+    $('#most-relevant').on('click', function (e) {
+        e.preventDefault();
+        send_filter(undefined, undefined, 'relevant');
+        $(this).closest('.dropdown-menu')
+            .find('.sort-option')
+            .removeClass('active');
+        $(this).addClass('active');
+    });
+
+    $('#most-trendy').on('click', function (e) {
+        e.preventDefault();
+        send_filter(undefined, undefined, 'trendy');
+        $(this).closest('.dropdown-menu')
+            .find('.sort-option')
+            .removeClass('active');
+        $(this).addClass('active');
+    });
 
     // tweet
     $('.tweet').on('click', function () {
         var title = $(this).closest('.stamps-ext').data('title');
-        var url = $(this).closest('.stamps-ext').data('url');
         var first_author = $(this).closest('.stamps-ext').data('first-compact');
-        console.log(url);
-        var tinyurl = makeTinyUrl(url);
-        window.open('https://twitter.com/intent/tweet?text=' +
-            title +
-            ' by ' +
-            first_author +
-            tinyurl,'name','width=600,height=400');
-    });
-
-});
-
-function makeTinyUrl(url)
-{
-    //$.get("http://tinyurl.com/api-create.php?url=" + url, function(shorturl){
-    //    alert(shorturl)
-    //});
-    $.getJSON('http://api.bitly.com/v3/shorten?callback=?',
+        var url = $(this).closest('.stamps-ext').data('url');
+        $.getJSON('http://api.bitly.com/v3/shorten?callback=?',
         {
             format: "json",
             apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
@@ -59,11 +67,25 @@ function makeTinyUrl(url)
             longUrl: url
         },
         function(response) {
-            return response.data.url;
-        }
-);
+            var text = title  + ' | ' + first_author + ' | ' + response.data.url + ' via @pubstreamio';
+            //console.log(text);
+            var geturl = 'https://twitter.com/intent/tweet?text=' + encodeURI(text);
+            //console.log(geturl);
+            event.preventDefault();
+            window.open(geturl, 'Tweet', 'width=600,height=400');
+        });
+    });
 
-}
+    // google plus
+    $('.google-plus').on('click', function () {
+        var title = $(this).closest('.stamps-ext').data('title');
+        var first_author = $(this).closest('.stamps-ext').data('first-compact');
+        var url = $(this).closest('.stamps-ext').data('url');
+        var geturl = 'https://plus.google.com/share?url=' + encodeURI(url);
+        event.preventDefault();
+        window.open(geturl, 'Tweet', 'width=600,height=400');
+    });
+});
 
 function stamps_mouseenter (){
     $(this).find('.stamps').show();
@@ -81,9 +103,10 @@ function extendPaper(){
         $(this).children('.stamps').css('right', '25px');
         //$(this).children('.stamps').animate({"right":"22px"}, "fast");
         $(this).find('.more').removeClass('active');
-        $(this).on('mouseenter', stamps_mouseenter)
-               .on('mouseleave', stamps_mouseleave);
-
+        if (!$(this).children('.stamps').find('.like').hasClass('active')) {
+            $(this).on('mouseenter', stamps_mouseenter)
+                   .on('mouseleave', stamps_mouseleave);
+        }
     } else {
         $(this).children('.stamps').css('right', '0px');
         //$(this).children('.stamps-div').animate({"right":"-10px"}, "fast");
@@ -132,17 +155,14 @@ function like () {
                             .parents('.paper-list')
                             .off('mouseleave', stamps_mouseleave)
                             .off('mouseenter', stamps_mouseenter)
-                            .find('.compact, .extended')
-                            .addClass('bg-active');
+                            .find('.stamps').show();
                     } else {
                         $like.removeClass('loading')
                             .addClass('like')
                             .removeClass('active')
                             .closest('.paper-list')
                             .on('mouseleave', stamps_mouseleave)
-                            .on('mouseenter', stamps_mouseenter)
-                            .find('.compact, .extended')
-                            .removeClass('bg-active');
+                            .on('mouseenter', stamps_mouseenter);
                     }
                 }
             });
