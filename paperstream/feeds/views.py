@@ -15,6 +15,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.forms.utils import ErrorList
 from django.core.exceptions import ValidationError
+from django.db.models.functions import Coalesce
+
 
 from braces.views import LoginRequiredMixin
 
@@ -44,6 +46,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     journals_filter_flag = 'all'
     authors_filter = None
     authors_filter_flag = 'all'
+    sorting_flag = 'relevant'
 
     def update_filter(self):
         raise NotImplemented
@@ -107,6 +110,16 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
                                    Q(paper__authors__last_name__icontains=q) |
                                    Q(paper__authors__first_name__icontains=q))\
                 .distinct()
+
+        # sort queryset
+        if self.sorting_flag == 'relevant':
+            # queryset = queryset.order_by('')
+            pass
+        elif self.sorting_flag == 'recent':
+            # order by date
+            queryset = queryset.order_by(Coalesce('paper__date_ep',
+                                                  'paper__date_pp',
+                                                  'paper__date_fs').desc())
 
         return queryset
 
@@ -221,15 +234,21 @@ class FeedView(BaseFeedView):
         ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
         if new:
             ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag}
+                                 'authors_flag': self.authors_filter_flag,
+                                 'sorting_flag': self.sorting_flag}
             ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag}
+                                 'authors_flag': self.authors_filter_flag,
+                                 'sorting_flag': self.sorting_flag}
+            ufl.library_filter = {'journals_flag': self.journals_filter_flag,
+                                  'authors_flag': self.authors_filter_flag,
+                                  'sorting_flag': self.sorting_flag}
             ufl.save()
         else:
             self.journals_filter = ufl.stream_filter.get('journals')
             self.authors_filter = ufl.stream_filter.get('authors')
             self.authors_filter_flag = ufl.stream_filter.get('authors_flag') or self.authors_filter_flag
             self.journals_filter_flag = ufl.stream_filter.get('journals_flag') or self.journals_filter_flag
+            self.sorting_flag = ufl.stream_filter.get('sorting_flag') or self.sorting_flag
 
         # From ajaxable filter
         if self.request.is_ajax():
@@ -241,11 +260,13 @@ class FeedView(BaseFeedView):
                     self.authors_filter = data.get('authors')
                     self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
                     self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+                    self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
                     ufl.stream_filter = {
                         'journals': self.journals_filter,
                         'authors': self.authors_filter,
                         'journals_flag': self.journals_filter_flag,
                         'authors_flag': self.authors_filter_flag,
+                        'sorting_flag': self.sorting_flag
                     }
                     ufl.save()
             except ValueError:  # likely data from AjaxListView

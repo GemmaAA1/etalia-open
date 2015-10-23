@@ -19,6 +19,9 @@ $(document).ready(function() {
     // Send trash paper from user library ajax call
     $('.trash').on('click', trash_paper);
 
+    // send ajax with filter
+    $('#most-recent').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'recent');});
+    $('#most-relevant').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'relevant');});
 });
 
 
@@ -35,23 +38,27 @@ function stamps_mouseleave () {
 }
 
 function extendPaper(){
-    $(this).children('.compact').toggle();
-    $(this).children('.extended').toggle();
     if ($(this).children('.extended').is(':visible')) {
-        $(this).off('mouseenter mouseleave');
-        $(this).find('.more').addClass('active');
-    } else {
+        $(this).children('.stamps').css('right', '25px');
+        //$(this).children('.stamps').animate({"right":"22px"}, "fast");
         $(this).find('.more').removeClass('active');
         $(this).on('mouseenter', stamps_mouseenter)
                .on('mouseleave', stamps_mouseleave);
-        }
+
+    } else {
+        $(this).children('.stamps').css('right', '0px');
+        //$(this).children('.stamps-div').animate({"right":"-10px"}, "fast");
+        $(this).off('mouseenter mouseleave');
+        $(this).find('.more').addClass('active');
+    }
+    $(this).children('.compact').toggle();
+    $(this).children('.extended').toggle();
 }
 
 function tick () {
     var $tick = $(this);
     var id = $(this).parents('.paper-list').attr('id');
     var url = '/user/paper/tick';
-    console.log(url);
     $.ajax({
         type: 'POST',
         url: url,

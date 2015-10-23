@@ -96,12 +96,13 @@ $(document).ready(function() {
 
 });
 
-function send_filter(journals_flag, authors_flag) {
+function send_filter(journals_flag, authors_flag, sorting_flag) {
 
     var json_data = {};
     json_data.action = 'filter';
     json_data.journals_flag = journals_flag;
     json_data.authors_flag = authors_flag;
+    json_data.sorting_flag = sorting_flag;
     json_data.journals = [];
     json_data.authors = [];
 

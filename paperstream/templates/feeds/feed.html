@@ -27,12 +27,32 @@
                 <div class="col-lg-11 col-lg-offset-1">
                     <div class="col-md-9">
                         <div class="userfeed">
-                            <div class="header-img-crop">
-                                <img src="{% static 'img/main_icons_color.svg' %}" class="header-img">
-                            </div>
-                            <div class="header-text">
-                                <h3>Recent publications</h3>
-                                <h5><em>Out of {{ stats.nb_papers_last_month }} published last month</em></h5>
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <div class="header-img-crop">
+                                        <img src="{% static 'img/main_icons_color.svg' %}" class="header-img">
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="header-text">
+                                        <h3>Recent publications</h3>
+                                        <h5><em>Curated for you out of {{ stats.nb_papers_last_month }} articles published last month</em></h5>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="sort-by">
+                                        <div class="dropdown">
+                                            <span class="dropdown-toggle " type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                <em>sort-by</em>
+                                                <span class="caret"></span>
+                                            </span>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                                <li><a id="most-relevant" href="#">most relevant</a></li>
+                                                <li><a id="most-recent" href="#">most recent</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="endless_data">
                             {% include page_template %}

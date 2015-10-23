@@ -60,35 +60,35 @@
                             Library
                         </a>
                     </li>
+{#                    <li>#}
+{#                        <a class="comment" href="javascript:void(0)" title="Follow comments">Comment</a>#}
+{#                    </li>#}
                     <li>
-                        <a class="comment" href="javascript:void(0)" title="Follow comments">Comment</a>
+                        <a  class="email" href="javascript:void(0)" title="Email paper">Email</a>
                     </li>
                     <li>
-                        <a  class="email" href="javascript:void(0)">Email</a>
+                        <a class="tweet" href="javascript:void(0)" title="Share on tweeter">Tweet</a>
                     </li>
                     <li>
-                        <a class="tweet" href="javascript:void(0)">Tweet</a>
-                    </li>
-                    <li>
-                        <a class="google-plus" href="javascript:void(0)">Google+</a>
+                        <a class="google-plus" href="javascript:void(0)" title="Share on Google+">Google+</a>
                     </li>
                 </ul>
             </div>
         </div>
-        <span>
-            <ul class="stamps">
+        <span class="stamps">
+            <ul>
                 <li>
-                    <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank" text="Open in new window"></a>
+                    <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank" title="Open in new window"></a>
                 </li>
                 <li>
-                    <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
+                    <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Like"></a>
                 </li>
                 <li>
-                    <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Remove from stream"></a>
+                    <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Remove from stream"></a>
                 </li>
-                <li>
-                    <a class="more" href="javascript:void(0)"></a>
-                </li>
+{#                <li>#}
+{#                    <a class="more" href="javascript:void(0)"></a>#}
+{#                </li>#}
             </ul>
         </span>
     </div>

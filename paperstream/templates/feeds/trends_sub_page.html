@@ -63,9 +63,9 @@
                         <li>
                             <a class="{% if dfp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)">Library</a>
                         </li>
-                        <li>
-                            <a class="comment" href="javascript:void(0)">Comment</a>
-                        </li>
+{#                        <li>#}
+{#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
+{#                        </li>#}
                         <li>
                             <a  class="email" href="javascript:void(0)">Email</a>
                         </li>
@@ -79,8 +79,8 @@
                 </div>
             </div>
         </div>
-        <span>
-            <ul class="stamps">
+        <div  class="stamps">
+            <ul>
                 <li>
                     <a class="open no-toggling" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank" text="Open in new window"></a>
                 </li>
@@ -90,11 +90,11 @@
                 <li>
                     <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0) text="Remove from stream"></a>
                 </li>
-                <li>
-                    <a class="more" href="javascript:void(0)"></a>
-                </li>
+{#                <li>#}
+{#                    <a class="more" href="javascript:void(0)"></a>#}
+{#                </li>#}
             </ul>
-        </span>
+        </div>
     </div>
 
 {% endfor %}

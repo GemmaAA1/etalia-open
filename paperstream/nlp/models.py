@@ -12,7 +12,6 @@ from sklearn.externals import joblib
 
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
-from django.db.models.functions import Coalesce
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 from django.utils import timezone
@@ -929,9 +928,6 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
                     'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')
 
-        # order by date
-        data = data.order_by(Coalesce('paper__date_ep', 'paper__date_fs').asc())
-
         # Reshape data
         nb_items = data.count()
         date = []
@@ -940,16 +936,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                # manage date
-                d = dat['paper__date_ep']
-                if not d:
-                    if dat['paper__date_pp']:
-                        if dat['paper__date_pp'] > timezone.now().date():
-                            d = dat['paper__date_fs']
-                        else:
-                            d = dat['paper__date_pp']
-                    else:
-                        d = dat['paper__date_fs']
+                # get min date
+                dates = [dat['paper__date_fs'],
+                         dat['paper__date_ep'],
+                         dat['paper__date_pp']]
+                dates = [d for d in dates if d is not None]
+                d = min(dates)
                 date.append(d)
                 # store paper pk
                 index2pk.append(dat['paper__pk'])

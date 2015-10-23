@@ -405,5 +405,7 @@ class UserFeedLayout(TimeStampedModel):
 
     trend_filter = JSONField()
 
+    library_filter = JSONField()
+
 
 

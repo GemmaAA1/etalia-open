@@ -14,6 +14,12 @@
     padding-top: 10px;
 }
 
+.usertrend h3,
+.usertrend h5 {
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
 .usertrend h3 {
     font-weight: 700;
 }
@@ -24,20 +30,25 @@
 }
 
 .header-img {
-    height: 50px;
-    margin-left: -100px;
+    height: 40px;
+    margin-left: -77px;
 }
 
 .header-img-crop{
     display: inline-block;
     margin-left: 20px;
     margin-right: 10px;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     overflow: hidden;
 }
 
 .header-text {
+    padding-left: 20px;
     display: inline-block;
+}
 
+
+.sort-by {
+    padding: 25px 0 0px 20px;
 }
