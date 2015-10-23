@@ -137,7 +137,8 @@
 }
 
 .navbar-nav>.active>a.profile-icon:before,
-.navbar-nav>li>a.profile-icon:hover::before {
+.navbar-nav>li>a.profile-icon:hover::before,
+.navbar-nav>li>a.profile-icon:focus::before {
     background-position-y: -33px;
 }
 
