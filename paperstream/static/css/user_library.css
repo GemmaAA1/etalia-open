@@ -12,6 +12,12 @@
     padding-top: 10px;
 }
 
+.userlib h3,
+.userlib h5 {
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
 .userlib h3 {
     font-weight: 700;
 }
@@ -22,20 +28,20 @@
 }
 
 .header-img {
-    height: 50px;
-    margin-left: -590px;
+    height: 40px;
+    margin-left: -472px;
 }
 
 .header-img-crop{
     display: inline-block;
     margin-left: 20px;
     margin-right: 10px;
-    width: 55px;
-    height: 50px;
+    width: 50px;
+    height: 40px;
     overflow: hidden;
 }
 
 .header-text {
+    padding-left: 20px;
     display: inline-block;
-
 }

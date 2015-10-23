@@ -11,73 +11,51 @@
             {% endif %}
         </div>
         <div class="row compact {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
-            <div class="long">
-                <div class="title">{{ ulp.paper.title|truncatechars:80 }}</div>
-                <div class="authors-journal-date">
-                    {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title|add:ulp.paper.print_date as str %}
-                    {% if str|length > 100 %}
-                        <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ ulp.paper.print_journal_title|truncatechars:20 }}
-                        {{ ulp.paper.print_date }}
-                    {% else %}
-                        <span class="authors">{{ ulp.paper.print_full_authors }}</span>
-                        {{ ulp.paper.print_journal_title }}
-                        {{ ulp.paper.print_date }}
-                    {% endif %}
-                    {% endwith %}
-                </div>
-            </div>
+            {% if user_taste|get_is_liked:ulp.paper.pk %}
             <div class="short">
-                <div class="title">{{ ulp.paper.title|truncatechars:67 }}</div>
+            {% else %}
+            <div class="long">
+            {% endif %}
+                <div class="title">{{ ulp.paper.title }}</div>
                 <div class="authors-journal-date">
-                    {% with ulp.paper.print_full_authors|add:ulp.paper.print_journal_title|add:ulp.paper.print_date as str %}
-                    {% if str|length > 90 %}
-                        <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ ulp.paper.print_journal_title|truncatechars:20 }}
-{#                        {{ ulp.paper.print_date }}#}
-                    {% else %}
-                        <span class="authors">{{ ulp.paper.print_full_authors }}</span>
-                        {{ ulp.paper.print_journal_title }}
-                        {{ ulp.paper.print_date }}
-                    {% endif %}
-                    {% endwith %}
+                    <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:70 }}</span>
+                    {{ ulp.paper.print_journal_title }}
+                    {{ ulp.paper.print_date }}
                 </div>
             </div>
         </div>
-        <div class="extended  {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
-            <div class="row">
-                <div class="col-lg-10 nopadding">
-                    <div class="title">{{ ulp.paper.title }}</div>
-                    <div class="authors">{{ ulp.paper.print_full_authors}}</div>
-                    <div class="journal-date">
-                        {{ ulp.paper.print_journal_title}}
-                        {{ ulp.paper.print_date }}
-                    </div>
-                    <div class="abstract">{{ ulp.paper.abstract }}</div>
+        <div class="row extended  {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
+            <div class="col-lg-10 nopadding">
+                <div class="title">{{ ulp.paper.title }}</div>
+                <div class="authors">{{ ulp.paper.print_full_authors}}</div>
+                <div class="journal-date">
+                    {{ ulp.paper.print_journal_title}}
+                    {{ ulp.paper.print_date }}
                 </div>
-                <div class="col-lg-2 nopadding">
-                    <ul class="stamps-ext no-toggling">
-                        <li>
-                            <a class="go-to-pdf" href="{{ ulp.paper.url }}" target="_blank">Pdf</a>
-                        </li>
-                        <li>
-                            <a class="comment" href="javascript:void(0)">Comment</a>
-                        </li>
-                        <li>
-                            <a  class="email" href="javascript:void(0)">Email</a>
-                        </li>
-                        <li>
-                            <a class="tweet" href="javascript:void(0)">Tweet</a>
-                        </li>
-                        <li>
-                            <a class="google-plus" href="javascript:void(0)">Google+</a>
-                        </li>
-                    </ul>
-                </div>
+                <div class="abstract">{{ ulp.paper.abstract }}</div>
+            </div>
+            <div class="col-lg-2 nopadding">
+                <ul class="stamps-ext no-toggling">
+                    <li>
+                        <a class="go-to-pdf" href="{{ ulp.paper.url }}" target="_blank">Pdf</a>
+                    </li>
+{#                        <li>#}
+{#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
+{#                        </li>#}
+                    <li>
+                        <a  class="email" href="javascript:void(0)">Email</a>
+                    </li>
+                    <li>
+                        <a class="tweet" href="javascript:void(0)">Tweet</a>
+                    </li>
+                    <li>
+                        <a class="google-plus" href="javascript:void(0)">Google+</a>
+                    </li>
+                </ul>
             </div>
         </div>
-        <span>
-            <ul class="stamps">
+        <span class="stamps">
+            <ul>
                 <li>
                     <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank" text="Open in new window"></a>
                 </li>
@@ -88,9 +66,9 @@
                     <a class="trash no-toggling" href="javascript:void(0)" text="Move to trash"></a>
 {#                    <a class="add-to-lib no-toggling" href="javascript:void(0)"></a>#}
                 </li>
-                <li>
-                    <a class="more" href="javascript:void(0)"></a>
-                </li>
+{#                <li>#}
+{#                    <a class="more" href="javascript:void(0)"></a>#}
+{#                </li>#}
             </ul>
         </span>
     </div>

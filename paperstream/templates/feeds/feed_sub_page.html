@@ -4,37 +4,17 @@
 {% paginate first_page,per_page object_list %}
 {% for ufmp in object_list %}
     <div id="{{ ufmp.paper.pk }}" class="paper-list">
-        <div class="row compact {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
-            <div class="long">
-                <div class="title">{{ ufmp.paper.title|truncatechars:80 }}</div>
-                <div class="authors-journal-date">
-                    {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title|add:ufmp.paper.print_date as str %}
-                    {% if str|length > 100 %}
-                        <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ ufmp.paper.print_journal_title|truncatechars:20 }}
-                        {{ ufmp.paper.print_date }}
-                    {% else %}
-                        <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
-                        {{ ufmp.paper.print_journal_title }}
-                        {{ ufmp.paper.print_date }}
-                    {% endif %}
-                    {% endwith %}
-                </div>
-            </div>
+        <div class="row compact">
+            {% if user_taste|get_is_liked:ufmp.paper.pk %}
             <div class="short">
-                <div class="title">{{ ufmp.paper.title|truncatechars:67 }}</div>
+            {% else %}
+            <div class="long">
+            {% endif %}
+                <div class="title">{{ ufmp.paper.title }}</div>
                 <div class="authors-journal-date">
-                    {% with ufmp.paper.print_full_authors|add:ufmp.paper.print_journal_title as str %}
-                    {% if str|length > 90 %}
-                        <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ ufmp.paper.print_journal_title|truncatechars:20 }}
-{#                        {{ ufmp.paper.print_date }}#}
-                    {% else %}
-                        <span class="authors">{{ ufmp.paper.print_full_authors }}</span>
-                        {{ ufmp.paper.print_journal_title }}
-                        {{ ufmp.paper.print_date }}
-                    {% endif %}
-                    {% endwith %}
+                    <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
+                    {{ ufmp.paper.print_journal_title }}
+                    {{ ufmp.paper.print_date }}
                 </div>
             </div>
         </div>

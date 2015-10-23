@@ -7,6 +7,13 @@ $(document).ready(function() {
             event.stopPropagation();
         });
 
+    //
+    $('.short').closest('.paper-list')
+        .off('mouseleave')
+        .off('mouseenter')
+        .find('.stamps')
+        .show();
+
     // Send Like/tick ajax call
     $('.tick').on('click', tick);
 
@@ -24,17 +31,15 @@ $(document).ready(function() {
     $('#most-relevant').on('click', function (e) {e.preventDefault(); send_filter(undefined, undefined, 'relevant');});
 });
 
-
-
 function stamps_mouseenter (){
     $(this).find('.stamps').show();
-    $(this).find('.short').show();
-    $(this).find('.long').hide();
+    $(this).find('.long').removeClass('long')
+        .addClass('short');
 }
 function stamps_mouseleave () {
     $(this).find('.stamps').hide();
-    $(this).find('.short').hide();
-    $(this).find('.long').show();
+    $(this).find('.short').addClass('long')
+        .removeClass('short');
 }
 
 function extendPaper(){
@@ -91,6 +96,8 @@ function like () {
                             .addClass('like')
                             .addClass('active')
                             .parents('.paper-list')
+                            .off('mouseleave', stamps_mouseleave)
+                            .off('mouseenter', stamps_mouseenter)
                             .find('.compact, .extended')
                             .addClass('bg-active');
                     } else {
@@ -98,6 +105,8 @@ function like () {
                             .addClass('like')
                             .removeClass('active')
                             .closest('.paper-list')
+                            .on('mouseleave', stamps_mouseleave)
+                            .on('mouseenter', stamps_mouseenter)
                             .find('.compact, .extended')
                             .removeClass('bg-active');
                     }

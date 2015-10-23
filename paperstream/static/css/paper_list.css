@@ -10,7 +10,7 @@
 }
 
 .bg-active {
-    background-color: #feefee;
+    /*background-color: #feefee;*/
 }
 
 /* Paper list formats */
@@ -28,31 +28,39 @@
     /*border: 1px solid #fdb42b;*/
 }
 
-.compact:hover {
-    background-color: rgba(112, 192, 255, 0.1);
+.bg-active {
+    /*background-color: #feefee;*/
 }
 
-.bg-active {
-    background-color: #feefee;
+.compact .short {
+    width: calc(100% - 100px);
 }
+
+.compact .long {
+    width: 100%;
+}
+
 
 .compact .title {
     font-size: 18px;
     font-weight: 500;
     line-height: 1.4;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /*width: 100%*/
 }
 
 .compact .authors-journal-date {
-
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /*width: 100%*/
 }
 
 .compact .authors {
     text-decoration: None;
     color: #808080;
-}
-
-.short {
-    display: none;
 }
 
 .nopadding {

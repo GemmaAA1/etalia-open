@@ -11,36 +11,16 @@
             {% endif %}
         </div>
         <div class="row compact {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
-            <div class="long">
-                <div class="title">{{ dfp.paper.title|truncatechars:80 }}</div>
-                <div class="authors-journal-date">
-                    {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title|add:dfp.paper.print_date as str %}
-                    {% if str|length > 100 %}
-                        <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ dfp.paper.print_journal_title|truncatechars:20 }}
-                        {{ dfp.paper.print_date }}
-                    {% else %}
-                        <span class="authors">{{ dfp.paper.print_full_authors }}</span>
-                        {{ dfp.paper.print_journal_title }}
-                        {{ dfp.paper.print_date }}
-                    {% endif %}
-                    {% endwith %}
-                </div>
-            </div>
+            {% if user_taste|get_is_liked:dfp.paper.pk %}
             <div class="short">
-                <div class="title">{{ dfp.paper.title|truncatechars:67 }}</div>
+            {% else %}
+            <div class="long">
+            {% endif %}
+                <div class="title">{{ dfp.paper.title }}</div>
                 <div class="authors-journal-date">
-                    {% with dfp.paper.print_full_authors|add:dfp.paper.print_journal_title as str %}
-                    {% if str|length > 100 %}
-                        <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ dfp.paper.print_journal_title|truncatechars:20 }}
-{#                        {{ dfp.paper.print_date }}#}
-                    {% else %}
-                        <span class="authors">{{ dfp.paper.print_full_authors }}</span>
-                        {{ dfp.paper.print_journal_title }}
-                        {{ dfp.paper.print_date }}
-                    {% endif %}
-                    {% endwith %}
+                    <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
+                    {{ dfp.paper.print_journal_title }}
+                    {{ dfp.paper.print_date }}
                 </div>
             </div>
         </div>
