@@ -173,7 +173,7 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         # Get user tastes label
         user_taste = UserTaste.objects\
-            .filter(user=self.request.user, paper__in=self.request.user.lib.papers.all())\
+            .filter(user=self.request.user)\
             .values_list('paper_id', 'is_liked')
         # reformat to dict
         user_taste = dict((key, {'liked': v1})
@@ -184,6 +184,11 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
         context['trash_counter'] = UserLibPaper.objects\
             .filter(userlib=self.request.user.lib,
                     is_trashed=True).count()
+
+        # Like counter
+        context['likes_counter'] = UserTaste.objects\
+            .filter(user=self.request.user,
+                    is_liked=True).count()
 
         return context
 
@@ -208,6 +213,28 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
         return queryset.distinct()
 
 library = UserLibraryView.as_view()
+
+
+class UserLibraryTrashView(UserLibraryView):
+
+    def get_queryset(self):
+        query_set = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib, is_trashed=True)
+        return self.filter_queryset(query_set)
+
+library_trash = UserLibraryTrashView.as_view()
+
+
+class UserLibraryLikesView(UserLibraryView):
+
+    def get_queryset(self):
+
+        query_set = UserTaste.objects\
+            .filter(user=self.request.user, is_liked=True)
+
+        return self.filter_queryset(query_set)
+
+library_likes = UserLibraryLikesView.as_view()
 
 
 # class UserLibraryTrashView(LoginRequiredMixin, ModalMixin, AjaxListView):

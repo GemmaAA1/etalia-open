@@ -42,7 +42,8 @@
                     </div>
                     <div class="col-md-2 hidden-sm">
                         <div class="side-panel" data-spy="affix">
-                            <h4>Trash ({{ trash_counter }})</h4>
+                            <h4><a href="{% url 'user:library-trash' %}">Trash ({{ trash_counter }})</a></h4>
+                            <h4><a href="{% url 'user:library-likes' %}">Likes ({{ likes_counter }})</a></h4>
                             <div class="side-panel-title">In my library</div>
                             <div class="side-panel-inner">
                                 <h5>{{ user.lib.count_papers }} papers</h5>
@@ -73,22 +74,13 @@
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,
         onClick: function () {
-            $('.paper-list')
-                .on('mouseenter', stamps_mouseenter)
-                .on('mouseleave', stamps_mouseleave)
-                .on('click', extendPaper).find('.no-toggling').click(function(event) {
-                    event.stopPropagation();
-                });
+            unbind_all();
         },
         onCompleted: function () {
-            $('.paper-list')
-                .on('mouseenter', stamps_mouseenter)
-                .on('mouseleave', stamps_mouseleave)
-                .on('click', extendPaper).find('.no-toggling').click(function(event) {
-                    event.stopPropagation();
-                });
-            $('.like').on('click', like);
-            $('.trash').on('click', trash_paper);
+            bind_all();
+            $.getScript( "https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js", function( data, textStatus, jqxhr ) {
+                console.log('load performed');
+            });
         }
     });
     </script>

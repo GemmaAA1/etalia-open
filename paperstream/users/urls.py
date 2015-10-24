@@ -14,6 +14,8 @@ urlpatterns = [
     # url(r'^signin/$',views.signin, name='signin'),
     url(r'^signin/$', views.ajax_signin, name='signin'),
     url(r'^library/$', views.library, name='library'),
+    url(r'^library/trash/$', views.library_trash, name='library-trash'),
+    url(r'^library/likes/$', views.library_likes, name='library-likes'),
     url(r'^update-basic-info/$', views.ajax_update_basic_info,
         name='update-basic-info'),
     url(r'^update-affiliation/$', views.ajax_update_affiliation,
