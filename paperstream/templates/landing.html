@@ -28,7 +28,7 @@
                         <h4><i>No search queries. No journal browsing. No alert setup.</i></h4>
                     </div>
                     <hr class="intro-divider">
-                    <h4>Sign-in:</h4>
+                    <h4>Sign-in with:</h4>
                     <ul class="list-inline intro-social-buttons">
                         <li>
                             <a id="mendeley-link" href="{% url "social:begin" backend="mendeley" %}" class="btn btn-default btn-lg provider-button">
@@ -103,7 +103,7 @@
                         <p class="lead">Exploring a new field? Changing focus?<br> The stream adapts as you go.</p>
                     </div>
                     <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
-                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_wheel.png' %}" alt="">
+                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_wheel.png' %}" alt="Cloud of publications">
                     </div>
                 </div>
             </div>
@@ -120,23 +120,23 @@
                         <h2 class="section-heading">Using multiple gears</h2>
                             <p class="lead">Your personalized stream is generated using natural language processing, statistical modeling and multiple article metrics.</p>
 
-                        <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>
-                        {% for paper in active_papers %}
-                            <div class="col-xs-3">
-                                {% if paper.id_doi %}<span class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></span>
-                                {% elif paper.id_arx %}<span class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></span>
-                                {% elif paper.id_pmi %}<span class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></span>
-                                {% endif %}
-                            </div>
-                            <div class="col-xs-9">
-                                <a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a><br>
-                                {{ paper.print_compact_first_author }}<br>
-                                {{ paper.print_journal_title }}<br>
-                            </div>
-                        {% endfor %}
+{#                        <h5>This week most trendy paper from <a href="http://www.altmetric.com">Altmetric</a>:</h5>#}
+{#                        {% for paper in active_papers %}#}
+{#                            <div class="col-xs-3">#}
+{#                                {% if paper.id_doi %}<span class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></span>#}
+{#                                {% elif paper.id_arx %}<span class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></span>#}
+{#                                {% elif paper.id_pmi %}<span class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></span>#}
+{#                                {% endif %}#}
+{#                            </div>#}
+{#                            <div class="col-xs-9">#}
+{#                                <a href="{{ paper.get_absolute_url }}" target="_blank">{{ paper.title|truncatechars:40 }}</a><br>#}
+{#                                {{ paper.print_compact_first_author }}<br>#}
+{#                                {{ paper.print_journal_title }}<br>#}
+{#                            </div>#}
+{#                        {% endfor %}#}
                     </div>
                     <div class="col-lg-5 col-sm-6">
-                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_metrics.png' %}" alt="">
+                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_metrics.png' %}" alt="Metrics at work">
                     </div>
                 </div>
             </div>
@@ -150,12 +150,12 @@
                 <div class="col-lg-5 col-sm-push-6  col-sm-6">
                     <hr class="section-heading-spacer no-border">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Get engaged</h2>
+                    <h2 class="section-heading">Get engaged in your field</h2>
                     <p class="lead">Comment on publications. Start discussions.</p>
                     <p class="lead">PubStream will notify you and other researchers of new relevant comments.</p>
                 </div>
                 <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">
-                    <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_comment.png' %}" alt="">
+                    <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_comment.png' %}" alt="Comment">
                 </div>
             </div>
 
@@ -163,6 +163,43 @@
         <!-- /.container -->
     </div>
     <!-- /.content-section-b -->
+
+
+    <div class="what">
+        <h1>A new way to scientific publications</h1>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="what-img-crop">
+                        <img class="what-img-streams" src="{% static 'img/main_icons_color.svg' %}" alt="Streams">
+                    </div>
+                    <div class="text-what text-center">
+                        <h2 class="section-heading">Streams</h2>
+                        <p class="lead">Your personalized streams are actualized daily. Don't miss any advances in your field anymore.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="what-img-crop">
+                        <img class="what-img-trends" src="{% static 'img/main_icons_color.svg' %}" alt="Trends">
+                    </div>
+                    <div class="text-what text-center">
+                        <h2 class="section-heading">Trends</h2>
+                        <p class="lead">Broaden your research interests and start finding out on new recent breakthroughs in other fields.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="what-img-crop">
+                        <img class="what-img-library" src="{% static 'img/main_icons_color.svg' %}" alt="Library">
+                    </div>
+                    <div class="text-what text-center">
+                        <h2 class="section-heading">Library</h2>
+                        <p class="lead">Explore your reference library in a new way, finding similar papers and new relevant publications.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="banner">
         <div class="container">
             <div class="row text-center">
