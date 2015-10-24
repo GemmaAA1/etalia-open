@@ -130,15 +130,9 @@ function send_filter(journals_flag, authors_flag, sorting_flag) {
     // ajax call and call back
     $.get(window.location.href, JSON.stringify(json_data), function (fragment) {
         $('.endless_data').html(fragment);
-        $('.paper-list')
-            .on('mouseenter', stamps_mouseenter)
-            .on('mouseleave', stamps_mouseleave)
-            .on('click', extendPaper).find('.no-toggling').click(function(event) {
-                event.stopPropagation();
-            });
-        $('.tick').on('click', tick);
-        $('.like').on('click', like);
-        $('.add-to-library').on('click', add_to_lib);
-        $('.trash').on('click', trash_paper);
+        bind_all();
+        $.getScript( "https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js", function( data, textStatus, jqxhr ) {
+                console.log('load performed');
+        });
     })
 }

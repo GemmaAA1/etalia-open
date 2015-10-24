@@ -113,7 +113,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         # sort queryset
         if self.sorting_flag == 'relevant':
-            # this is by default
+            # this is by default for feed
             pass
         elif self.sorting_flag == 'recent':
             # order by date
@@ -123,6 +123,9 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         elif self.sorting_flag == 'trendy':
             # order by altmetric score
             queryset = queryset.order_by('-paper__altmetric__score')
+        elif self.sorting_flag == 'nothing':
+            # let's shuffle the results
+            queryset = queryset.order_by("?")
 
         return queryset
 
@@ -371,8 +374,6 @@ class TrendView(BaseFeedView):
         # filter from searchbox
         query_set = self.filter_queryset(self.original_qs)
 
-        # let's shuffle the results
-        # return query_set.order_by("?")
         return query_set
 
 trend_view = TrendView.as_view()

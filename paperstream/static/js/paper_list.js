@@ -1,30 +1,7 @@
 $(document).ready(function() {
 
-    $('.paper-list')
-        .on('mouseenter', stamps_mouseenter)
-        .on('mouseleave', stamps_mouseleave)
-        .on('click', extendPaper).find('.no-toggling').click(function(event) {
-            event.stopPropagation();
-        });
-
-    //
-    $('.short').closest('.paper-list')
-        .off('mouseleave')
-        .off('mouseenter')
-        .find('.stamps')
-        .show();
-
-    // Send Like/tick ajax call
-    $('.tick').on('click', tick);
-
-    // Send Like/tick ajax call
-    $('.like').on('click', like);
-
-    // Send add paper to user library ajax call
-    $('.add-to-library').on('click', add_to_lib);
-
-    // Send trash paper from user library ajax call
-    $('.trash').on('click', trash_paper);
+    // bind envet / handlers for paper list
+    bind_all();
 
     // send ajax with filter
     $('#most-recent').on('click', function (e) {
@@ -54,38 +31,110 @@ $(document).ready(function() {
         $(this).addClass('active');
     });
 
-    // tweet
-    $('.tweet').on('click', function () {
-        var title = $(this).closest('.stamps-ext').data('title');
-        var first_author = $(this).closest('.stamps-ext').data('first-compact');
-        var url = $(this).closest('.stamps-ext').data('url');
-        $.getJSON('http://api.bitly.com/v3/shorten?callback=?',
-        {
-            format: "json",
-            apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
-            login: "nicolaspannetier",
-            longUrl: url
-        },
-        function(response) {
-            var text = title  + ' | ' + first_author + ' | ' + response.data.url + ' via @pubstreamio';
-            //console.log(text);
-            var geturl = 'https://twitter.com/intent/tweet?text=' + encodeURI(text);
-            //console.log(geturl);
-            event.preventDefault();
-            window.open(geturl, 'Tweet', 'width=600,height=400');
-        });
+    $('#nothing-special').on('click', function (e) {
+        e.preventDefault();
+        send_filter(undefined, undefined, 'nothing');
+        $(this).closest('.dropdown-menu')
+            .find('.sort-option')
+            .removeClass('active');
+        $(this).addClass('active');
     });
 
+});
+
+function bind_all() {
+    $('.paper-list')
+        .on('mouseenter', stamps_mouseenter)
+        .on('mouseleave', stamps_mouseleave)
+        .on('click', extendPaper).find('.no-toggling').click(function(event) {
+            event.stopPropagation();
+        });
+
+    // Short are liked paper that stay "active"
+    $('.short').closest('.paper-list')
+        .off('mouseleave')
+        .off('mouseenter')
+        .find('.stamps')
+        .show();
+
+    // Send Like/tick ajax call
+    $('.tick').on('click', tick);
+
+    // Send Like/tick ajax call
+    $('.like').on('click', like);
+
+    // Send add paper to user library ajax call
+    $('.add-to-library').on('click', add_to_lib);
+
+    // Send trash paper from user library ajax call
+    $('.trash').on('click', trash_paper);
+
+    // tweet
+    $('.tweet').on('click', share_tweet);
+
     // google plus
-    $('.google-plus').on('click', function () {
-        var title = $(this).closest('.stamps-ext').data('title');
-        var first_author = $(this).closest('.stamps-ext').data('first-compact');
-        var url = $(this).closest('.stamps-ext').data('url');
-        var geturl = 'https://plus.google.com/share?url=' + encodeURI(url);
+    $('.google-plus').on('click', share_google_plus);
+}
+
+// use for endless pagination callback
+function unbind_all() {
+    $('.paper-list')
+        .off('mouseenter', stamps_mouseenter)
+        .off('mouseleave', stamps_mouseleave)
+        .off('click', extendPaper).find('.no-toggling').click(function(event) {
+            event.stopPropagation();
+        });
+
+    // Send Like/tick ajax call
+    $('.tick').off('click', tick);
+
+    // Send Like/tick ajax call
+    $('.like').off('click', like);
+
+    // Send add paper to user library ajax call
+    $('.add-to-library').off('click', add_to_lib);
+
+    // Send trash paper from user library ajax call
+    $('.trash').off('click', trash_paper);
+
+    // tweet
+    $('.tweet').off('click', share_tweet);
+
+    // google plus
+    $('.google-plus').off('click', share_google_plus);
+}
+
+
+function share_tweet () {
+    var title = $(this).closest('.stamps-ext').data('title');
+    var first_author = $(this).closest('.stamps-ext').data('first-compact');
+    var url = $(this).closest('.stamps-ext').data('url');
+    $.getJSON('http://api.bitly.com/v3/shorten?callback=?',
+    {
+        format: "json",
+        apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
+        login: "nicolaspannetier",
+        longUrl: url
+    },
+    function(response) {
+        var text = title  + ' | ' + first_author + ' | ' + response.data.url + ' via @pubstreamio';
+        //console.log(text);
+        var geturl = 'https://twitter.com/intent/tweet?text=' + encodeURI(text);
+        //console.log(geturl);
         event.preventDefault();
         window.open(geturl, 'Tweet', 'width=600,height=400');
     });
-});
+}
+
+function share_google_plus () {
+    var title = $(this).closest('.stamps-ext').data('title');
+    var first_author = $(this).closest('.stamps-ext').data('first-compact');
+    var url = $(this).closest('.stamps-ext').data('url');
+    var geturl = 'https://plus.google.com/share?url=' + encodeURI(url);
+    event.preventDefault();
+    window.open(geturl, 'Tweet', 'width=600,height=400');
+}
+
 
 function stamps_mouseenter (){
     $(this).find('.stamps').show();
@@ -135,7 +184,7 @@ function tick () {
     });
 }
 
-function like () {
+function like (event) {
     var $like = $(this);
     $like.removeClass('like')
         .addClass('loading');

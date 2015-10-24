@@ -45,9 +45,10 @@
                                             <p class="text-right  sort-by"><em>sort-by<span class="caret"></span></em></p>
                                         </span>
                                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>
+{#                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>#}
                                             <li><a id="most-recent" class="sort-option {% if sorting_flag == 'recent' %}active{% endif %}" href="#">most recent</a></li>
-                                            <li><a id="most-trendy" class="sort-option {% if sorting_flag == 'recent' %}trendy{% endif %}" href="#">most trending</a></li>
+                                            <li><a id="most-trendy" class="sort-option {% if sorting_flag == 'trendy' %}active{% endif %}" href="#">most trending</a></li>
+                                            <li><a id="nothing-special" class="sort-option {% if sorting_flag == 'nothing' %}active{% endif %}" href="#">nothing special</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -142,24 +143,13 @@
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,
         onClick: function () {
-            $('.paper-list')
-                .on('mouseenter', stamps_mouseenter)
-                .on('mouseleave', stamps_mouseleave)
-                .on('click', extendPaper).find('.no-toggling').click(function(event) {
-                    event.stopPropagation();
-                });
+            unbind_all();
         },
         onCompleted: function () {
-            $('.paper-list')
-                .on('mouseenter', stamps_mouseenter)
-                .on('mouseleave', stamps_mouseleave)
-                .on('click', extendPaper).find('.no-toggling').click(function(event) {
-                    event.stopPropagation();
-                });
-            $('.tick').on('click', tick);
-            $('.like').on('click', like);
-            $('.add-to-library').on('click', add_to_lib);
-            $('.trash').on('click', trash_paper);
+            bind_all();
+            $.getScript( "https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js", function( data, textStatus, jqxhr ) {
+                console.log('load performed');
+            });
         }
     });
     </script>
