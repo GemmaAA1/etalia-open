@@ -24,9 +24,9 @@
 
             <div class="collapse navbar-collapse" id="navbar-collapse-1">
                 {% if "feed" in request.path or "user" in request.path %}
-                    <div class="glass navbar-left">
+                    <button class="glass navbar-left">
                         <img class="glass-image" src="{% static 'img/glass.png' %}">
-                    </div>
+                    </button>
                     <form class="navbar-form navbar-left" role="search" method="post">
                         {% csrf_token %}
                         <input type="text" name="query" class="searchbox" placeholder="Search">

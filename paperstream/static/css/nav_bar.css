@@ -5,10 +5,19 @@
 }
 
 .topnav {
-    background-color: #f8f8f8;
     color: #333333;
 }
 
+.navbar-fixed-top {
+    /*border: none;*/
+    -moz-box-shadow: 0 0 20px #ccc;
+    -webkit-box-shadow: 0 0 20px #ccc;
+    box-shadow: 0 0 10px #ccc;
+}
+
+.navbar-default {
+    background: rgb(255, 255, 255);
+}
 
 .navbar-default .navbar-nav>li>a {
     color: #333333;
@@ -16,6 +25,7 @@
     padding-right: 20px;
     padding-left: 30px;
     background-color: transparent;
+    border: none;
 }
 
 .navbar-default .navbar-nav>li>a.profile-icon {
@@ -40,7 +50,7 @@
 }
 
 .nav-bar-anonymous {
-    border: none;
+    border: 0px;
     margin-bottom: 0;
     background-color: #f5f5f5;
 }
@@ -56,16 +66,17 @@
 
 
 .navbar-form {
-    margin: 0 10px 0px 0px;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-right: 20%;
     padding: 0;
 }
 
 .searchbox {
     border: 0;
     height: 50px;
-    padding: 0 20px 0 0;
     font-size: 16px;
-    background-color: #fcfcfc;
+    background-color: #f5f5f5;
 }
 
 .searchbox:focus {
@@ -77,9 +88,11 @@
     display: inline-block;
     width: 50px;
     height: 50px;
-    background-color: #fcfcfc;
+    background-color: #f5f5f5;
     margin: 0 0 0 20px;
     padding: 15px;
+    border: 0;
+    outline: 0px;
 }
 .glass-image {
     height: 100%;
