@@ -27,9 +27,9 @@
                     <button class="glass navbar-left">
                         <img class="glass-image" src="{% static 'img/glass.png' %}">
                     </button>
-                    <form class="navbar-form navbar-left" role="search" method="post">
+                    <form class="navbar-form navbar-left" role="search">
+                        <input type="text" name="query" class="searchbox" placeholder="Search" {% if get_query %}value="{{ get_query }}"{% endif %}>
                         {% csrf_token %}
-                        <input type="text" name="query" class="searchbox" placeholder="Search">
                     </form>
                 {% endif %}
                 <ul class="nav navbar-nav navbar-right">
@@ -49,10 +49,11 @@
                         <a class="profile-icon dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"></a>
 {#                        <img class="profile-icon" src="{% static 'img/main_icons.svg' %}">#}
                         <ul class="dropdown-menu">
-                          <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Profile</a></li>
-                          <li><a href="#">Help</a></li>
-                          <li class="divider"></li>
-                          <li><a href="{% url 'user:logout' %}">Logout</a></li>
+                            <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Profile</a></li>
+                            <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Settings</a></li>
+                            <li><a href="#">Help</a></li>
+                            <li class="divider"></li>
+                            <li><a href="{% url 'user:logout' %}">Logout</a></li>
                         </ul>
                     </li>
                 </ul>

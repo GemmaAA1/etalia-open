@@ -68,8 +68,9 @@
 .navbar-form {
     margin-top: 0;
     margin-bottom: 0;
-    margin-right: 20%;
+    /*margin-right: 20%;*/
     padding: 0;
+    width: calc(100% - 130px - 550px);
 }
 
 .searchbox {
@@ -77,6 +78,7 @@
     height: 50px;
     font-size: 16px;
     background-color: #f5f5f5;
+    width: 100%;
 }
 
 .searchbox:focus {
@@ -114,6 +116,7 @@
     background-color: transparent;
     padding-bottom: 10px;
     border-bottom: 5px solid #70c0ff;
+    /*border-bottom: 5px solid #f06f27;*/
 }
 
 .navbar-default .navbar-nav>li.active>a:hover {
