@@ -47,6 +47,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     authors_filter = None
     authors_filter_flag = 'all'
     sorting_flag = 'relevant'
+    like_flag = False
 
     def update_filter(self):
         raise NotImplemented
@@ -99,6 +100,12 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
                     queryset = None
             else:
                 queryset = None
+
+        # like filter
+        if self.like_flag:
+            like_pks = UserTaste.objects\
+                .filter(user=self.request.user, is_liked=True).values('paper__pk')
+            queryset = queryset.filter(paper_id__in=like_pks)
 
         # search query
         q = self.request.GET.get("query")
@@ -269,12 +276,13 @@ class FeedView(BaseFeedView):
                     self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
                     self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
                     self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
+                    self.like_flag = data.get('like_flag')
                     ufl.stream_filter = {
                         'journals': self.journals_filter,
                         'authors': self.authors_filter,
                         'journals_flag': self.journals_filter_flag,
                         'authors_flag': self.authors_filter_flag,
-                        'sorting_flag': self.sorting_flag
+                        'sorting_flag': self.sorting_flag,
                     }
                     ufl.save()
             except ValueError:  # likely data from AjaxListView
@@ -349,6 +357,7 @@ class TrendView(BaseFeedView):
                     self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
                     self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
                     self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
+                    self.like_flag = data.get('like_flag')
                     ufl.trend_filter = {
                         'journals': self.journals_filter,
                         'authors': self.authors_filter,

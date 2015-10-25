@@ -4,8 +4,12 @@
 
 $(document).ready(function() {
 
+    $('.like-img').on('click', function () {
+        $(this).toggleClass('active');
+        send_filter(undefined, undefined);
+    });
+
     $('.checkbox').on('click', function () {
-        console.log('test');
         send_filter(undefined, undefined);
     });
 
@@ -103,6 +107,7 @@ function send_filter(journals_flag, authors_flag, sorting_flag) {
     json_data.journals_flag = journals_flag;
     json_data.authors_flag = authors_flag;
     json_data.sorting_flag = sorting_flag;
+    json_data.like_flag = false;
     json_data.journals = [];
     json_data.authors = [];
 
@@ -124,6 +129,10 @@ function send_filter(journals_flag, authors_flag, sorting_flag) {
             json_data['authors'].push([$(this).data('author-pk'), false]);
         }
     });
+
+    if ($('.like-img').hasClass('active')) {
+        json_data.like_flag = true;
+    }
 
     console.log(JSON.stringify(json_data));
 

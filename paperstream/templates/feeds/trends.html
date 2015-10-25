@@ -42,7 +42,7 @@
                                 <div class="col-md-3">
                                     <div class="dropdown">
                                         <span class="dropdown-toggle " type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <p class="text-right  sort-by"><em>sort-by<span class="caret"></span></em></p>
+                                            <div class="text-right  sort-by"><em>sort-by<span class="caret"></span></em></div>
                                         </span>
                                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
 {#                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>#}
@@ -60,6 +60,11 @@
                     </div>
                     <div class="col-md-3 hidden-sm">
                         <div class="side-panel">
+                            <div class="side-panel-section likes">
+                                <button class="like-img-crop">
+                                    <img src="{% static 'img/like_select.png' %}" class="like-img">
+                                </button>
+                            </div>
                             <div class="side-panel-section journals">
                                 <div class="side-panel-title">
                                     Journals
