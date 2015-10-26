@@ -41,21 +41,36 @@
                         </div>
                     </div>
                     <div class="col-md-2 hidden-sm">
-                        <div class="side-panel" data-spy="affix">
-                            <h4><a href="{% url 'user:library-trash' %}">Trash ({{ trash_counter }})</a></h4>
-                            <h4><a href="{% url 'user:library-likes' %}">Likes ({{ likes_counter }})</a></h4>
-                            <div class="side-panel-title">In my library</div>
-                            <div class="side-panel-inner">
-                                <h5>{{ user.lib.count_papers }} papers</h5>
-                                <h5>{{ user.lib.count_journals }} journals</h5>
-                                <h5>{{ user.lib.count_authors }} authors</h5>
+                        <div class="side-panel">
+                            <div class="side-panel-section">
+                                <h4><a href="{% url 'user:library-trash' %}">Trash ({{ trash_counter }})</a></h4>
                             </div>
-                            <div class="side-panel-title">Journals distributions</div>
-                            <div class="side-panel-inner">
-                            {% for ulj in uljs %}
-                                <h5>{{ ulj.journal.print_short_title| truncatechars:20 }}
-                                    ({{ ulj.papers_in_journal }})</h5>
-                            {% endfor %}
+                            <div class="side-panel-section">
+                                <h4><a href="{% url 'user:library-likes' %}">Likes ({{ likes_counter }})</a></h4>
+                            </div>
+
+
+                            <div class="side-panel-section">
+                                <div class="side-panel-title">In my library</div>
+                                <div class="side-panel-inner">
+                                    <ul>
+                                    <h5>{{ user.lib.count_papers }} papers</h5>
+                                    <h5>{{ user.lib.count_journals }} journals</h5>
+                                    <h5>{{ user.lib.count_authors }} authors</h5>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="side-panel-section">
+                                <div class="side-panel-title">Journals distributions</div>
+                                <div class="side-panel-inner">
+                                    <ul>
+                                    {% for ulj in uljs %}
+                                        <li>
+                                            {{ ulj.journal.print_short_title| truncatechars:20 }}({{ ulj.papers_in_journal }})
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>

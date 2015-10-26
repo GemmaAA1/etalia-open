@@ -42,7 +42,6 @@
 .navbar-brand {
     padding: 10px;
     padding-top: 7px;
-
 }
 
 .navbar .brand-image {
@@ -60,7 +59,7 @@
     padding-top: 7px;
     position: absolute;
     left: 50%;
-    margin-left: -65px !important;  /* 50% of your logo width */
+    margin-left: -75px !important;  /* 50% of your logo width */
     display: block;
 }
 

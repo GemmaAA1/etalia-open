@@ -9,6 +9,8 @@ $(document).ready(function() {
     // Send trash paper from user library ajax call
     $('.trash').on('click', trash_paper);
 
+    $('.tw')
+
     // update altmetric stamp with local if undefined
     // wait for element to exist
     var checkExist = setInterval(function() {
