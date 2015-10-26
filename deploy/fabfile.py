@@ -43,6 +43,7 @@ from fabtools.utils import run_as_root
 import fabtools
 
 STACK = 'staging'
+SITE = 'main'
 STACK_SITE_MAPPING = {'staging': 'staging-stack.paperstream.io',
                       'production': 'www.paperstream.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
