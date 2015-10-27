@@ -410,11 +410,11 @@ class UserFeedLayout(TimeStampedModel):
 
     user = models.OneToOneField(User)
 
-    stream_filter = JSONField()
+    stream_filter = JSONField(null=True)
 
-    trend_filter = JSONField()
+    trend_filter = JSONField(null=True)
 
-    library_filter = JSONField()
+    library_filter = JSONField(null=True)
 
 
 
