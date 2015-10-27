@@ -9,6 +9,7 @@ from django.contrib.auth.models import BaseUserManager
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
+from django.db.models.expressions import RawSQL
 
 from gensim import matutils
 
@@ -21,6 +22,7 @@ from config.celery import celery_app as app
 from .constants import FEED_STATUS_CHOICES
 from .utils import SimpleAverage, ThresholdAverage, WeightedJournalAverage, \
     WeightedJournalCreatedDateAverage, SimpleMax
+
 
 logger = logging.getLogger(__name__)
 
@@ -122,9 +124,11 @@ class UserFeed(TimeStampedModel):
 
         # clean old papers
         UserFeedMatchPaper.objects\
+            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
+                                      "FROM library_paper "
+                                      "WHERE id = paper_id", []))\
             .filter(Q(feed=self) &
-                    (Q(paper__date_ep__lt=from_date) |
-                    (Q(paper__date_pp__lt=from_date) & Q(paper__date_ep=None))))\
+                    Q(date__lt=from_date))\
             .delete()
 
     def clear(self):

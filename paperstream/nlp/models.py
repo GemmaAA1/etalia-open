@@ -744,10 +744,6 @@ class JournalNeighbors(TimeStampedModel):
     def get_neighbors(self):
         return self.neighbors[:self.model.size]
 
-    def update(self):
-        model
-
-
     class Meta:
         unique_together = ('journal', 'model')
 
@@ -874,13 +870,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         data = PaperVectors.objects\
             .filter(model=self.model)\
-            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
-                     (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
-            .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')\
+            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
             .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
-                                      "FROM library_paper "
-                                      "WHERE id = paper_id", []))\
+                                  "FROM library_paper "
+                                  "WHERE id = paper_id", []))\
+            .values('pk', 'paper__pk', 'vector', 'paper__journal__pk')\
             .order_by('date')
 
         # Reshape data
@@ -922,13 +916,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         data = PaperVectors.objects\
             .filter(model=self.model)\
             .exclude(paper_id__in=self.index2pk)\
-            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
-                     (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
-            .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')\
+            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
+            .values('pk', 'paper__pk', 'vector', 'paper__journal__pk')\
             .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
-                                      "FROM library_paper "
-                                      "WHERE id = paper_id", []))\
+                                  "FROM library_paper "
+                                  "WHERE id = paper_id", []))\
             .order_by('date')
 
         # Reshape data
