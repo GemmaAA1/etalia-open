@@ -17,6 +17,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
+from django.db.models.expressions import RawSQL
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec
@@ -876,7 +877,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')
+                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')\
+            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
+                                      "FROM library_paper "
+                                      "WHERE id = paper_id", []))\
+            .order_by('date')
 
         # Reshape data
         nb_items = data.count()
@@ -886,13 +891,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
-                # get min date
-                dates = [dat['paper__date_fs'],
-                         dat['paper__date_ep'],
-                         dat['paper__date_pp']]
-                dates = [d for d in dates if d is not None]
-                d = min(dates)
-                self.date.append(d)
+                self.date.append(dat['date'])
                 # store paper pk
                 self.index2pk.append(dat['paper__pk'])
                 # store journal pk
@@ -926,7 +925,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
-                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')
+                    'paper__date_pp', 'paper__date_fs', 'paper__journal__pk')\
+            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
+                                      "FROM library_paper "
+                                      "WHERE id = paper_id", []))\
+            .order_by('date')
 
         # Reshape data
         nb_items = data.count()
@@ -937,12 +940,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         for i, dat in enumerate(data[:nb_items]):
             if dat['vector']:
                 # get min date
-                dates = [dat['paper__date_fs'],
-                         dat['paper__date_ep'],
-                         dat['paper__date_pp']]
-                dates = [d for d in dates if d is not None]
-                d = min(dates)
-                date.append(d)
+                date.append(dat['date'])
                 # store paper pk
                 index2pk.append(dat['paper__pk'])
                 # store journal pk

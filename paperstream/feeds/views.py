@@ -15,7 +15,6 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.forms.utils import ErrorList
 from django.core.exceptions import ValidationError
-from django.db.models.functions import Coalesce
 from django.conf import settings
 from django.db.models.expressions import RawSQL
 
