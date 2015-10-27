@@ -1,6 +1,6 @@
 .landing {
-    /*background: #f8f8f8 url('../img/paper_mosaic.png') -60px 360px no-repeat;*/
-    background: #f5f5f5 url('../img/paper_mosaic.png') -60px 300px no-repeat;
+    background: #fafafa url('../img/paper_mosaic.png') -60px 360px no-repeat;
+    /*background: #f5f5f5 url('../img/paper_mosaic.png') -60px 300px no-repeat;*/
     background-size: auto 600px;
 }
 
@@ -197,7 +197,7 @@
 .banner {
     padding: 30px;
     /*background-color: #d3f0f4;*/
-    background-color:#f5f5f5;
+    background-color:#fafafa;
 }
 
 .banner h2 {

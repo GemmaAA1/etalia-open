@@ -2,6 +2,7 @@
 .navbar-nav {
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 16px;
+    background-color: #ffffff;
 }
 
 .topnav {
@@ -16,7 +17,7 @@
 }
 
 .navbar-default {
-    background: rgb(255, 255, 255);
+    background-color: #ffffff;
 }
 
 .navbar-default .navbar-nav>li>a {
@@ -51,7 +52,7 @@
 .nav-bar-anonymous {
     border: 0px;
     margin-bottom: 0;
-    background-color: #f5f5f5;
+    background-color: #fafafa;
 }
 
 .navbar-brand-anonymous {
