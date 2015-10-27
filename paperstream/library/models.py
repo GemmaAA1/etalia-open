@@ -352,7 +352,9 @@ class Paper(TimeStampedModel):
 
     @property
     def print_first_seen(self):
-        date = min([self.date_pp, self.date_ep, self.date_fs])
+        dates = [self.date_pp, self.date_ep, self.date_fs]
+        dates = [d for d in dates if d]
+        date = min(dates)
         return '{date}'.format(date=date.strftime('%e %b %Y'))
 
     @property
