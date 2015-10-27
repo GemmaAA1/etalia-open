@@ -14,7 +14,8 @@
                 <div class="authors-journal-date">
                     <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
                     {{ ufmp.paper.print_journal_title }}
-                    {{ ufmp.paper.print_date }}
+{#                    {{ ufmp.paper.print_date }}#}
+                    {{ ufmp.paper.print_first_seen }}
                 </div>
             </div>
         </div>
@@ -24,7 +25,8 @@
                 <div class="authors">{{ ufmp.paper.print_full_authors}}</div>
                 <div class="journal-date">
                     {{ ufmp.paper.print_journal_title}}
-                    <em>{{ ufmp.paper.print_date }}</em>
+{#                    <em>{{ ufmp.paper.print_date }}</em>#}
+                    <em>{{ ufmp.paper.print_first_seen }}</em>
                 </div>
                 <div class="abstract">{{ ufmp.paper.abstract }}</div>
             </div>

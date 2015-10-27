@@ -1,0 +1,75 @@
+{% load staticfiles %}
+
+<div class="side-panel">
+    <div class="side-panel-section likes">
+        <button class="like-img-crop">
+            <img src="{% static 'img/like_select.png' %}" class="like-img" title="Show liked publications">
+        </button>
+    </div>
+    <div class="side-panel-section journals">
+        <div class="side-panel-title">
+            Journals
+            <button class="all">(select all)</button>
+        </div>
+        <div class="side-panel-inner">
+            <ul>
+            {% for journal, count, block in journals %}
+                <li class="journal" data-block="{{ block }}">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" data-journal-title="{{ journal.title }}"
+                                    {% if journal.title|lower in journals_filter %} checked="checked" {% endif %}>
+                            <div class="long">
+                                {{ journal.title|truncatechars:25 }} ({{ count }})
+                            </div>
+                            <div class="short">
+                                {% if journal.title|length > 25 %}
+                                    {{ journal.title|truncatechars:25 }}
+                                {% else %}
+                                    {{ journal.title|truncatechars:25 }} ({{ count }})
+                                {% endif %}
+                                <button class="only">only</button>
+                            </div>
+                        </label>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+            {% if journals_show_more %}
+            <button class="show-more">show more</button>
+            {% endif %}
+        </div>
+    </div>
+    <div class="side-panel-section authors">
+        <div class="side-panel-title">
+            Authors
+            <button class="all">(select all)</button>
+        </div>
+        <div class="side-panel-inner">
+            <ul >
+            {% for auth, author_full_name, block in authors %}
+                <li class="author" data-block="{{ block }}">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" data-author-pk="{{ auth.pk }}"
+                                {% if  auth.pk in authors_filter %} checked="checked" {% endif %}>
+                            <div class="long">
+                                {{ author_full_name|truncatechars:35 }}
+                            </div>
+                            <div class="short">
+                                {{ author_full_name|truncatechars:25 }}
+                                <button class="only">only</button>
+                            </div>
+                        </label>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+            {% if authors_show_more %}
+                <button class="show-more">show more</button>
+            {% endif %}
+        </div>
+    </div>
+    <hr class="divider">
+    {% include 'footer_side.html' %}
+</div>

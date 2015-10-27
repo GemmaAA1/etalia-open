@@ -20,7 +20,8 @@
                 <div class="authors-journal-date">
                     <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
                     {{ dfp.paper.print_journal_title }}
-                    {{ dfp.paper.print_date }}
+{#                    {{ dfp.paper.print_date }}#}
+                    {{ dfp.paper.print_first_seen }}
                 </div>
             </div>
         </div>
@@ -31,7 +32,8 @@
                     <div class="authors">{{ dfp.paper.print_full_authors}}</div>
                     <div class="journal-date">
                         {{ dfp.paper.print_journal_title}}
-                        {{ dfp.paper.print_date }}
+                        <em>{{ dfp.paper.print_first_seen }}</em>
+{#                        {{ dfp.paper.print_date }}#}
                     </div>
                     <div class="abstract">{{ dfp.paper.abstract }}</div>
                 </div>

@@ -351,6 +351,11 @@ class Paper(TimeStampedModel):
             return 'Unknown Date'
 
     @property
+    def print_first_seen(self):
+        date = min([self.date_pp, self.date_ep, self.date_fs])
+        return '{date}'.format(date=date.strftime('%e %b %Y'))
+
+    @property
     def print_journal_title(self):
         if self.journal:
             return self.journal.title
