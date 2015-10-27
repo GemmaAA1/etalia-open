@@ -68,7 +68,6 @@
     width: 200px;
 }
 
-
 .navbar-form {
     margin-top: 0;
     margin-bottom: 0;
@@ -171,6 +170,9 @@
 }
 
 /* Use in anonymous navbar*/
+.navbar-default .navbar-nav>li>a.signin-icon {
+    background-color: #fafafa;
+}
 .navbar-nav>.active>a.signin-icon:before,
 .navbar-nav>li>a.signin-icon:before {
     background: transparent url(../img/main_icons_navbar_color.svg) -270px 0px no-repeat;
@@ -198,7 +200,6 @@
   width: 6px;
   height: 6px;
   background-color: #333;
-
   border-radius: 100%;
   position: absolute;
   -webkit-animation: bouncedelay 1.2s infinite ease-in-out;
