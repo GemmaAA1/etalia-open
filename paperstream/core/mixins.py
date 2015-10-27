@@ -36,3 +36,6 @@ class AjaxableResponseMixin(object):
 class ModalMixin(ProfileModalFormsMixin, CreateFeedModalMixin):
     """Pull Mixin in one"""
     pass
+
+
+

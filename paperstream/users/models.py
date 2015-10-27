@@ -385,15 +385,24 @@ class UserTaste(TimeStampedModel):
     is_liked = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('user', 'paper')
+        unique_together = ('user', 'paper', 'scoring_method')
 
     def __str__(self):
         if self.is_liked:
-            return '{pk}@{pk} likes'.format(user=self.user, pk=self.paper.id)
+            return '{user} liked {pk} with {method}'.format(
+                user=self.user,
+                pk=self.paper.id,
+                method=FEED_SCORING_CHOICES[self.scoring_method])
         elif self.is_ticked:
-            return '{user}@{pk} ticked '.format(user=self.user, pk=self.paper.id)
+            return '{user} disliked {pk} with {method}'.format(
+                user=self.user,
+                pk=self.paper.id,
+                method=FEED_SCORING_CHOICES[self.scoring_method])
         else:
-            return '{user}@{pk} has a problem'
+            return '{user}/{pk}/{method} has an issue'.format(
+                user=self.user,
+                pk=self.paper.id,
+                method=FEED_SCORING_CHOICES[self.scoring_method])
 
 
 class UserFeedLayout(TimeStampedModel):

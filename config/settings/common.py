@@ -282,10 +282,10 @@ NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
 
 NLP_TIME_LAPSE_CHOICES = (
-    (7, '1 Week'),
-    (30, '1 Month'),
-    (60, '2 Months'),
-    (365, '1 Year'),
+    (7, 'Week'),
+    (30, 'Month'),
+    (60, 'Two Months'),
+    (365, 'Year'),
     (-1, 'All'),
 )
 

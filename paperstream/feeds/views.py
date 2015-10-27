@@ -16,6 +16,7 @@ from django.db.models import Q
 from django.forms.utils import ErrorList
 from django.core.exceptions import ValidationError
 from django.db.models.functions import Coalesce
+from django.conf import settings
 
 
 from braces.views import LoginRequiredMixin
@@ -49,7 +50,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     sorting_flag = 'relevant'
     like_flag = False
 
-    def update_filter(self):
+    def update_from_filter(self):
         raise NotImplemented
 
     def filter_queryset(self, queryset):
@@ -104,7 +105,10 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         # like filter
         if self.like_flag:
             like_pks = UserTaste.objects\
-                .filter(user=self.request.user, is_liked=True).values('paper__pk')
+                .filter(user=self.request.user,
+                        is_liked=True,
+                        scoring_method=self.request.user.settings.scoring_method)\
+                .values('paper__pk')
             queryset = queryset.filter(paper_id__in=like_pks)
 
         # search query
@@ -145,7 +149,8 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         # Get user tastes label
         user_taste = UserTaste.objects\
-            .filter(user=self.request.user)\
+            .filter(user=self.request.user,
+                    scoring_method=self.request.user.settings.scoring_method)\
             .values_list('paper_id', 'is_liked', 'is_ticked')
         # reformat to dict
         user_taste = dict((key, {'liked': v1, 'is_ticked': v2})
@@ -235,6 +240,11 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             context['authors_filter'] = authors_pks
 
         context['sorting_flag'] = self.sorting_flag
+
+        # time lapse settings
+        context['time_lapse'] = \
+            dict(settings.NLP_TIME_LAPSE_CHOICES)\
+                .get(self.request.user.settings.time_lapse)
 
         return context
 

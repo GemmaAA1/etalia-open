@@ -36,7 +36,7 @@
                                 <div class="col-md-8">
                                     <div class="header-text">
                                         <h3>Recent publications</h3>
-                                        <h5><em>Curated for you out of {{ stats.nb_papers_last_month }} articles published last month</em></h5>
+                                        <h5><em>Curated for you out of {{ stats.nb_papers_last_month }} articles published last {{ time_lapse|lower }}</em></h5>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -130,6 +130,20 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            <hr class="divider">
+                            <div class="side-panel-section footer">
+                                <ul class="list-inline">
+                                    <li><a href="http://paperstream.io/about/">About us</a></li>
+                                    <li>&middot;</li>
+                                    <li><a href="mailto:contact@paperstream.io">Contact us</a></li>
+                                    <li>&middot;</li>
+                                    <li><a href="#">News</a></li>
+                                    <li>&middot;</li>
+                                    <li><a href="#">Terms</a></li>
+                                    </li>
+                                </ul>
+                                <div class="copyright">&copy; 2015 PubStream.io. All rights reserved.</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -137,6 +151,9 @@
         </div>
     </div>
 {% endblock content %}
+
+{% block footer %}
+{% endblock footer %}
 
 {% block js %}
     <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
