@@ -233,7 +233,7 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
         authors = []
         check_papers = []
         for d in data:
-            if d['pk'] not in check_papers:  # rows are for different authors
+            if d['journal__title'] and d['pk'] not in check_papers:  # rows are for different authors
                 j_titles.append(d['journal__title'])
                 check_papers.append(d['pk'])
             authors.append(d['authors'])
