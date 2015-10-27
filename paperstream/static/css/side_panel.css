@@ -141,18 +141,17 @@
 .side-panel .tab-link {
     padding-bottom: 0px;
 }
-.side-panel .tab-link a {
+.side-panel .tab-link>div>a {
     color: #000000;
 }
 .side-panel .tab-link a:hover {
     text-decoration: none;
 }
-.side-panel .tab-link:hover {
+.side-panel .tab-link>div:hover {
     background-color: #e1e1e1;
 }
 
-.side-panel .active {
-    /*background-color: #e1e1e1;*/
+.tab-link .active {
     background-color: rgba(112, 192, 255, 0.31);
 }
 

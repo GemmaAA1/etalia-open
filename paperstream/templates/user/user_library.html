@@ -44,27 +44,30 @@
                     </div>
                     <div class="col-md-3 hidden-sm">
                         <div class="side-panel">
-                            <div class="side-panel-section tab-link {% if tab == 'library' %} active {% endif %}">
-                                <a href="{% url 'user:library' %}">
-                                    <div class="side-panel-title library-icon">
-                                        Library ({{ library_counter }})
-                                    </div>
-                                </a>
-                            </div>
+                            <div class="side-panel-section tab-link">
+                                <div {% if tab == 'library' %} class="active" {% endif %}>
+                                    <a href="{% url 'user:library' %}">
+                                        <div class="side-panel-title library-icon">
+                                            Library ({{ library_counter }})
+                                        </div>
+                                    </a>
+                                </div>
 
-                            <div class="side-panel-section tab-link {% if tab == 'trash' %} active {% endif %}">
-                                <a href="{% url 'user:library-trash' %}">
-                                    <div class="side-panel-title trash-icon">
-                                        Trash ({{ trash_counter }})
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="side-panel-section tab-link {% if tab == 'likes' %} active {% endif %}">
-                                <a href="{% url 'user:library-likes' %}">
-                                    <div class="side-panel-title like-icon">
-                                        Likes ({{ likes_counter }})
-                                    </div>
-                                </a>
+                                <div {% if tab == 'trash' %} class="active" {% endif %}>
+                                    <a href="{% url 'user:library-trash' %}">
+                                        <div class="side-panel-title trash-icon">
+                                            Trash ({{ trash_counter }})
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <div {% if tab == 'likes' %} class="active" {% endif %}>
+                                    <a href="{% url 'user:library-likes' %}">
+                                        <div class="side-panel-title like-icon">
+                                            Likes ({{ likes_counter }})
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
 
                             <hr class="divider">
