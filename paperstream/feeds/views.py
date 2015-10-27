@@ -17,6 +17,7 @@ from django.forms.utils import ErrorList
 from django.core.exceptions import ValidationError
 from django.db.models.functions import Coalesce
 from django.conf import settings
+from django.db.models.expressions import RawSQL
 
 
 from braces.views import LoginRequiredMixin
@@ -128,9 +129,11 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             pass
         elif self.sorting_flag == 'recent':
             # order by date
-            queryset = queryset.order_by(Coalesce('paper__date_ep',
-                                                  'paper__date_pp',
-                                                  'paper__date_fs').desc())
+            queryset = queryset\
+                .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
+                                      "FROM library_paper "
+                                      "WHERE id = paper_id", []))
+            queryset = queryset.order_by('-date')
         elif self.sorting_flag == 'trendy':
             # order by altmetric score
             queryset = queryset.order_by('-paper__altmetric__score')
