@@ -922,7 +922,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         data = PaperVectors.objects\
             .filter(model=self.model)\
-            .exclude(paper_pk__in=self.index2pk)\
+            .exclude(paper_id__in=self.index2pk)\
             .exclude(Q(paper__is_trusted=False) | Q(paper__abstract='') |
                      (Q(paper__date_ep=None) & Q(paper__date_pp=None)))\
             .values('pk', 'paper__pk', 'vector', 'paper__date_ep',
