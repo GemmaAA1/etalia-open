@@ -6,7 +6,7 @@ from django.contrib import admin
 
 urlpatterns = [
     # Examples:
-    url(r'^$', include('paperstream.core.urls', namespace='core')),
+    url(r'^', include('paperstream.core.urls', namespace='core')),
     url(r'^library/', include('paperstream.library.urls', namespace='library')),
     url(r'^feed/', include('paperstream.feeds.urls', namespace='feeds')),
     url(r'^user/', include('paperstream.users.urls', namespace='user')),

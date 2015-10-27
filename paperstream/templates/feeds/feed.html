@@ -12,7 +12,7 @@
 {% endblock css %}
 
 {% block title %}
-    Your Stream
+    PubStream | Your Stream
 {% endblock title %}
 
 {% block content %}
@@ -131,19 +131,7 @@
                                 </div>
                             </div>
                             <hr class="divider">
-                            <div class="side-panel-section footer">
-                                <ul class="list-inline">
-                                    <li><a href="http://paperstream.io/about/">About us</a></li>
-                                    <li>&middot;</li>
-                                    <li><a href="mailto:contact@paperstream.io">Contact us</a></li>
-                                    <li>&middot;</li>
-                                    <li><a href="#">News</a></li>
-                                    <li>&middot;</li>
-                                    <li><a href="#">Terms</a></li>
-                                    </li>
-                                </ul>
-                                <div class="copyright">&copy; 2015 PubStream.io. All rights reserved.</div>
-                            </div>
+                            {% include 'footer_side.html' %}
                         </div>
                     </div>
                 </div>

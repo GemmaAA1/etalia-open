@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/core.css' %}" type="text/css" >
+{% endblock %}
+
+{% block head %}
+{% endblock head %}
+
+{% block title %} PubStream | About{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="about">
+                <h2>The Story</h2>
+                    <p class="lead">
+                        PubStream was started by two researchers at University of California, San Francisco in 2015,
+                        swamped by the overflow of scientific articles published. With a little knowledge of web
+                        development and natural language processing and some amount of pugnacity, they started to
+                        elaborate a tool that will ease the research community keeping up with the tremendous number
+                        of scientific articles published each month from an ever increasing variety of sources.
+                        This tool came to life as a web application. We called it PubStream.</p>
+                <h2>Why PubStream?</h2>
+                    <p class="lead">
+                        Each month, about 100,000 scientific articles are published in thousands of different journals,
+                        conferences and websites. Keeping up with this fast evolving knowledge is a daunting task and little
+                        has been done to facilitate it. Searching by keywords on search engine like PubMed or Google scholar
+                        leads to partial findings. Email alerts focused on topics or authors are difficult to manage
+                        and become rapidly outdated. Weekly digest emails are often noisy. And manually browsing journal website
+                        and blogs searching for recent publications is a time-consuming process.
+                    </p>
+
+                <h2>Our Vision</h2>
+                    <p class="lead">
+                        With PubStream, we intend to facilitate this search process, saving researchers time and making
+                        sure they are not missing any important findings. By leveraging the content of reference software
+                        library with recent advances in natural language processing and machine learning, PubStream builds
+                        a scientific news stream that match your personalized interests.
+                    </p>
+                    <p class="lead">
+                    </p>
+                <h2>The Team</h2>
+                    <p class="lead">
+                        Norbert Schuff, Nicolas Pannetier
+                    </p>
+
+                <h2>Contact Us</h2>
+                <a name="contact"></a>
+                    <p class="lead">
+                    contact@pubstream.io
+                    </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

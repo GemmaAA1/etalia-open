@@ -56,11 +56,15 @@
 
 .navbar-brand-anonymous {
     padding: 10px;
-    padding-top: 7px;
+    padding-top: 20px;
     position: absolute;
     left: 50%;
-    margin-left: -75px !important;  /* 50% of your logo width */
+    margin-left: -110px !important;  /* 50% of your logo width */
     display: block;
+}
+
+.brand-image-anonymous {
+    width: 200px;
 }
 
 
@@ -98,14 +102,6 @@
 .glass-image {
     height: 100%;
 }
-
-
-/*.navbar .searchbox {*/
-    /*background-color: #FFFFFF;*/
-    /*border: none;*/
-    /*border-radius:0;*/
-/*}*/
-
 
 
 .navbar-default .navbar-nav>li.active>a,

@@ -5,15 +5,11 @@
             <div class="row ">
                 <div class="text-center">
                     <ul class="list-inline">
-                        <li><a href="http://paperstream.io/about/">About us</a></li>
+                        <li><a href="{% url 'core:about' %}">About</a></li>
                         <li>&middot;</li>
-                        <li><a href="mailto:contact@paperstream.io">Contact us</a></li>
+                        <li><a href="{% url 'core:about' %}#contact">Contact us</a></li>
                         <li>&middot;</li>
                         <li><a href="#">News</a></li>
-                        <li>&middot;</li>
-                        <li><a href="#">Blog</a></li>
-                        <li>&middot;</li>
-                        <li><a href="#">Privacy</a></li>
                         <li>&middot;</li>
                         <li><a href="#">Terms</a></li>
                         </li>

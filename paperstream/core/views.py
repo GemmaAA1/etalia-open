@@ -24,5 +24,19 @@ def home(request):
         context = {'active_papers': papers}
         return render(request, 'landing.html', context=context)
 
+
+def about(request):
+    context = {}
+    return render(request, 'about.html', context=context)
+
+def terms(request):
+    context = {}
+    return render(request, 'terms.html', context=context)
+
+def news(request):
+    context = {}
+    return render(request, 'news.html', context=context)
+
+
 def test(request):
     return render(request, 'test.html', {})

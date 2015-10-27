@@ -449,61 +449,6 @@ class UserLibraryLikesView(UserLibraryView):
 library_likes = UserLibraryLikesView.as_view()
 
 
-# class UserLibraryTrashView(LoginRequiredMixin, ModalMixin, AjaxListView):
-#     model = UserLibPaper
-#     template_name = 'user/trash.html'
-#     page_template = 'user/user_library_sub_page.html'
-#     first_page = 30
-#     per_page = 20
-#     context_object_name = 'ulp_list'
-#     list_n_ujl = 10
-#
-#     def get_context_data(self, **kwargs):
-#         context = super(AjaxListView, self).get_context_data(**kwargs)
-#         context = dict(context,
-#                        **super(UserLibraryTrashView, self).get_context_data(**kwargs))
-#         context['first_page'] = self.first_page
-#         context['per_page'] = self.per_page
-#         if self.request.GET.get("query"):
-#             context['current_query'] = self.request.GET.get("query")
-#
-#         # Get main user journal
-#         uljs = self.request.user.lib.userlibjournal_set.all()
-#         context['uljs'] = uljs[:self.list_n_ujl]
-#
-#         # Get user tastes label
-#         user_taste = UserTaste.objects\
-#             .filter(user=self.request.user, paper__in=self.request.user.lib.papers.all())\
-#             .values_list('paper_id', 'is_liked')
-#         # reformat to dict
-#         user_taste = dict((key, {'liked': v1})
-#                           for key, v1 in user_taste)
-#         context['user_taste'] = user_taste
-#
-#         return context
-#
-#     def get_queryset(self):
-#         query_set = UserLibPaper.objects\
-#             .filter(userlib=self.request.user.lib,
-#                     is_trashed=True)
-#         return self.filter_queryset(query_set)
-#
-#     def filter_queryset(self, queryset):
-#         # Get the q GET parameter
-#         if self.request.GET.get('query', None):
-#             qs = self.request.GET.get("query").split(' ')
-#             for q in qs:
-#                 queryset = queryset.filter(Q(paper__title__icontains=q) |
-#                                    Q(paper__abstract__icontains=q) |
-#                                    Q(paper__journal__title__icontains=q) |
-#                                    Q(paper__authors__last_name__icontains=q) |
-#                                    Q(paper__authors__first_name__icontains=q))
-#
-#         # No q is specified so we return queryset
-#         return queryset.distinct()
-#
-# trash = UserLibraryTrashView.as_view()
-
 # User profile update
 # -------------------
 class UpdateUserBasicInfoView(LoginRequiredMixin, AjaxableResponseMixin,
