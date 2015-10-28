@@ -148,7 +148,6 @@ class UserFeed(TimeStampedModel):
         """Update UserFeed
 
         - Get all papers in time range excluding untrusted and already in user lib
-        #TODO: Restricted this query to the k-NN to the feed vector
         - Score papers
         - Get only the N top scored papers
         - Create/Update UserFeedPaper
@@ -199,7 +198,6 @@ class UserFeed(TimeStampedModel):
             journal_pks = self.user.lib.journals.all().values_list('pk', flat=True)
         else:
             journal_pks = None
-
 
         self.log('debug', 'Updating', 'getting neighbors...')
         seed_pks = self.papers_seed.all().values_list('pk', flat=True)

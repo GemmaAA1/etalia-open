@@ -1057,7 +1057,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         index2pk = self.index2pk[clip_start:]
         index2journalpk = self.index2journalpk[clip_start:]
 
-        # filter by journal is defined
+        # filter by journal if defined
         if journal_pks:
             idx = list(map(lambda x: x in journal_pks, index2journalpk))
             data = data[np.array(idx), :]
