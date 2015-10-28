@@ -608,7 +608,7 @@ class ConsumerArxiv(Consumer):
         return entries, ok
 
 
-class ConsumerJournal(models.Model):
+class ConsumerJournal(TimeStampedModel):
     """Table for Consumer-Journal relationship"""
 
     STATUS = Choices('inactive', 'idle', 'in_queue', 'consuming', 'error')
@@ -741,7 +741,7 @@ class ConsumerJournal(models.Model):
         print(''.join(tmp))
 
 
-class ConsumerJournalStat(models.Model):
+class ConsumerJournalStat(TimeStampedModel):
     """Table for ConsumerJournal stats"""
     consumer_journal = models.ForeignKey(ConsumerJournal, related_name='stats')
 

@@ -39,16 +39,19 @@
                                         <h5><em>Broaden your interest and explore new topics</em></h5>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <div class="dropdown">
-                                        <span class="dropdown-toggle " type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <div class="text-right  sort-by"><em>sort-by<span class="caret"></span></em></div>
+                                <div class="col-md-3 header">
+                                    <div class="likes">
+                                        <button class="like-img-crop">
+                                            <img src="{% static 'img/like_select.png' %}" class="like-img" title="Show liked publications">
+                                        </button>
+                                    </div>
+                                    <div class="dropdown sort-by">
+                                        <span class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <div class="text-right"><em>sort-by<span class="caret"></span></em></div>
                                         </span>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-{#                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>#}
+                                        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>
                                             <li><a id="most-recent" class="sort-option {% if sorting_flag == 'recent' %}active{% endif %}" href="#">most recent</a></li>
-                                            <li><a id="most-trendy" class="sort-option {% if sorting_flag == 'trendy' %}active{% endif %}" href="#">most trending</a></li>
-                                            <li><a id="nothing-special" class="sort-option {% if sorting_flag == 'nothing' %}active{% endif %}" href="#">nothing special</a></li>
                                         </ul>
                                     </div>
                                 </div>
