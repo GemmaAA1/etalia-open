@@ -98,7 +98,8 @@ class Model(TimeStampedModel, S3Mixin):
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
 
-    # when trained, model becomes active
+    # when trained, model becomes active. If False model is not load as a model
+    # in the workers
     is_active = models.BooleanField(default=False)
 
     # doc2vec instance from gensim
@@ -799,6 +800,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     date = []
     # data index to journal pk
     index2journalpk = []
+    # journal ratio to weight vectors with
+    journal_ratio = models.FloatField(default=0.0)
 
     objects = MostSimilarManager()
 
@@ -877,6 +880,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .values('pk', 'paper__pk', 'vector', 'paper__journal__pk')\
             .order_by('date')
 
+        data_journal = dict(JournalVectors.objects\
+            .filter(model=self.model)\
+            .values_list('pk', 'vector'))
+
         # Reshape data
         nb_items = data.count()
         self.date = []
@@ -891,7 +898,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 # store journal pk
                 self.index2journalpk.append(dat['paper__journal__pk'])
                 # build input matrix for fit
-                self.data[i, :] = dat['vector'][:vec_size]
+                if data_journal[dat['paper__journal__pk']]:
+                    self.data[i, :] = (1 - self.journal_ratio) * dat['vector'][:vec_size] + \
+                        self.journal_ratio * data_journal[dat['paper__journal__pk']][:vec_size]
+                else:
+                    self.data[i, :] = dat['vector'][:vec_size]
 
         # order by date
         idx = sorted(range(len(self.date)), key=self.date.__getitem__)

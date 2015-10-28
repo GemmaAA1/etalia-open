@@ -111,7 +111,7 @@ class UserFeed(TimeStampedModel):
         self.update_userfeed_vector()
 
     def update_userfeed_vector(self):
-        model_pks = Model.objects.all().values_list('pk', flat='True')
+        model_pks = Model.objects.filter(is_active=True).values_list('pk', flat='True')
         for model_pk in model_pks:
             ufv, _ = UserFeedVector.objects.get_or_create(model_id=model_pk,
                                                           feed=self)

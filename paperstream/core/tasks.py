@@ -20,7 +20,9 @@ def add_core(x, y):
 def embed_all_models(paper_pk):
     """Send chain task to embed paper
     """
-    model_names = Model.objects.all().values_list('name', flat=True)
+    model_names = Model.objects\
+        .filter(is_active=True)\
+        .values_list('name', flat=True)
     for model_name in model_names:
         # Send task for embedding
         try:

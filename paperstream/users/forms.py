@@ -133,7 +133,8 @@ class UserSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserSettingsForm, self).__init__(*args, **kwargs)
-        self.fields['model'].choices = [(mod.pk, mod.name) for mod in Model.objects.all()]
+        self.fields['model'].choices = [(mod.pk, mod.name)
+                                        for mod in Model.objects.filter(is_active=True)]
 
     class Meta:
         model = UserSettings

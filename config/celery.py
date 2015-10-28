@@ -59,7 +59,9 @@ class NLPBootstep(bootsteps.Step):
 def register_model_tasks(init=False):
     """Register Model tasks
     """
-    model_names = Model.objects.all().values_list('name', flat=True)
+    model_names = Model.objects\
+        .filter(is_active=True)\
+        .values_list('name', flat=True)
     for model_name in model_names:
         cls = EmbedPaperTask(model_name=model_name, init=init)
         celery_app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
@@ -69,7 +71,9 @@ def register_model_tasks(init=False):
 def register_mostsimilar_tasks(init=False):
     """Register MostSimilar tasks
     """
-    model_names = Model.objects.all().values_list('name', flat=True)
+    model_names = Model.objects\
+        .filter(is_active=True)\
+        .values_list('name', flat=True)
     for model_name in model_names:
         cls = MostSimilarTask(model_name=model_name, init=init)
         celery_app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
