@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/core.css' %}" type="text/css" >
+{% endblock %}
+
+{% block head %}
+{% endblock head %}
+
+{% block title %} PubStream | Support {% endblock %}
+
+
+{% block content %}
+    <div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="about">
+                <h2>Common Questions</h2>
+                    <p class="lead">
+                        Q: <br>
+                        A: <br>
+
+                    </p>
+                    More questions? Drop us a line
+                </h2>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

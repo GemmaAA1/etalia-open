@@ -38,5 +38,10 @@ def news(request):
     return render(request, 'news.html', context=context)
 
 
+def support(request):
+    context = {}
+    return render(request, 'support.html', context=context)
+
+
 def test(request):
     return render(request, 'test.html', {})

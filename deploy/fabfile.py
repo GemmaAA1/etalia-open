@@ -58,7 +58,8 @@ INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         't2.medium': 2,
                         't2.large': 3,
                         'm4.large': 3,
-                        'm4.xlarge': 4}
+                        'm4.xlarge': 4,
+                        'm4.2xlarge': 5}
 ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'base': 't2.small',
                           'ms': 't2.medium',

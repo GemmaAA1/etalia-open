@@ -390,7 +390,8 @@ class TrendFeed(TimeStampedModel):
         vec = ufv.update_vector()
 
         # Submit Celery Task to get k_neighbors from userfeed signature
-        res = ms_task.delay('knn_search', seed=vec,
+        res = ms_task.delay('knn_search',
+                            seed=vec,
                             clip_start=self.past_n_papers,
                             top_n=self.top_n_closest,
                             clip_start_reverse=True)

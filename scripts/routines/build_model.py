@@ -25,3 +25,4 @@ def build(model_name, papers=None):
     model.build_vocab_and_train()
     # Propagate to MostSimilar, journalvector, papervector
     model.propagate()
+

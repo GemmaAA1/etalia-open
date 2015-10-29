@@ -414,9 +414,8 @@ class Model(TimeStampedModel, S3Mixin):
         phraser = self.build_phraser(docs, **kwargs)
         docs = self.load_documents(phraser=phraser)
         self.build_vocab(docs)
-        # Train, save and activate
+        # Train, save
         self.train(docs, **kwargs)
-        self.activate()
 
     def propagate(self):
         """Save Journal and Paper vectors and init MostSimilar
@@ -548,8 +547,9 @@ class Model(TimeStampedModel, S3Mixin):
 
         for count, paper_pk in enumerate(paper_pks):
             self.infer_paper(paper_pk, **kwargs)
-            if not count % (nb_papers // nb_pbar_updates):
-                pbar.update(count)
+            if not (nb_papers // nb_pbar_updates) == 0:
+                if not count % (nb_papers // nb_pbar_updates):
+                    pbar.update(count)
         # close progress bar
         pbar.finish()
 
@@ -785,7 +785,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     AWS_ACCESS_KEY_ID = getattr(settings, 'DJANGO_AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = getattr(settings, 'DJANGO_AWS_SECRET_ACCESS_KEY', '')
 
-    model = models.OneToOneField(Model, related_name='ms', unique=True)
+    model = models.ForeignKey(Model, related_name='ms')
 
     upload_state = models.CharField(max_length=3,
                                     choices=(('IDL', 'Idle'),
@@ -802,8 +802,13 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     index2journalpk = []
     # journal ratio to weight vectors with
     journal_ratio = models.FloatField(default=0.0)
+    # make instance active (use when linking task)
+    is_active = models.BooleanField(default=False)
 
     objects = MostSimilarManager()
+
+    class Meta:
+        unique_together = (('model', 'journal_ratio'), )
 
     @property
     def name(self):
@@ -812,6 +817,16 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)
+
+    def activate(self):
+        """Set model to active"""
+        self.is_active = True
+        self.save_db_only()
+
+    def deactivate(self):
+        """Set model to inactive"""
+        self.is_active = False
+        self.save_db_only()
 
     def save(self, *args, **kwargs):
 
@@ -864,6 +879,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def full_update(self):
         """Full update data for knn search
         """
+        self.deactivate()
 
         logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
             pk=self.id, name=self.name))
@@ -917,6 +933,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def update(self):
         """Update data for knn search for new paper
         """
+
+        self.deactivate()
 
         logger.info('Updating MS ({pk}/{name}) - fetching new data...'.format(
             pk=self.id, name=self.name))
