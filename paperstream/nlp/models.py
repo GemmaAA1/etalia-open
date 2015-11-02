@@ -10,7 +10,7 @@ import numpy as np
 from gensim import matutils
 from sklearn.externals import joblib
 
-from django.db import models, transaction
+from django.db import models
 from django.db.models import Q, QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
@@ -282,7 +282,7 @@ class Model(TimeStampedModel, S3Mixin):
         super(Model, self).delete(**kwargs)
 
     def dump(self, papers, data_path=None):
-        """Dump papers data to pre-process text files.
+        """Dump matches data to pre-process text files.
         Papers data are separated in multiple file to spare memory when building
         model. File are composed of N (CHUNK_SIZE) documents. Each line of the
         files start with the primary key of the document and then the
@@ -422,7 +422,7 @@ class Model(TimeStampedModel, S3Mixin):
         (To be run after model training)"""
         logging.info('{} Populate journals...'.format(self.name))
         self.save_journal_vec_from_bulk()
-        logging.info('{} Populate papers...'.format(self.name))
+        logging.info('{} Populate matches...'.format(self.name))
         self.save_paper_vec_from_bulk()
         logging.info('{} Build MostSimilar...'.format(self.name))
         self.build_most_similar()
@@ -524,7 +524,7 @@ class Model(TimeStampedModel, S3Mixin):
         return paper_pk
 
     def infer_papers(self, paper_pks, **kwargs):
-        """Infer model vector for papers
+        """Infer model vector for matches
 
         Args:
             paper_pks (list or QuerySet): List of Paper primary keys
@@ -578,7 +578,7 @@ class Model(TimeStampedModel, S3Mixin):
 
     @classmethod
     def infer_papers_all_models(cls, papers, **kwargs):
-        """Infer all model vector for all papers
+        """Infer all model vector for all matches
         """
         model_names = list(cls.objects.all().values_list('name', flat='True'))
         for model_name in model_names:
@@ -690,7 +690,7 @@ class JournalVectors(TimeStampedModel):
 
 
 class PaperNeighbors(TimeStampedModel):
-    """ Table of papers nearest neighbors"""
+    """ Table of matches nearest neighbors"""
 
     paper = models.ForeignKey(Paper, related_name='neighbors')
 
@@ -700,7 +700,7 @@ class PaperNeighbors(TimeStampedModel):
                                      choices=NLP_TIME_LAPSE_CHOICES,
                                      verbose_name='Days from right now')
 
-    # Primary keys of the k-nearest neighbors papers
+    # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
                            size=settings.NLP_MAX_KNN_NEIGHBORS,
                            null=True, blank=True)
@@ -722,13 +722,13 @@ class PaperNeighbors(TimeStampedModel):
 
 
 class JournalNeighbors(TimeStampedModel):
-    """ Table of papers nearest neighbors"""
+    """ Table of matches nearest neighbors"""
 
     journal = models.ForeignKey(Journal, related_name='neighbors')
 
     model = models.ForeignKey(Model)
 
-    # Primary keys of the k-nearest neighbors papers
+    # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
                            size=settings.NLP_MAX_KNN_NEIGHBORS,
                            null=True, blank=True)
@@ -792,7 +792,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                                              ('ING', 'Uploading')),
                                     default='IDL ')
 
-    # 2D array of # papers x vector size
+    # 2D array of # matches x vector size
     data = np.empty(0)
     # data index to paper pk
     index2pk = []
@@ -1010,15 +1010,14 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
         vec = pv.get_vector()
 
-        clip_start = self.get_clip_start(time_lapse)
-        res_search = self.knn_search(vec, clip_start=clip_start, top_n=k)
+        res_search = self.knn_search(vec, time_lapse=time_lapse, top_n=k)
 
         neighbors_pks = [item[0] for item in res_search
                          if item[0] not in [paper_pk]]
 
         return neighbors_pks[:k]
 
-    def knn_search(self, seed, clip_start=0, top_n=5, clip_start_reverse=False):
+    def knn_search(self, seed, time_lapse=-1, top_n=5):
 
         # check seed
         if isinstance(seed, list):
@@ -1028,9 +1027,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         else:
             assert seed.shape[1] == self.model.size
 
-        # Reverse clip_start if flagged
-        if clip_start_reverse:
-            clip_start = len(self.index2pk) - clip_start
+        # get clip
+        clip_start = self.get_clip_start(time_lapse)
 
         # compute distance
         dists = np.dot(self.data[clip_start:, :], seed)
@@ -1069,7 +1067,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         of vector defined as columns of 2d array seeds
 
         Args:
-            seeds (np.array): 2d array, vector size x # of papers
+            seeds (np.array): 2d array, vector size x # of matches
         """
 
         # check seeds
@@ -1158,11 +1156,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                                       journal_pks=journal_pks)
         elif task == 'knn_search':
             seed = kwargs.get('seed')
-            clip_start = kwargs.get('clip_start')
-            clip_start_reverse = kwargs.get('clip_start', False)
+            time_lapse = kwargs.get('time_lapse')
             top_n = kwargs.get('top_n')
-            return self.knn_search(seed, clip_start=clip_start, top_n=top_n,
-                                   clip_start_reverse=clip_start_reverse)
+            return self.knn_search(seed, time_lapse=time_lapse, top_n=top_n)
         else:
             print(task)
             raise ValueError('Unknown task action')

@@ -59,7 +59,7 @@ class FunctionalTest(StaticLiveServerTestCase):
                 last_name=names.get_last_name())
             )
 
-        # Create a bench of papers with random authors
+        # Create a bench of matches with random authors
         papers = []
         n = 0
         while n < nb_papers:

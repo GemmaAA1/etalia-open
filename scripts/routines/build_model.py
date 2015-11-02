@@ -16,7 +16,7 @@ def build(model_name, papers=None):
 
     # Initiate model
     model = Model.objects.create(**model_args)
-    # dump papers data
+    # dump matches data
     if not papers:
         papers = Paper.objects.filter(is_trusted=True,
                                       title__regex=r'^.{5}.*',

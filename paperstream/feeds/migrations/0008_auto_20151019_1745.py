@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='discoverfeed',
-            name='papers',
+            name='matches',
         ),
         migrations.RemoveField(
             model_name='discoverfeed',
@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='trendfeed',
-            name='papers',
+            name='matches',
             field=models.ManyToManyField(to='library.Paper', through='feeds.TrendFeedPaper'),
         ),
         migrations.AddField(

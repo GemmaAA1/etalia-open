@@ -3,12 +3,12 @@ from __future__ import unicode_literals, absolute_import
 
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import UserFeed
+from .models import Stream
 
 class CreateUserFeedForm(forms.ModelForm):
 
     class Meta:
-        model = UserFeed
+        model = Stream
         fields = ('name', )
         widgets = {
             'name':

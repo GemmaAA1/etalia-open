@@ -57,10 +57,10 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
             user (User): A User instance
             session: An OAuth session as provided by get_session()
             full (bool): if True, run a full update on library. If false, only
-                update new added added papers
+                update new added added matches
 
         Returns:
-            (int): Number of papers added
+            (int): Number of matches added
         """
         # Init
         new = True

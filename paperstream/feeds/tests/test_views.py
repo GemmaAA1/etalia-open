@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from .base import UserFeedTestCase
 
-from ..models import UserFeed
+from ..models import Stream
 from ..views import feed_view, update_feed_view, create_feed_view
 
 class FeedViewTestCase(UserFeedTestCase):
@@ -15,8 +15,8 @@ class FeedViewTestCase(UserFeedTestCase):
     def setUp(self):
         super(FeedViewTestCase, self).setUp()
         self.factory = RequestFactory()
-        self.feed_default = UserFeed.objects.create_main(user=self.user)
-        self.feed2 = UserFeed.objects.create(user=self.user, name='test',
+        self.feed_default = Stream.objects.create_main(user=self.user)
+        self.feed2 = Stream.objects.create(user=self.user, name='test',
                                              papers_seed=self.papers)
 
     def test_feed_page_redirect_to_login_if_user_anonymous(self):
@@ -77,8 +77,8 @@ class FeedUpdateTest(UserFeedTestCase):
     def setUp(self):
         super(FeedUpdateTest, self).setUp()
         self.factory = RequestFactory()
-        self.feed_default = UserFeed.objects.create_main(user=self.user)
-        self.feed2 = UserFeed.objects.create(user=self.user, name='test',
+        self.feed_default = Stream.objects.create_main(user=self.user)
+        self.feed2 = Stream.objects.create(user=self.user, name='test',
                                              papers_seed=self.papers)
 
     def test_user_can_run_update_feed(self):
@@ -101,11 +101,11 @@ class CreateFeedTest(UserFeedTestCase):
                                     data={'name': feed_name})
         request.user = self.user
         create_feed_view(request)
-        feed_names = UserFeed.objects.filter(user=self.user).values_list('name', flat=True)
+        feed_names = Stream.objects.filter(user=self.user).values_list('name', flat=True)
         self.assertIn(feed_name, feed_names)
 
     def test_create_feed_cannot_create_feed_that_already_have_same_name(self):
-        UserFeed.objects.create(user=self.user, name='test',
+        Stream.objects.create(user=self.user, name='test',
                                 papers_seed=self.papers)
         feed_name = 'test'
         request = self.factory.post('/feed/create-feed',

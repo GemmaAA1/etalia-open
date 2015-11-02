@@ -37,7 +37,7 @@ journals = JournalsListView.as_view()
 
 
 class JournalView(ModalMixin, ListView):
-    # Journal view display a list of papers from the journal
+    # Journal view display a list of matches from the journal
     model = Paper
     template_name = 'library/journal.html'
     paginate_by = settings.ITEMS_PER_PAGE
@@ -67,11 +67,11 @@ class PaperView(ModalMixin, DetailView):
         paper_ = kwargs['object']
         time_lapse = self.time_lapse_map[self.kwargs.get('time_lapse', 'year')]
         if self.request.user.is_authenticated():
-            model = self.request.user.settings.model
+            model = self.request.user.settings.stream_model
         else:
             model = Model.objects.first()
 
-        # Get stored neighbors papers
+        # Get stored neighbors matches
         try:
             neigh_data = paper_.neighbors.get(model=model, time_lapse=time_lapse)
             if not neigh_data.neighbors:
@@ -147,7 +147,7 @@ paper_time = PaperViewPkTime.as_view()
 
 class PapersListView(ModalMixin, ListView):
     model = Paper
-    template_name = 'library/papers.html'
+    template_name = 'library/matches.html'
     paginate_by = settings.ITEMS_PER_PAGE
 
 papers = PapersListView.as_view()

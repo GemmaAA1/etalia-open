@@ -46,7 +46,11 @@
 
     <!-- Navigation -->
     {% block navbar %}
-        {% include "nav_bar.html" %}
+        {% if user.is_authenticated %}
+            {% include "nav_bar.html" %}
+        {% else %}
+            {% include "nav_bar_anonymous.html" %}
+        {% endif %}
     {% endblock navbar %}
 
 
@@ -70,10 +74,9 @@
     <!-- modals -->
     {% block modal %}
         {% if user.is_authenticated %}
-            {% include "user/profile_modal.html" %}
-            {% include "feeds/create_new_modal.html" %}
-        {% else %}
-            {% include "user/login_modal.html" %}
+            {% if user.init_step != 'IDL' %}
+                {% include "user/init_modal.html" %}
+            {% endif %}
         {% endif %}
     {% endblock modal %}
 
@@ -140,25 +143,6 @@
             });
             </script>
 
-{#            // twitter#}
-{#            <script>window.twttr = (function(d, s, id) {#}
-{#              var js, fjs = d.getElementsByTagName(s)[0],#}
-{#                t = window.twttr || {};#}
-{#              if (d.getElementById(id)) return t;#}
-{#              js = d.createElement(s);#}
-{#              js.id = id;#}
-{#              js.src = "https://platform.twitter.com/widgets.js";#}
-{#              fjs.parentNode.insertBefore(js, fjs);#}
-{##}
-{#              t._e = [];#}
-{#              t.ready = function(f) {#}
-{#                t._e.push(f);#}
-{#              };#}
-{##}
-{#              return t;#}
-{#            }(document, "script", "twitter-wjs"));#}
-{#            </script>#}
-{#            // Google +#}
         <script src="https://apis.google.com/js/platform.js" async defer></script>
         {% endif %}
     {% endblock js %}

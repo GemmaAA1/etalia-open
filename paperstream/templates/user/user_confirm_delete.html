@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load avatar_tags %}
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
+{% endblock css %}
+
+{% block title %} PubStream | Profile {% endblock %}
+
+
+{% block content %}
+<div class="container profile">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2 text-center">
+            <form action="" method="post">{% csrf_token %}
+                <p>Are you sure you want to delete "{{ object }}"?</p>
+                <input type="submit" value="Confirm" />
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

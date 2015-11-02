@@ -1,95 +1,78 @@
 {% load staticfiles %}
+{% load avatar_tags %}
 
 {% load navbar_extra %}
 
 {% block navbar %}
 <!-- Navigation -->
-{#<nav class="navbar navbar-default navbar-fixed-top" role="navigation">#}
-{% if user.is_authenticated %}
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-        <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{% url 'core:home' %}">
-                    <img class="brand-image" alt="PubStream" src="{% static 'img/mark_v6.png' %}">
-                </a>
-                <!-- Collect the nav links, forms, and other content for toggling -->
-            </div>
 
-            <div class="collapse navbar-collapse" id="navbar-collapse-1">
-                {% if "feed" in request.path or "user" in request.path %}
-                    <button class="glass navbar-left">
-                        <img class="glass-image" src="{% static 'img/glass.png' %}">
-                    </button>
-                    <form class="navbar-form navbar-left" role="search">
-                        <input type="text" name="query" class="searchbox" placeholder="Search" {% if get_query %}value="{{ get_query }}"{% endif %}>
-                        {% csrf_token %}
-                    </form>
-                {% endif %}
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="{% active request '(?!feed/discover)(feed.+)' %}">
-                        <a class="stream-icon" href="{% url 'feeds:main' %}">STREAM</a>
-                    </li>
-                    <li class="{% active request 'feed/discover' %}">
-                        <a class="discover-icon" href="{% url 'feeds:trend' %}">TREND</a>
-                    </li>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{% url 'core:home' %}">
+                <img class="brand-image" alt="PubStream" src="{% static 'img/mark_v8.png' %}">
+            </a>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar-collapse-1">
+            {% if "feed" in request.path or "user" in request.path %}
+                <button class="glass navbar-left">
+                    <img class="glass-image" src="{% static 'img/glass.png' %}">
+                </button>
+                <form class="navbar-form navbar-left" role="search">
+                    <input type="text" name="query" class="searchbox" placeholder="Search" {% if get_query %}value="{{ get_query }}"{% endif %}>
+                    {% csrf_token %}
+                </form>
+            {% endif %}
+            <ul class="nav navbar-nav navbar-right">
+                <li class="{% active request 'feed/stream.+' %}">
+                    <a class="stream-icon" href="{% url 'feeds:stream' %}">STREAM</a>
+                </li>
+                <li class="{% active request 'feed/trend.+' %}">
+                    <a class="discover-icon" href="{% url 'feeds:trend' %}">TREND</a>
+                </li>
 {#                    <li class="{% active request 'comment.+' %}">#}
 {#                        <a class="notifications-icon" href="#">COMMENTS</a>#}
 {#                    </li>#}
-                    <li class="{% active request 'user/library.+' %}">
-                        <a class="library-icon" href="{% url 'user:library' %}">LIBRARY</a>
-                    </li>
-                    <li class="dropdown {% active request 'accounts.+' %}">
-                        <a class="profile-icon dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"></a>
-{#                        <img class="profile-icon" src="{% static 'img/main_icons.svg' %}">#}
-                        <ul class="dropdown-menu">
-                            <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Profile</a></li>
-                            <li class=""><a href="#" data-toggle="modal" data-target="#update-profile-modal">Settings</a></li>
-                            <li><a href="#">Help</a></li>
-                            <li class="divider"></li>
-                            <li><a href="{% url 'user:logout' %}">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-{% else %}
-    <nav class="navbar navbar-default nav-bar-anonymous" role="navigation">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-sign-in">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand-anonymous" href="{% url 'core:home' %}">
-                    <img class="brand-image-anonymous" alt="PubStream" src="{% static 'img/mark_v6.png' %}">
-                </a>
-            </div>
-                <!-- Collect the nav links, forms, and other content for toggling -->
+                <li class="{% active request 'user/library.+' %}">
+                    <a class="library-icon" href="{% url 'user:library' %}">LIBRARY</a>
+                </li>
+                <li class="dropdown {% active request 'user/(?!library).+' %}">
+                    {% if user.avatar_set.all %}
+                        <div class="avatar-icon-crop dropdown-toggle avatar-icon-crop" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <a class="avatar-icon" >
+                                {% avatar user 80 %}
+                            </a>
+                        </div>
+                    {% else %}
+                        <a class="profile-icon dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        </a>
+                    {% endif %}
 
-            <div class="collapse navbar-collapse" id="navbar-collapse-sign-in">
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
-                        <a class="signin-icon dropdown-toggle" data-toggle="dropdown" href="#">Sign-in</a>
-                        <ul class="dropdown-menu" role="menu">
-                          <li class=""><a href="{% url "social:begin" backend="zotero" %}">Zotero</a></li>
-                          <li class=""><a href="{% url "social:begin" backend="mendeley" %}">Mendeley</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
+{#                        <img class="profile-icon" src="{% static 'img/main_icons.svg' %}">#}
+
+                    <ul class="dropdown-menu">
+                        <li class=""><a href="{% url 'user:profile' %}">Profile</a></li>
+                        <li class=""><a href="{% url 'user:settings' %}">Settings</a></li>
+                        <li class="divider"></li>
+                        <li><a href="{% url 'core:help' %}">Help</a></li>
+                        <li class="divider"></li>
+                        <li><a href="{% url 'user:logout' %}">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
         </div>
-    </nav>
-{% endif %}
+    </div>
+</nav>
+
 {% endblock %}
 
 

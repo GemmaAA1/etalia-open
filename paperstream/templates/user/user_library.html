@@ -15,9 +15,7 @@
 
 
 {% block content %}
-    {% if user.lib.state == 'ING' %}
-        {% include "user/sync_lib_modal.html" %}
-    {% endif %}
+
     <div class="container">
         <div class="library">
             <div class="row">
@@ -32,7 +30,7 @@
                                 </div>
                                 <div class="col-md-11">
                                     <div class="header-text">
-                                        <h3>Your library</h3>
+                                        <h3>My library</h3>
                                         <h5><em>In sync with {{ user.social_auth.first.provider|capfirst }}</em></h5>
                                     </div>
                                 </div>
@@ -48,7 +46,15 @@
                                 <div {% if tab == 'library' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library' %}">
                                         <div class="side-panel-title library-icon">
-                                            Library ({{ library_counter }})
+                                            My Library ({{ library_counter }})
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <div {% if tab == 'likes' %} class="active" {% endif %}>
+                                    <a href="{% url 'user:library-likes' %}">
+                                        <div class="side-panel-title like-icon">
+                                            My Likes ({{ likes_counter }})
                                         </div>
                                     </a>
                                 </div>
@@ -61,13 +67,7 @@
                                     </a>
                                 </div>
 
-                                <div {% if tab == 'likes' %} class="active" {% endif %}>
-                                    <a href="{% url 'user:library-likes' %}">
-                                        <div class="side-panel-title like-icon">
-                                            Likes ({{ likes_counter }})
-                                        </div>
-                                    </a>
-                                </div>
+
                             </div>
 
                             <hr class="divider">

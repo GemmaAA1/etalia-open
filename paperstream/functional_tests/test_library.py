@@ -12,7 +12,7 @@ class LibraryTest(FunctionalTest):
 
     def test_browse_library_anonymous(self):
 
-        # Paper stream is already loaded with some papers and journals
+        # Paper stream is already loaded with some matches and journals
         self.create_pre_load_library_with_journals_and_papers(
             settings.ITEMS_PER_PAGE * 2,
             50,
@@ -24,7 +24,7 @@ class LibraryTest(FunctionalTest):
         library_landing_url = self.browser.current_url
 
         # Th library landing page of the library shows some statistics
-        # journals, papers, creators
+        # journals, matches, creators
 
         # Then he clicks on journal
         self.browser.find_element_by_link_text('Journals').click()

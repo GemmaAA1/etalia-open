@@ -6,19 +6,19 @@ import logging
 from django.contrib.auth import get_user_model
 
 from config.celery import celery_app as app
-from .models import UserFeed, TrendFeed
+from .models import Stream, Trend
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 
 @app.task()
-def update_feed(user_pk, feed_name='main', restrict_journal=False):
+def update_stream(user_pk, feed_name='main', restrict_journal=False):
     """Async task / Update user feed"""
     # create/update main feed
-    feed, _ = UserFeed.objects.get_or_create(user_id=user_pk, name=feed_name)
+    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=feed_name)
     if feed_name == 'main':
-        # add all papers
+        # add all matches
         user = User.objects.get(pk=user_pk)
         feed.add_papers_seed(user.lib.papers.all())
     # update
@@ -28,8 +28,8 @@ def update_feed(user_pk, feed_name='main', restrict_journal=False):
 
 
 @app.task()
-def update_discover(user_pk):
-    df, _ = TrendFeed.objects.get_or_create(user_id=user_pk)
+def update_trend(user_pk):
+    df, _ = Trend.objects.get_or_create(user_id=user_pk)
     df.update()
 
     return user_pk

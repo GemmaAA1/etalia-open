@@ -130,7 +130,7 @@ class Journal(TimeStampedModel):
 
 
 class Author(TimeStampedModel):
-    """Creators (authors) of papers
+    """Creators (authors) of matches
     """
     # TODO: add affiliation of authors ?
 
@@ -176,7 +176,7 @@ class CorpAuthor(TimeStampedModel):
 
 
 class Paper(TimeStampedModel):
-    """Scientific papers
+    """Scientific matches
     """
 
     # Published status
@@ -444,7 +444,7 @@ class Paper(TimeStampedModel):
 
 
 class AuthorPaper(TimeStampedModel):
-    """Intermediate table for ranking authors in papers
+    """Intermediate table for ranking authors in matches
     """
     author = models.ForeignKey(Author)
     paper = models.ForeignKey(Paper)
@@ -487,7 +487,7 @@ class Stats(TimeStampedModel):
         self.nb_journals = Journal.objects.count()
         self.nb_authors = Author.objects.count()
 
-        # Count papers by time range
+        # Count matches by time range
         cursor = connection.cursor()
         query = "SELECT COUNT(*) FROM library_paper " \
                 "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
@@ -514,13 +514,13 @@ class Stats(TimeStampedModel):
         return self.created.strftime('%d %b %Y')
 
     def print(self):
-        print('# papers: {papers}\n' \
+        print('# matches: {matches}\n' \
                '# journals: {journals}\n' \
                '# authors: {authors}\n' \
-               '# papers last week: {week}\n' \
-               '# papers last 2 weeks: {two_weeks}\n' \
-               '# papers last month: {month}\n' \
-               '# papers last year: {year}\n'.format(
+               '# matches last week: {week}\n' \
+               '# matches last 2 weeks: {two_weeks}\n' \
+               '# matches last month: {month}\n' \
+               '# matches last year: {year}\n'.format(
             papers=self.nb_papers,
             journals=self.nb_journals,
             authors=self.nb_authors,

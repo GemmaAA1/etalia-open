@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^terms/$', views.about, name='terms'),
     url(r'^news/$', views.news, name='news'),
     url(r'^support/$', views.support, name='support'),
+    url(r'^help/$', views.help, name='help'),
 ]

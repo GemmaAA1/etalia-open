@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% load avatar_tags %}
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
+{% endblock css %}
+
+{% block content %}
+<div class="container profile">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <p>Your current photo: </p>
+            {% avatar user %}
+            {% if not avatars %}
+                <p>You haven't uploaded a photo yet. Please upload one now.</p>
+{#            {% else %}#}
+{#                <form method="POST" action="{% url 'user:avatar_change' %}">#}
+{#                    <ul>#}
+{#                        {{ primary_avatar_form.as_ul }}#}
+{#                    </ul>#}
+{#                    <p>{% csrf_token %}<input type="submit" value="Choose new Default" /></p>#}
+{#                </form>#}
+            {% endif %}
+            <form enctype="multipart/form-data" method="POST" action="{% url 'user:avatar_add' %}">
+                {{ upload_avatar_form.as_p }}
+                <p>{% csrf_token %}
+                    <input type="submit" value="Upload New Image" />
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

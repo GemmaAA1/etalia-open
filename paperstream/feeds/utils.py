@@ -9,7 +9,8 @@ from django.utils import timezone
 from paperstream.nlp.models import PaperVectors, JournalVectors
 from paperstream.library.models import Paper
 
-class Scoring(object):
+
+class StreamScoring(object):
     """Scoring abstract class"""
 
     def __init__(self, model, user, **kwargs):
@@ -21,13 +22,13 @@ class Scoring(object):
         self.target_pks = []
         self.seed_data = []
         self.target_data = []
-        # contains all [journal_pk]:vectors for journals from papers in seed_pks
+        # contains all [journal_pk]:vectors for journals from matches in seed_pks
         self._journal_dict = {}
         self._created_date_dict = {}
         self.is_ready = False
 
     def prepare(self, seed, target):
-        """Score target papers related to seed papers
+        """Score target matches related to seed matches
 
         Args:
             seed (QuerySet): queryset of Paper primary keys
@@ -49,7 +50,7 @@ class Scoring(object):
         self.is_ready = True
 
     def score(self):
-        """Score target papers related to seed papers
+        """Score target matches related to seed matches
 
         Args:
             seed (QuerySet): queryset of Paper primary keys
@@ -75,7 +76,7 @@ class Scoring(object):
         return data
 
     def build_mat(self, data):
-        """Return 2D array of seed paper vectors (papers x vector)"""
+        """Return 2D array of seed paper vectors (matches x vector)"""
         # init seed-mat
         vectors = [d['vector'][:self.model.size] for d in data]
         return np.array(vectors)
@@ -155,7 +156,7 @@ class Scoring(object):
         """Return a dictionary of journal_pk: vector of all journal in seed_data
         """
         if not self._journal_dict:
-            # get journal of seed papers
+            # get journal of seed matches
             jpk = [sd['paper__journal__pk'] for sd in self.seed_data
                    if sd['paper__journal__pk']]
             jpk = list(set(jpk))
@@ -169,7 +170,7 @@ class Scoring(object):
         return self._journal_dict
 
     def build_journal_mat(self, data):
-        """Return 2D array of journal vectors matching order of papers
+        """Return 2D array of journal vectors matching order of matches
 
         If journal is not defined, set to zeros vector and set corresponding
         ratio to 0
@@ -198,7 +199,7 @@ class Scoring(object):
         raise NotImplementedError
 
 
-class SimpleMax(Scoring):
+class SimpleMax(StreamScoring):
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
@@ -207,7 +208,7 @@ class SimpleMax(Scoring):
         return self.target_pks, scores
 
 
-class SimpleAverage(Scoring):
+class SimpleAverage(StreamScoring):
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
@@ -216,7 +217,7 @@ class SimpleAverage(Scoring):
         return self.target_pks, scores
 
 
-class ThresholdAverage(Scoring):
+class ThresholdAverage(StreamScoring):
 
     def __init__(self, **kwargs):
         super(ThresholdAverage, self).__init__(**kwargs)
@@ -232,7 +233,7 @@ class ThresholdAverage(Scoring):
         return self.target_pks, scores
 
 
-class WeightedJournalAverage(Scoring):
+class WeightedJournalAverage(StreamScoring):
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
@@ -244,7 +245,7 @@ class WeightedJournalAverage(Scoring):
         return self.target_pks, scores
 
 
-class WeightedJournalCreatedDateAverage(Scoring):
+class WeightedJournalCreatedDateAverage(StreamScoring):
 
     def __init__(self, **kwargs):
         super(WeightedJournalCreatedDateAverage, self).__init__(**kwargs)
@@ -265,3 +266,5 @@ class WeightedJournalCreatedDateAverage(Scoring):
         return self.target_pks, scores
 
 
+class TrendScoring(object):
+    pass

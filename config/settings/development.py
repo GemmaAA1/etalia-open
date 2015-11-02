@@ -37,5 +37,5 @@ STATICFILES_DIRS = (
 NLP_DATA_BUCKET_NAME = 'paperstream-development-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
 NLP_MS_BUCKET_NAME = 'paperstream-development-nlp-ms'
-
+AWS_STORAGE_BUCKET_NAME = 'pubstream-development'
 

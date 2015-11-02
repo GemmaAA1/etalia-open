@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import collections
 from nameparser import HumanName
 from jsonfield import JSONField
 from django.db import models
@@ -12,12 +13,13 @@ from django.conf import settings
 
 from paperstream.library.models import Paper, Journal
 from paperstream.nlp.models import Model
-from paperstream.feeds.models import UserFeed
-from paperstream.feeds.constants import FEED_SCORING_CHOICES
+from paperstream.feeds.models import Stream
+from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 from paperstream.core.models import TimeStampedModel
 
 from .validators import validate_first_name, validate_last_name
+from .constants import INIT_STEPS
 
 
 class Affiliation(TimeStampedModel):
@@ -46,6 +48,26 @@ class Affiliation(TimeStampedModel):
         unique_together = ('department', 'institution', 'city', 'state',
                            'country')
 
+    @property
+    def print_affiliation(self):
+        print_fields = ['department', 'institution', 'city', 'state', 'country']
+        print_aff_l = []
+        for f in print_fields:
+            if getattr(self, f):
+                print_aff_l.append(getattr(self, f))
+        return ', '.join(print_aff_l)
+
+    @property
+    def is_empty(self):
+        if not (self.department or
+                    self.institution or
+                    self.city or
+                    self.state or
+                    self.country):
+            return True
+        else:
+            return False
+
 
 class UserManager(BaseUserManager):
 
@@ -58,12 +80,10 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         # create user library
         UserLib.objects.create(user=user)
-        # create user stats
-        UserStats.objects.log_user_init(user, '')
         # create user settings
         UserSettings.objects.create(user=user)
         # create user default (main) feed
-        UserFeed.objects.create_main(user=user)
+        Stream.objects.create_main(user=user)
         return user
 
     def create_superuser(self, **kwargs):
@@ -72,6 +92,7 @@ class UserManager(BaseUserManager):
         user.is_staff = True
         user.save(using=self._db)
         return user
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     """Table - PaperStream User"""
@@ -89,6 +110,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_('Last Name'), max_length=255, blank=True, default='',
                                  validators=[validate_last_name])
 
+    title = models.CharField(max_length=32, blank=True, default='')
+
+    position = models.CharField(max_length=64, blank=True, default='')
+
     is_staff = models.BooleanField(_('staff status'), default=False,
         help_text=_('Designates whether the user can log into this admin '
                     'site.'))
@@ -97,7 +122,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
 
+    init_step = models.CharField(max_length=3, default='NON', choices=INIT_STEPS,
+        help_text=_('Tag where init user stands'))
+
     affiliation = models.ForeignKey(Affiliation, null=True, default=None)
+
+    photo = models.ImageField(upload_to='photos', null=True)
 
     objects = UserManager()
 
@@ -237,6 +267,7 @@ class UserLibJournalManager(models.Manager):
         obj.save()
         return obj
 
+
 class UserLibJournal(TimeStampedModel):
     """Table - User/Journal relationship"""
 
@@ -263,72 +294,64 @@ class UserLibJournal(TimeStampedModel):
 
 
 class UserStatsManager(models.Manager):
+    """"""
     def log_lib_starts_sync(self, user, options=''):
-        stats = self.model(user=user, state='LSS')
+        stats = self.model(user=user, message='library start sync')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
     def log_lib_ends_sync(self, user, options=''):
-        stats = self.model(user=user, state='LES')
+        stats = self.model(user=user, message='library ends sync')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def log_feed_starts_sync(self, user, options=''):
-        stats = self.model(user=user, state='FSS')
+    def log_stream_starts_sync(self, user, options=''):
+        stats = self.model(user=user, message='stream start update')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def log_feed_ends_sync(self, user, options=''):
-        stats = self.model(user=user, state='FES')
+    def log_stream_ends_sync(self, user, options=''):
+        stats = self.model(user=user, message='stream ends update')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def log_user_init(self, user, options=''):
-        stats = self.model(user=user, state='INI')
+    def log_trend_starts_sync(self, user, options=''):
+        stats = self.model(user=user, message='trend start update')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-    def log_user_email_valid(self, user, options=''):
-        stats = self.model(user=user, state='EMA')
+    def log_trend_ends_sync(self, user, options=''):
+        stats = self.model(user=user, message='trend ends update')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
     def log_user_log_in(self, user, options=''):
-        stats = self.model(user=user, state='LIN')
+        stats = self.model(user=user, message='logging in')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
     def log_user_log_out(self, user, options=''):
-        stats = self.model(user=user, state='LOU')
+        stats = self.model(user=user, message='logging out')
         stats.options = options
         stats.save(using=self._db)
         return stats
 
-class UserStats(models.Model):
+
+class UserStats(TimeStampedModel):
     """Table - Log of UserLib and Feed activity"""
 
     user = models.ForeignKey(User, related_name='stats')
 
-    state = models.CharField(max_length=3,
-                             choices=(('LIN', 'Log in'),
-                                      ('LOU', 'Log out'),
-                                      ('LSS', 'Library starts syncing'),
-                                      ('LES', 'Library ends syncing'),
-                                      ('FSS', 'Feed starts sync'),
-                                      ('FES', 'Feed ends sync'),
-                                      ('EMA', 'Email validated'),
-                                      ('CRE', 'Create user')))
+    message = models.CharField(max_length=128)
 
-    options = models.CharField(max_length=64, default='', blank=True)
-
-    datetime = models.DateTimeField(null=False, auto_now_add=True)
+    options = models.CharField(max_length=128, default='', blank=True)
 
     objects = UserStatsManager()
 
@@ -339,7 +362,8 @@ class UserSettingsManager(models.Manager):
         # if nlp_model not defined, default to first nlp_model
         if 'model' not in kwargs:
             model = Model.objects.first()
-            kwargs['model'] = model
+            kwargs['stream_model'] = model
+            kwargs['trend_model'] = model
         obj = self.model(**kwargs)
         obj.save(using=self._db)
         return obj
@@ -351,18 +375,31 @@ class UserSettings(TimeStampedModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=True,
                                 related_name='settings')
 
+    ##  Stream settings
     # NLP model to use
-    model = models.ForeignKey(Model, verbose_name='NLP Model')
+    stream_model = models.ForeignKey(Model, verbose_name='NLP Model',
+                                     related_name='stream_model')
 
     # scoring method to use
-    scoring_method = models.IntegerField(verbose_name='Scoring Algo',
-                                         choices=FEED_SCORING_CHOICES,
-                                         default=1)
+    stream_method = models.IntegerField(verbose_name='Method', default=1)
 
     # in days
-    time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
-                                     choices=NLP_TIME_LAPSE_CHOICES,
-                                     verbose_name='In the past for')
+    stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
+                                            choices=NLP_TIME_LAPSE_CHOICES,
+                                            verbose_name='In the past for')
+
+    # Trend settings
+    # nlp model
+    trend_model = models.ForeignKey(Model, verbose_name='NLP Model',
+                                    related_name='trend_model')
+
+    # scoring method to use
+    trend_method = models.IntegerField(verbose_name='Method', default=1)
+
+    # in days
+    trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
+                                            choices=NLP_TIME_LAPSE_CHOICES,
+                                            verbose_name='In the past for')
 
     objects = UserSettingsManager()
 
@@ -374,38 +411,36 @@ class UserTaste(TimeStampedModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
 
-    scoring_method = models.IntegerField(verbose_name='Scoring Algo',
-                                         choices=FEED_SCORING_CHOICES,
-                                         default=1)
-
     paper = models.ForeignKey(Paper)
+
+    context_source = models.CharField(max_length=128)
 
     is_ticked = models.BooleanField(default=False)
 
     is_liked = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('user', 'paper', 'scoring_method')
+        unique_together = [('user', 'paper'), ]
 
     def __str__(self):
         if self.is_liked:
-            return '{user} liked {pk} with {method}'.format(
+            return '{user} liked {pk} from {context}'.format(
                 user=self.user,
                 pk=self.paper.id,
-                method=FEED_SCORING_CHOICES[self.scoring_method])
+                context=self.context_source)
         elif self.is_ticked:
-            return '{user} disliked {pk} with {method}'.format(
+            return '{user} disliked {pk} with {context}'.format(
                 user=self.user,
                 pk=self.paper.id,
-                method=FEED_SCORING_CHOICES[self.scoring_method])
+                context=self.context_source)
         else:
-            return '{user}/{pk}/{method} has an issue'.format(
+            return '{user}/{pk}/{context} has an issue'.format(
                 user=self.user,
                 pk=self.paper.id,
-                method=FEED_SCORING_CHOICES[self.scoring_method])
+                context=self.context_source)
 
 
-class UserFeedLayout(TimeStampedModel):
+class FeedLayout(TimeStampedModel):
     """Store settings for stream display"""
 
     user = models.OneToOneField(User)

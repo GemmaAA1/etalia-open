@@ -1,99 +1,212 @@
 <!-- modals -->
 {#Modified Profile modal#}
-<div class="modal fade" root-modal id="update-profile-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title"> <code>{{ user.email }}</code></h4>
-            </div>
-            <div class="modal-body">
-                <div class="table">
-                    <!-- Only required for left/right tabs -->
-                    <ul class="nav nav-tabs">
-                        <li class="active"><a href="#tab1" data-toggle="tab">Info</a></li>
-                        <li><a href="#tab2" data-toggle="tab">Affiliation</a></li>
-                        <li><a href="#tab3" data-toggle="tab">Library</a></li>
-                        <li><a href="#tab4" data-toggle="tab">Feeds</a></li>
-                        <li><a href="#tab5" data-toggle="tab">Settings</a></li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane active" id="tab1">
-                            <p>
-                            <form role="form" method="POST" id="basicinfoForm" data-async data-target="#update-basic-info" action="{% url "user:update-basic-info" %}">
-                                {% csrf_token %}
-                                <span id="id_errors"></span>
-                                {% for field in form_userbasic %}
-                                    <div class="form-group">
-                                        {{ field.label_tag }}
-                                        {{ field }}
-                                    </div>
-                                {% endfor %}
-                                <div class="modal-footer">
-                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
-                                    <button id="save-basic-info" type="submit" class="btn btn-primary btn-md">Save</button>
-                                </div>
-                            </form>
-                            </p>
-                        </div>
-                        <div class="tab-pane" id="tab2">
-                            <p>
-                            <form role="form" method="POST" id="affiliationForm" data-async data-target="#update-affiliation" action="{% url "user:update-affiliation" %}">
-                                {% csrf_token %}
-                                <span id="id_errors"></span>
-                                {% for field in form_affiliation %}
-                                    <div class="form-group">
-                                        {{ field.label_tag }}
-                                        {{ field }}
-                                    </div>
-                                {% endfor %}
-                                <div class="modal-footer">
-                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
-                                    <button id="save-affiliation" type="submit" class="btn btn-primary btn-md">Save</button>
-                                </div>
-                            </form>
-                            </p>
-                        </div>
-                        <div class="tab-pane" id="tab3">
-                            <p></p>
-                            <ul class="list-group">
-                                <li class="list-group-item">Paper linked: {{ user.lib.count_papers }}</li>
-                                <li class="list-group-item">Journal linked: {{ user.lib.count_journals }}</li>
-                                <li class="list-group-item">Library status: {{ user.lib.get_status_display }}
-                                    <a href="{% url 'user:update-user-lib' %}">  (update)</a>
-                                </li>
-                                <li class="list-group-item">Library provider: {{ user.social_auth.first.get_backend.print_name }}</li>
-                            </ul>
-                        </div>
-                        <div class="tab-pane" id="tab4">
-                            <p></p>
-                            <ul class="list-group">
-                                {% for feed in user.feeds.all %}
-                                <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.name %}"> (update)</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="tab-pane" id="tab5">
-                            <p>
-                            <form role="form" method="POST" id="settingsForm" data-async data-target="#update-settings" action="{% url "user:update-settings" %}">
-                                <span id="id_errors"></span>
-                                {% for field in form_settings %}
-                                    <div class="form-group">
-                                        {{ field.label_tag }}
-                                        {{ field }}
-                                    </div>
-                                {% endfor %}
 
-                                <div class="modal-footer">
-                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
-                                    <button id="save-settings" type="submit" class="btn btn-primary btn-md">Save</button>
-                                </div>
-                            </form>
-                            </p>
-                        </div>
-                    </div>
+<div class="modal" id="names-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabel">Update your name</h4>
+      </div>
+      <div class="modal-body">
+        <form role="form" method="POST" id="names-form" root-modal="#names-modal" data-async data-target="#names-section" action="{% url "user:update-name" %}">
+            {% csrf_token %}
+            <span id="id_errors"></span>
+            {% for field in form_name %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
                 </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
+                <button id="save-names" type="submit" class="btn btn-primary btn-md">Save</button>
             </div>
-        </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
+
+
+<div class="modal" id="title-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabel">Update your title (PhD, MD, etc.)</h4>
+      </div>
+      <div class="modal-body">
+        <form role="form" method="POST" id="title-form" data-async root-modal="#title-modal" data-target="#title-section" action="{% url "user:update-title" %}">
+            {% csrf_token %}
+            <span id="id_errors"></span>
+            {% for field in form_title %}
+                <div class="form-group">
+{#                    {{ field.label_tag }}#}
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
+                <button id="save-title" type="submit" class="btn btn-primary btn-md">Save</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="position-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabel">Update your position (Professor, PostDoc, etc.)</h4>
+      </div>
+      <div class="modal-body">
+        <form role="form" method="POST" id="position-form" data-async root-modal="#position-modal" data-target="#position-section" action="{% url 'user:update-position' %}">
+            {% csrf_token %}
+            <span id="id_errors"></span>
+            {% for field in form_position %}
+                <div class="form-group">
+{#                    {{ field.label_tag }}#}
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
+                <button id="save-position" type="submit" class="btn btn-primary btn-md">Save</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="affiliation-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabel">Update your affiliation</h4>
+      </div>
+      <div class="modal-body">
+        <form role="form" method="POST" id="affiliation-form" data-async root-modal="#affiliation-modal" data-target="#affiliation-section" action="{% url 'user:update-affiliation' %}">
+            {% csrf_token %}
+            <span id="id_errors"></span>
+            {% for field in form_affiliation %}
+                <div class="form-group">
+{#                    {{ field.label_tag }}#}
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
+                <button id="save-affiliation" type="submit" class="btn btn-primary btn-md">Save</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{#<div class="modal fade" root-modal id="update-profile-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">#}
+{#    <div class="modal-dialog">#}
+{#        <div class="modal-content">#}
+{#            <div class="modal-header">#}
+{#                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
+{#                <h4 class="modal-title"> <code>{{ user.email }}</code></h4>#}
+{#            </div>#}
+{#            <div class="modal-body">#}
+{#                <div class="table">#}
+{#                    <!-- Only required for left/right tabs -->#}
+{#                    <ul class="nav nav-tabs">#}
+{#                        <li class="active"><a href="#tab1" data-toggle="tab">Info</a></li>#}
+{#                        <li><a href="#tab2" data-toggle="tab">Affiliation</a></li>#}
+{#                        <li><a href="#tab3" data-toggle="tab">Library</a></li>#}
+{#                        <li><a href="#tab4" data-toggle="tab">Feeds</a></li>#}
+{#                        <li><a href="#tab5" data-toggle="tab">Settings</a></li>#}
+{#                    </ul>#}
+{#                    <div class="tab-content">#}
+{#                        <div class="tab-pane active" id="tab1">#}
+{#                            <p>#}
+{#                            <form role="form" method="POST" id="basicinfoForm" data-async data-target="#update-basic-info" action="{% url "user:update-basic-info" %}">#}
+{#                                {% csrf_token %}#}
+{#                                <span id="id_errors"></span>#}
+{#                                {% for field in form_userbasic %}#}
+{#                                    <div class="form-group">#}
+{#                                        {{ field.label_tag }}#}
+{#                                        {{ field }}#}
+{#                                    </div>#}
+{#                                {% endfor %}#}
+{#                                <div class="modal-footer">#}
+{#                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>#}
+{#                                    <button id="save-basic-info" type="submit" class="btn btn-primary btn-md">Save</button>#}
+{#                                </div>#}
+{#                            </form>#}
+{#                            </p>#}
+{#                            {% avatar user 80 %}#}
+{#                            <a href="{% url 'avatar_change' %}">Change your avatar</a>#}
+{#                        </div>#}
+{#                        <div class="tab-pane" id="tab2">#}
+{#                            <p>#}
+{#                            <form role="form" method="POST" id="affiliationForm" data-async data-target="#update-affiliation" action="{% url "user:update-affiliation" %}">#}
+{#                                {% csrf_token %}#}
+{#                                <span id="id_errors"></span>#}
+{#                                {% for field in form_affiliation %}#}
+{#                                    <div class="form-group">#}
+{#                                        {{ field.label_tag }}#}
+{#                                        {{ field }}#}
+{#                                    </div>#}
+{#                                {% endfor %}#}
+{#                                <div class="modal-footer">#}
+{#                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>#}
+{#                                    <button id="save-affiliation" type="submit" class="btn btn-primary btn-md">Save</button>#}
+{#                                </div>#}
+{#                            </form>#}
+{#                            </p>#}
+{#                        </div>#}
+{#                        <div class="tab-pane" id="tab3">#}
+{#                            <p></p>#}
+{#                            <ul class="list-group">#}
+{#                                <li class="list-group-item">Paper linked: {{ user.lib.count_papers }}</li>#}
+{#                                <li class="list-group-item">Journal linked: {{ user.lib.count_journals }}</li>#}
+{#                                <li class="list-group-item">Library status: {{ user.lib.get_status_display }}#}
+{#                                    <a href="{% url 'user:update-user-lib' %}">  (update)</a>#}
+{#                                </li>#}
+{#                                <li class="list-group-item">Library provider: {{ user.social_auth.first.get_backend.print_name }}</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="tab-pane" id="tab4">#}
+{#                            <p></p>#}
+{#                            <ul class="list-group">#}
+{#                                {% for feed in user.feeds.all %}#}
+{#                                <li class="list-group-item"> {{ feed.name }} <a href="{% url 'feeds:update-feed' feed.name %}"> (update)</a></li>#}
+{#                                {% endfor %}#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="tab-pane" id="tab5">#}
+{#                            <p>#}
+{#                            <form role="form" method="POST" id="settingsForm" data-async data-target="#update-settings" action="{% url "user:update-settings" %}">#}
+{#                                <span id="id_errors"></span>#}
+{#                                {% for field in form_settings %}#}
+{#                                    <div class="form-group">#}
+{#                                        {{ field.label_tag }}#}
+{#                                        {{ field }}#}
+{#                                    </div>#}
+{#                                {% endfor %}#}
+{##}
+{#                                <div class="modal-footer">#}
+{#                                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>#}
+{#                                    <button id="save-settings" type="submit" class="btn btn-primary btn-md">Save</button>#}
+{#                                </div>#}
+{#                            </form>#}
+{#                            </p>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}

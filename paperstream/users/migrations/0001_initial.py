@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='userlib',
-            name='papers',
+            name='matches',
             field=models.ManyToManyField(to='library.Paper', through='users.UserLibPaper'),
         ),
         migrations.AlterUniqueTogether(

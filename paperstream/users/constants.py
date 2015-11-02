@@ -31,3 +31,11 @@ ZOTERO_PT = (
     ('letter',          'LET'),
     ('UNKNOWN',         ''),
 )
+
+INIT_STEPS = (
+    ('NON', 'uninitialized'),
+    ('LIB', 'library'),
+    ('STR', 'personalized stream'),
+    ('TRE', 'trends'),
+    ('IDL', 'done'),
+)

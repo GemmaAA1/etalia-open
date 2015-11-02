@@ -8,7 +8,7 @@ from django.utils import timezone
 from celery.canvas import chain
 
 from config.celery import celery_app as app
-from paperstream.feeds.tasks import update_feed, update_discover
+from paperstream.feeds.tasks import update_stream, update_trend
 from paperstream.library.models import Paper
 
 logger = logging.getLogger(__name__)
@@ -38,17 +38,27 @@ def update_lib(user_pk, provider_name):
 
 
 @app.task()
-def add_paper_to_lib(user_pk, paper_pk):
-    """Async add paper to usr library"""
-    pass
+def init_step(user_pk, step):
+    """Set flag is_init to True"""
+    user = User.objects.get(pk=user_pk)
+    user.init_step = step
+    user.save()
+
+    return user_pk
 
 
 def init_user(user_pk, provider_name):
     """Task init user / Chain user library update, and feed initialization
     """
-    task = chain(update_lib.s(user_pk, provider_name),
-                 update_feed.s('main'),
-                 update_discover.s())
+    task = chain(
+        init_step.s(user_pk, 'LIB'),
+        update_lib.s(provider_name),
+        init_step.s('STR'),
+        update_stream.s('main'),
+        init_step.s('TRE'),
+        update_trend.s(),
+        init_step.s('IDL')
+    )
 
     # task.delay()
     task()

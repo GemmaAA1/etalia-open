@@ -42,7 +42,7 @@ celery_app.user_options['worker'].add(
 
 class NLPBootstep(bootsteps.Step):
     """Bootstep to register task with or without initializing data upload depending
-    on 'init' argument"""
+    on 'init' argument when launch from celery (cf supervisor conf file for examples)"""
 
     def __init__(self, worker, init, **options):
         # register specific tasks

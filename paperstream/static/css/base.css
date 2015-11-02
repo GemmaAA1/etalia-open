@@ -50,22 +50,19 @@ p.copyright {
     margin: 15px 0 0;
 }
 
-/* Modal */
-.syncing {
+/*/!* Modal *!/*/
+#initializing-modal {
     position: absolute;
-    top: 200px;
+    padding-top: 100px;
     text-align: center;
-    color: #fafafa;
+    color: #f3f3f3;
     z-index: 9999;
+    /*margin-top: 100px;*/
 }
 
-.modal.display {
-    display:block;
-    margin-top: 100px;
-}
 
-#loading-lib-modal {
-    top: 20%;
-    outline: none;
-}
+/*#loading-lib-modal {*/
+    /*top: 20%;*/
+    /*outline: none;*/
+/*}*/
 

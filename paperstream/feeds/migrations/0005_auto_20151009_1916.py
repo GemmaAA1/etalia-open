@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='discoverfeed',
-            name='papers',
+            name='matches',
             field=models.ManyToManyField(to='library.Paper', through='feeds.DiscoverFeedPaper'),
         ),
         migrations.AddField(

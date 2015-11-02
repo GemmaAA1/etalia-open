@@ -491,19 +491,19 @@ class JournalVectorTest(NLPDataTestCase):
 #         super(LSHModelStackTest, self).setUp()
 #
 #     def test_can_build_all_lshs(self):
-#         self.model.dump(self.papers.all())
+#         self.model.dump(self.matches.all())
 #         self.model.build_vocab_and_train()
 #         self.model.save_journal_vec_from_bulk()
 #         self.model.save_paper_vec_from_bulk()
 #         self.model.build_lshs()
 #
 #     def test_can_propagate(self):
-#         self.model.dump(self.papers.all())
+#         self.model.dump(self.matches.all())
 #         self.model.build_vocab_and_train()
 #         self.model.propagate()
 #
 #     def test_can_build_full_stack(self):
 #         model2 = Model.objects.create(name='test2', size=32)
-#         model2.dump(self.papers.all())
+#         model2.dump(self.matches.all())
 #         model2.build_vocab_and_train()
 #         model2.propagate()

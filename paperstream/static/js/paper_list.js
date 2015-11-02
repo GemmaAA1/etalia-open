@@ -173,7 +173,8 @@ function tick () {
     $.ajax({
         type: 'POST',
         url: url,
-        data: {pk: id},
+        data: {'pk': id,
+               'source': window.location.pathname},
         success: function (json) {
             $.each(json, function (key, value) {
                 if (key == 'is_ticked') {
@@ -193,7 +194,8 @@ function like (event) {
     $.ajax({
         type: 'POST',
         url: url,
-        data: {pk: id},
+        data: {'pk': id,
+               'source': window.location.pathname},
         success: function (json) {
             $.each(json, function (key, value) {
                 if (key == 'is_liked') {

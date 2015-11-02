@@ -15,8 +15,8 @@
 .sk-spinner-three-bounce div {
   width: 24px;
   height: 24px;
-  background-color: #ffffff;
-  border-radius: 100%;
+  background-color: #fd6b73;
+  border-radius: 0;
   display: inline-block;
   -webkit-animation: sk-threeBounceDelay 1.4s infinite ease-in-out;
           animation: sk-threeBounceDelay 1.4s infinite ease-in-out;
@@ -24,9 +24,11 @@
   -webkit-animation-fill-mode: both;
           animation-fill-mode: both; }
 .sk-spinner-three-bounce .sk-bounce1 {
+  background-color: #29d2c4;
   -webkit-animation-delay: -0.32s;
           animation-delay: -0.32s; }
 .sk-spinner-three-bounce .sk-bounce2 {
+  background-color: #fdb32b;
   -webkit-animation-delay: -0.16s;
           animation-delay: -0.16s; }
 

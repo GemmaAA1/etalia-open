@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import os
+import urllib.request
+from urllib.parse import urlparse
+from django.core.files import File
 from django.shortcuts import redirect
 from django.conf import settings
 from social.pipeline.partial import partial
+from avatar.models import Avatar
 
 from paperstream.core.utils import get_celery_worker_status
 from .models import Affiliation
 
+from .forms import UserAffiliationForm
 from .tasks import update_lib as async_update_lib
 from .tasks import init_user as async_init_user
 
-
 @partial
-def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs):
+def require_primary(strategy, details, *args, user=None, **kwargs):
     """ Redirect to primary info form for user to check them
     """
     if user and user.email and user.first_name and user.last_name:
@@ -28,7 +33,40 @@ def require_primary(strategy, details, user=None, is_new=False, *args, **kwargs)
         return redirect('user:require-basic-info')
 
 @partial
-def require_affiliation(strategy, details, request=None, user=None, *args, **kwargs):
+def create_details(strategy, details, *args, user=None, **kwargs):
+    # link affiliation
+    affiliation_kwargs = details.get('tmp_affiliation')
+    if affiliation_kwargs:
+        try:
+            affiliation = Affiliation.objects.get(**affiliation_kwargs)
+            user.affiliation = affiliation
+        except Affiliation.DoesNotExist:
+            form = UserAffiliationForm(affiliation_kwargs)
+            if form.is_valid:
+                affiliation = form.save()
+                user.affiliation = affiliation
+    # link avatar
+    photo_url = details.get('photo')
+    if photo_url:
+        url_parsed = urlparse(photo_url)
+        photo_filename = os.path.basename(url_parsed.path)
+        # if photo not in [settings.AVATAR_DEFAULT_MENDELEY, settings.AVATAR_DEFAULT_ZOTERO]:
+        local_filename, headers = urllib.request.urlretrieve(photo_url)
+        f = open(local_filename, 'rb')
+        avatar = Avatar(user=user, primary=True)
+        avatar.avatar.save(photo_filename, File(f))
+        avatar.save()
+    # link title
+    user.title = details.get('title', '')
+    # link position
+    user.position = details.get('position', '')
+
+    user.save()
+
+    return {}
+
+@partial
+def require_affiliation(strategy, details, *args, user=None, **kwargs):
     if getattr(user, 'affiliation'):
         return
     else:

@@ -50,6 +50,7 @@
 }
 
 .nav-bar-anonymous {
+    height: 100px;
     border: 0px;
     margin-bottom: 0;
     background-color: #fafafa;
@@ -110,7 +111,7 @@
     color: #333333;
     background-color: transparent;
     padding-bottom: 10px;
-    border-bottom: 5px solid #70c0ff;
+    border-bottom: 5px solid #29dbc4;
     /*border-bottom: 5px solid #f06f27;*/
 }
 
@@ -118,8 +119,11 @@
     background-color: transparent;
 }
 
-.navbar-nav>.active>a:before,
-.navbar-nav>li>a:before {
+.navbar-nav>li>a.stream-icon:before,
+.navbar-nav>li>a.discover-icon:before,
+.navbar-nav>li>a.library-icon:before,
+.navbar-nav>li>a.profile-icon:before,
+.navbar-nav>li>a.signin-icon:before{
     content:"";
     display: inline-block;
     background: transparent url(../img/main_icons_navbar_color.svg) 0 0px no-repeat;
@@ -149,24 +153,36 @@
     background-position-x: -245px;
 }
 
-.navbar-nav>.active>a::before,
+.navbar-nav>li.active>a::before,
 .navbar-nav>li>a:hover::before {
     background-position-y: -25px;
 }
 
-.navbar-nav>.active>a.profile-icon:before,
+.navbar-default .navbar-nav>.active>a.profile-icon:before,
 .navbar-nav>li>a.profile-icon:before {
-    background: transparent url(../img/main_icons_navbar_color.svg) -218px 0px no-repeat;
+    background-position-x: -215px;
     background-size: auto 61px;
     margin: -10px 0 -10px 0;
-    width: 30px;
+    width: 40px;
     height: 30px;
 }
 
-.navbar-nav>.active>a.profile-icon:before,
-.navbar-nav>li>a.profile-icon:hover::before,
-.navbar-nav>li>a.profile-icon:focus::before {
-    background-position-y: -33px;
+.navbar-nav>li>a>div.avatar-icon-crop {
+    height: 40px;
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-bottom: 10px;
+    /*margin-top: -20px;*/
+}
+
+.navbar-nav>li>div>a.avatar-icon img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    /*margin: auto;*/
+    /*position: relative;*/
 }
 
 /* Use in anonymous navbar*/
@@ -182,6 +198,9 @@
     height: 30px;
 }
 
+.navbar-nav>.active>a.profile-icon:before,
+.navbar-nav>li>a.profile-icon:hover::before,
+.navbar-nav>li>a.profile-icon:focus::before,
 .navbar-nav>.active>a.signin-icon:before,
 .navbar-nav>li>a.signin-icon:hover:before,
 .navbar-nav>li>a.signin-icon:focus::before {

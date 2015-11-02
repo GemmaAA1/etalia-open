@@ -7,12 +7,13 @@ from functools import reduce
 import logging
 from collections import Counter
 
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.contrib.auth import logout as auth_logout, login
-from django.views.generic import UpdateView, FormView
+from django.views.generic import UpdateView, FormView, DetailView
+from django.views.generic.edit import DeleteView
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -26,10 +27,13 @@ from endless_pagination.views import AjaxListView
 from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
 from paperstream.library.models import Paper, Author
 
-from .forms import UserBasicForm, UserAffiliationForm, UpdateUserBasicForm, \
-    UserAuthenticationForm, UserSettingsForm
-from .models import Affiliation, UserLibPaper, UserTaste, UserFeedLayout
-from .tasks import update_lib as async_update_lib
+from .forms import UserBasicForm, UserAffiliationForm, \
+    UserAuthenticationForm, UserSettingsForm, UpdateUserNameForm, \
+    UpdateUserPositionForm, UpdateUserTitleForm
+from .models import Affiliation, UserLibPaper, UserTaste, UserFeedLayout, \
+    UserSettings
+from .mixins import ProfileModalFormsMixin
+from .tasks import update_lib
 
 
 logger = logging.getLogger(__name__)
@@ -77,7 +81,7 @@ ajax_signin = UserLoginView.as_view()
 class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
 
     form_class = UserBasicForm
-    template_name = 'user/basic_info.html'
+    template_name = 'user/signup_form.html'
 
     def get_success_url(self, **kwargs):
         return reverse('social:complete',
@@ -114,7 +118,7 @@ require_basic_info = UserBasicInfoSignupView.as_view()
 class UserAffiliationSignupView(FormView):
 
     form_class = UserAffiliationForm
-    template_name = 'user/basic_info.html'
+    template_name = 'user/signup_form.html'
 
     def get_success_url(self, **kwargs):
         return reverse('social:complete',
@@ -151,7 +155,7 @@ def validation_sent(request):
         'stage': 'validation_sent',
         'email': request.session.get('email_validation_address')
     }
-    return render(request, 'user/basic_info.html', context)
+    return render(request, 'user/signup_form.html', context)
 
 
 # User Library
@@ -449,11 +453,31 @@ class UserLibraryLikesView(UserLibraryView):
 library_likes = UserLibraryLikesView.as_view()
 
 
-# User profile update
+# Profile
 # -------------------
-class UpdateUserBasicInfoView(LoginRequiredMixin, AjaxableResponseMixin,
-                              UpdateView):
-    form_class = UpdateUserBasicForm
+class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
+    model = User
+    template_name = 'user/profile.html'
+
+    def get_object(self, **kwargs):
+        return self.request.user
+
+profile = ProfileView.as_view()
+
+
+class SettingsView(LoginRequiredMixin, DetailView):
+
+    model = UserSettings
+    template_name = 'user/settings.html'
+
+    def get_object(self, **kwargs):
+        return self.request.user.settings
+
+settings_view = SettingsView.as_view()
+
+
+class UpdateUserNameView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView):
+    form_class = UpdateUserNameForm
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -466,7 +490,39 @@ class UpdateUserBasicInfoView(LoginRequiredMixin, AjaxableResponseMixin,
                 'last_name': self.request.user.last_name}
         return data
 
-ajax_update_basic_info = UpdateUserBasicInfoView.as_view()
+update_name = UpdateUserNameView.as_view()
+
+
+class UpdateUserTitleView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView):
+    form_class = UpdateUserTitleForm
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_success_url(self):
+        return reverse('core:home')
+
+    def get_ajax_data(self):
+        data = {'title': self.request.user.title}
+        return data
+
+update_title = UpdateUserTitleView.as_view()
+
+
+class UpdateUserPositionView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView):
+    form_class = UpdateUserPositionForm
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_success_url(self):
+        return reverse('core:home')
+
+    def get_ajax_data(self):
+        data = {'position': self.request.user.position}
+        return data
+
+update_position = UpdateUserPositionView.as_view()
 
 
 class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
@@ -495,14 +551,22 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserAffiliationUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'department': self.request.user.affiliation.department,
-                'institution': self.request.user.affiliation.institution,
-                'city': self.request.user.affiliation.city,
-                'state': self.request.user.affiliation.state,
-                'country': self.request.user.affiliation.country}
+        data = {'print-affiliation':
+                    self.request.user.affiliation.print_affiliation}
         return data
 
-ajax_update_affiliation = UserAffiliationUpdateView.as_view()
+update_affiliation = UserAffiliationUpdateView.as_view()
+
+
+class UserDeleteView(LoginRequiredMixin, ProfileModalFormsMixin, DeleteView):
+    model = User
+    template_name = 'user/user_confirm_delete.html'
+    success_url = reverse_lazy('core:home')
+
+    def get_object(self, **kwargs):
+        return self.request.user
+
+delete_user = UserDeleteView.as_view()
 
 
 class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
@@ -527,45 +591,77 @@ class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'model': self.request.user.settings.model,
-                'time_lapse': self.request.user.settings.time_lapse,
-                'scoring_method': self.request.user.settings.scoring_method,
+        data = {'stream_model': self.request.user.settings.stream_model,
+                'stream_time_lapse': self.request.user.settings.stream_time_lapse,
+                'stream_scoring_method': self.request.user.settings.stream_scoring_method,
+                'trend_model': self.request.user.settings.trend_model,
+                'trend_time_lapse': self.request.user.settings.trend_time_lapse,
+                'trend_scoring_method': self.request.user.settings.trend_scoring_method,
                 }
         return data
 
-ajax_update_settings = UserSettingsUpdateView.as_view()
+update_settings = UserSettingsUpdateView.as_view()
 
 
 @login_required
-def ajax_user_lib_count_papers(request):
+def user_init_step(request):
     if request.method == 'GET':
-        if request.user.lib.state == 'IDL':
-            data = {'done': True,
-                    'url': reverse('feeds:main')}
-        else:
-            data = {'done': False,
-                    'message': request.user.lib.count_papers}
+        messages = []
+        done = False
+        if request.user.init_step == 'LIB':
+            messages = ['Syncing your library with PubStream' ,
+                        '({0})'.format(request.user.lib.count_papers)]
+        elif request.user.init_step == 'STR':
+            messages = ['Building your personalized streams',
+                        '(1/2)']
+        elif request.user.init_step == 'TRE':
+            messages = ['Building your personalized streams',
+                        '2/2']
+        elif request.user.init_step == 'IDL':
+            done = True
+            messages = ['Done', '']
+
+        data = {'done': done,
+                'step': request.user.init_step,
+                'messages': messages}
+
         return JsonResponse(data)
 
 
 @login_required
-def async_update_user_lib(request):
-    user = request.user
-    provider_name = user.social_auth.first().provider
-    async_update_lib.apply_async(args=[user.pk, provider_name])
-    request.user.lib.set_state('ING')
-    return redirect('feeds:main')
+def update_library(request):
+    if request.is_ajax():
+        if request.user.lib.state == 'IDL':
+            provider_name = request.user.social_auth.first().provider
+            update_lib.delay(request.user.pk, provider_name)
+            data = {}
+            return JsonResponse(data)
+        else:
+            data = {'error': 'library is already syncing'}
+            return JsonResponse(data, status=400)
 
 
 @login_required
 def like_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
+        source = request.POST.get('source')
         paper_ = get_object_or_404(Paper, pk=pk)
+        context = {'context_model': request.user.settings.stream_model,
+                   'context_scoring_method': request.user.settings.stream_scoring_method,
+                   'context_time_lapse': request.user.settings.stream_time_lapse}
+        if 'stream' in source:
+            context['context_source'] = 'stream'
+        elif 'trend' in source:
+            context['context_source'] = 'trend'
+        elif 'library' in source:
+            context['context_source'] = 'library'
+        else:
+            context['context_source'] = source
         ut, _ = UserTaste.objects.get_or_create(
             paper=paper_,
             user=request.user,
-            scoring_method=request.user.settings.scoring_method)
+            **context)
         if ut.is_liked:
             ut.is_liked = False
         else:
@@ -582,11 +678,23 @@ def like_call(request):
 def tick_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
+        source = request.POST.get('source')
         paper_ = get_object_or_404(Paper, pk=pk)
+        context = {'context_model': request.user.settings.stream_model,
+                   'context_scoring_method': request.user.settings.stream_scoring_method,
+                   'context_time_lapse': request.user.settings.stream_time_lapse}
+        if 'stream' in source:
+            context['context_source'] = 'stream'
+        elif 'trend' in source:
+            context['context_source'] = 'trend'
+        elif 'library' in source:
+            context['context_source'] = 'library'
+        else:
+            context['context_source'] = source
         ut, _ = UserTaste.objects.get_or_create(
             paper=paper_,
             user=request.user,
-            scoring_method=request.user.settings.scoring_method)
+            **context)
         if ut.is_ticked:
             ut.is_ticked = False
         else:

@@ -13,7 +13,7 @@ def home(request):
     if request.user.is_authenticated():
         return redirect('feeds:main')
     else:
-        # Get some trending altmetric papers
+        # Get some trending altmetric matches
         d = timezone.datetime.now().date() - \
             timezone.timedelta(days=settings.LANDING_ACTIVE_PAPERS_TIME_IN_DAYS)
         ten_recent_most_active_paper = AltmetricModel.objects\
@@ -29,9 +29,11 @@ def about(request):
     context = {}
     return render(request, 'about.html', context=context)
 
+
 def terms(request):
     context = {}
     return render(request, 'terms.html', context=context)
+
 
 def news(request):
     context = {}
@@ -41,6 +43,11 @@ def news(request):
 def support(request):
     context = {}
     return render(request, 'support.html', context=context)
+
+
+def help(request):
+    context = {}
+    return render(request, 'help.html', context=context)
 
 
 def test(request):

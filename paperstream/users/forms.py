@@ -22,21 +22,6 @@ class UserAuthenticationForm(AuthenticationForm):
 
 class UserBasicForm(forms.ModelForm):
 
-    # error_messages = {
-    #     'password_mismatch': "The two password fields didn't match.",
-    # }
-
-    # password1 = forms.CharField(
-    #     label="Password",
-    #     widget=forms.PasswordInput,
-    #     initial='')
-    #
-    # password2 = forms.CharField(
-    #     label="Password confirmation",
-    #     widget=forms.PasswordInput,
-    #     help_text="Enter the same password as above, for verification.",
-    #     initial='')
-
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name')
@@ -66,21 +51,11 @@ class UserBasicForm(forms.ModelForm):
         last_name = self.cleaned_data['last_name']
         return last_name.strip()
 
-    # def clean_password2(self):
-    #     password1 = self.cleaned_data.get("password1")
-    #     password2 = self.cleaned_data.get("password2")
-    #     if password1 and password2 and password1 != password2:
-    #         raise forms.ValidationError(
-    #             self.error_messages['password_mismatch'],
-    #             code='password_mismatch',
-    #         )
-    #     return password2
 
-
-class UpdateUserBasicForm(forms.ModelForm):
+class UpdateUserNameForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
-        super(UpdateUserBasicForm, self).__init__(*args, **kwargs)
+        super(UpdateUserNameForm, self).__init__(*args, **kwargs)
         self.fields['first_name'].validators.append(validate_first_name)
         self.fields['last_name'].validators.append(validate_last_name)
 
@@ -105,6 +80,30 @@ class UpdateUserBasicForm(forms.ModelForm):
         }
 
 
+class UpdateUserTitleForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ('title', )
+        widgets = {
+            'title':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Title'}),
+        }
+
+
+class UpdateUserPositionForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ('position', )
+        widgets = {
+            'position':
+                forms.TextInput(attrs={'class': 'form-control input-md ',
+                                                'placeholder': 'Position'}),
+        }
+
+
 class UserAffiliationForm(forms.ModelForm):
 
     class Meta:
@@ -125,7 +124,7 @@ class UserAffiliationForm(forms.ModelForm):
                                                 'placeholder': 'State'}),
             'country':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Institution'}),
+                                                'placeholder': 'Country'}),
         }
 
 
@@ -138,10 +137,14 @@ class UserSettingsForm(forms.ModelForm):
 
     class Meta:
         model = UserSettings
-        fields = ('model', 'time_lapse', 'scoring_method')
+        fields = ('stream_model', 'stream_time_lapse', 'stream_scoring_method',
+                  'trend_model', 'trend_time_lapse', 'trend_scoring_method')
         widgets = {
-            'model': forms.Select(attrs={'class': 'form-control'}),
-            'time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'scoring_method': forms.Select(attrs={'class': 'form-control'})
+            'stream_model': forms.Select(attrs={'class': 'form-control'}),
+            'stream_time_lapse': forms.Select(attrs={'class': 'form-control'}),
+            'stream_scoring_method': forms.Select(attrs={'class': 'form-control'}),
+            'trend_model': forms.Select(attrs={'class': 'form-control'}),
+            'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
+            'trend_scoring_method': forms.Select(attrs={'class': 'form-control'}),
         }
 

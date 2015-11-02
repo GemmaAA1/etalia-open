@@ -201,10 +201,6 @@ class UserStatsModelTest(TestCase):
         UserStats.objects.log_user_init(self.user)
         self.assertEqual(self.user.stats.first().state, 'INI')
 
-    def test_log_user_email_valid(self):
-        UserStats.objects.log_user_email_valid(self.user)
-        self.assertEqual(self.user.stats.first().state, 'EMA')
-
     def log_user_log_in(self):
         UserStats.objects.log_user_log_in(self.user)
         self.assertEqual(self.user.stats.first().state, 'LIN')

@@ -81,7 +81,7 @@ class UserFeedTestCase(TestCase):
             paper=self.paper4,
             date_created=(timezone.now() - timezone.timedelta(days=10)).date())
 
-        # add random vector to papers
+        # add random vector to matches
         for paper in self.papers:
             pv = PaperVectors.objects.create(paper=paper, model=self.model)
             vec = np.random.randn(self.model.size)

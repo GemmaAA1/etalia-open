@@ -49,6 +49,7 @@ THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
     'disqus',
     'endless_pagination',
+    'avatar',
 )
 
 LOCAL_APPS = (
@@ -229,6 +230,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.debug.debug',
     'paperstream.users.pipeline.init_user',
     # 'paperstream.users.pipeline.require_affiliation',
+    'paperstream.users.pipeline.create_details',
 )
 
 # Mendeley Keys
@@ -254,7 +256,10 @@ DISQUS_SECRET_KEY = env('DISQUS_SECRET_KEY')
 # ------------------------------------------------------------------------------
 DJANGO_AWS_ACCESS_KEY_ID = env('DJANGO_AWS_ACCESS_KEY_ID')
 DJANGO_AWS_SECRET_ACCESS_KEY = env('DJANGO_AWS_SECRET_ACCESS_KEY')
+AWS_ACCESS_KEY_ID = DJANGO_AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = DJANGO_AWS_SECRET_ACCESS_KEY
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 # CONSUMER CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -294,7 +299,9 @@ NLP_NEIGHBORS_REFRESH_TIME_LAPSE = 7
 
 # FEED APP
 # ------------------------------------------------------------------------------
-FEEDS_SCORE_KEEP_N_PAPERS = 100
+FEED_SIZE_PER_DAY = 10
+
+FEEDS_SCORE_KEEP_N_PAPERS = 200
 FEEDS_DISPLAY_N_PAPERS = 50
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 # Number of neighbors from seed paper
@@ -312,6 +319,28 @@ ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 LANDING_ACTIVE_PAPERS_NUMBER = 1
 LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
 
+# AVATAR
+# ------------------------------------------------------------------------------
+from PIL import Image
+AVATAR_DEFAULT_SIZE = 80
+AVATAR_RESIZE_METHOD = Image.ANTIALIAS
+AVATAR_GRAVATAR_BACKUP = False
+AVATAR_GRAVATAR_DEFAULT = None
+AVATAR_GRAVATAR_BASE_URL = 'https://www.gravatar.com/avatar/'
+AVATAR_CACHE_TIMEOUT = 10
+AVATAR_DEFAULT_URL = 'img/avatar_default.png'
+AVATAR_MAX_AVATARS_PER_USER = 1
+AVATAR_ALLOWED_FILE_EXTS = ('.png', '.jpg')
+AVATAR_MAX_SIZE = 1024 * 1024
+AVATAR_STORAGE_DIR = 'photos'
+AVATAR_HASH_FILENAMES = False
+AVATAR_HASH_USERDIRNAMES = False
+AVATAR_THUMB_FORMAT = 'JPEG'
+AVATAR_THUMB_QUALITY = 85
+AVATAR_STORAGE = DEFAULT_FILE_STORAGE
+AVATAR_CLEANUP_DELETED = False
+AVATAR_AUTO_GENERATE_SIZES = (AVATAR_DEFAULT_SIZE, 120)
+AVATAR_DEFAULT_MENDELEY = 'http://s3.amazonaws.com/mendeley-photos/awaiting.png'
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/core.css' %}" type="text/css" >
+{% endblock %}
+
+{% block head %}
+{% endblock head %}
+
+{% block title %} PubStream | Help {% endblock %}
+
+
+{% block content %}
+    <div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="help">
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

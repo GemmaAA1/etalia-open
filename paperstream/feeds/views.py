@@ -27,10 +27,10 @@ from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper, Stats, Journal, Author
 from paperstream.users.models import UserTaste, UserFeedLayout
 
-from .models import UserFeed, UserFeedMatchPaper, UserFeedSeedPaper, \
-    TrendFeedPaper
+from .models import Stream, StreamMatches, StreamSeeds, \
+    TrendMatches
 from .forms import CreateUserFeedForm
-from .tasks import update_feed as async_update_feed
+from .tasks import update_stream as async_update_feed
 
 
 class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
@@ -49,8 +49,12 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     authors_filter_flag = 'all'
     sorting_flag = 'relevant'
     like_flag = False
+    context_settings = None
 
     def update_from_filter(self):
+        raise NotImplemented
+
+    def get_context_settings(self):
         raise NotImplemented
 
     def filter_queryset(self, queryset):
@@ -107,7 +111,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             like_pks = UserTaste.objects\
                 .filter(user=self.request.user,
                         is_liked=True,
-                        scoring_method=self.request.user.settings.scoring_method)\
+                        **self.context_settings)\
                 .values('paper__pk')
             queryset = queryset.filter(paper_id__in=like_pks)
 
@@ -150,9 +154,10 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         context['per_page'] = self.per_page
 
         # Get user tastes label
+
         user_taste = UserTaste.objects\
             .filter(user=self.request.user,
-                    scoring_method=self.request.user.settings.scoring_method)\
+                    **self.context_settings)\
             .values_list('paper_id', 'is_liked', 'is_ticked')
         # reformat to dict
         user_taste = dict((key, {'liked': v1, 'is_ticked': v2})
@@ -246,16 +251,22 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         # time lapse settings
         context['time_lapse'] = \
             dict(settings.NLP_TIME_LAPSE_CHOICES)\
-                .get(self.request.user.settings.time_lapse)
+                .get(self.context_settings.get('time_lapse'))
 
         return context
 
 
-class FeedView(BaseFeedView):
+class StreamView(BaseFeedView):
     """ClassView for displaying a UserFeed instance"""
-    model = UserFeedMatchPaper
+    model = StreamMatches
     template_name = 'feeds/feed.html'
     page_template = 'feeds/feed_sub_page.html'
+
+    def get_context_settings(self):
+        return {'context_source': 'stream',
+                'context_model': self.request.user.settings.stream_model,
+                'context_scoring_method': self.request.user.settings.stream_scoring_method,
+                'context_time_lapse': self.request.user.settings.stream_time_lapse}
 
     def update_from_filter(self):
         ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
@@ -301,9 +312,14 @@ class FeedView(BaseFeedView):
                 pass
 
     def get_queryset(self):
+        # TODO: find a way to move this to parent class
+        self.context_settings = self.get_context_settings()
+
         # get ticked paper
         papers_ticked = UserTaste.objects\
-            .filter(user=self.request.user, is_ticked=True)\
+            .filter(user=self.request.user,
+                    is_ticked=True,
+                    **self.context_settings)\
             .values('paper')
 
         self.original_qs = self.model.objects\
@@ -316,27 +332,20 @@ class FeedView(BaseFeedView):
 
         return query_set
 
-feed_view = FeedView.as_view()
-
-
-class FeedMainView(LoginRequiredMixin, RedirectView):
-    """Redirect to main feed"""
-
-    pattern_name = 'feeds:feed'
-    permanent = False
-
-    def get_redirect_url(self, *args, **kwargs):
-        # Check if userfeed pk matched db and current logged user
-        return super(FeedMainView, self).get_redirect_url(name='main')
-
-feed_main = FeedMainView.as_view()
+stream_view = StreamView.as_view()
 
 
 class TrendView(BaseFeedView):
     """ClassView for displaying a UserFeed instance"""
-    model = TrendFeedPaper
+    model = TrendMatches
     template_name = 'feeds/trends.html'
     page_template = 'feeds/trends_sub_page.html'
+
+    def get_context_settings(self):
+        return {'context_source': 'trend',
+                'context_model': self.request.user.settings.trend_model,
+                'context_scoring_method': self.request.user.settings.trend_scoring_method,
+                'context_time_lapse': self.request.user.settings.trend_time_lapse}
 
     def update_from_filter(self):
         ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
@@ -382,15 +391,20 @@ class TrendView(BaseFeedView):
                 pass
 
     def get_queryset(self):
+        # TODO: find a way to move this to parent class
+        self.context_settings = self.get_context_settings()
+
         # get ticked paper
         papers_ticked = UserTaste.objects\
-            .filter(user=self.request.user, is_ticked=True)\
+            .filter(user=self.request.user,
+                    is_ticked=True,
+                    **self.context_settings)\
             .values('paper')
 
         self.original_qs = self.model.objects\
-            .filter(trend_feed=self.request.user.trend)\
+            .filter(trend__name=self.kwargs.get('name', 'main'),
+                    trend__user=self.request.user)\
             .exclude(paper__in=papers_ticked)
-
 
         # filter from searchbox
         query_set = self.filter_queryset(self.original_qs)
@@ -402,7 +416,7 @@ trend_view = TrendView.as_view()
 
 class CreateFeedView(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
     """ClassView to create a new UserFeed instance"""
-    model = UserFeed
+    model = Stream
     form_class = CreateUserFeedForm
     template_name = 'feeds/feed.html'
 
@@ -471,11 +485,11 @@ class ModifyFeedView(LoginRequiredMixin, ModalMixin, ListView):
     def get_userfeed(self, request, **kwargs):
         feed_name = kwargs.get('name', None)
         if feed_name:
-            userfeed = get_object_or_404(UserFeed,
+            userfeed = get_object_or_404(Stream,
                                          name=feed_name,
                                          user=request.user)
         else:
-            userfeed = get_object_or_404(UserFeed,
+            userfeed = get_object_or_404(Stream,
                                          user=request.user,
                                          name='main')
         return userfeed
@@ -490,12 +504,12 @@ class ModifyFeedView(LoginRequiredMixin, ModalMixin, ListView):
         if request.POST:
             pk = int(request.POST.get('pk'))
             if pk in seed_pks:      # remove it
-                UserFeedSeedPaper.objects\
+                StreamSeeds.objects\
                     .get(feed=self.userfeed, paper_id=pk)\
                     .delete()
                 data = {str(pk): ''}
             else:       # add it
-                UserFeedSeedPaper.objects\
+                StreamSeeds.objects\
                     .create(feed=self.userfeed, paper_id=pk)
                 data = {str(pk): 'success'}
             if request.is_ajax():
@@ -510,7 +524,7 @@ modify_feed_view = ModifyFeedView.as_view()
 class DeleteFeedView(LoginRequiredMixin, ModalMixin, DeleteView):
     """ClassView to delete a UserFeed instance"""
 
-    model = UserFeed
+    model = Stream
     success_url = reverse_lazy('feeds:main')
 
 delete_feed_view = DeleteFeedView.as_view()
@@ -534,7 +548,7 @@ update_feed_view = UpdateFeedView.as_view()
 @login_required
 def ajax_user_feed_message(request, name):
     if request.method == 'GET':
-        userfeed = get_object_or_404(UserFeed,
+        userfeed = get_object_or_404(Stream,
                                      name=name,
                                      user=request.user)
         if userfeed.state == 'IDL':

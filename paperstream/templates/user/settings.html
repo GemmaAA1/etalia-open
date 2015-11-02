@@ -1,0 +1,68 @@
+{% extends 'landing.html' %}
+
+{% load staticfiles %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
+{% endblock css %}
+
+{% block title %} PubStream | Settings {% endblock %}
+
+
+{% block content %}
+
+
+<div class="container settings">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="col-md-3">
+                <h3>Stream</h3>
+            </div>
+            <div class="col-md-9">
+                <h5>Last modified: {{ user.feeds.first.modified }}</h5>
+                <h5>
+                    <button id="update-lib" class="update" action="">Async update</button>
+                    <span class="errors"></span>
+                </h5>
+            </div>
+        </div>
+    </div>
+    <hr class="divider">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2 affiliation">
+            <div class="col-md-3">
+                <h3>Trend</h3>
+            </div>
+            <div class="col-md-9">
+                <h5>Last modified: {{ user.trend.modified }}</h5>
+                <h5>
+                    <button id="update-lib" class="update" action="">Async update</button>
+                    <span class="errors"></span>
+                </h5>
+            </div>
+        </div>
+    </div>
+    <hr class="divider">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2 affiliation">
+            <div class="col-md-3">
+                <h3>Library</h3>
+            </div>
+            <div class="col-md-9">
+                <h5>Last modified: {{ user.lib.modified }}</h5>
+                <h5>
+                    <button id="update-lib" class="update" action="{% url 'user:update-library' %}">Async update</button>
+                    <span class="errors"></span>
+                </h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block js %}
+    {{ block.super }}
+     <script type="text/javascript" src="{% static 'js/user.js' %}"></script>
+{% endblock js %}

@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class Consumer(TimeStampedModel):
     """ Abstract Consumer Table
 
-    Consumers consumes papers from the web and populate the library
+    Consumers consumes matches from the web and populate the library
     """
 
     # IDS
@@ -43,7 +43,7 @@ class Consumer(TimeStampedModel):
     # name
     name = models.CharField(max_length=200, unique=True)
 
-    # number of papers retrieved per call
+    # number of matches retrieved per call
     ret_max = models.IntegerField(default=25)
 
     # number of past day to look through during initialization
@@ -259,7 +259,7 @@ class Consumer(TimeStampedModel):
             journal_pk (Journal): pk of journal instance
 
         Returns:
-            (int): Number of papers added
+            (int): Number of matches added
         """
 
         journal = Journal.objects.get(pk=journal_pk)
@@ -312,7 +312,7 @@ class Consumer(TimeStampedModel):
         journal is queued for consumption if <countdown_period> = 1
 
         After consumption, <base_counter_period> is increased by 1 if no paper
-        was fetched, decreased by 1 if papers were fetched.
+        was fetched, decreased by 1 if matches were fetched.
         """
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,
@@ -464,7 +464,7 @@ class ConsumerElsevier(Consumer):
             - if not, keep going and increment starting point
 
         Other issues:
-            Using SCOPUS doenot help because doesnot list aheadofprint papers.
+            Using SCOPUS doenot help because doesnot list aheadofprint matches.
             Using SCIDIR doesnot have the volume field (SCOPUS has it. wtf)
 
         :param journal (Journal):
@@ -622,9 +622,9 @@ class ConsumerJournal(TimeStampedModel):
     # last update
     # datetime of last consumption
     last_date_cons = models.DateTimeField(null=True, blank=True, default=None)
-    # number of papers recorded in db
+    # number of matches recorded in db
     last_number_papers_recorded = models.IntegerField(default=0)
-    # number of papers fetched from provider
+    # number of matches fetched from provider
     last_number_papers_fetched = models.IntegerField(default=0)
 
     base_coundown_period = models.IntegerField(default=1)
@@ -695,8 +695,8 @@ class ConsumerJournal(TimeStampedModel):
 
         Args:
             success (bool): True if comsumption was a success
-            n_ret (int): number of papers fetched from API
-            n_rec (int): number of papers recorded in db
+            n_ret (int): number of matches fetched from API
+            n_rec (int): number of matches recorded in db
         """
         if success:
             self.status = 'idle'
@@ -756,10 +756,10 @@ class ConsumerJournalStat(TimeStampedModel):
                                        ('ACT', 'Activate'),
                                        ('DEA', 'Deactivate')))
 
-    # number of papers fetched
+    # number of matches fetched
     number_papers_fetched = models.IntegerField(default=0)
 
-    # number of papers recorded
+    # number of matches recorded
     number_papers_recorded = models.IntegerField(default=0)
 
     # message

@@ -61,6 +61,12 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             out['tmp_affiliation']['city'] = first_aff_details.get('city', '')
             out['tmp_affiliation']['state'] = first_aff_details.get('state', '')
             out['tmp_affiliation']['country'] = first_aff_details.get('country', '')
+        try:
+            out['title'] = response.get('title')
+            out['position'] = response.get('academic_status')
+            out['photo'] = response.get('photo', '')['standard']
+        except KeyError:
+            out['photo'] = ''
         return out
 
     def get_session(self, social, user, *args, **kwargs):
@@ -104,10 +110,10 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             user (User): A User instance
             session: An OAuth session as provided by get_session()
             full (bool): if True, run a full update on library. If false, only
-                update new added added papers
+                update new added added matches
 
         Returns:
-            (int): Number of papers added
+            (int): Number of matches added
         """
         # Init
         new = True
@@ -115,8 +121,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         not_new_stack_count = 0
 
         # update db state
-        user.stats.log_lib_starts_sync(user)
         user.lib.set_state('ING')
+        user.stats.log_lib_starts_sync(user)
 
         # retrieve list of documents per page
         page = session.documents.list(
