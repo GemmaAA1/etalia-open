@@ -30,7 +30,7 @@ from paperstream.library.models import Paper, Author
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserSettingsForm, UpdateUserNameForm, \
     UpdateUserPositionForm, UpdateUserTitleForm
-from .models import Affiliation, UserLibPaper, UserTaste, UserFeedLayout, \
+from .models import Affiliation, UserLibPaper, UserTaste, FeedLayout, \
     UserSettings
 from .mixins import ProfileModalFormsMixin
 from .tasks import update_lib
@@ -180,7 +180,7 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
     like_flag = False
 
     def update_from_filter(self):
-        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
         if new:
             ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
                                  'authors_flag': self.authors_filter_flag,

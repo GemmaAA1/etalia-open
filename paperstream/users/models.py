@@ -398,8 +398,8 @@ class UserSettings(TimeStampedModel):
 
     # in days
     trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
-                                            choices=NLP_TIME_LAPSE_CHOICES,
-                                            verbose_name='In the past for')
+                                           choices=NLP_TIME_LAPSE_CHOICES,
+                                           verbose_name='In the past for')
 
     objects = UserSettingsManager()
 

@@ -10,8 +10,16 @@
 {% block title %}Journal{% endblock title %}
 
 {% block content %}
-    <div class="library">
-{#    <div style="padding-top: 50px">#}
+    <div class="library journals">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <p><strong>Journals: </strong>{{ journals_count }}</p>
+                </div>
+                <div class="col-lg-1"></div>
+            </div>
+        </div>
         <div class="container">
             <div class="row">
                 <div class="col-lg-1"></div>
@@ -23,10 +31,10 @@
                             <td><h5>Pool size</h5></td>
                         </tr>
                         {% for journal in journal_list %}
-                            <tr id="journal{{ forloop.counter }}" onclick="document.location = '{% url 'library:journal' journal.pk %}'">
+                            <tr id="journal{{ forloop.counter }}" class="clickable-row" data-href="{% url 'library:journal' journal.pk %}">
                                 <td id="journal_title">{{ journal.title }}</td>
-                                <td id="journal_issn">{% if journal.issn %} {{ journal.issn }} {% else %} {{ journal.ext_id }} {% endif %}</td>
-                                <td id="journal_lib_size">{{ journal.lib_size }}</td>
+                                <td id="journal_issn">{% if journal.id_issn %} {{ journal.id_issn }} {% else %} {{ journal.id_oth }} {% endif %}</td>
+                                <td id="journal_lib_size">{{ journal.paper_set.count }}</td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -51,4 +59,18 @@
             </div>
         </div>
     </div>
+
 {% endblock content %}
+
+{% block js %}
+    {{ block.super }}
+
+    <script>
+        $(document).ready(function($) {
+            $(".clickable-row").click(function() {
+                window.document.location = $(this).data("href");
+            });
+        });
+    </script>
+
+{% endblock js %}

@@ -180,3 +180,13 @@
 .comment {
     padding-top: 20px;
 }
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.journal .paper-list td {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

@@ -24,6 +24,7 @@ def get_env_variable(var_name, default=None):
             error_msg = "Set the {} environment variable".format(var_name)
             raise ImproperlyConfigured(error_msg)
 
+
 def get_celery_worker_status():
     ERROR_KEY = "ERROR"
     try:
@@ -42,6 +43,7 @@ def get_celery_worker_status():
         d = {ERROR_KEY: str(e)}
     return d
 
+
 def pad_vector(vector):
     if isinstance(vector, np.ndarray):
         if vector.size == 1:
@@ -50,7 +52,7 @@ def pad_vector(vector):
             vector = np.squeeze(vector).tolist()
 
     if len(vector) <= settings.NLP_MAX_VECTOR_SIZE:
-        vector += [None] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
+        vector += [0.0] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
     else:
         raise ValidationError('vector is larger than NLP_MAX_VECTOR_SIZE')
 
@@ -65,7 +67,7 @@ def pad_neighbors(vector):
             vector = np.squeeze(vector).tolist()
 
     if len(vector) <= settings.NLP_MAX_KNN_NEIGHBORS:
-        vector += [None] * (settings.NLP_MAX_KNN_NEIGHBORS - len(vector))
+        vector += [0] * (settings.NLP_MAX_KNN_NEIGHBORS - len(vector))
     else:
         raise ValidationError('vector is larger than NLP_MAX_KNN_NEIGHBORS')
     return vector

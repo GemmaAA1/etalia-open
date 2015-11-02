@@ -11,6 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.text import slugify
 from django.core.urlresolvers import reverse
+from django.db.models.expressions import RawSQL
 
 from config.celery import celery_app as app
 
@@ -31,7 +32,12 @@ def library(request):
 class JournalsListView(ModalMixin, ListView):
     model = Journal
     template_name = 'library/journals.html'
-    paginate_by = settings.ITEMS_PER_PAGE
+    paginate_by = 100
+
+    def get_context_data(self, **kwargs):
+        context = super(JournalsListView, self).get_context_data(**kwargs)
+        context['journals_count'] = Journal.objects.count()
+        return context
 
 journals = JournalsListView.as_view()
 
@@ -40,7 +46,7 @@ class JournalView(ModalMixin, ListView):
     # Journal view display a list of matches from the journal
     model = Paper
     template_name = 'library/journal.html'
-    paginate_by = settings.ITEMS_PER_PAGE
+    paginate_by = settings.LIBRARY_ITEMS_PER_PAGE
 
     def get_context_data(self, **kwargs):
         context = super(JournalView, self).get_context_data(**kwargs)
@@ -48,10 +54,26 @@ class JournalView(ModalMixin, ListView):
         return context
 
     def get_queryset(self):
-        papers_in_jou = Paper.objects.filter(journal__id=self.kwargs['pk'])
+        papers_in_jou = Paper.objects\
+            .filter(journal__id=self.kwargs['pk'], is_trusted=True)\
+            .annotate(date=RawSQL("LEAST(date_ep, date_fs, date_pp) ", []))\
+            .order_by('-date')
+
         return papers_in_jou
 
-journal = JournalView.as_view()
+journal_slug = JournalView.as_view()
+
+
+class JournalViewPk(RedirectView):
+    """Redirect to slug journal url"""
+
+    permanent = True
+
+    def get_redirect_url(self, *args, **kwargs):
+        journal = Journal.objects.get(pk=kwargs['pk'])
+        return journal.get_absolute_url()
+
+journal = JournalViewPk.as_view()
 
 
 class PaperView(ModalMixin, DetailView):
@@ -120,7 +142,7 @@ paper_slug = PaperView.as_view()
 
 
 class PaperViewPk(RedirectView):
-    """Redirect to slug paper url for SEO"""
+    """Redirect to slug paper url"""
 
     permanent = True
 
@@ -143,11 +165,3 @@ class PaperViewPkTime(RedirectView):
                                'time_lapse': kwargs.get('time_lapse')})
 
 paper_time = PaperViewPkTime.as_view()
-
-
-class PapersListView(ModalMixin, ListView):
-    model = Paper
-    template_name = 'library/matches.html'
-    paginate_by = settings.ITEMS_PER_PAGE
-
-papers = PapersListView.as_view()

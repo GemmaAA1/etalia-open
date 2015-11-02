@@ -61,6 +61,7 @@ LOCAL_APPS = (
     'paperstream.users',
     'paperstream.feeds',
     'paperstream.altmetric',
+    'paperstream.invite',
     # 'functional_tests',
 )
 
@@ -126,7 +127,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
-ITEMS_PER_PAGE = 15
+LIBRARY_ITEMS_PER_PAGE = 100
 NUMBER_OF_NEIGHBORS = 5
 
 # GENERAL CONFIGURATION
@@ -182,6 +183,11 @@ ROOT_URLCONF = 'config.urls'
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'config.wsgi.application'
 
+
+# INVITE
+# ------------------------------------------------------------------------------
+# Pub stream is on invite mode only
+INVITE_MODE = False
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------

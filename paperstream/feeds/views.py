@@ -24,8 +24,8 @@ from braces.views import LoginRequiredMixin
 from endless_pagination.views import AjaxListView
 
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
-from paperstream.library.models import Paper, Stats, Journal, Author
-from paperstream.users.models import UserTaste, UserFeedLayout
+from paperstream.library.models import Paper, Stats, Author
+from paperstream.users.models import UserTaste, FeedLayout
 
 from .models import Stream, StreamMatches, StreamSeeds, \
     TrendMatches
@@ -269,7 +269,7 @@ class StreamView(BaseFeedView):
                 'context_time_lapse': self.request.user.settings.stream_time_lapse}
 
     def update_from_filter(self):
-        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
         if new:
             ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
                                  'authors_flag': self.authors_filter_flag,
@@ -348,7 +348,7 @@ class TrendView(BaseFeedView):
                 'context_time_lapse': self.request.user.settings.trend_time_lapse}
 
     def update_from_filter(self):
-        ufl, new = UserFeedLayout.objects.get_or_create(user=self.request.user)
+        ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
         if new:
             ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
                                  'authors_flag': self.authors_filter_flag,

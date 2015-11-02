@@ -85,7 +85,9 @@ class Journal(TimeStampedModel):
         return self.print_short_title
 
     def get_absolute_url(self):
-        return reverse('library:journal', args=[self.id])
+        return reverse('library:journal-slug',
+                       kwargs={'pk': self.pk,
+                               'slug': slugify(self.title)})
 
     def count_papers(self):
         self.lib_size = len(self.paper_set.all())

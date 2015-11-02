@@ -137,8 +137,8 @@ class UserSettingsForm(forms.ModelForm):
 
     class Meta:
         model = UserSettings
-        fields = ('stream_model', 'stream_time_lapse', 'stream_scoring_method',
-                  'trend_model', 'trend_time_lapse', 'trend_scoring_method')
+        fields = ('stream_model', 'stream_time_lapse', 'stream_method',
+                  'trend_model', 'trend_time_lapse', 'trend_method')
         widgets = {
             'stream_model': forms.Select(attrs={'class': 'form-control'}),
             'stream_time_lapse': forms.Select(attrs={'class': 'form-control'}),
