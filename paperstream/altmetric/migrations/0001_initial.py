@@ -14,12 +14,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AltmetricModel',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('score', models.FloatField(default=0.0)),
+                ('score', models.FloatField(default=0.0, db_index=True)),
                 ('altmetric_id', models.IntegerField(default=0)),
-                ('altmetric_jid', models.CharField(max_length=32)),
+                ('altmetric_jid', models.CharField(blank=True, max_length=32)),
                 ('score_1d', models.FloatField(default=0.0)),
                 ('score_2d', models.FloatField(default=0.0)),
                 ('score_3d', models.FloatField(default=0.0)),
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                 ('paper', models.OneToOneField(related_name='altmetric', to='library.Paper')),
             ],
             options={
-                'abstract': False,
+                'ordering': ['-score'],
             },
         ),
     ]

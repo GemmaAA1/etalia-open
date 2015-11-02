@@ -6,14 +6,12 @@ located in a app/task.py files are auto detected and available to workers
 """
 from __future__ import absolute_import, unicode_literals
 import os
-import re
 from celery import Celery
 from paperstream.nlp.models import Model
 from paperstream.nlp.tasks_class import EmbedPaperTask, MostSimilarTask
 from django.conf import settings
 from celery import bootsteps
 from celery.bin import Option
-from celery.task.control import rate_limit
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
@@ -81,7 +79,6 @@ def register_mostsimilar_tasks(init=False):
 
 
 celery_app.steps['worker'].add(NLPBootstep)
-
 
 @celery_app.task(bind=True)
 def debug_task(self):

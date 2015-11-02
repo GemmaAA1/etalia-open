@@ -350,7 +350,7 @@ class Trend(TimeStampedModel):
 
     name = models.CharField(max_length=100, default='main')
 
-    matches = models.ManyToManyField(Paper, through='paperstream.feeds.models.TrendMatches')
+    matches = models.ManyToManyField(Paper, through='TrendMatches')
 
     # top n closest matches
     top_n_closest = models.IntegerField(default=5000)

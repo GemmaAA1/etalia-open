@@ -16,10 +16,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Consumer',
             fields=[
-                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('type', models.CharField(max_length=3, choices=[('PUB', 'PubMed'), ('ELS', 'Elsevier'), ('ARX', 'Arxiv'), ('IEE', 'IEEE')])),
+                ('type', models.CharField(choices=[('PUB', 'PubMed'), ('ELS', 'Elsevier'), ('ARX', 'Arxiv'), ('IEE', 'IEEE')], max_length=3)),
                 ('name', models.CharField(max_length=200, unique=True)),
                 ('ret_max', models.IntegerField(default=25)),
                 ('day0', models.IntegerField(default=365)),
@@ -31,13 +31,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerJournal',
             fields=[
-                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
-                ('last_date_cons', models.DateTimeField(null=True, blank=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('last_date_cons', models.DateTimeField(default=None, blank=True, null=True)),
                 ('last_number_papers_recorded', models.IntegerField(default=0)),
                 ('last_number_papers_fetched', models.IntegerField(default=0)),
                 ('base_coundown_period', models.IntegerField(default=1)),
                 ('coundown_period', models.IntegerField(default=0)),
-                ('status', model_utils.fields.StatusField(default='inactive', no_check_for_status=True, max_length=100, choices=[('inactive', 'inactive'), ('idle', 'idle'), ('in_queue', 'in_queue'), ('consuming', 'consuming'), ('error', 'error')])),
+                ('status', model_utils.fields.StatusField(default='inactive', no_check_for_status=True, choices=[('inactive', 'inactive'), ('idle', 'idle'), ('in_queue', 'in_queue'), ('consuming', 'consuming'), ('error', 'error')], max_length=100)),
                 ('status_changed', model_utils.fields.MonitorField(default=django.utils.timezone.now, monitor='status')),
             ],
             options={
@@ -47,18 +49,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerJournalStat',
             fields=[
-                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
                 ('datetime', models.DateTimeField(auto_now_add=True)),
-                ('number_papers_fetched', models.IntegerField()),
-                ('number_papers_recorded', models.IntegerField()),
-                ('status', models.CharField(max_length=3, choices=[('SUC', 'Success'), ('FAI', 'Failed')])),
+                ('status', models.CharField(choices=[('SUC', 'Success'), ('FAI', 'Failed'), ('RES', 'Reset'), ('ACT', 'Activate'), ('DEA', 'Deactivate')], max_length=3)),
+                ('number_papers_fetched', models.IntegerField(default=0)),
+                ('number_papers_recorded', models.IntegerField(default=0)),
+                ('message', models.CharField(default='', max_length=512)),
                 ('consumer_journal', models.ForeignKey(related_name='stats', to='consumers.ConsumerJournal')),
             ],
+            options={
+                'ordering': ['datetime'],
+            },
         ),
         migrations.CreateModel(
             name='ConsumerArxiv',
             fields=[
-                ('consumer_ptr', models.OneToOneField(auto_created=True, serialize=False, to='consumers.Consumer', primary_key=True, parent_link=True)),
+                ('consumer_ptr', models.OneToOneField(primary_key=True, to='consumers.Consumer', serialize=False, parent_link=True, auto_created=True)),
             ],
             options={
                 'abstract': False,
@@ -68,7 +76,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerElsevier',
             fields=[
-                ('consumer_ptr', models.OneToOneField(auto_created=True, serialize=False, to='consumers.Consumer', primary_key=True, parent_link=True)),
+                ('consumer_ptr', models.OneToOneField(primary_key=True, to='consumers.Consumer', serialize=False, parent_link=True, auto_created=True)),
             ],
             options={
                 'abstract': False,
@@ -78,7 +86,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerPubmed',
             fields=[
-                ('consumer_ptr', models.OneToOneField(auto_created=True, serialize=False, to='consumers.Consumer', primary_key=True, parent_link=True)),
+                ('consumer_ptr', models.OneToOneField(primary_key=True, to='consumers.Consumer', serialize=False, parent_link=True, auto_created=True)),
             ],
             options={
                 'abstract': False,
@@ -99,5 +107,9 @@ class Migration(migrations.Migration):
             model_name='consumer',
             name='journals',
             field=models.ManyToManyField(through='consumers.ConsumerJournal', to='library.Journal'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='consumerjournal',
+            unique_together=set([('journal', 'consumer')]),
         ),
     ]
