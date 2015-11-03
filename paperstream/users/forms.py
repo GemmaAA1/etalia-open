@@ -8,6 +8,7 @@ from .models import Affiliation, UserSettings
 from .validators import validate_first_name, validate_last_name
 
 from paperstream.nlp.models import Model
+from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
 
 User = get_user_model()
 
@@ -132,19 +133,23 @@ class UserSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserSettingsForm, self).__init__(*args, **kwargs)
-        self.fields['model'].choices = [(mod.pk, mod.name)
+        self.fields['stream_model'].choices = [(mod.pk, mod.name)
                                         for mod in Model.objects.filter(is_active=True)]
+        # self.fields['trend_model'].choices = [(mod.pk, mod.name)
+        #                                 for mod in Model.objects.filter(is_active=True)]
+
 
     class Meta:
         model = UserSettings
         fields = ('stream_model', 'stream_time_lapse', 'stream_method',
-                  'trend_model', 'trend_time_lapse', 'trend_method')
+                  # 'trend_model', 'trend_time_lapse', 'trend_method'
+                  )
         widgets = {
             'stream_model': forms.Select(attrs={'class': 'form-control'}),
             'stream_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'stream_scoring_method': forms.Select(attrs={'class': 'form-control'}),
-            'trend_model': forms.Select(attrs={'class': 'form-control'}),
-            'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'trend_scoring_method': forms.Select(attrs={'class': 'form-control'}),
+            'stream_method': forms.Select(attrs={'class': 'form-control'}),
+            # 'trend_model': forms.Select(attrs={'class': 'form-control'}),
+            # 'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
+            # 'trend_method': forms.Select(attrs={'class': 'form-control'}),
         }
 

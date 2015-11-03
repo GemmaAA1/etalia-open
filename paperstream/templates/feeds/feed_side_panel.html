@@ -4,7 +4,9 @@
     <div class="side-panel-section journals">
         <div class="side-panel-title">
             Journals
-            <button class="all">(select all)</button>
+            <span class="select">
+            <button class="all">all</button>/<button class="none">none</button>
+            </span>
         </div>
         <div class="side-panel-inner">
             <ul>
@@ -23,7 +25,9 @@
                                 {% else %}
                                     {{ journal.title|truncatechars:25 }} ({{ count }})
                                 {% endif %}
-                                <button class="only">only</button>
+                                <span class="select">
+                                    <button class="only">only</button>
+                                </span>
                             </div>
                         </label>
                     </div>
@@ -31,14 +35,17 @@
             {% endfor %}
             </ul>
             {% if journals_show_more %}
-            <button class="show-more">show more</button>
+                <button class="show-more">show more</button>
+                <button class="show-less">/show less</button>
             {% endif %}
         </div>
     </div>
     <div class="side-panel-section authors">
         <div class="side-panel-title">
             Authors
-            <button class="all">(select all)</button>
+            <span class="select">
+            <button class="all">all</button>/<button class="none">none</button>
+            </span>
         </div>
         <div class="side-panel-inner">
             <ul >
@@ -53,7 +60,9 @@
                             </div>
                             <div class="short">
                                 {{ author_full_name|truncatechars:25 }}
-                                <button class="only">only</button>
+                                <span class="select">
+                                    <button class="only">only</button>
+                                </span>
                             </div>
                         </label>
                     </div>
@@ -62,6 +71,7 @@
             </ul>
             {% if authors_show_more %}
                 <button class="show-more">show more</button>
+                <button class="show-less">/show less</button>
             {% endif %}
         </div>
     </div>

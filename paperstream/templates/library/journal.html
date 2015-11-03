@@ -18,7 +18,7 @@
                     <p><a href="{% url 'library:journals' %}">back to journals list</a></p>
                     <p><strong>Title:</strong> {{ journal.title }}</p>
                     <p><strong>Identifier{{ counts_ids|pluralize }}:</strong> {{ journal.print_ids }}</p>
-                    <p><strong>Paper{{ counts_papers|pluralize }}: </strong> {{ journal.count_papers }}</p>
+                    <p><strong>Paper{{ counts_papers|pluralize }}: </strong> {{ journal.count_papers_trusted }}</p>
                 </div>
                 <div class="col-lg-1"></div>
             </div>

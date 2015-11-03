@@ -72,9 +72,6 @@ class Journal(TimeStampedModel):
     period = models.CharField(max_length=200, choices=PUBLISH_PERIODS,
                               default='', blank=True)
 
-    # Number of Paper in journal
-    lib_size = models.IntegerField(default=0)
-
     # is flag
     is_trusted = models.BooleanField(default=False)
 
@@ -90,8 +87,10 @@ class Journal(TimeStampedModel):
                                'slug': slugify(self.title)})
 
     def count_papers(self):
-        self.lib_size = len(self.paper_set.all())
-        return self.lib_size
+        return self.paper_set.count()
+
+    def count_papers_trusted(self):
+        return self.paper_set.filter(is_trusted=True).count()
 
     def count_ids(self):
         count = 0

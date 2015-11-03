@@ -13,12 +13,12 @@ User = get_user_model()
 
 
 @app.task()
-def update_stream(user_pk, feed_name='main', restrict_journal=False):
+def update_stream(user_pk, stream_name='main', restrict_journal=False):
     """Async task / Update user feed"""
     # create/update main feed
-    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=feed_name)
-    if feed_name == 'main':
-        # add all matches
+    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
+    if stream_name == 'main':
+        # add all seeds
         user = User.objects.get(pk=user_pk)
         feed.add_papers_seed(user.lib.papers.all())
     # update
@@ -28,8 +28,8 @@ def update_stream(user_pk, feed_name='main', restrict_journal=False):
 
 
 @app.task()
-def update_trend(user_pk):
-    df, _ = Trend.objects.get_or_create(user_id=user_pk)
+def update_trend(user_pk, trend_name='main'):
+    df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
     df.update()
 
     return user_pk

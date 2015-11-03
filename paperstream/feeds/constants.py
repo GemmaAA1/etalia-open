@@ -24,7 +24,7 @@ STREAM_METHODS_MAP = (
 )
 
 TREND_METHODS = (
-    (1, 'Max'),
+    (0, 'Method #1'),
 )
 
 

@@ -207,6 +207,9 @@
 
 .stamps-ext>li {
     list-style: none;
+    margin-right: -35px;
+    margin-left: -10px;
+    padding-left: 10px
 }
 .stamps-ext>li>a::before {
     content:"";

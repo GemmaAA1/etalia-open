@@ -234,9 +234,10 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
     'social.pipeline.debug.debug',
+    'paperstream.users.pipeline.create_details',
     'paperstream.users.pipeline.init_user',
     # 'paperstream.users.pipeline.require_affiliation',
-    'paperstream.users.pipeline.create_details',
+\
 )
 
 # Mendeley Keys

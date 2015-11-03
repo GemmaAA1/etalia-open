@@ -16,48 +16,62 @@
 <div class="container settings">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
-            <div class="col-md-3">
-                <h3>Stream</h3>
+            <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
+            <div class="col-md-3 text-right">
+                <h3>Feeds</h3>
+                <a class="edit" href="javascript:" data-toggle="modal" data-target="#settings-modal">Edit settings</a>
             </div>
-            <div class="col-md-9">
-                <h5>Last modified: {{ user.feeds.first.modified }}</h5>
-                <h5>
-                    <button id="update-lib" class="update" action="">Async update</button>
-                    <span class="errors"></span>
-                </h5>
+            <div id="settings-section" class="col-md-9">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Stream settings</h4>
+                        <h5>NLP model: <span id="stream_model">{{ user.settings.stream_model }}</span></h5>
+                        <h5>Time lapse: <span id="stream_time_lapse">{{ user.settings.stream_time_lapse }}</span></h5>
+                        <h5>Method: <span id="stream_method">{{ user.settings.stream_method }}</span></h5>
+                        <h5>Last modified: {{ user.streams.first.modified }}</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>
+                            <button id="update-stream" class="btn btn-primary btn-sm update" action="{% url 'feeds:update-stream'  'main' %}">Async update</button>
+                            <span class="errors"></span>
+                        </h5>
+                    </div>
+                </div>
+{#                <div class="row">#}
+{#                    <div class="col-md-6">#}
+{#                        <h4>Trend settings</h4>#}
+{#                        <h5>NLP model: <span id="trend_model">{{ user.settings.trend_model }}</span></h5>#}
+{#                        <h5>Time lapse: <span id="trend_time_lapse">{{ user.settings.trend_time_lapse }}</span></h5>#}
+{#                        <h5>Method: <span id="trend_method">{{ user.settings.trend_method }}</span></h5>#}
+{#                        <h5>Last modified: {{ user.trends.first.modified }}</h5>#}
+{#                    </div>#}
+{#                    <div class="col-md-6">#}
+{#                        <h5>#}
+{#                            <button id="update-trend" class="btn btn-primary btn-sm update" action="{% url 'feeds:update-trend'  'main' %}">Async update</button>#}
+{#                            <span class="errors"></span>#}
+{#                        </h5>#}
+{#                    </div>#}
+{#                </div>#}
             </div>
         </div>
     </div>
     <hr class="divider">
     <div class="row">
         <div class="col-md-8 col-md-offset-2 affiliation">
-            <div class="col-md-3">
-                <h3>Trend</h3>
-            </div>
-            <div class="col-md-9">
-                <h5>Last modified: {{ user.trend.modified }}</h5>
-                <h5>
-                    <button id="update-lib" class="update" action="">Async update</button>
-                    <span class="errors"></span>
-                </h5>
-            </div>
-        </div>
-    </div>
-    <hr class="divider">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2 affiliation">
-            <div class="col-md-3">
+            <div class="col-md-3 text-right">
                 <h3>Library</h3>
             </div>
             <div class="col-md-9">
                 <h5>Last modified: {{ user.lib.modified }}</h5>
                 <h5>
-                    <button id="update-lib" class="update" action="{% url 'user:update-library' %}">Async update</button>
+                    <button id="update-lib" class="btn btn-primary btn-sm update update" action="{% url 'user:update-library' %}">Async update</button>
                     <span class="errors"></span>
                 </h5>
             </div>
         </div>
     </div>
+
+    {% include 'user/settings_modal.html' %}
 </div>
 
 {% endblock content %}

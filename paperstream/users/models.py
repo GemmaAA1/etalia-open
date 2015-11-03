@@ -381,12 +381,13 @@ class UserSettings(TimeStampedModel):
                                      related_name='stream_model')
 
     # scoring method to use
-    stream_method = models.IntegerField(verbose_name='Method', default=1)
+    stream_method = models.IntegerField(verbose_name='Method', default=1,
+                                        choices=STREAM_METHODS)
 
     # in days
     stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
                                             choices=NLP_TIME_LAPSE_CHOICES,
-                                            verbose_name='In the past for')
+                                            verbose_name='Time range')
 
     # Trend settings
     # nlp model
@@ -394,7 +395,8 @@ class UserSettings(TimeStampedModel):
                                     related_name='trend_model')
 
     # scoring method to use
-    trend_method = models.IntegerField(verbose_name='Method', default=1)
+    trend_method = models.IntegerField(verbose_name='Method', default=1,
+                                       choices=TREND_METHODS)
 
     # in days
     trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],

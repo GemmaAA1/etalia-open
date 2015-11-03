@@ -50,12 +50,15 @@ class JournalView(ModalMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(JournalView, self).get_context_data(**kwargs)
-        context['journal'] = get_object_or_404(Journal, id=self.kwargs['pk'])
+        context['journal'] = get_object_or_404(Journal,
+                                               id=self.kwargs['pk'])
         return context
 
     def get_queryset(self):
         papers_in_jou = Paper.objects\
-            .filter(journal__id=self.kwargs['pk'], is_trusted=True)\
+            .filter(journal__id=self.kwargs['pk'],
+                    is_trusted=True,
+                    type='JOU')\
             .annotate(date=RawSQL("LEAST(date_ep, date_fs, date_pp) ", []))\
             .order_by('-date')
 

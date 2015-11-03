@@ -6,8 +6,13 @@ from . import views
 
 urlpatterns = [
     # url(r'^$', views.stream_main, name='main'),
-    url(r'^trend/', views.trend_view, name='trend'),
-    url(r'^stream/', views.stream_view, name='stream'),
+    url(r'stream/$', views.stream_view, name='home'),
+    url(r'stream/$', views.stream_view, name='stream'),
+    url(r'stream/(?P<name>[\w-]+)/update$', views.update_stream_view,
+        name='update-stream'),
+    url(r'trend/$', views.trend_view, name='trend'),
+    url(r'trend/(?P<name>[\w-]+)/update$', views.update_trend_view,
+        name='update-trend'),
     # url(r'^create-feed$', views.create_feed_view, name='create-feed'),
     # url(r'^(?P<name>[\w-]+)/$', views.stream_view, name='stream'),
     # url(r'^(?P<name>[\w-]+)/modify$', views.modify_feed_view,

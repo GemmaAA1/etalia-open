@@ -66,16 +66,14 @@
                                         </div>
                                     </a>
                                 </div>
-
-
                             </div>
-
                             <hr class="divider">
-
                             <div class="side-panel-section journals">
                                 <div class="side-panel-title">
                                     Journals
-                                    <button class="all">(select all)</button>
+                                    <span class="select">
+                                        <button class="all">all</button>/<button class="none">none</button>
+                                    </span>
                                 </div>
                                 <div class="side-panel-inner">
                                     <ul>
@@ -94,7 +92,9 @@
                                                         {% else %}
                                                             {{ journal.title|truncatechars:25 }} ({{ count }})
                                                         {% endif %}
-                                                        <button class="only">only</button>
+                                                        <span class="select">
+                                                            <button class="only">only</button>
+                                                        </span>
                                                     </div>
                                                 </label>
                                             </div>
@@ -110,7 +110,9 @@
                             <div class="side-panel-section authors">
                                 <div class="side-panel-title">
                                     Authors
-                                    <button class="all">(select all)</button>
+                                    <span class="select">
+                                        <button class="all">all</button>/<button class="none">none</button>
+                                    </span>
                                 </div>
                                 <div class="side-panel-inner">
                                     <ul >
@@ -126,7 +128,9 @@
                                                     </div>
                                                     <div class="short">
                                                         {{ author_full_name|truncatechars:25 }}
-                                                        <button class="only">only</button>
+                                                        <span class="select">
+                                                            <button class="only">only</button>
+                                                        </span>
                                                     </div>
                                                 </label>
                                             </div>

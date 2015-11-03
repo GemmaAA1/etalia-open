@@ -50,7 +50,7 @@ function bind_all() {
             event.stopPropagation();
         });
 
-    // Short are liked paper that stay "active"
+    // Short are liked paper that stay "active" for stream and trend but not user library
     $('.short').closest('.paper-list')
         .off('mouseleave')
         .off('mouseenter')

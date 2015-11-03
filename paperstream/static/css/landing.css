@@ -49,6 +49,10 @@
     height: 70px;
     width: 70px;
 }
+.what-is-pubstream {
+    padding-top: 20px;
+    background-color: #fcfcfc;
+}
 
 .intro-header h3 {
     font-size: 24px;
@@ -124,7 +128,7 @@
 
 .what-img-crop {
     display: inline-block;
-    margin-left: 35%;
+    margin-left: calc(50% - 50px);
     width: 100px;
     height: 80px;
     overflow: hidden;
@@ -194,7 +198,8 @@
 }
 
 .banner {
-    padding: 30px;
+    padding-bottom: 200px;
+    padding-top: 30px;
     /*background-color: #d3f0f4;*/
     background-color:#fafafa;
 }

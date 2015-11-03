@@ -801,7 +801,14 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     # data index to journal pk
     index2journalpk = []
     # journal ratio to weight vectors with
-    journal_ratio = models.FloatField(default=0.0)
+    journal_ratio = models.FloatField(default=0.0, choices=(('0.0', '0 %'),
+                                                            ('0.1', '10 %'),
+                                                            ('0.15', '15 %'),
+                                                            ('0.20', '20 %'),
+                                                            ('0.25', '25 %'),
+                                                            ('0.30', '30 %')
+                                                            )
+                                      )
     # make instance active (use when linking task)
     is_active = models.BooleanField(default=False)
 
@@ -812,8 +819,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
     @property
     def name(self):
-        return '{model_name}'.format(
-            model_name=self.model.name)
+        return '{model_name}_{journal_ratio:.0f}perc'.format(
+            model_name=self.model.name,
+            journal_ratio=self.journal.ratio)
 
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)

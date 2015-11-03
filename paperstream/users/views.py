@@ -32,7 +32,7 @@ from .forms import UserBasicForm, UserAffiliationForm, \
     UpdateUserPositionForm, UpdateUserTitleForm
 from .models import Affiliation, UserLibPaper, UserTaste, FeedLayout, \
     UserSettings
-from .mixins import ProfileModalFormsMixin
+from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
 
 
@@ -90,6 +90,7 @@ class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super(UserBasicInfoSignupView, self).get_context_data(**kwargs)
         context['stage'] = 'basic_info'
+        context['has_email'] = True if self.initial.get('email') else False
         return context
 
     def get_initial(self):
@@ -98,6 +99,7 @@ class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
         initial['first_name'] = details.get('first_name', '')
         initial['last_name'] = details.get('last_name', '')
         initial['email'] = details.get('email', '')
+        self.initial = initial
         return initial
 
     def form_valid(self, form):
@@ -465,7 +467,7 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
 profile = ProfileView.as_view()
 
 
-class SettingsView(LoginRequiredMixin, DetailView):
+class SettingsView(LoginRequiredMixin, SettingsModalFormsMixin, DetailView):
 
     model = UserSettings
     template_name = 'user/settings.html'
@@ -583,20 +585,22 @@ class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserSettingsUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
-        self.request.user.settings.time_lapse = form.cleaned_data['time_lapse']
-        self.request.user.settings.model = form.cleaned_data['model']
-        self.request.user.settings.scoring_method = \
-            form.cleaned_data['scoring_method']
+        self.request.user.settings.stream_time_lapse = form.cleaned_data['stream_time_lapse']
+        self.request.user.settings.stream_model = form.cleaned_data['stream_model']
+        self.request.user.settings.stream_method = form.cleaned_data['stream_method']
+        # self.request.user.settings.trend_time_lapse = form.cleaned_data['trend_time_lapse']
+        # self.request.user.settings.trend_model = form.cleaned_data['trend_model']
+        # self.request.user.settings.trend_method = form.cleaned_data['trend_method']
         self.request.user.settings.save()
         return super(UserSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'stream_model': self.request.user.settings.stream_model,
+        data = {'stream_model': self.request.user.settings.stream_model.name,
                 'stream_time_lapse': self.request.user.settings.stream_time_lapse,
-                'stream_scoring_method': self.request.user.settings.stream_scoring_method,
-                'trend_model': self.request.user.settings.trend_model,
-                'trend_time_lapse': self.request.user.settings.trend_time_lapse,
-                'trend_scoring_method': self.request.user.settings.trend_scoring_method,
+                'stream_method': self.request.user.settings.stream_method,
+                # 'trend_model': self.request.user.settings.trend_model.name,
+                # 'trend_time_lapse': self.request.user.settings.trend_time_lapse,
+                # 'trend_method': self.request.user.settings.trend_method,
                 }
         return data
 
@@ -647,21 +651,18 @@ def like_call(request):
         pk = int(request.POST.get('pk'))
         source = request.POST.get('source')
         paper_ = get_object_or_404(Paper, pk=pk)
-        context = {'context_model': request.user.settings.stream_model,
-                   'context_scoring_method': request.user.settings.stream_scoring_method,
-                   'context_time_lapse': request.user.settings.stream_time_lapse}
         if 'stream' in source:
-            context['context_source'] = 'stream'
+            context_source = 'stream'
         elif 'trend' in source:
-            context['context_source'] = 'trend'
+            context_source = 'trend'
         elif 'library' in source:
-            context['context_source'] = 'library'
+            context_source = 'library'
         else:
-            context['context_source'] = source
+            context_source = source
         ut, _ = UserTaste.objects.get_or_create(
             paper=paper_,
             user=request.user,
-            **context)
+            context_source=context_source)
         if ut.is_liked:
             ut.is_liked = False
         else:
@@ -680,21 +681,18 @@ def tick_call(request):
         pk = int(request.POST.get('pk'))
         source = request.POST.get('source')
         paper_ = get_object_or_404(Paper, pk=pk)
-        context = {'context_model': request.user.settings.stream_model,
-                   'context_scoring_method': request.user.settings.stream_scoring_method,
-                   'context_time_lapse': request.user.settings.stream_time_lapse}
         if 'stream' in source:
-            context['context_source'] = 'stream'
+            context_source = 'stream'
         elif 'trend' in source:
-            context['context_source'] = 'trend'
+            context_source = 'trend'
         elif 'library' in source:
-            context['context_source'] = 'library'
+            context_source = 'library'
         else:
-            context['context_source'] = source
+            context_source = source
         ut, _ = UserTaste.objects.get_or_create(
             paper=paper_,
             user=request.user,
-            **context)
+            context_source=context_source)
         if ut.is_ticked:
             ut.is_ticked = False
         else:

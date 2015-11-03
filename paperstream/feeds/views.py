@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
 from django.views.generic import DeleteView, RedirectView, CreateView
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from django.forms.utils import ErrorList
 from django.core.exceptions import ValidationError
@@ -30,7 +30,7 @@ from paperstream.users.models import UserTaste, FeedLayout
 from .models import Stream, StreamMatches, StreamSeeds, \
     TrendMatches
 from .forms import CreateUserFeedForm
-from .tasks import update_stream as async_update_feed
+from .tasks import update_stream, update_trend
 
 
 class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
@@ -71,7 +71,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
                         subset.append(Q(paper__journal__title__icontains=journal))
                 if subset:
                     queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
-        if self.journals_filter_flag == 'only':
+        if self.journals_filter_flag == 'none':
             if self.journals_filter:
                 subset = []
                 for journal, val in self.journals_filter:
@@ -93,7 +93,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
                         subset.append(Q(paper__authors__pk=pk))
                 if subset:
                     queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
-        if self.authors_filter_flag == 'only':
+        if self.authors_filter_flag == 'none':
             if self.authors_filter:
                 subset = []
                 for pk, val in self.authors_filter:
@@ -110,8 +110,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         if self.like_flag:
             like_pks = UserTaste.objects\
                 .filter(user=self.request.user,
-                        is_liked=True,
-                        **self.context_settings)\
+                        is_liked=True)\
                 .values('paper__pk')
             queryset = queryset.filter(paper_id__in=like_pks)
 
@@ -150,14 +149,15 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         context = super(AjaxListView, self).get_context_data(**kwargs)
         context = dict(context, **super(BaseFeedView, self).get_context_data(**kwargs))
 
+        user_settings = self.get_context_settings()
+
         context['first_page'] = self.first_page
         context['per_page'] = self.per_page
 
         # Get user tastes label
 
         user_taste = UserTaste.objects\
-            .filter(user=self.request.user,
-                    **self.context_settings)\
+            .filter(user=self.request.user)\
             .values_list('paper_id', 'is_liked', 'is_ticked')
         # reformat to dict
         user_taste = dict((key, {'liked': v1, 'is_ticked': v2})
@@ -251,7 +251,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         # time lapse settings
         context['time_lapse'] = \
             dict(settings.NLP_TIME_LAPSE_CHOICES)\
-                .get(self.context_settings.get('time_lapse'))
+                .get(user_settings.get('time_lapse'))
 
         return context
 
@@ -263,10 +263,13 @@ class StreamView(BaseFeedView):
     page_template = 'feeds/feed_sub_page.html'
 
     def get_context_settings(self):
-        return {'context_source': 'stream',
-                'context_model': self.request.user.settings.stream_model,
-                'context_scoring_method': self.request.user.settings.stream_scoring_method,
-                'context_time_lapse': self.request.user.settings.stream_time_lapse}
+        self.context_settings = {
+            'time_lapse': self.request.user.settings.stream_time_lapse,
+            'method': self.request.user.settings.stream_method,
+            'model': self.request.user.settings.stream_model,
+        }
+        return self.context_settings
+
 
     def update_from_filter(self):
         ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
@@ -312,19 +315,16 @@ class StreamView(BaseFeedView):
                 pass
 
     def get_queryset(self):
-        # TODO: find a way to move this to parent class
-        self.context_settings = self.get_context_settings()
 
         # get ticked paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user,
-                    is_ticked=True,
-                    **self.context_settings)\
+                    is_ticked=True)\
             .values('paper')
 
         self.original_qs = self.model.objects\
-            .filter(feed__name=self.kwargs.get('name', 'main'),
-                    feed__user=self.request.user)\
+            .filter(stream__name=self.kwargs.get('name', 'main'),
+                    stream__user=self.request.user)\
             .exclude(paper__in=papers_ticked)\
             .select_related('paper', 'paper__journal')
 
@@ -342,10 +342,12 @@ class TrendView(BaseFeedView):
     page_template = 'feeds/trends_sub_page.html'
 
     def get_context_settings(self):
-        return {'context_source': 'trend',
-                'context_model': self.request.user.settings.trend_model,
-                'context_scoring_method': self.request.user.settings.trend_scoring_method,
-                'context_time_lapse': self.request.user.settings.trend_time_lapse}
+        self.context_settings = {
+            'time_lapse': self.request.user.settings.trend_time_lapse,
+            'method': self.request.user.settings.trend_method,
+            'model': self.request.user.settings.trend_model,
+        }
+        return self.context_settings
 
     def update_from_filter(self):
         ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
@@ -391,14 +393,11 @@ class TrendView(BaseFeedView):
                 pass
 
     def get_queryset(self):
-        # TODO: find a way to move this to parent class
-        self.context_settings = self.get_context_settings()
 
         # get ticked paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user,
-                    is_ticked=True,
-                    **self.context_settings)\
+                    is_ticked=True)\
             .values('paper')
 
         self.original_qs = self.model.objects\
@@ -530,19 +529,26 @@ class DeleteFeedView(LoginRequiredMixin, ModalMixin, DeleteView):
 delete_feed_view = DeleteFeedView.as_view()
 
 
-class UpdateFeedView(LoginRequiredMixin, ModalMixin, RedirectView):
+@login_required
+def update_stream_view(request, name):
+    if request.is_ajax():
+        stream_name = name
+        update_stream.delay(request.user.pk, stream_name=stream_name)
+        data = {'message': 'Stream update launched.'}
+        return JsonResponse(data)
+    else:
+        redirect('feeds:stream')
 
-    pattern_name = 'feeds:feed'
-    permanent = False
 
-    def get_redirect_url(self, *args, **kwargs):
-        # Check if userfeed pk matched db and current logged user
-        feed_name = kwargs.get('name', '')
-        # update feed async
-        async_update_feed.delay(self.request.user.pk, feed_name=feed_name)
-        return super(UpdateFeedView, self).get_redirect_url(*args, **kwargs)
-
-update_feed_view = UpdateFeedView.as_view()
+@login_required
+def update_trend_view(request, name):
+    if request.is_ajax():
+        trend_name = name
+        update_trend.delay(request.user.pk, trend_name=trend_name)
+        data = {'message': 'Trend update launched.'}
+        return JsonResponse(data)
+    else:
+        redirect('feeds:stream')
 
 
 @login_required

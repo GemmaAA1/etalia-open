@@ -11,7 +11,7 @@ from paperstream.altmetric.models import AltmetricModel
 
 def home(request):
     if request.user.is_authenticated():
-        return redirect('feeds:main')
+        return redirect('feeds:stream')
     else:
         # Get some trending altmetric matches
         d = timezone.datetime.now().date() - \

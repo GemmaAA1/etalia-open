@@ -18,7 +18,7 @@ $(document).ready(function() {
             $(this).prop('checked', false);
         });
         $(this).parents().siblings('input').prop('checked', true);
-        send_filter('only', undefined);
+        send_filter('none', undefined);
         event.stopPropagation();
     });
 
@@ -27,7 +27,7 @@ $(document).ready(function() {
             $(this).prop('checked', false);
         });
         $(this).parents().siblings('input').prop('checked', true);
-        send_filter(undefined, 'only');
+        send_filter(undefined, 'none');
         event.stopPropagation();
     });
 
@@ -38,11 +38,25 @@ $(document).ready(function() {
         send_filter('all', undefined);
     });
 
+    $('.journals .none').on('click', function () {
+        $(this).closest('.side-panel-section').find('input').each(function () {
+            $(this).prop('checked', false);
+        });
+        send_filter('none', undefined);
+    });
+
     $('.authors .all').on('click', function () {
         $(this).closest('.side-panel-section').find('input').each(function () {
             $(this).prop('checked', true);
         });
         send_filter(undefined, 'all');
+    });
+
+    $('.authors .none').on('click', function () {
+        $(this).closest('.side-panel-section').find('input').each(function () {
+            $(this).prop('checked', false);
+        });
+        send_filter(undefined, 'none');
     });
 
     $('.journal, .author')

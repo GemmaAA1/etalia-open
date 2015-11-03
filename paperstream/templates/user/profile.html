@@ -16,12 +16,13 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="col-md-3">
-                <div class="avatar">
-{#                    <img src="{{ object.avatar_set.first.get_absolute_url }}" width="120" height="120">#}
-                    {% avatar user 120 %}
-                </div>
-                <div class="change-avatar text-center">
-                    <a href="{% url 'user:avatar_change' %}">Edit this photo</a>
+                <div id="avatar-section">
+                    <div class="avatar">
+                        {% avatar user 120 %}
+                    </div>
+                    <div class="change-avatar text-center">
+                        <a class="edit" href="{% url 'user:avatar_change' %}">Edit this photo</a>
+                    </div>
                 </div>
             </div>
             <div class="col-md-9">
@@ -46,7 +47,6 @@
                             <div class="empty">Add your title</div>
                         </span>
                         <a class="edit" href="javascript:" data-toggle="modal" data-target="#title-modal">edit</a>
-
                     </h5>
                 </div>
                 <div id="position-section">

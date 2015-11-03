@@ -8,29 +8,48 @@
     <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
 {% endblock css %}
 
+{% block title %} PubStream | Profile {% endblock %}
+
+
 {% block content %}
 <div class="container profile">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
-            <p>Your current photo: </p>
-            {% avatar user %}
-            {% if not avatars %}
-                <p>You haven't uploaded a photo yet. Please upload one now.</p>
-{#            {% else %}#}
-{#                <form method="POST" action="{% url 'user:avatar_change' %}">#}
-{#                    <ul>#}
-{#                        {{ primary_avatar_form.as_ul }}#}
-{#                    </ul>#}
-{#                    <p>{% csrf_token %}<input type="submit" value="Choose new Default" /></p>#}
-{#                </form>#}
-            {% endif %}
-            <form enctype="multipart/form-data" method="POST" action="{% url 'user:avatar_add' %}">
-                {{ upload_avatar_form.as_p }}
-                <p>{% csrf_token %}
-                    <input type="submit" value="Upload New Image" />
-                </p>
-            </form>
+            <div class="col-md-3">
+                <div class="avatar">
+                    {% avatar user 120 %}
+                </div>
+                <div class="change-avatar text-center">
+                    Your current photo
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="avatar-upload-form">
+                    <h4>Edit your photo</h4>
+                    <form enctype="multipart/form-data" method="POST" action="{% url 'user:avatar_add' %}">
+                        {% csrf_token %}
+                        <div class="btn-file-section">
+                            <div class="btn btn-default btn-file">
+                                Browse <input name="{{ upload_avatar_form.avatar.name }}" type="file">
+                            </div>
+                            <span id="file-name"></span>
+                        </div>
+                        <button id="upload-file" type="submit" class="btn btn-primary btn-md">Upload File</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+    <hr class="divider">
+
+    {% include 'user/profile_modal.html' %}
+
 </div>
-{% endblock %}
+
+
+{% endblock content %}
+
+{% block js %}
+    {{ block.super }}
+     <script type="text/javascript" src="{% static 'js/user.js' %}"></script>
+{% endblock js %}

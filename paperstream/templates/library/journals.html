@@ -34,7 +34,7 @@
                             <tr id="journal{{ forloop.counter }}" class="clickable-row" data-href="{% url 'library:journal' journal.pk %}">
                                 <td id="journal_title">{{ journal.title }}</td>
                                 <td id="journal_issn">{% if journal.id_issn %} {{ journal.id_issn }} {% else %} {{ journal.id_oth }} {% endif %}</td>
-                                <td id="journal_lib_size">{{ journal.paper_set.count }}</td>
+                                <td id="journal_lib_size">{{ journal.count_papers_trusted }}</td>
                             </tr>
                         {% endfor %}
                     </table>

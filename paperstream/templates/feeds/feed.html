@@ -16,7 +16,6 @@
 {% endblock title %}
 
 {% block content %}
-
     <div class="container">
         <div class="feed">
             <div class="row">
@@ -32,7 +31,7 @@
                                 <div class="col-md-7">
                                     <div class="header-text">
                                         <h3>Recommended</h3>
-                                        <h5><em>Recommended publications out of {{ stats.nb_papers_last_month }} articles published last {{ time_lapse|lower }}</em></h5>
+                                        <h5><em>Out of {{ stats.nb_papers_last_month }} articles published last {{ time_lapse|lower }}</em></h5>
                                     </div>
                                 </div>
                                 <div class="col-md-4 text-right">

@@ -142,13 +142,9 @@ class BackendLibMixin(object):
         # Set Taste for paper to like if new unless it has been already
         # like/dislike previously (not new_ut)
         if new:
-            context = {'context_source': 'library',
-                       'context_model': None,
-                       'context_scoring_method': None,
-                       'context_time_lapse': None}
             ut, new_ut = UserTaste.objects.get_or_create(paper=paper,
                                                          user=user,
-                                                         **context)
+                                                         context_source='library')
             if new_ut:
                 ut.is_liked = True
                 ut.is_ticked = True

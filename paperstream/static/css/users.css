@@ -30,6 +30,19 @@
     text-align:center;
 }
 
+.signup-forms input {
+    border: 0;
+    background-color: transparent;
+    border-bottom: 1px solid #000000;
+    box-shadow: none;
+    outline: none;
+}
+
+.signup-forms input:focus {
+    box-shadow: none;
+    outline: none;
+}
+
 .profile {
     padding-top: 100px;
     padding-bottom: 100px;
@@ -48,6 +61,36 @@
     margin: auto;
     border-radius: 50%;
 }
+
+.profile .avatar-upload-form label{
+    display: none;
+}
+
+.profile .btn-file {
+
+    position: relative;
+    overflow: hidden;
+}
+.profile .btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+.profile .btn-file-section {
+    padding-bottom: 10px;
+}
+
 .profile .title {
     display: inline-block;
     font-size: 20px;

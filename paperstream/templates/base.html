@@ -43,48 +43,50 @@
     </head>
 
     <body>
-
-    <!-- Navigation -->
-    {% block navbar %}
-        {% if user.is_authenticated %}
-            {% include "nav_bar.html" %}
-        {% else %}
-            {% include "nav_bar_anonymous.html" %}
-        {% endif %}
-    {% endblock navbar %}
-
-
-    <!-- passing message -->
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li id="message_{{ forloop.counter }}" {% if message.tags %}
-                        class="{{ message.tags }}" {% endif %}>
-                    {{ message }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-
-    <!-- body -->
-    {% block content %}
-    {% endblock content %}
-
-    <!-- modals -->
-    {% block modal %}
-        {% if user.is_authenticated %}
-            {% if user.init_step != 'IDL' %}
-                {% include "user/init_modal.html" %}
+    <div id="wrapper">
+        <!-- Navigation -->
+        {% block navbar %}
+            {% if user.is_authenticated %}
+                {% include "nav_bar.html" %}
+            {% else %}
+                {% include "nav_bar_anonymous.html" %}
             {% endif %}
+        {% endblock navbar %}
+
+
+        <!-- passing message -->
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li id="message_{{ forloop.counter }}" {% if message.tags %}
+                            class="{{ message.tags }}" {% endif %}>
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
-    {% endblock modal %}
 
 
-    <!-- Footer -->
-    {% block footer %}
-        {% include "footer.html" %}
-    {% endblock footer %}
+        <!-- body -->
+        {% block content %}
+        {% endblock content %}
+
+        <!-- modals -->
+        {% block modal %}
+            {% if user.is_authenticated %}
+                {% if user.init_step != 'IDL' %}
+                    {% include "user/init_modal.html" %}
+                {% endif %}
+            {% endif %}
+        {% endblock modal %}
+
+
+        <!-- Footer -->
+        {% block footer %}
+            {% include "footer.html" %}
+        {% endblock footer %}
+
+    </div>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

@@ -218,7 +218,7 @@ class Stream(TimeStampedModel):
         # build target matches list
         target_pks = list(ufp_pks_to_update) + \
                      [pk for pk in target_seed_pks
-                      if pk not in lib_pks + ufp_pks_to_update]
+                      if pk not in list(lib_pks) + list(ufp_pks_to_update)]
 
         # compute scores
         objs_list = []
@@ -346,7 +346,7 @@ class StreamVector(TimeStampedModel):
 class Trend(TimeStampedModel):
     """Trend feed retrieving trending papers in a broaden neighborhood"""
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='trend')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='trends')
 
     name = models.CharField(max_length=100, default='main')
 
@@ -368,7 +368,7 @@ class Trend(TimeStampedModel):
 
     def clear(self):
         """Remove all paper relations"""
-        TrendMatches.objects.filter(trend_feed=self).all().delete()
+        TrendMatches.objects.filter(trend=self).all().delete()
 
     def update(self):
 
@@ -413,7 +413,7 @@ class Trend(TimeStampedModel):
         obj_list = []
         for p in data_altm:
             obj_list.append(TrendMatches(
-                        trend_feed=self,
+                        trend=self,
                         paper_id=p['paper__pk'],
                         score=p['score']))
         TrendMatches.objects.bulk_create(obj_list)
@@ -421,12 +421,12 @@ class Trend(TimeStampedModel):
 
 class TrendMatches(TimeStampedModel):
 
-    trend_feed = models.ForeignKey(Trend)
+    trend = models.ForeignKey(Trend)
 
     paper = models.ForeignKey(Paper)
 
     score = models.FloatField(default=0.0)
 
     class Meta:
-        unique_together = [('trend_feed', 'paper'), ]
+        unique_together = [('trend', 'paper'), ]
 
