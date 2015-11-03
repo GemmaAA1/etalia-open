@@ -18,16 +18,59 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="about">
-                <h2>Common Questions</h2>
-                    <p class="lead">
-                        Q: <br>
-                        A: <br>
-
-                    </p>
-                    More questions? Drop us a line
-                </h2>
+                <h2>PubStream Support</h2>
+                <p class="lead">
+                    You’ve got a question, problem or just want some more information?<br>
+                    Have a peek below at our knowledge base.
+                </p>
+                <h2>Frequently Asked Questions</h2>
+                <div class="text-left">
+                <h3 class="question">How do PubStream works?</h3>
+                <p class="lead response">
+                    <span class="pub">Pub</span><span class="stream">Stream</span>
+                    checks what you are reading in your Reference Library.
+                    <span class="pub">Pub</span><span class="stream">Stream</span>
+                    leverages the content of your library using recent advances
+                    in natural language processing, machine learning, and statistics
+                    to understand your interests. <span class="pub">Pub</span><span class="stream">Stream</span>
+                    builds news streams that
+                    match your personal interests based on your library text content.
+                    Reading a new paper or extending your research interests?
+                    <span class="pub">Pub</span><span class="stream">Stream</span>
+                    will automatically adapt.
+                </p>
+                <h3 class="question">How can I use PubStream?</h3>
+                <p class="lead response">
+                To use PubStream you need access to the internet and an account with a reference
+                library (e.g. Mendelay or Zotero).  Use your reference library credentials to sign in to PubStream
+                    and start browsing your personal stream of recommended publications.
+                </p>
+                <h3 class="question">What makes PubStream and Google Scholar?</h3>
+                <p class="lead response">
+                    PubStream recommends publications based on the content of your reference
+                    library unlike Google Scholar, which makes suggestions based on your publication
+                    and citation records only.
+                </p>
+                <h3 class="question">How often are recommendations updated?</h3>
+                <p class="lead response">
+                    PubStream updates recommendations daily.
+                    You can also subscribe to receive weekly notifications via email.
+                </p>
+                <h3 class="question">Which publications sources are fetched by PubStream?</h3>
+                <p class="lead response">
+                    Currently, PubStream fetches publications available on
+                    <a href="http://www.ncbi.nlm.nih.gov/pubmed">MedLine</a>, the <a href="http://http://arxiv.org/">
+                    Arxiv.org</a> and articles published in <a href="https://www.elsevier.com/journals/title/all">Elsevier journals</a>.
+                </p>
+                </div>
             </div>
         </div>
     </div>
     </div>
 {% endblock %}
+
+
+{% block js %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'js/core.js' %}"></script>
+{% endblock js %}

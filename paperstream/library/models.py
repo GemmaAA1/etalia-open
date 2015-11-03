@@ -75,6 +75,9 @@ class Journal(TimeStampedModel):
     # is flag
     is_trusted = models.BooleanField(default=False)
 
+    # number of papers in journal
+    lib_size = models.IntegerField(default=0)
+
     class Meta:
         ordering = ['title']
 
@@ -87,7 +90,9 @@ class Journal(TimeStampedModel):
                                'slug': slugify(self.title)})
 
     def count_papers(self):
-        return self.paper_set.count()
+        self.lib_size = self.paper_set.count()
+        self.save()
+        return self.lib_size
 
     def count_papers_trusted(self):
         return self.paper_set.filter(is_trusted=True).count()
