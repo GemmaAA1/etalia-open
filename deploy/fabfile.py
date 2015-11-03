@@ -278,6 +278,7 @@ def update_and_require_libraries():
                                    'python-pip',
                                    'libpq-dev',
                                    'supervisor',
+                                   'libjpeg-dev',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper'], use_sudo=True)
