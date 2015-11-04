@@ -322,3 +322,12 @@
     -webkit-transform: scale(1.0);
   }
 }
+
+.dropdown-menu {
+    border: 0;
+    background-color: #fcfcfc;
+}
+
+.navbar-nav>li>.dropdown-menu {
+    margin-top: 2px;
+}

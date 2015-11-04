@@ -12,6 +12,7 @@ html {
 }
 
 body {
+    position: relative;
     font-weight: 400;
 }
 h1,

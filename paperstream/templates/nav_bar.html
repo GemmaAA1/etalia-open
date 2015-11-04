@@ -3,6 +3,11 @@
 
 {% load navbar_extra %}
 
+{% block css %}
+    {{ super.block }}
+    <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
+{% endblock css %}
+
 {% block navbar %}
 <!-- Navigation -->
 
@@ -59,8 +64,9 @@
                     <ul class="dropdown-menu">
                         <li class=""><a href="{% url 'user:profile' %}">Profile</a></li>
                         <li class=""><a href="{% url 'user:settings' %}">Settings</a></li>
-                        <li class="divider"></li>
                         <li><a href="{% url 'core:help' %}">Help</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#" data-toggle="modal" data-target="#invite-modal">Invite to PubStream</a></li>
                         <li class="divider"></li>
                         <li><a href="{% url 'user:logout' %}">Logout</a></li>
                     </ul>
@@ -69,6 +75,8 @@
         </div>
     </div>
 </nav>
+
+{% include 'user/invite_modal.html' %}
 
 {% endblock %}
 

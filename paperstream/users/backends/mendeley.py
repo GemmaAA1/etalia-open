@@ -182,7 +182,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         mend_doc_type = dict([(doctype[1], doctype[0]) for doctype in MENDELEY_PT])
         if paper.type:
-            type_ = mend_doc_type[paper.type]
+            type_ = mend_doc_type.get(paper.type, 'journal')  # 'PRE' (pre-print is unknow type for mendeley)
         else:
             type_ = 'journal'
 

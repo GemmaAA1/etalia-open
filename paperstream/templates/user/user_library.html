@@ -46,7 +46,7 @@
                                 <div {% if tab == 'library' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library' %}">
                                         <div class="side-panel-title library-icon">
-                                            My Library ({{ library_counter }})
+                                            My Library (<span id="library_counter">{{ library_counter }}</span>)
                                         </div>
                                     </a>
                                 </div>
@@ -54,7 +54,7 @@
                                 <div {% if tab == 'likes' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library-likes' %}">
                                         <div class="side-panel-title like-icon">
-                                            My Likes ({{ likes_counter }})
+                                            My Likes (<span id="likes_counter">{{ likes_counter }}</span>)
                                         </div>
                                     </a>
                                 </div>
@@ -62,7 +62,7 @@
                                 <div {% if tab == 'trash' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library-trash' %}">
                                         <div class="side-panel-title trash-icon">
-                                            Trash ({{ trash_counter }})
+                                            Trash (<span id="trash_counter">{{ trash_counter }}</span>)
                                         </div>
                                     </a>
                                 </div>

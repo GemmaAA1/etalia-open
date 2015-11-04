@@ -50,10 +50,12 @@ function bind_all() {
             event.stopPropagation();
         });
 
-    // Short are liked paper that stay "active" for stream and trend but not user library
+    // Short are liked paper that stay "active"
     $('.short').closest('.paper-list')
         .off('mouseleave')
-        .off('mouseenter')
+        .off('mouseenter');
+
+    $('.feed .short, .trend .short')
         .find('.stamps')
         .show();
 
@@ -68,6 +70,9 @@ function bind_all() {
 
     // Send trash paper from user library ajax call
     $('.trash').on('click', trash_paper);
+
+    // Send trash paper from user library ajax call
+    $('.restore').on('click', restore_paper);
 
     // tweet
     $('.tweet').on('click', share_tweet);
@@ -215,6 +220,8 @@ function like (event) {
                             .on('mouseleave', stamps_mouseleave)
                             .on('mouseenter', stamps_mouseenter);
                     }
+                } else {
+                    $('#' + key).html(value);
                 }
             });
         }
@@ -281,12 +288,43 @@ function trash_paper () {
                             $trash.on('click', add_to_lib)
                                 .off('click', trash_paper);
                         }
-
-                    } else {}
+                    }
                 } else if (key == 'message') {
                     if (value) {
                         console.log(value);
                     }
+                } else {
+                    $('#' + key).html(value);
+                }
+            });
+        }
+    });
+}
+
+function restore_paper () {
+    var $restore = $(this);
+    $restore.removeClass('restore')
+        .addClass('loading');
+    var id = $(this).parents('.paper-list').attr('id');
+    var url = '/user/paper/restore';
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {pk: id},
+        success: function (json) {
+            $.each(json, function (key, value) {
+                if (key == 'success') {
+                    if (value) {
+                        if(window.location.href.indexOf("library") > -1) {
+                            $restore.parents('.paper-list').slideUp(250);
+                        }
+                    }
+                } else if (key == 'message') {
+                    if (value) {
+                        console.log(value);
+                    }
+                } else {
+                    $('#' + key).html(value);
                 }
             });
         }

@@ -50,7 +50,8 @@
     {#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
     {#                        </li>#}
                             <li>
-                                <a  class="email" href="javascript:void(0)">Email</a>
+                                <a  class="email" href="mailto:?subject=&body={{ dfp.paper.title }}%0D%0A
+                                 {{ dfp.paper.print_compact_first_author }}%20|%20{{ dfp.paper.journal.title }}%20|%20{{ dfp.paper.print_date }}%20|%20{{ dfp.paper.url }}">Email</a>
                             </li>
                             <li>
                                 <a class="tweet" href="javascript:void(0)">Tweet</a>
@@ -73,9 +74,6 @@
                     <li>
                         <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0) text="Remove from stream"></a>
                     </li>
-    {#                <li>#}
-    {#                    <a class="more" href="javascript:void(0)"></a>#}
-    {#                </li>#}
                 </ul>
             </div>
         </div>

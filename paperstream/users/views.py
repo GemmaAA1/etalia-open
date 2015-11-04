@@ -7,6 +7,7 @@ from functools import reduce
 import logging
 from collections import Counter
 
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -19,6 +20,9 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models.functions import Coalesce
+from django.template.loader import render_to_string, get_template
+from django.core.mail import EmailMessage
+from django.template import Context
 
 from braces.views import LoginRequiredMixin
 
@@ -309,16 +313,18 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         # Trash counter
         context['trash_counter'] = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib,
-                    is_trashed=True).count()
+            .filter(userlib=self.request.user.lib, is_trashed=True)\
+            .count()
 
         # Like counter
         context['likes_counter'] = UserTaste.objects\
-            .filter(user=self.request.user,
-                    is_liked=True).count()
+            .filter(user=self.request.user, is_liked=True)\
+            .count()
 
         # library counter
-        context['library_counter'] = self.request.user.lib.papers.count()
+        context['library_counter'] = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib, is_trashed=False)\
+            .count()
 
         # library tab
         context['tab'] = 'library'
@@ -424,7 +430,8 @@ class UserLibraryTrashView(UserLibraryView):
 
     def get_queryset(self):
         query_set = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib, is_trashed=True)
+            .filter(userlib=self.request.user.lib,
+                    is_trashed=True)
         return self.filter_queryset(query_set)
 
     def get_context_data(self, **kwargs):
@@ -432,7 +439,6 @@ class UserLibraryTrashView(UserLibraryView):
         # library tab
         context['tab'] = 'trash'
         return context
-
 
 library_trash = UserLibraryTrashView.as_view()
 
@@ -442,7 +448,8 @@ class UserLibraryLikesView(UserLibraryView):
     def get_queryset(self):
 
         query_set = UserTaste.objects\
-            .filter(user=self.request.user, is_liked=True)
+            .filter(user=self.request.user,
+                    is_liked=True)
 
         return self.filter_queryset(query_set)
 
@@ -661,15 +668,18 @@ def like_call(request):
             context_source = source
         ut, _ = UserTaste.objects.get_or_create(
             paper=paper_,
-            user=request.user,
-            context_source=context_source)
+            user=request.user)
         if ut.is_liked:
             ut.is_liked = False
         else:
             ut.is_liked = True
+        ut.context_source = context_source
         ut.save()
         data = {'is_liked': ut.is_liked,
-                'is_ticked': ut.is_ticked}
+                'is_ticked': ut.is_ticked,
+                'likes_counter': UserTaste.objects
+                    .filter(user=request.user, is_liked=True)
+                    .count()}
         return JsonResponse(data)
     else:
         return redirect('feeds:main')
@@ -699,7 +709,10 @@ def tick_call(request):
             ut.is_ticked = True
         ut.save()
         data = {'is_liked': ut.is_liked,
-                'is_ticked': ut.is_ticked}
+                'is_ticked': ut.is_ticked,
+                'likes_counter': UserTaste.objects
+                    .filter(user=request.user, is_liked=True)
+                    .count()}
         return JsonResponse(data)
     else:
         return redirect('feeds:main')
@@ -735,6 +748,15 @@ def add_call(request):
                                 paper_provider_id)
             backend.associate_journal(paper.journal, user)
             data = {'success': True,
+                    'trash_counter':  UserLibPaper.objects\
+                        .filter(userlib=request.user.lib, is_trashed=True)\
+                        .count(),
+                    'library_counter': UserLibPaper.objects\
+                        .filter(userlib=request.user.lib, is_trashed=False)\
+                        .count(),
+                    'likes_counter': UserTaste.objects\
+                        .filter(user=request.user, is_liked=True)\
+                        .count(),
                     'message': ''}
         else:
             data = {'success': False,
@@ -768,7 +790,23 @@ def trash_call(request):
             # remove paper locally from user library
             ulp.is_trashed = True
             ulp.save(update_fields=['is_trashed'])
+            # remove from UserTaste
+            ut, _ = UserTaste.objects.get_or_create(user=request.user,
+                                                    paper_id=pk)
+            ut.is_liked = False
+            ut.is_ticked = True
+            ut.save()
+            # build json data
             data = {'success': True,
+                    'trash_counter':  UserLibPaper.objects\
+                        .filter(userlib=request.user.lib, is_trashed=True)\
+                        .count(),
+                    'library_counter': UserLibPaper.objects\
+                        .filter(userlib=request.user.lib, is_trashed=False)\
+                        .count(),
+                    'likes_counter': UserTaste.objects\
+                        .filter(user=request.user, is_liked=True)\
+                        .count(),
                     'message': ''}
         else:
             data = {'success': False,
@@ -777,3 +815,75 @@ def trash_call(request):
                 pk=pk,
                 pk_user=user.pk))
         return JsonResponse(data)
+
+@login_required
+def restore_call(request):
+    """Restore paper from trash"""
+    if request.method == 'POST':
+        pk = int(request.POST.get('pk'))
+        user = request.user
+        provider_name = user.social_auth.first().provider
+
+        # get social
+        social = user.social_auth.get(provider=provider_name)
+
+        # get backend
+        backend = social.get_backend_instance()
+
+        # build session
+        session = backend.get_session(social, user)
+
+        # Get paper
+        paper = Paper.objects.get(pk=pk)
+
+        # push paper to lib
+        err, paper_provider_id = backend.add_paper(session, paper)
+
+        # return JSON data
+        if not err:
+            # restore paper locally from user library
+            ulp = user.lib.userlib_paper.get(paper_id=pk)
+            ulp.is_trashed = False
+            ulp.save(update_fields=['is_trashed'])
+            # restore to UserTaste
+            ut, _ = UserTaste.objects.get_or_create(user=request.user,
+                                                    paper_id=pk)
+            ut.is_liked = True
+            ut.is_ticked = False
+            ut.save()
+            data = {'success': True,
+                    'trash_counter':  UserLibPaper.objects\
+                        .filter(userlib=request.user.lib, is_trashed=True)\
+                        .count(),
+                    'library_counter': UserLibPaper.objects\
+                        .filter(userlib=request.user.lib, is_trashed=False)\
+                        .count(),
+                    'likes_counter': UserTaste.objects\
+                        .filter(user=request.user, is_liked=True)\
+                        .count(),
+                    'message': ''}
+        else:
+            data = {'success': False,
+                    'message': 'Cannot add this paper to your library. Something went wrong'}
+        return JsonResponse(data)
+
+
+@login_required
+def send_invite(request):
+    if request.POST:
+        email_to = request.POST.get('email')
+
+        subject = 'An invitation to try PubStream'
+        to = [email_to]
+        from_email = request.user.email
+        ctx = {}
+
+        message = get_template(settings.INVITE_EMAIL_TEMPLATE)\
+            .render(Context(ctx))
+        msg = EmailMessage(subject, message, to=to, from_email=from_email)
+        msg.content_subtype = 'html'
+        msg.send()
+
+        return JsonResponse(data={'success': True})
+    else:
+        redirect('invite:home')

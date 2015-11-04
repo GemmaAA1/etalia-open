@@ -96,19 +96,23 @@ function trash_paper (event) {
         url: url,
         data: {pk: id},
         success: function (json) {
+            $trash.removeClass('loading')
+                .addClass('add-to-library');
+            $trash.on('click', add_to_lib)
+                .off('click', trash_paper);
             $.each(json, function (key, value) {
-                if (key == 'success') {
-                    if (value) {
-                        $trash.removeClass('loading')
-                            .addClass('add-to-library');
-                        $trash.on('click', add_to_lib)
-                            .off('click', trash_paper);
-                    } else {}
-                } else if (key == 'message') {
-                    if (value) {
-                        console.log(value);
-                    }
-                }
+                console.log($('#' + key));
+                $('#' + key).html(value);
+                //if (key == 'success') {
+                //    if (value) {
+                //
+                //
+                //    } else {}
+                //} else if (key == 'message') {
+                //    if (value) {
+                //        console.log(value);
+                //    }
+                //}
             });
         }
     });

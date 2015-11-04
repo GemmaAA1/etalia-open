@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^signin/$', views.ajax_signin, name='signin'),
     url(r'^profile/$', views.profile, name='profile'),
     url(r'^settings/$', views.settings_view, name='settings'),
+    url(r'^send-invite$', views.send_invite, name='send-invite'),
     url(r'^avatar/', include('avatar.urls')),
     url(r'^library/$', views.library, name='library'),
     url(r'^library/trash/$', views.library_trash, name='library-trash'),
@@ -29,4 +30,5 @@ urlpatterns = [
     url(r'^paper/like$', views.like_call, name='like'),
     url(r'^paper/add$', views.add_call, name='add'),
     url(r'^paper/trash$', views.trash_call, name='trash'),
+    url(r'^paper/restore$', views.restore_call, name='restore'),
 ]

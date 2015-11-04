@@ -189,6 +189,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Pub stream is on invite mode only
 INVITE_MODE = False
 
+
+# EMAIL TEMPLATES
+# ------------------------------------------------------------------------------
+INVITE_EMAIL_TEMPLATE = 'user/emails/invite_template_email_process.html'
+
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
 AUTHENTICATION_BACKENDS = (

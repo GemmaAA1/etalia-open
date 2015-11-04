@@ -41,7 +41,9 @@
     {#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
     {#                        </li>#}
                         <li>
-                            <a  class="email" href="javascript:void(0)">Email</a>
+
+                            <a  class="email" href="mailto:?subject=&body={{ ulp.paper.title }}%0D%0A{{ ulp.paper.print_compact_first_author }}.%20{{ ulp.paper.journal.title }}.%20{{ ulp.paper.print_date }}%0D%0A{{ ulp.paper.url }}">Email</a>
+
                         </li>
                         <li>
                             <a class="tweet" href="javascript:void(0)">Tweet</a>
@@ -54,19 +56,19 @@
             </div>
             <span class="stamps">
                 <ul>
+
                     <li>
-                        <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank" text="Open in new window"></a>
+                        <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank" title="Open in new window"></a>
                     </li>
                     <li>
-                        <a class="like no-toggling {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
+                        {% if tab == 'library' %}
+                            <a class="trash no-toggling" href="javascript:void(0)" title="Move to trash"></a>
+                        {% elif tab == 'trash' %}
+                            <a class="restore no-toggling" href="javascript:void(0)" title="Restore"></a>
+                        {% elif tab == 'likes' %}
+                            <a class="like {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %} no-toggling" href="javascript:void(0)" title="Like"></a>
+                        {%  endif %}
                     </li>
-                    <li>
-                        <a class="trash no-toggling" href="javascript:void(0)" text="Move to trash"></a>
-    {#                    <a class="add-to-lib no-toggling" href="javascript:void(0)"></a>#}
-                    </li>
-    {#                <li>#}
-    {#                    <a class="more" href="javascript:void(0)"></a>#}
-    {#                </li>#}
                 </ul>
             </span>
         </div>

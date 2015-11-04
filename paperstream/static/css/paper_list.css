@@ -172,6 +172,9 @@
 .stamps li>a.trash::before {
     background-position-x: -380px;
 }
+.stamps li>a.restore::before {
+    background-position-x: -760px;
+}
 .stamps li>a.loading::before {
     background-position-x: -616px;
     pointer-events: none;
@@ -233,6 +236,10 @@
 }
 .stamps-ext>li>a.trash::before {
     background-position-x: -319px;
+}
+
+.stamps-ext>li>a.restore::before {
+    background-position-x: -500px;
 }
 
 .stamps-ext>li>a.comment::before {
