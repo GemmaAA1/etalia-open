@@ -185,8 +185,12 @@
     height: 40px;
     border-radius: 50%;
     margin: 5px 10px 5px 10px;
-    /*margin: auto;*/
-    /*position: relative;*/
+}
+
+.navbar-nav>li>div>a.avatar-icon img:hover{
+    -webkit-box-shadow: 0 0 1px 1px #bbbbbb;
+    -moz-box-shadow: 0 0 1px 1px #bbbbbb;
+    box-shadow: 0 0 1px 1px #bbbbbb;
 }
 
 /* Use in anonymous navbar*/

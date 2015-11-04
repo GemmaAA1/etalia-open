@@ -19,6 +19,21 @@
   <defs
      id="defs11457">
     <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker4814"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow2Sstart">
+      <path
+         transform="matrix(0.3,0,0,0.3,-0.69,0)"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         style="fill:#42c0f4;fill-opacity:0.99215686;fill-rule:evenodd;stroke:#42c0f4;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:0.99215686"
+         id="path4816"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
        inkscape:stockid="Arrow2Sstart"
        orient="auto"
        refY="0"
@@ -40,7 +55,8 @@
        refX="0"
        id="marker12086"
        style="overflow:visible"
-       inkscape:isstock="true">
+       inkscape:isstock="true"
+       inkscape:collect="always">
       <path
          inkscape:connector-curvature="0"
          id="path12088"
@@ -62,11 +78,11 @@
      inkscape:window-height="718"
      id="namedview11455"
      showgrid="false"
-     inkscape:zoom="0.56114994"
-     inkscape:cx="701.7682"
-     inkscape:cy="78.053842"
-     inkscape:window-x="106"
-     inkscape:window-y="60"
+     inkscape:zoom="1.5871717"
+     inkscape:cx="370.78947"
+     inkscape:cy="56.416149"
+     inkscape:window-x="126"
+     inkscape:window-y="103"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg11902"
      fit-margin-top="0"

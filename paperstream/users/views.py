@@ -842,15 +842,9 @@ def restore_call(request):
         # return JSON data
         if not err:
             # restore paper locally from user library
-            ulp = user.lib.userlib_paper.get(paper_id=pk)
-            ulp.is_trashed = False
-            ulp.save(update_fields=['is_trashed'])
-            # restore to UserTaste
-            ut, _ = UserTaste.objects.get_or_create(user=request.user,
-                                                    paper_id=pk)
-            ut.is_liked = True
-            ut.is_ticked = False
-            ut.save()
+            backend.associate_paper(paper, user, {'created': timezone.now().date()},
+                                    paper_provider_id)
+            backend.associate_journal(paper.journal, user)
             data = {'success': True,
                     'trash_counter':  UserLibPaper.objects\
                         .filter(userlib=request.user.lib, is_trashed=True)\
