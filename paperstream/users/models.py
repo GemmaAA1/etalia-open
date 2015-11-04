@@ -122,6 +122,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
 
+    is_alpha = models.BooleanField(_('alpha'), default=True,
+        help_text=_('Designates whether this user should be treated as '
+                    'an early adopter user.'))
+
     init_step = models.CharField(max_length=3, default='NON', choices=INIT_STEPS,
         help_text=_('Tag where init user stands'))
 
