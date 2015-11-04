@@ -43,9 +43,8 @@ from fabtools.utils import run_as_root
 import fabtools
 
 STACK = 'staging'
-SITE = 'main'
-STACK_SITE_MAPPING = {'staging': 'staging-stack.paperstream.io',
-                      'production': 'www.paperstream.io'}
+STACK_SITE_MAPPING = {'staging': 'alpha-u6VcayvtcI.pubstream.io',
+                      'production': 'www.pubstream.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'

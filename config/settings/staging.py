@@ -17,9 +17,9 @@ DATABASES = {
 }
 
 # S3 NLP buckets
-NLP_DATA_BUCKET_NAME = 'paperstream-staging-nlp-data'
-NLP_MODELS_BUCKET_NAME = 'paperstream-staging-nlp-models'
-NLP_MS_BUCKET_NAME = 'paperstream-staging-nlp-ms'
+NLP_DATA_BUCKET_NAME = 'pubstream-staging-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'pubstream-staging-nlp-models'
+NLP_MS_BUCKET_NAME = 'pubstream-staging-nlp-ms'
 
 # Static asset configuration
 ROOT_DIR_m1 = ROOT_DIR.path() - 1

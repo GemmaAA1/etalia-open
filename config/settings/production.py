@@ -16,9 +16,9 @@ DATABASES = {
     }
 }
 
-NLP_DATA_BUCKET_NAME = 'paperstream-production-nlp-data'
-NLP_MODELS_BUCKET_NAME = 'paperstream-production-nlp-models'
-NLP_MS_BUCKET_NAME = 'paperstream-production-nlp-ms'
+NLP_DATA_BUCKET_NAME = 'pubstream-production-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'pubstream-production-nlp-models'
+NLP_MS_BUCKET_NAME = 'pubstream-production-nlp-ms'
 
 INVITE_MODE = True
 
