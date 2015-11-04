@@ -392,8 +392,7 @@ class Trend(TimeStampedModel):
         res = ms_task.delay('knn_search',
                             seed=vec,
                             time_lapse=self.user.settings.trend_time_lapse,
-                            top_n=self.top_n_closest,
-                            clip_start_reverse=True)
+                            top_n=self.top_n_closest)
         target_seed_pks = res.get()
 
         # Get altmetric scores for target_seed_pks and top matches
@@ -404,8 +403,11 @@ class Trend(TimeStampedModel):
         nb_papers = int(settings.FEED_SIZE_PER_DAY * \
                         self.user.settings.trend_time_lapse)
         data_altm = AltmetricModel.objects\
+            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
+                                  "FROM library_paper "
+                                  "WHERE id = paper_id", []))\
             .filter(Q(paper_id__in=target_seed_pks) |
-                    (Q(paper__date_fs__gt=d) & Q(score__gt=self.score_threshold)))\
+                    (Q(date__gt=d) & Q(score__gt=self.score_threshold)))\
             .order_by('-score')\
             .values('paper__pk', 'score')[:nb_papers]
 

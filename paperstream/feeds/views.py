@@ -531,24 +531,24 @@ delete_feed_view = DeleteFeedView.as_view()
 
 @login_required
 def update_stream_view(request, name):
-    if request.is_ajax():
+    if request.is_ajax() or settings.DEBUG:
         stream_name = name
         update_stream.delay(request.user.pk, stream_name=stream_name)
         data = {'message': 'Stream update launched.'}
         return JsonResponse(data)
     else:
-        redirect('feeds:stream')
+        return redirect('feeds:stream')
 
 
 @login_required
 def update_trend_view(request, name):
-    if request.is_ajax():
+    if request.is_ajax() or settings.DEBUG:
         trend_name = name
         update_trend.delay(request.user.pk, trend_name=trend_name)
         data = {'message': 'Trend update launched.'}
         return JsonResponse(data)
     else:
-        redirect('feeds:stream')
+        return redirect('feeds:stream')
 
 
 @login_required

@@ -9,6 +9,7 @@ from django.db.models.query import QuerySet
 from django.conf import settings
 
 from .models import Model, MostSimilar
+from .constants import NLP_JOURNAL_RATIO_CHOICES
 
 
 class EmbedPaperTask(Task):
@@ -89,10 +90,12 @@ class MostSimilarTask(Task):
     @property
     def ms(self):
         if self._ms is None:
-            self._ms = MostSimilar.objects.load(model__name=self.model_name)
+            self._ms = MostSimilar.objects.load(model__name=self.model_name,
+                                                is_active=True)
             return self._ms
         # if MostSimilar has been modified and MostSimilar not uploading/downloading, reload
-        ms_now = MostSimilar.objects.get(model__name=self.model_name)
+        ms_now = MostSimilar.objects.get(model__name=self.model_name,
+                                         is_active=True)
         last_modified = ms_now.modified
         upload_state = ms_now.upload_state
         if upload_state == 'IDL' and not self._ms.modified == last_modified:
@@ -103,7 +106,8 @@ class MostSimilarTask(Task):
             for file in rm_files:
                 os.remove(file)
 
-            self._ms = MostSimilar.objects.load(model__name=self.model_name)
+            self._ms = MostSimilar.objects.load(model__name=self.model_name,
+                                                is_active=True)
         return self._ms
 
     def run(self, *args, **kwargs):

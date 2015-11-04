@@ -32,6 +32,7 @@ from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector, pad_neighbors
 from paperstream.library.models import Paper, Journal
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+from .constants import NLP_JOURNAL_RATIO_CHOICES
 
 
 logger = logging.getLogger(__name__)
@@ -801,14 +802,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     # data index to journal pk
     index2journalpk = []
     # journal ratio to weight vectors with
-    journal_ratio = models.FloatField(default=0.0, choices=(('0.0', '0 %'),
-                                                            ('0.1', '10 %'),
-                                                            ('0.15', '15 %'),
-                                                            ('0.20', '20 %'),
-                                                            ('0.25', '25 %'),
-                                                            ('0.30', '30 %')
-                                                            )
-                                      )
+    journal_ratio = models.FloatField(default=0.0,
+                                      choices=NLP_JOURNAL_RATIO_CHOICES)
     # make instance active (use when linking task)
     is_active = models.BooleanField(default=False)
 
@@ -819,15 +814,17 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
     @property
     def name(self):
-        return '{model_name}_{journal_ratio:.0f}perc'.format(
+        return '{model_name}-jr{journal_ratio:.0f}perc'.format(
             model_name=self.model.name,
-            journal_ratio=self.journal.ratio)
+            journal_ratio=self.journal_ratio*100)
 
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)
 
     def activate(self):
-        """Set model to active"""
+        """Set model to active. Only on model can be active at once"""
+        MostSimilar.objects.all()\
+            .update(is_active=False)
         self.is_active = True
         self.save_db_only()
 
@@ -895,45 +892,46 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # size of the model space used for truncation of vector
         vec_size = self.model.size
 
-        data = PaperVectors.objects\
-            .filter(model=self.model)\
-            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
-            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
-                                  "FROM library_paper "
-                                  "WHERE id = paper_id", []))\
-            .values('pk', 'paper__pk', 'vector', 'paper__journal__pk')\
-            .order_by('date')
+        a_year_ago = (timezone.now() - timezone.timedelta(days=365)).date()
+
+        data = list(PaperVectors.objects.raw(
+            "SELECT nlp_papervectors.id, "
+            "       nlp_papervectors.paper_id, "
+            "       vector, "
+            "       LEAST(date_ep, date_pp, date_fs) AS date,"
+            "       journal_id "
+            "        "
+            "FROM nlp_papervectors LEFT JOIN library_paper "
+            "ON nlp_papervectors.paper_id=library_paper.id "
+            "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+            "    AND model_id=%s"
+            "    AND is_trusted=TRUE "
+            "    AND abstract <> ''"
+            "ORDER BY date ASC", (a_year_ago, self.model.pk)))
 
         data_journal = dict(JournalVectors.objects\
             .filter(model=self.model)\
             .values_list('pk', 'vector'))
 
         # Reshape data
-        nb_items = data.count()
+        nb_items = len(data)
         self.date = []
         self.index2pk = []
         self.index2journalpk = []
         self.data = np.zeros((nb_items, vec_size))
-        for i, dat in enumerate(data[:nb_items]):
-            if dat['vector']:
-                self.date.append(dat['date'])
+        for i, dat in enumerate(data):
+            if dat.vector:
+                self.date.append(dat.date)
                 # store paper pk
-                self.index2pk.append(dat['paper__pk'])
+                self.index2pk.append(dat.paper_id)
                 # store journal pk
-                self.index2journalpk.append(dat['paper__journal__pk'])
+                self.index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
-                if data_journal[dat['paper__journal__pk']]:
-                    self.data[i, :] = (1 - self.journal_ratio) * dat['vector'][:vec_size] + \
-                        self.journal_ratio * data_journal[dat['paper__journal__pk']][:vec_size]
+                if data_journal.get(dat.journal_id):
+                    self.data[i, :] = (1 - self.journal_ratio) * dat.vector[:vec_size] + \
+                        self.journal_ratio * data_journal[dat.journal_id][:vec_size]
                 else:
-                    self.data[i, :] = dat['vector'][:vec_size]
-
-        # order by date
-        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
-        self.date = [self.date[i] for i in idx]
-        self.index2pk = [self.index2pk[i] for i in idx]
-        self.index2journalpk = [self.index2journalpk[i] for i in idx]
-        self.data = self.data[idx, :]
+                    self.data[i, :] = dat.vector[:vec_size]
 
         # Store
         self.save()
@@ -941,6 +939,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def update(self):
         """Update data for knn search for new paper
         """
+
+        if not self.index2pk:
+            raise ValueError('Looks like you should run full_update instead')
 
         self.deactivate()
 
@@ -950,45 +951,54 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # size of the model space used for truncation of vector
         vec_size = self.model.size
 
-        data = PaperVectors.objects\
+        a_year_ago = (timezone.now() - timezone.timedelta(days=365)).date()
+
+        data = list(PaperVectors.objects.raw(
+            "SELECT nlp_papervectors.id, "
+            "       nlp_papervectors.paper_id, "
+            "       vector, "
+            "       LEAST(date_ep, date_pp, date_fs) AS date,"
+            "       journal_id "
+            "        "
+            "FROM nlp_papervectors LEFT JOIN library_paper "
+            "ON nlp_papervectors.paper_id=library_paper.id "
+            "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+            "    AND model_id=%s"
+            "    AND is_trusted=TRUE "
+            "    AND abstract <> ''"
+            "    AND nlp_papervectors.paper_id NOT IN %s"
+            "ORDER BY date ASC", (a_year_ago, self.model.pk, tuple(self.index2pk))))
+
+        data_journal = dict(JournalVectors.objects\
             .filter(model=self.model)\
-            .exclude(paper_id__in=self.index2pk)\
-            .exclude(Q(paper__is_trusted=False) | Q(paper__abstract=''))\
-            .values('pk', 'paper__pk', 'vector', 'paper__journal__pk')\
-            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
-                                  "FROM library_paper "
-                                  "WHERE id = paper_id", []))\
-            .order_by('date')
+            .values_list('pk', 'vector'))
 
         # Reshape data
-        nb_items = data.count()
+        nb_items = len(data)
         date = []
         index2pk = []
         index2journalpk = []
         data = np.zeros((nb_items, vec_size))
-        for i, dat in enumerate(data[:nb_items]):
-            if dat['vector']:
+        for i, dat in enumerate(data):
+            if dat.vector:
                 # get min date
-                date.append(dat['date'])
+                date.append(dat.date)
                 # store paper pk
-                index2pk.append(dat['paper__pk'])
+                index2pk.append(dat.paper_id)
                 # store journal pk
-                index2journalpk.append(dat['paper__journal__pk'])
+                index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
-                data[i, :] = dat['vector'][:vec_size]
+                if data_journal.get(dat.journal_id):
+                    data[i, :] = (1 - self.journal_ratio) * dat.vector[:vec_size] + \
+                        self.journal_ratio * data_journal[dat.journal_id][:vec_size]
+                else:
+                    data[i, :] = dat.vector[:vec_size]
 
         # concatenate
         self.date += date
         self.index2pk += index2pk
         self.index2journalpk += index2journalpk
         self.data = np.vstack((self.data, data))
-        # reorder
-        # argsort
-        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
-        self.date = [self.date[i] for i in idx]
-        self.index2pk = [self.index2pk[i] for i in idx]
-        self.index2journalpk = [self.index2journalpk[i] for i in idx]
-        self.data = self.data[idx, :]
 
         self.save()
 

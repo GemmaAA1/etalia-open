@@ -73,7 +73,8 @@ def register_mostsimilar_tasks(init=False):
         .filter(is_active=True)\
         .values_list('name', flat=True)
     for model_name in model_names:
-        cls = MostSimilarTask(model_name=model_name, init=init)
+        cls = MostSimilarTask(model_name=model_name,
+                              init=init)
         celery_app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
             model_name=model_name))
 

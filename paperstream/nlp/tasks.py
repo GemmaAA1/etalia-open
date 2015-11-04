@@ -9,7 +9,9 @@ from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
 
-# NB: tasks related to embeding of paper and mostsimilar are register in celery.py
+# PLEASE NOTE:
+# tasks related to embeding of paper and mostsimilar model are registered
+# in celery.py because they are host dependant
 
 @app.task()
 def mostsimilar_update_all():
