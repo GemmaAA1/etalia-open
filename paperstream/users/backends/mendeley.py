@@ -62,8 +62,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             out['tmp_affiliation']['state'] = first_aff_details.get('state', '')
             out['tmp_affiliation']['country'] = first_aff_details.get('country', '')
         try:
-            out['title'] = response.get('title')
-            out['position'] = response.get('academic_status')
+            out['title'] = response.get('title', '')
+            out['position'] = response.get('academic_status', '')
             out['photo'] = response.get('photo', '')['standard']
         except KeyError:
             out['photo'] = ''
