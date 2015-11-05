@@ -33,7 +33,15 @@ STATICFILES_DIRS = (
 #
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = 'key-9b74a707d80624254f6d538bc841c439'
-MAILGUN_SERVER_NAME = 'https://api.mailgun.net/v3/mg.pubstream.io'
+MAILGUN_SERVER_NAME = 'https://api.mailgun.net/v3/mg.pubstream.io/messages'
 
 # Invite mode switch
 INVITE_MODE = False
+
+#
+# curl -s --user 'api:key-9b74a707d80624254f6d538bc841c439' \
+# https://api.mailgun.net/v3/mg.pubstream.io/messages \
+#  -F from='Excited User <excited@samples.mailgun.org>' \
+#  -F to='nicolas.pannetier@gmail.com' \
+#  -F subject='Hello' \
+#  -F text='Testing some Mailgun awesomeness!'

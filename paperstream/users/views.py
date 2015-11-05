@@ -877,9 +877,9 @@ def send_invite(request):
 
         message = get_template(settings.INVITE_EMAIL_TEMPLATE)\
             .render(Context(ctx))
-        msg = EmailMessage(subject, message, to=to, from_email=from_email)
-        msg.content_subtype = 'html'
-        msg.send()
+        email = EmailMessage(subject, message, to=to, from_email=from_email)
+        email.content_subtype = 'html'
+        email.send()
 
         return JsonResponse(data={'success': True})
     else:
