@@ -695,7 +695,7 @@ class PaperNeighbors(TimeStampedModel):
 
     paper = models.ForeignKey(Paper, related_name='neighbors')
 
-    model = models.ForeignKey(Model)
+    ms = models.ForeignKey('MostSimilar')
 
     time_lapse = models.IntegerField(default=-1,
                                      choices=NLP_TIME_LAPSE_CHOICES,
@@ -707,8 +707,8 @@ class PaperNeighbors(TimeStampedModel):
                            null=True, blank=True)
 
     def __str__(self):
-        return '{model_name}/{time_lapse}'.format(
-            model_name=self.model.name,
+        return '{ms}/{time_lapse}'.format(
+            ms=self.ms.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):
@@ -719,7 +719,7 @@ class PaperNeighbors(TimeStampedModel):
         return self.neighbors[:self.model.size]
 
     class Meta:
-        unique_together = ('time_lapse', 'paper', 'model')
+        unique_together = ('time_lapse', 'paper', 'ms')
 
 
 class JournalNeighbors(TimeStampedModel):
@@ -727,7 +727,7 @@ class JournalNeighbors(TimeStampedModel):
 
     journal = models.ForeignKey(Journal, related_name='neighbors')
 
-    model = models.ForeignKey(Model)
+    ms = models.ForeignKey('MostSimilar')
 
     # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
@@ -735,8 +735,8 @@ class JournalNeighbors(TimeStampedModel):
                            null=True, blank=True)
 
     def __str__(self):
-        return '{model_name}/{time_lapse}'.format(
-            model_name=self.model.name,
+        return '{ms}/{time_lapse}'.format(
+            ms=self.ms.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):
@@ -747,7 +747,7 @@ class JournalNeighbors(TimeStampedModel):
         return self.neighbors[:self.model.size]
 
     class Meta:
-        unique_together = ('journal', 'model')
+        unique_together = ('journal', 'ms')
 
 
 class MostSimilarManager(models.Manager):
