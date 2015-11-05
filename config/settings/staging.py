@@ -33,7 +33,7 @@ STATICFILES_DIRS = (
 #
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = 'key-9b74a707d80624254f6d538bc841c439'
-MAILGUN_SERVER_NAME = 'https://api.mailgun.net/v3/mg.pubstream.io/messages'
+MAILGUN_SERVER_NAME = 'mg.pubstream.io'
 
 # Invite mode switch
 INVITE_MODE = False
