@@ -247,8 +247,7 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
             if d['journal__title'] and d['pk'] not in check_papers:  # rows are for different authors
                 j_titles.append(d['journal__title'])
                 check_papers.append(d['pk'])
-            if d['authors'].first_name or d['authors'].first_name:
-                authors.append(d['authors'])
+            authors.append(d['authors'])
 
         # journal filter
         journals_counter = Counter(j_titles)
@@ -274,9 +273,11 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
                             (pk, i) for i, pk in enumerate(authors_pks)])
         ordering = 'CASE %s END' % clauses
 
-        authors_ordered = Author.objects.filter(pk__in=authors_pks).extra(
-            select={'ordering': ordering},
-            order_by=('ordering',))[:self.size_max_author_filter]
+        authors_ordered = Author.objects\
+            .filter(pk__in=authors_pks)\
+            .exclude(Q(first_name='') & Q(last_name=''))\
+            .extra(select={'ordering': ordering},
+                   order_by=('ordering',))[:self.size_max_author_filter]
         # group authors by block identified with block tag
         block = 0
         context['authors'] = []
