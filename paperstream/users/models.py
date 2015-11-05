@@ -389,7 +389,7 @@ class UserSettings(TimeStampedModel):
                                         choices=STREAM_METHODS)
 
     # in days
-    stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
+    stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
                                             choices=NLP_TIME_LAPSE_CHOICES,
                                             verbose_name='Time range')
 
@@ -403,7 +403,7 @@ class UserSettings(TimeStampedModel):
                                        choices=TREND_METHODS)
 
     # in days
-    trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[1][0],
+    trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
                                            choices=NLP_TIME_LAPSE_CHOICES,
                                            verbose_name='In the past for')
 

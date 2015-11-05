@@ -64,6 +64,5 @@ def init_user(user_pk, provider_name):
         redirect_to_main.s()
     )
 
-    # task.delay()
     task()
     return user_pk
