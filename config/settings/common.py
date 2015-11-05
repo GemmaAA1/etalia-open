@@ -466,5 +466,4 @@ LOGGING = {
     }
 }
 
-#
-CACHES = {}
+# CACHES
