@@ -1009,7 +1009,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         neighbors_pks = self.get_knn(paper_pk, time_lapse=time_lapse,
                                      k=settings.NLP_MAX_KNN_NEIGHBORS)
 
-        pn, _ = PaperNeighbors.objects.get_or_create(model=self.model,
+        pn, _ = PaperNeighbors.objects.get_or_create(ms=self,
                                                      time_lapse=time_lapse,
                                                      paper_id=paper_pk)
         pn.set_neighbors(neighbors_pks)
