@@ -4,12 +4,11 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from django.contrib.auth import get_user_model
-from django.utils import timezone
+from django.shortcuts import redirect
 from celery.canvas import chain
 
 from config.celery import celery_app as app
 from paperstream.feeds.tasks import update_stream, update_trend
-from paperstream.library.models import Paper
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +46,10 @@ def init_step(user_pk, step):
     return user_pk
 
 
+@app.task()
+def redirect_to_main(user_pk):
+    return redirect('core:home')
+
 def init_user(user_pk, provider_name):
     """Task init user / Chain user library update, and feed initialization
     """
@@ -57,7 +60,8 @@ def init_user(user_pk, provider_name):
         update_stream.s('main'),
         init_step.s('TRE'),
         update_trend.s(),
-        init_step.s('IDL')
+        init_step.s('IDL'),
+        redirect_to_main.s()
     )
 
     # task.delay()
