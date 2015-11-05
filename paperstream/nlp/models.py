@@ -1092,7 +1092,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         mat = np.zeros((self.model.size, data.count()))
         for i, d in enumerate(data):
-            if d.get('paper__journal_id'):
+            if d.get('paper__journal_id') and data_journal.get(d['paper__journal_id']):
                 mat[:, i] = (1. - self.journal_ratio) * np.array(d['vector'][:self.model.size]) + \
                     self.journal_ratio * np.array(data_journal[d['paper__journal_id']][:self.model.size])
             else:

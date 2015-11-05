@@ -126,7 +126,7 @@ function share_tweet () {
         //console.log(text);
         var geturl = 'https://twitter.com/intent/tweet?text=' + encodeURI(text);
         //console.log(geturl);
-        event.preventDefault();
+        //event.preventDefault();
         window.open(geturl, 'Tweet', 'width=600,height=400');
     });
 }
