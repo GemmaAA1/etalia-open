@@ -7,7 +7,7 @@ from functools import reduce
 import logging
 from collections import Counter
 
-from django.core.mail import send_mail
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 
 from braces.views import LoginRequiredMixin
@@ -874,11 +875,12 @@ def send_invite(request):
         to = [email_to]
         from_email = request.user.email
         ctx = {}
-
-        message = get_template(settings.INVITE_EMAIL_TEMPLATE)\
+        text_content = ''
+        html_content = get_template(settings.INVITE_EMAIL_TEMPLATE)\
             .render(Context(ctx))
-        email = EmailMessage(subject, message, to=to, from_email=from_email)
-        email.content_subtype = 'html'
+        email = EmailMultiAlternatives(subject, text_content, to=to, from_email=from_email)
+        email.attach_alternative(html_content, "text/html")
+        # email.content_subtype = 'html'
         email.send()
 
         return JsonResponse(data={'success': True})
