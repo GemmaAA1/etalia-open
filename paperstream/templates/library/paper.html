@@ -92,13 +92,13 @@
                             {% endif %}
                         </ul>
                         <div class="neighbors">
-                            {% if neighbors %}
                             <div class="title">Similar Papers</div>
                             <span>
                                 <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
                                 <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
                                 <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
                             <span>
+                            {% if neighbors %}
                             <div class="neighbors-list">
                                 {% for neighbor in neighbors %}
                                 <a href="{% url 'library:paper' neighbor.pk %}">
@@ -119,6 +119,8 @@
                                 </a>
                                 {% endfor %}
                             </div>
+                            {% else %}
+                                <div class="neighbor">No publications found</div>
                             {% endif %}
                         </div>
                     </div>

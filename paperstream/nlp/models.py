@@ -1021,7 +1021,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             return 0
         else:
             cutoff_date = (timezone.now() - timezone.timedelta(days=time_lapse)).date()
-            return np.argmax(np.array(self.date) > cutoff_date)
+            if max(np.array(self.date) > cutoff_date): # at least one in True
+                return np.argmax(np.array(self.date) > cutoff_date)
+            else:
+                return len(self.date)
 
     def get_knn(self, paper_pk, time_lapse=-1, k=1):
 

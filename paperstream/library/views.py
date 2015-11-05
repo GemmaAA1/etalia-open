@@ -101,7 +101,7 @@ class PaperView(ModalMixin, DetailView):
         # Get stored neighbors matches
         try:
             neigh_data = paper_.neighbors.get(ms=ms, time_lapse=time_lapse)
-            if not neigh_data.neighbors:
+            if not neigh_data.neighbors or not max(neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
                 neigh_data.delete()
                 raise PaperNeighbors.DoesNotExist
             elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
@@ -120,11 +120,14 @@ class PaperView(ModalMixin, DetailView):
             except KeyError:
                 raise
 
-        neigh_pk = neighbors[:settings.NUMBER_OF_NEIGHBORS]
-        neigh_fetched_d = dict(
-            [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
-        context['neighbors'] = \
-            [neigh_fetched_d[key] for key in neigh_pk]
+        neigh_pk = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
+        if neigh_pk:
+            neigh_fetched_d = dict(
+                [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
+            context['neighbors'] = \
+                [neigh_fetched_d[key] for key in neigh_pk]
+        else:
+            context['neighbors'] = []
 
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         context['time_lapse'] = self.kwargs.get('time_lapse', 'year')
