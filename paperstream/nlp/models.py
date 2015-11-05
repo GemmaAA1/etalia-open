@@ -716,7 +716,7 @@ class PaperNeighbors(TimeStampedModel):
         self.save()
 
     def get_neighbors(self):
-        return self.neighbors[:self.model.size]
+        return self.neighbors[:self.ms.model.size]
 
     class Meta:
         unique_together = ('time_lapse', 'paper', 'ms')
@@ -744,7 +744,7 @@ class JournalNeighbors(TimeStampedModel):
         self.save()
 
     def get_neighbors(self):
-        return self.neighbors[:self.model.size]
+        return self.neighbors[:self.ms.model.size]
 
     class Meta:
         unique_together = ('journal', 'ms')

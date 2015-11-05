@@ -15,7 +15,7 @@ from django.db.models.expressions import RawSQL
 
 from config.celery import celery_app as app
 
-from paperstream.nlp.models import PaperNeighbors, Model
+from paperstream.nlp.models import PaperNeighbors, Model, MostSimilar
 from paperstream.core.mixins import ModalMixin
 from paperstream.users.models import UserTaste
 from .models import Journal, Paper
@@ -95,10 +95,12 @@ class PaperView(ModalMixin, DetailView):
             model = self.request.user.settings.stream_model
         else:
             model = Model.objects.first()
+        ms = MostSimilar.objects.filter(is_active=True,
+                                        model=model)
 
         # Get stored neighbors matches
         try:
-            neigh_data = paper_.neighbors.get(model=model, time_lapse=time_lapse)
+            neigh_data = paper_.neighbors.get(ms=ms, time_lapse=time_lapse)
             if not neigh_data.neighbors:
                 neigh_data.delete()
                 raise PaperNeighbors.DoesNotExist
