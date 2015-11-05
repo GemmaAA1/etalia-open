@@ -46,10 +46,6 @@ def init_step(user_pk, step):
     return user_pk
 
 
-@app.task()
-def redirect_to_main(user_pk):
-    return redirect('core:home')
-
 def init_user(user_pk, provider_name):
     """Task init user / Chain user library update, and feed initialization
     """
@@ -61,7 +57,6 @@ def init_user(user_pk, provider_name):
         init_step.s('TRE'),
         update_trend.s(),
         init_step.s('IDL'),
-        redirect_to_main.s()
     )
 
     task()

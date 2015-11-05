@@ -619,6 +619,7 @@ def user_init_step(request):
     if request.method == 'GET':
         messages = []
         done = False
+        redirect = ''
         if request.user.init_step == 'LIB':
             messages = ['Syncing your library with PubStream' ,
                         '({0})'.format(request.user.lib.count_papers)]
@@ -631,10 +632,12 @@ def user_init_step(request):
         elif request.user.init_step == 'IDL':
             done = True
             messages = ['Done', '']
+            redirect = reverse('feeds:stream')
 
         data = {'done': done,
                 'step': request.user.init_step,
-                'messages': messages}
+                'messages': messages,
+                'redirect': redirect}
 
         return JsonResponse(data)
 
