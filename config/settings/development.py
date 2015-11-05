@@ -34,9 +34,9 @@ STATICFILES_DIRS = (
 )
 
 # AWS S3 Buckets
-NLP_DATA_BUCKET_NAME = 'paperstream-development-nlp-data'
-NLP_MODELS_BUCKET_NAME = 'paperstream-development-nlp-models'
-NLP_MS_BUCKET_NAME = 'paperstream-development-nlp-ms'
+NLP_DATA_BUCKET_NAME = 'pubstream-development-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'pubstream-development-nlp-models'
+NLP_MS_BUCKET_NAME = 'pubstream-development-nlp-ms'
 AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
 
 INVITE_MODE = False

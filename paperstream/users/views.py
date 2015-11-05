@@ -874,7 +874,8 @@ def send_invite(request):
         subject = 'An invitation to try PubStream'
         to = [email_to]
         from_email = request.user.email
-        ctx = {'bucket_url': settings.EMAIL_STATIC_BUCKET}
+        ctx = {'bucket_url': settings.EMAIL_STATIC_BUCKET,
+               'root_url': request.META.get('HTTP_ORIGIN')}
         text_content = ''
         html_content = get_template(settings.INVITE_EMAIL_TEMPLATE)\
             .render(Context(ctx))
