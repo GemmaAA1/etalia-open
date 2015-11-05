@@ -102,9 +102,9 @@
                             <div class="neighbors-list">
                                 {% for neighbor in neighbors %}
                                 <a href="{% url 'library:paper' neighbor.pk %}">
-                                    <div class="neighbor">
-                                        {{ neighbor.title|truncatechars:40 }}<br>
-                                        <span class="authors">{{ neighbor.print_full_authors|truncatechars:40 }}</span><br>
+                                    <div class="neighbor" title="{{ neighbor.title}}">
+                                        {{ neighbor.title|truncatechars:80 }}<br>
+                                        <span class="authors">{{ neighbor.print_compact_first_authors|truncatechars:40 }}</span><br>
 
                                         {% with neighbor.print_journal_title|add:neighbor.print_month_year as str %}
                                         {% if str|length > 40 %}
