@@ -1080,10 +1080,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def get_partition(self, paper_pks, time_lapse=-1, k=1, journal_pks=None):
 
         # get seed data
-        data = PaperVectors.objects\
+        data = list(PaperVectors.objects\
             .filter(paper_id__in=paper_pks, model=self.model)\
             .select_related('paper__journal')\
-            .values('vector', 'paper__journal_id')
+            .values('vector', 'paper__journal_id'))
 
         journal_pks = [d.get('paper__journal_id') for d in data]
         data_journal = dict(JournalVectors.objects\

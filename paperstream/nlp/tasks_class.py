@@ -36,7 +36,7 @@ class EmbedPaperTask(Task):
         # init task
         self.init = kwargs.get('init', False)
         if self.init:
-            _ = self.model
+            self._model = Model.objects.load(name=self.model_name)
 
     @property
     def model(self):
@@ -84,7 +84,8 @@ class MostSimilarTask(Task):
         # init task
         self.init = kwargs.get('init', False)
         if self.init:
-            _ = self.ms
+            self._ms = MostSimilar.objects.load(model__name=self.model_name,
+                                                is_active=True)
 
     @property
     def ms(self):
