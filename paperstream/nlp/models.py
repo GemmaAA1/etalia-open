@@ -928,10 +928,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 self.index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
                 if data_journal.get(dat.journal_id):
-                    self.data[i, :] = (1 - self.journal_ratio) * dat.vector[:vec_size] + \
-                        self.journal_ratio * data_journal[dat.journal_id][:vec_size]
+                    self.data[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
+                        self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
                 else:
-                    self.data[i, :] = dat.vector[:vec_size]
+                    self.data[i, :] = np.array(dat.vector[:vec_size])
 
         # Store
         self.save()
@@ -989,10 +989,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
                 if data_journal.get(dat.journal_id):
-                    data[i, :] = (1 - self.journal_ratio) * dat.vector[:vec_size] + \
-                        self.journal_ratio * data_journal[dat.journal_id][:vec_size]
+                    data[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
+                        self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
                 else:
-                    data[i, :] = dat.vector[:vec_size]
+                    data[i, :] = np.array(dat.vector[:vec_size])
 
         # concatenate
         self.date += date

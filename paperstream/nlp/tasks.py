@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 def mostsimilar_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
-        ms = MostSimilar.objecs.load(model=model)
+        ms = MostSimilar.objecs.load(model=model,
+                                     is_active=True)
         ms.update()
 
 
