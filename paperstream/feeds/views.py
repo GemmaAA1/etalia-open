@@ -181,7 +181,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
             if d['paper'] not in check_papers:  # rows are for different authors
                 j_titles.append(d['paper__journal__title'])
                 check_papers.append(d['paper'])
-            authors.append(d['authors'])
+            authors.append(d['paper__authors'])
 
         # journal filter
         journals_counter = Counter(j_titles)

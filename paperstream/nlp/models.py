@@ -1028,8 +1028,23 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
     def get_knn(self, paper_pk, time_lapse=-1, k=1):
 
-        pv = PaperVectors.objects.get(paper_id=paper_pk, model=self.model)
-        vec = pv.get_vector()
+        pv = PaperVectors.objects\
+            .filter(paper_id=paper_pk, model=self.model)\
+            .select_related('paper__journal')[0]
+        # get related journal vector
+        try:
+            jv = JournalVectors.objects\
+                    .get(model=self.model, journal_id=pv.paper.journal.id)
+        except JournalVectors.DoesNotExist:
+            jv = None
+            pass
+
+        # build weighted vector
+        if jv:
+            vec = (1. - self.journal_ratio) * np.array(pv.vector[:self.model.size]) + \
+                self.journal_ratio * np.array(jv.vector[:self.model.size])
+        else:
+            vec = np.array(pv.vector[:self.model.size])
 
         res_search = self.knn_search(vec, time_lapse=time_lapse, top_n=k)
 
@@ -1066,10 +1081,21 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # get seed data
         data = PaperVectors.objects\
             .filter(paper_id__in=paper_pks, model=self.model)\
-            .values('vector')
+            .select_related('paper__journal')\
+            .values('vector', 'paper__journal_id')
+
+        journal_pks = [d.get('paper__journal_id') for d in data]
+        data_journal = dict(JournalVectors.objects\
+            .filter(model=self.model, journal_id__in=journal_pks)\
+            .values_list('journal_id', 'vector'))
+
         mat = np.zeros((self.model.size, data.count()))
-        for i, row in enumerate(data):
-            mat[:, i] = row['vector'][:self.model.size]
+        for i, d in enumerate(data):
+            if d.get('paper__journal_id'):
+                mat[:, i] = (1. - self.journal_ratio) * np.array(d['vector'][:self.model.size]) + \
+                    self.journal_ratio * np.array(data_journal[d['paper__journal_id']][:self.model.size])
+            else:
+                mat[:, i] = np.array(d['vector'][:self.model.size])
 
         # find clip
         clip_start = self.get_clip_start(time_lapse)
