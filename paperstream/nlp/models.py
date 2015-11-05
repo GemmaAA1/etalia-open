@@ -1032,12 +1032,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .filter(paper_id=paper_pk, model=self.model)\
             .select_related('paper__journal')[0]
         # get related journal vector
+        jv = None
         if pv.paper.journal:
             try:
                 jv = JournalVectors.objects\
                         .get(model=self.model, journal_id=pv.paper.journal.id)
             except JournalVectors.DoesNotExist:
-                jv = None
                 pass
 
         # build weighted vector
