@@ -230,8 +230,8 @@ class Stream(TimeStampedModel):
             pks, scores = scoring.score()
             # sort scores
             self.log('debug', 'Updating', 'sorting...')
-            nb_papers = int(settings.FEED_SIZE_PER_DAY * \
-                        self.user.settings.stream_time_lapse)
+            nb_papers = int(settings.FEED_SIZE_PER_DAY *
+                            self.user.settings.stream_time_lapse)
             best = matutils.argsort(scores,
                                     topn=nb_papers,
                                     reverse=True)
