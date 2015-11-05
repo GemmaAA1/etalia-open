@@ -911,7 +911,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         data_journal = dict(JournalVectors.objects\
             .filter(model=self.model)\
-            .values_list('pk', 'vector'))
+            .values_list('journal_id', 'vector'))
 
         # Reshape data
         nb_items = len(data)
@@ -971,7 +971,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         data_journal = dict(JournalVectors.objects\
             .filter(model=self.model)\
-            .values_list('pk', 'vector'))
+            .values_list('journal_id', 'vector'))
 
         # Reshape data
         nb_items = len(data)
