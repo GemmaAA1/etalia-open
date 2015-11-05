@@ -16,6 +16,7 @@ $(document).ready(function() {
     // ajax call during signup
     $('.signup-forms form[data-async]').on('submit', update_signup_forms);
 
+
     // updates library
     $('#update-lib, #update-stream, #update-trend').on('click', function () {
         console.log($(this).attr('action'));
@@ -168,7 +169,6 @@ function update_settings_forms(event) {
     });
     event.preventDefault();
 }
-
 
 
 function bind_profile_sections() {

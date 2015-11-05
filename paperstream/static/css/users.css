@@ -171,6 +171,10 @@
     outline: none;
 }
 
+.invite-success {
+    padding-top: 50px;
+}
+
 .fade {
 opacity: 0;
 -webkit-transition: opacity 0.1s linear;
