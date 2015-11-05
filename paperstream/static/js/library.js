@@ -50,12 +50,12 @@ function share_tweet () {
 function like (event) {
     var like = this;
     var id = $(this).parents('ul').attr('id');
-    var url = $(location).attr('protocol') + '//' +
-        $(location).attr('host') + '/user/paper/like';
+    var url = '/user/paper/like';
     $.ajax({
         type: 'POST',
         url: url,
-        data: {pk: id},
+        data: {'pk': id,
+               'source': window.location.pathname},
         success: function (json) {
             $.each(json, function (key, value) {
                 if (key == 'is_liked') {

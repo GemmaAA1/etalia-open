@@ -662,7 +662,7 @@ def update_library(request):
 def like_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
-        source = request.POST.get('source')
+        source = request.POST.get('source', '')
         paper_ = get_object_or_404(Paper, pk=pk)
         if 'stream' in source:
             context_source = 'stream'

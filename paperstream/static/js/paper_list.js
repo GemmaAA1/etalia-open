@@ -53,7 +53,9 @@ function bind_all() {
     // Short are liked paper that stay "active"
     $('.short').closest('.paper-list')
         .off('mouseleave')
-        .off('mouseenter');
+        .off('mouseenter')
+        .find('.stamps')
+        .show();
 
     $('.feed .short, .trend .short')
         .find('.stamps')

@@ -67,7 +67,7 @@
                         <ul class="stamps" id="{{ paper.pk }}">
                             {% if user.is_authenticated %}
                                 <li>
-                                    <a class="like {% if is_liked %} active {% endif %}" href="#" title="Like"></a>
+                                    <a class="like {% if is_liked %} active {% endif %}" href="javascript:void(0)" title="Like"></a>
                                 </li>
                                 <li>
                                     <a class="{% if is_in_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)"></a>
