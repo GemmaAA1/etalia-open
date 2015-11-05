@@ -16,6 +16,7 @@
     position: relative;
     padding-top: 6%;
     padding-bottom: 5%;
+    background-color: rgba(252, 252, 252, 0.40);
 }
 
 .intro-message > h1 {
