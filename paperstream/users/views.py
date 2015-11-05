@@ -247,7 +247,8 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
             if d['journal__title'] and d['pk'] not in check_papers:  # rows are for different authors
                 j_titles.append(d['journal__title'])
                 check_papers.append(d['pk'])
-            authors.append(d['authors'])
+            if d['authors'].first_name or d['authors'].first_name:
+                authors.append(d['authors'])
 
         # journal filter
         journals_counter = Counter(j_titles)

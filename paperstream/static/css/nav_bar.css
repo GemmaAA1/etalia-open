@@ -48,7 +48,7 @@
 }
 
 .navbar .brand-image {
-    width: 130px;
+    height: 35px;
 }
 
 .nav-bar-anonymous {
@@ -66,12 +66,12 @@
     padding-top: 20px;
     position: absolute;
     left: 50%;
-    margin-left: -110px !important;  /* 50% of your logo width */
+    margin-left: -120px !important;  /* 50% of your logo width */
     display: block;
 }
 
 .brand-image-anonymous {
-    width: 200px;
+    width: 230px;
 }
 
 .navbar-form {

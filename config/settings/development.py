@@ -40,3 +40,15 @@ NLP_MS_BUCKET_NAME = 'pubstream-development-nlp-ms'
 AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
 
 INVITE_MODE = False
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env.str('AWS_RDS_DB_NAME'),
+        'USER': env.str('AWS_RDS_USERNAME'),
+        'PASSWORD': env.str('AWS_RDS_PASSWORD'),
+        'HOST': env.str('AWS_RDS_HOSTNAME'),
+        'PORT': env.str('AWS_RDS_PORT'),
+    }
+}
