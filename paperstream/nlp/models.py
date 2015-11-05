@@ -1035,7 +1035,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         try:
             jv = JournalVectors.objects\
                     .get(model=self.model, journal_id=pv.paper.journal.id)
-        except JournalVectors.DoesNotExist:
+        except JournalVectors.DoesNotExist or AttributeError:
             jv = None
             pass
 
