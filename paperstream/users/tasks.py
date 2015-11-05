@@ -57,7 +57,7 @@ def init_user(user_pk, provider_name):
         init_step.s(user_pk, 'LIB'),
         update_lib.s(provider_name),
         init_step.s('STR'),
-        update_stream.s('main'),
+        update_stream.s(),
         init_step.s('TRE'),
         update_trend.s(),
         init_step.s('IDL'),
