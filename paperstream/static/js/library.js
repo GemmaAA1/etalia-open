@@ -9,7 +9,8 @@ $(document).ready(function() {
     // Send trash paper from user library ajax call
     $('.trash').on('click', trash_paper);
 
-    $('.tw')
+    // tweet
+    $('.tweet').on('click', share_tweet);
 
     // update altmetric stamp with local if undefined
     // wait for element to exist
@@ -24,6 +25,27 @@ $(document).ready(function() {
         }
     }, 100);
 });
+
+function share_tweet () {
+    var title = $(this).closest('.library').find('.paper').data('title');
+    var first_author = $(this).closest('.library').find('.paper').data('first-compact');
+    var url = $(this).closest('.library').find('.paper').data('url');
+    $.getJSON('http://api.bitly.com/v3/shorten?callback=?',
+    {
+        format: "json",
+        apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
+        login: "nicolaspannetier",
+        longUrl: url
+    },
+    function(response) {
+        var text = title  + ' | ' + first_author + ' | ' + response.data.url + ' via @pubstreamio';
+        //console.log(text);
+        var geturl = 'https://twitter.com/intent/tweet?text=' + encodeURI(text);
+        //console.log(geturl);
+        event.preventDefault();
+        window.open(geturl, 'Tweet', 'width=600,height=400');
+    });
+}
 
 function like (event) {
     var like = this;

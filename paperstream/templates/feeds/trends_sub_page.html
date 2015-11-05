@@ -39,7 +39,7 @@
                         <div class="abstract">{{ dfp.paper.abstract }}</div>
                     </div>
                     <div class="col-lg-2 nopadding">
-                        <ul class="stamps-ext no-toggling">
+                        <ul class="stamps-ext no-toggling" data-url="{{ dfp.paper.url }}"  data-title="{{ dfp.paper.title }}" data-first-compact="{{ dfp.paper.print_compact_first_author }}">
                             <li>
                                 <a class="go-to-pdf" href="{{ dfp.paper.url }}" target="_blank">Pdf</a>
                             </li>
@@ -50,8 +50,7 @@
     {#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
     {#                        </li>#}
                             <li>
-                                <a  class="email" href="mailto:?subject=&body={{ dfp.paper.title }}%0D%0A
-                                 {{ dfp.paper.print_compact_first_author }}%20|%20{{ dfp.paper.journal.title }}%20|%20{{ dfp.paper.print_date }}%20|%20{{ dfp.paper.url }}">Email</a>
+                                <a  class="email" href="mailto:?subject=&body={{ dfp.paper.title }}%0D%0A{{ dfp.paper.print_compact_authors }}%0D%0A{{ dfp.paper.journal.title }}.%20{{ dfp.paper.print_date }}%0D%0A{{ dfp.paper.url }}">Email</a>
                             </li>
                             <li>
                                 <a class="tweet" href="javascript:void(0)">Tweet</a>
