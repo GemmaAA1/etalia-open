@@ -1,14 +1,1 @@
--r common.txt  # includes the base.txt requirements file
-
-gevent==1.0.2
-gunicorn==19.3.0
-flower==0.8.3
-
-# Static and Media Storage
-# ------------------------------------------------
-boto==2.38.0
-django-storages-redux==1.3
-
-# Mailgun Support
-# ---------------
-django-mailgun==0.8.0
+-r staging.txt  # includes the staging.txt requirements file

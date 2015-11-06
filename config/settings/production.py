@@ -3,7 +3,7 @@ from .common import *
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['www.pubstream.io', '52.33.73.98']
+ALLOWED_HOSTS = ['*', 'www.pubstream.io', '52.33.73.98']
 
 # DATABASES = {
 #     'default': {
