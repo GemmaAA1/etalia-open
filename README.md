@@ -52,6 +52,5 @@ $ ./manage.py runserver
 ### Who do I talk to? ###
 
 * Nicolas Pannetier (nicolas.pannetier@gmail.com)
-* Valentine Toulemonde
 
 
