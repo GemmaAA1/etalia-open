@@ -40,7 +40,7 @@ NLP_MS_BUCKET_NAME = 'pubstream-development-nlp-ms'
 AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
 
 
-INVITE_MODE = True
+INVITE_MODE = False
 if INVITE_MODE:
     DATABASES = {
         'default': {
