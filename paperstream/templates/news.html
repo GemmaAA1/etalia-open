@@ -4,7 +4,7 @@
 
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/landing.css' %}" type="text/css" >
+    <link rel="stylesheet" href="{% static 'css/core.css' %}" type="text/css" >
 {% endblock %}
 
 {% block head %}
@@ -13,5 +13,26 @@
 {% block title %}PubStream | News {% endblock %}
 
 
+
 {% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2 hidden-sm hidden-xs">
+            {% include 'core_side.html' %}
+        </div>
+        <div class="col-md-8">
+            <div class="news">
+                <h2>News</h2>
+                <a name="news"></a>
+                <p class="lead">
+                    <span class="pub">Pub</span><span class="stream">Stream</span> is in Alpha version.
+                    </br>
+                    Let us know what you think about it!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

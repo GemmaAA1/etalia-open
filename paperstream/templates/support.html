@@ -24,11 +24,12 @@
                 <h2>PubStream Support</h2>
                 <p class="lead">
                     You’ve got a question, problem or just want some more information?<br>
-                    Have a peek below at our knowledge base.
+                    Have a peek below at our knowledge base.<br>
+                    Not answering your question? <a href="{% url 'core:about' %}#contact">contact us</a>.
                 </p>
-                <h3>Frequently Asked Questions</h3>
+                <h2>Frequently Asked Questions</h2>
                 <div class="text-left">
-                <h3 class="question">How do PubStream works?</h3>
+                <h3 class="question">How does PubStream work?</h3>
                 <p class="lead response">
                     <span class="pub">Pub</span><span class="stream">Stream</span>
                     checks what you are reading in your Reference Library.
@@ -48,7 +49,17 @@
                 library (e.g. Mendelay or Zotero).  Use your reference library credentials to sign in to PubStream
                     and start browsing your personal stream of recommended publications.
                 </p>
-                <h3 class="question">What makes PubStream and Google Scholar?</h3>
+                <h3 class="question">Why PubStream only support Zotero and Mendeley?</h3>
+                <p class="lead response">
+                    Zotero and Mendeley are the only two reference software managers that are cloud-based and provide
+                    the ability for third party application, like PubStream, to access your library content
+                    through authentication. Both use the <a href="https://en.wikipedia.org/wiki/OAuth">
+                    OAuth protocol</a>, which is a widely adopted, open protocol for users to delegate
+                    authorization in a secure manner. OAuth is used to authorize requests between PubStream
+                    and your reference managers.<br> PubStream will serve other reference managers as
+                    support for OAuth is added.
+                </p>
+                <h3 class="question">What makes PubStream and Google Scholar different?</h3>
                 <p class="lead response">
                     PubStream recommends publications based on the content of your reference
                     library unlike Google Scholar, which makes suggestions based on your publication
@@ -57,13 +68,14 @@
                 <h3 class="question">How often are recommendations updated?</h3>
                 <p class="lead response">
                     PubStream updates recommendations daily.
-                    You can also subscribe to receive weekly notifications via email.
+                    You can also subscribe to receive notifications via email on a regular basis.
                 </p>
                 <h3 class="question">Which publications sources are fetched by PubStream?</h3>
                 <p class="lead response">
                     Currently, PubStream fetches publications available on
-                    <a href="http://www.ncbi.nlm.nih.gov/pubmed">MedLine</a>, the <a href="http://http://arxiv.org/">
-                    Arxiv.org</a> and articles published in <a href="https://www.elsevier.com/journals/title/all">Elsevier journals</a>.
+                    <a href="http://www.ncbi.nlm.nih.gov/pubmed">PubMed</a>, the <a href="http://http://arxiv.org/">
+                    Arxiv.org</a> and articles published in <a href="https://www.elsevier.com/journals/title/all">
+                    Elsevier journals</a>. That corresponds to about 1,000,000 unique scientific publications per year.
                 </p>
                 </div>
             </div>
