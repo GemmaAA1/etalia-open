@@ -31,6 +31,8 @@ DEBUG = env('DJANGO_DEBUG', default=False)
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost']
 
+# PubStream is on invite mode only
+INVITE_MODE = False
 
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -184,16 +186,10 @@ ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# INVITE
-# ------------------------------------------------------------------------------
-# Pub stream is on invite mode only
-INVITE_MODE = False
-
-
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/pubstream-email-static/'
-INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_process.html'
+INVITE_EMAIL_TEMPLATE = 'emails/alpha_invite_template_email_process.html'
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------

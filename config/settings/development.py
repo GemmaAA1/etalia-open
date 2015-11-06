@@ -17,12 +17,12 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
 
 # CACHING
 # ------------------------------------------------------------------------------
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': ''
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': ''
+#     }
+# }
 
 # Static asset configuration
 STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
@@ -39,9 +39,17 @@ NLP_MODELS_BUCKET_NAME = 'pubstream-development-nlp-models'
 NLP_MS_BUCKET_NAME = 'pubstream-development-nlp-ms'
 AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
 
-INVITE_MODE = False
 
+INVITE_MODE = True
+if INVITE_MODE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str((ROOT_DIR - 1).path('db').path('invite.sqlite3')),
+        }
+    }
 
+#
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',

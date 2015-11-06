@@ -321,7 +321,7 @@ def _workon():
 
 @task
 def create_directory_structure_if_necessary():
-    for sub_dir in ('static', 'source', 'log', env.conf_dir):
+    for sub_dir in ('static', 'source', 'log', 'db', env.conf_dir):
         if not files.exists('{0}/{1}'.format(env.stack_dir, sub_dir)):
             run('mkdir -p {0}/{1}'.format(env.stack_dir, sub_dir))
 
