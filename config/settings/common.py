@@ -193,7 +193,7 @@ INVITE_MODE = False
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/pubstream-email-static/'
-INVITE_EMAIL_TEMPLATE = 'emails/invite_template_email_process.html'
+INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_process.html'
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
