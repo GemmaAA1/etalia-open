@@ -42,7 +42,7 @@ from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
 
-STACK = 'staging'
+# STACK = 'staging'
 STACK_SITE_MAPPING = {'staging': 'alpha-u6VcayvtcI.pubstream.io',
                       'production': 'www.pubstream.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
