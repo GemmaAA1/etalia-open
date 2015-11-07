@@ -29,8 +29,11 @@ for paper in library:
     vec = paper.vectors.all()[0]
     user_vectors.append(vec.get_vector())
     if paper.journal:
-        tmp = paper.journal.vectors.all()[0]
-        j_vec = tmp.get_vector()
+        if paper.journal.vectors.all():
+            tmp = paper.journal.vectors.all()[0]
+            j_vec = tmp.get_vector()
+        else:
+            j_vec = np.zeros((128, ))
     else:
         j_vec = np.zeros((128, ))
     user_j_vectors.append(j_vec)
