@@ -8,9 +8,9 @@ from django.contrib.auth import get_user_model
 from paperstream.library.models import Paper
 from paperstream.nlp.models import PaperVectors
 
-email = 'norbert.schuff@gmail.com'
+# email = 'norbert.schuff@gmail.com'
 email = 'nicolas.pannetier@gmail.com'
-email = 'tosca4m@hotmail.com'
+# email = 'tosca4m@hotmail.com'
 out_path = '/home/ubuntu/'
 
 User = get_user_model()
