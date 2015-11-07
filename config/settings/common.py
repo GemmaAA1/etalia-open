@@ -31,8 +31,7 @@ DEBUG = env('DJANGO_DEBUG', default=False)
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost']
 
-# PubStream is on invite mode only
-INVITE_MODE = False
+
 
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------

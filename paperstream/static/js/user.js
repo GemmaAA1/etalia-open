@@ -188,7 +188,7 @@ function bind_profile_sections() {
 }
 
 function bind_settings() {
-    $('#settings-section')
+    $('#stream-settings-section, #trend-settings-section')
         .on({
             'mouseenter': function (){
                 $(this).find('a').css('color', 'rgba(127, 127, 127, 1)');

@@ -21,7 +21,7 @@
                         {% avatar user 120 %}
                     </div>
                     <div class="change-avatar text-center">
-                        <a class="edit" href="{% url 'user:avatar_change' %}">Edit this photo</a>
+                        <a class="edit" href="{% url 'user:avatar_change' %}">edit</a>
                     </div>
                 </div>
             </div>
@@ -95,25 +95,14 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="col-md-3 text-right">
-                <h4>Library</h4>
+                <div class="title">
+                    Library
+                </div>
             </div>
             <div class="col-md-9">
                 <h5>Your library is in sync with {{ user.social_auth.first.provider|capfirst }} </h5>
                 <h5>{{ library_counter }} publications in PubStream</h5>
                 <h5>{{ likes_counter }} publications liked</h5>
-            </div>
-        </div>
-    </div>
-    <hr class="divider">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="col-md-3 text-right">
-                <h4>Delete account</h4>
-            </div>
-            <div class="col-md-9">
-                <form role="form" method="GET" action="{% url 'user:delete-user' %}">
-                    <button id="delete" type="submit" class="btn btn-danger btn-md">Delete</button>
-                </form>
             </div>
         </div>
     </div>

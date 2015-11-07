@@ -35,11 +35,6 @@ def terms(request):
     return render(request, 'terms.html', context=context)
 
 
-def news(request):
-    context = {}
-    return render(request, 'news.html', context=context)
-
-
 def support(request):
     context = {}
     return render(request, 'support.html', context=context)

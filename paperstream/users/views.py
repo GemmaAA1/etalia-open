@@ -33,8 +33,8 @@ from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
 from paperstream.library.models import Paper, Author
 
 from .forms import UserBasicForm, UserAffiliationForm, \
-    UserAuthenticationForm, UserSettingsForm, UpdateUserNameForm, \
-    UpdateUserPositionForm, UpdateUserTitleForm
+    UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
+    UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm
 from .models import Affiliation, UserLibPaper, UserTaste, FeedLayout, \
     UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
@@ -474,6 +474,16 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
     def get_object(self, **kwargs):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        context = super(ProfileView, self).get_context_data(**kwargs)
+        context['library_counter'] = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib, is_trashed=False)\
+            .count()
+        context['likes_counter'] = UserTaste.objects\
+            .filter(user=self.request.user, is_liked=True)\
+            .count()
+        return context
+
 profile = ProfileView.as_view()
 
 
@@ -581,9 +591,9 @@ class UserDeleteView(LoginRequiredMixin, ProfileModalFormsMixin, DeleteView):
 delete_user = UserDeleteView.as_view()
 
 
-class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
-                             FormView):
-    form_class = UserSettingsForm
+class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
+                                   FormView):
+    form_class = UserStreamSettingsForm
 
     def get_object(self, queryset=None):
         return self.request.user.settings
@@ -592,29 +602,53 @@ class UserSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return reverse('core:home')
 
     def form_invalid(self, form):
-        return super(UserSettingsUpdateView, self).form_invalid(form)
+        return super(UserStreamSettingsUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
         self.request.user.settings.stream_time_lapse = form.cleaned_data['stream_time_lapse']
         self.request.user.settings.stream_model = form.cleaned_data['stream_model']
         self.request.user.settings.stream_method = form.cleaned_data['stream_method']
-        # self.request.user.settings.trend_time_lapse = form.cleaned_data['trend_time_lapse']
-        # self.request.user.settings.trend_model = form.cleaned_data['trend_model']
-        # self.request.user.settings.trend_method = form.cleaned_data['trend_method']
         self.request.user.settings.save()
-        return super(UserSettingsUpdateView, self).form_valid(form)
+        return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
         data = {'stream_model': self.request.user.settings.stream_model.name,
                 'stream_time_lapse': self.request.user.settings.stream_time_lapse,
                 'stream_method': self.request.user.settings.stream_method,
-                # 'trend_model': self.request.user.settings.trend_model.name,
-                # 'trend_time_lapse': self.request.user.settings.trend_time_lapse,
-                # 'trend_method': self.request.user.settings.trend_method,
                 }
         return data
 
-update_settings = UserSettingsUpdateView.as_view()
+update_stream_settings = UserStreamSettingsUpdateView.as_view()
+
+
+class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
+                                  FormView):
+    form_class = UserTrendSettingsForm
+
+    def get_object(self, queryset=None):
+        return self.request.user.settings
+
+    def get_success_url(self):
+        return reverse('core:home')
+
+    def form_invalid(self, form):
+        return super(UserTrendSettingsUpdateView, self).form_invalid(form)
+
+    def form_valid(self, form):
+        self.request.user.settings.trend_time_lapse = form.cleaned_data['trend_time_lapse']
+        self.request.user.settings.trend_model = form.cleaned_data['trend_model']
+        self.request.user.settings.trend_method = form.cleaned_data['trend_method']
+        self.request.user.settings.save()
+        return super(UserTrendSettingsUpdateView, self).form_valid(form)
+
+    def get_ajax_data(self):
+        data = {'trend_model': self.request.user.settings.trend_model.name,
+                'trend_time_lapse': self.request.user.settings.trend_time_lapse,
+                'trend_method': self.request.user.settings.trend_method,
+                }
+        return data
+
+update_trend_settings = UserTrendSettingsUpdateView.as_view()
 
 
 @login_required

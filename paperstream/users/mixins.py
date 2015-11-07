@@ -4,7 +4,8 @@ from __future__ import unicode_literals, absolute_import
 from django.views.generic.base import ContextMixin
 
 from .forms import UpdateUserNameForm, UserAffiliationForm, \
-    UserSettingsForm, UpdateUserTitleForm, UpdateUserPositionForm
+    UserStreamSettingsForm, UserTrendSettingsForm,  UpdateUserTitleForm, \
+    UpdateUserPositionForm
 
 
 class ProfileModalFormsMixin(ContextMixin):
@@ -30,6 +31,8 @@ class SettingsModalFormsMixin(ContextMixin):
     def get_context_data(self, **kwargs):
         context = super(SettingsModalFormsMixin, self).get_context_data(**kwargs)
         if not self.request.user.is_anonymous():
-            context['form_settings'] = \
-                UserSettingsForm(instance=self.request.user.settings)
+            context['form_stream_settings'] = \
+                UserStreamSettingsForm(instance=self.request.user.settings)
+            context['form_trend_settings'] = \
+                UserTrendSettingsForm(instance=self.request.user.settings)
         return context

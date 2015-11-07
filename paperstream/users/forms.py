@@ -129,27 +129,37 @@ class UserAffiliationForm(forms.ModelForm):
         }
 
 
-class UserSettingsForm(forms.ModelForm):
+class UserStreamSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
-        super(UserSettingsForm, self).__init__(*args, **kwargs)
+        super(UserStreamSettingsForm, self).__init__(*args, **kwargs)
         self.fields['stream_model'].choices = [(mod.pk, mod.name)
                                         for mod in Model.objects.filter(is_active=True)]
-        # self.fields['trend_model'].choices = [(mod.pk, mod.name)
-        #                                 for mod in Model.objects.filter(is_active=True)]
-
 
     class Meta:
         model = UserSettings
         fields = ('stream_model', 'stream_time_lapse', 'stream_method',
-                  # 'trend_model', 'trend_time_lapse', 'trend_method'
                   )
         widgets = {
             'stream_model': forms.Select(attrs={'class': 'form-control'}),
             'stream_time_lapse': forms.Select(attrs={'class': 'form-control'}),
             'stream_method': forms.Select(attrs={'class': 'form-control'}),
-            # 'trend_model': forms.Select(attrs={'class': 'form-control'}),
-            # 'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            # 'trend_method': forms.Select(attrs={'class': 'form-control'}),
         }
 
+
+class UserTrendSettingsForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(UserTrendSettingsForm, self).__init__(*args, **kwargs)
+        self.fields['trend_model'].choices = [(mod.pk, mod.name)
+                                        for mod in Model.objects.filter(is_active=True)]
+
+    class Meta:
+        model = UserSettings
+        fields = ('trend_model', 'trend_time_lapse', 'trend_method'
+                  )
+        widgets = {
+            'trend_model': forms.Select(attrs={'class': 'form-control'}),
+            'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
+            'trend_method': forms.Select(attrs={'class': 'form-control'}),
+        }
