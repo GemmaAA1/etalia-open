@@ -20,6 +20,15 @@ JOURNAL_OPTIONS = [
     {'source': 'arxiv',
      'file_path': os.path.join(str(settings.STATICFILES_DIRS[0]),
                  'populate/journals/20150510_arxiv_cleaned.csv')},
+    {'source': 'thomson_local',
+     'file_path': os.path.join(str(settings.STATICFILES_DIRS[0]),
+                 'populate/journals/20150510_thomsonreuters_cleaned_light.csv')},
+    {'source': 'pubmed_local',
+     'file_path': os.path.join(str(settings.STATICFILES_DIRS[0]),
+                 'populate/journals/20150510_medline_cleaned_light.csv')},
+    {'source': 'arxiv_local',
+     'file_path': os.path.join(str(settings.STATICFILES_DIRS[0]),
+                 'populate/journals/20150510_arxiv_cleaned_light.csv')},
 ]
 
 # Consumer population is either defined through a file (e.g. pubmed) or by

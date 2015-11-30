@@ -29,11 +29,11 @@ fi
 ../manage.py migrate
 
 # POPULATE DATABASE
-# populate library with some test data
+# populate library
 ../manage.py populate publisher all
-../manage.py populate journal thomson_local
-../manage.py populate journal pubmed_local
-../manage.py populate journal arxiv_local
+../manage.py populate journal thomson
+../manage.py populate journal pubmed
+../manage.py populate journal arxiv
 # populate consumers
 ../manage.py populate consumer pubmed --name pubmed_all
 ../manage.py populate consumer arxiv --name arxiv_all

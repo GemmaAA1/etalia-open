@@ -16,6 +16,7 @@ Pre-requisites are:
 * virtualenv
 * PostgreSQL
 * RabbitMQ
+* Some default environment variables (ask for it)
 
 Update configuration file with local database
 * Create a local Postgres database (e.g. "CREATE pubstream_dev;" from psql on mac)

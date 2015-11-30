@@ -7,6 +7,10 @@ from .common import *
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATE_DEBUG = DEBUG
 
+# CONSUMER
+# ------------------------------------------------------------------------------
+# In days, how many day in the past to look at when initializing database
+CONS_INIT_PAST = 30
 
 # Mail settings
 # ------------------------------------------------------------------------------
