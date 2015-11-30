@@ -3,7 +3,7 @@
 PubStream is an webapp that provides scientific publication readers with relevant
  recent scientific publications.
 
-### How do I get set up? ###
+### How do I get set up locally? ###
 
 PubStream stack is based on:
 Django
@@ -11,37 +11,37 @@ PostgreSQL
 RabbitMQ
 Celery
  
-Pre-requisites are: pip, virtualenv, PostgreSQL, RabbitMQ
+Pre-requisites are: 
+* pip (the python package management system)
+* virtualenv
+* PostgreSQL
+* RabbitMQ
 
-From your virtual environment:
-
-* Create a PostgreSQL database and update the database configuration in 
-paperstream/config/settings/base.py with your username and database name
-
-* Setup the project (dependencies, local files, migrations, initial data):  
+Update configuration file with local database
+* Create a local Postgres database (e.g. "CREATE pubstream_dev;" from psql on mac)
+* Update paperstream/config/settings/common.py with your username and database name
+   ex: 
+   DATABASES = {
+      'default': {
+          ...
+          'NAME': 'localdatabasename',
+          'USER': 'yourpostgresusername',
+          'PASSWORD': '',
+          ...
+      }
+   }
+* Run install script  
 
 ```
 #!bash
-
-$ ./scripts/install_local.sh
+$ ./scripts/setup_local.sh
 ```
 
 * Fire-up the server:
 
 ```
 #!bash
-# Start RabbitMQ-server
-$ rabbitmq-server
-
-# Start Celery queues, and beat
-$ celery -A config worker -Q default --concurrency=10 -l INFO -n worker1.default.%h
-$ celery -A config worker -Q models,default --concurrency=10 -l INFO -n worker1.models.%h
-$ celery -A config worker -Q consumers,default -l INFO -n worker1.consumers.%h
-$ celery -A config beat -s ../logs/celerybeat-schedule
-
-# Start WebApp
 $ ./manage.py runserver
-
 ```
 
 * Visit 127.0.0.1:8000

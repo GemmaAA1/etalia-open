@@ -24,9 +24,6 @@ if [ -z "$VIRTUAL_ENV" ]; then
     exit 1
 fi
 
-# CREATE Postgres DATABASE
-psql postgres -c "CREATE DATABASE paperstream"
-
 # MAKE MIGRATIONS AND MIGRATE
 ../manage.py makemigrations
 ../manage.py migrate
