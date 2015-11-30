@@ -28,20 +28,19 @@ for paper in library:
     user_title.append(paper.title)
     vec = paper.vectors.all()[0]
     user_vectors.append(vec.get_vector())
-    if paper.journal:
-        if paper.journal.vectors.all():
-            tmp = paper.journal.vectors.all()[0]
-            j_vec = tmp.get_vector()
-        else:
-            j_vec = np.zeros((128, ))
-    else:
-        j_vec = np.zeros((128, ))
-    user_j_vectors.append(j_vec)
+    # if paper.journal:
+    #     if paper.journal.vectors.all():
+    #         tmp = paper.journal.vectors.all()[0]
+    #         j_vec = tmp.get_vector()
+    #     else:
+    #         j_vec = np.zeros((128, ))
+    # else:
+    #     j_vec = np.zeros((128, ))
+    # user_j_vectors.append(j_vec)
 
 sample_size = 50000
 
-ps_library = Paper.objects.values('pk', 'journal_id')\
-    .exclude(pk__in=library).order_by('-pk')[:sample_size]
+ps_library = Paper.objects.values('pk').exclude(pk__in=library).order_by('-pk')[:sample_size]
 pvs = PaperVectors.objects.filter(paper__in=ps_library).values('paper__pk', 'paper__title', 'vector')
 
 ps_titles = []
