@@ -9,6 +9,8 @@ PubStream stack is based on: Django, PostgreSQL, RabbitMQ, Celery
 
 Pre-requisites are: pip (the python package management system), virtualenv, PostgreSQL, RabbitMQ.
 
+Once you get the pre-requisites installed, follow these steps to get started:
+
 1. Create you virtual environment and export environment variable from the development configuration file (Request one if you don't have one already)
 2. Clone PubStream: 
 ```
