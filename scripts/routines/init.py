@@ -42,6 +42,7 @@ model.save_paper_vec_from_bulk()
 # Build MostSimilar for paper matching
 ms, _ = MostSimilar.objects.get_or_create(model=model)
 ms.full_update()
+ms.activate()
 
 # Fetch some Altmetric data and fake others (to save time)
 alt_objs = []
