@@ -37,3 +37,13 @@
   negative: 0
   dbow_words: 0
   min_count: 5
+
+- name: test
+  dm: 0
+  size: 32
+  window: 4
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
+  min_count: 2

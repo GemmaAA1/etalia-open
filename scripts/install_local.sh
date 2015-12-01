@@ -66,6 +66,9 @@ mkdir ../logs
 ../manage.py populate consumer arxiv --name arxiv_all
 ../manage.py populate consumer elsevier --name elsevier_all
 
+# fetch some new papers
+./manage.py shell < fetch_papers.py
+
 # RUN TEST
 py.test
 
