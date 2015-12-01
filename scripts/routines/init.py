@@ -56,6 +56,7 @@ for paper in papers[:10]:
 # and randomly assigned to other to save time
 for paper in papers[10:]:
     alt_obj = alt_objs[random.randint(0, 9)]
-    altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper.pk, **alt_obj)
+    altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper.pk,
+                                                        **alt_obj)
 
 

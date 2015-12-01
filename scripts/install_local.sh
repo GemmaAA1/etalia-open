@@ -66,8 +66,8 @@ mkdir ../logs
 ../manage.py populate consumer arxiv --name arxiv_all
 ../manage.py populate consumer elsevier --name elsevier_all
 
-# fetch some new papers
-./manage.py shell < init.py
+# init database with papers, nlp models and altmetric data
+../manage.py shell < routines/init.py
 
 # RUN TEST
 py.test
