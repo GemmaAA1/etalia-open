@@ -67,7 +67,7 @@ mkdir ../logs
 ../manage.py populate consumer elsevier --name elsevier_all
 
 # fetch some new papers
-./manage.py shell < fetch_papers.py
+./manage.py shell < init.py
 
 # RUN TEST
 py.test

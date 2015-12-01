@@ -435,7 +435,7 @@ class Model(TimeStampedModel, S3Mixin):
         except MostSimilar.DoesNotExist:
             pass
         ms = MostSimilar.objects.create(model=self)
-        ms.update()
+        ms.full_update()
 
     def save_journal_vec_from_bulk(self):
         """Store inferred journal vector from training in db
