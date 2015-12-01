@@ -16,6 +16,8 @@
 
 # REQUIREMENTS
 pip3 install -r ../requirements/development.txt
+# upgrade numpy (error between 1.8.2 and gensim (does not seem the case on ubuntu...))
+pip install --upgrade numpy
 
 # VIRTUAL ENV
 # Check if virtual env is active
@@ -60,7 +62,7 @@ mkdir ../logs
 ../manage.py populate journal pubmed_local
 ../manage.py populate journal arxiv_local
 # populate consumers
-../manage.py populate consumer pubmed --name pubmed_all
+../manage.py populate consumer pubmed --name pubmed_all --local
 ../manage.py populate consumer arxiv --name arxiv_all
 ../manage.py populate consumer elsevier --name elsevier_all
 
