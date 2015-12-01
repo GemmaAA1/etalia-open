@@ -6,6 +6,7 @@ PubStream is an webapp that provides scientific publication readers with relevan
 ### How do I get set up locally? ###
 
 PubStream stack is based on: Django, PostgreSQL, RabbitMQ, Celery
+
 Pre-requisites are: pip (the python package management system), virtualenv, PostgreSQL, RabbitMQ, Some default environment variables (Request one if you don't have one)
 
 1. Clone PubStream: 
@@ -28,12 +29,12 @@ git clone https://NPann@bitbucket.org/NPann/paperstream.git
       }
    }
    
-3. Run install script  
+3. Run install_local.sh script from directory paperstream/scripts
 
 ```
 #!bash
 
-$ .paperstream/scripts/setup_local.sh
+$ ./install_local.sh
 ```
 
 * Fire-up the server:
