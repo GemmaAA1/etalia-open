@@ -35,8 +35,7 @@ class Command(BaseCommand):
                             help='specify source name (all or as defined in constant.py')
         parser.add_argument('-n', '--name', action='store', dest='name',
                             help='specify consumer name (mandatory if populating consumer)', type=str)
-        parser.add_argument('-l', '--local', action='store', dest='local',
-                            help='local flag', type=bool, default=False)
+        parser.add_argument('-l', '--local', dest='local', action='store_true')
 
     def handle(self, *args, **options):
         pop_what = options['what'][0]
