@@ -38,7 +38,7 @@ CONSUMER_OPTIONS = [
      'local': False,
      'file_path': os.path.join(str(settings.STATICFILES_DIRS[0]),
                  'populate/journals/20150510_medline_cleaned.csv')},
-    {'source': 'pubmed_local',
+    {'source': 'pubmed',
      'local': True,
      'file_path': os.path.join(str(settings.STATICFILES_DIRS[0]),
                  'populate/journals/20150510_medline_cleaned_light.csv')},
