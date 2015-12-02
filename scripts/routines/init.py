@@ -44,7 +44,7 @@ ms, _ = MostSimilar.objects.get_or_create(model=model)
 ms.full_update()
 ms.activate()
 
-# Fetch some Altmetric data and fake others (to save time)
+# Fetch some Altmetric data and fake others (saving time)
 alt_objs = []
 for paper in papers[:10]:
     update_altmetric(paper.pk)

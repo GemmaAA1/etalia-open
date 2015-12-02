@@ -120,3 +120,13 @@ occ_a = np.array([o[1] for o in occ])
 
 dist = 1.0 - dot
 ind = np.where(dist < 0.4)
+
+eigs_v = []
+sdp = []
+
+for i in range(100):
+    vec1 = lib_mat_red[i, :]
+    c = np.outer(vec1, vec1)
+    eigs = np.linalg.eigvals(c)
+    eigs_v.append(eigs)
+    sdp.append(np.all(eigs > 0 ))

@@ -40,7 +40,7 @@ git clone https://NPann@bitbucket.org/NPann/paperstream.git
 $ ./install_local.sh
 ```
 
-* Fire-up the server:
+* Launch the app:
 
 ```
 #!bash
