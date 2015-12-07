@@ -34,7 +34,8 @@ from paperstream.library.models import Paper, Author
 
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
-    UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm
+    UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
+    UserEmailDigestSettingsForm
 from .models import Affiliation, UserLibPaper, UserTaste, FeedLayout, \
     UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
@@ -606,15 +607,17 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
 
     def form_valid(self, form):
         self.request.user.settings.stream_time_lapse = form.cleaned_data['stream_time_lapse']
-        self.request.user.settings.stream_model = form.cleaned_data['stream_model']
-        self.request.user.settings.stream_method = form.cleaned_data['stream_method']
+        self.request.user.settings.stream_narrowness = form.cleaned_data['stream_narrowness']
+        # self.request.user.settings.stream_model = form.cleaned_data['stream_model']
+        # self.request.user.settings.stream_method = form.cleaned_data['stream_method']
         self.request.user.settings.save()
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'stream_model': self.request.user.settings.stream_model.name,
-                'stream_time_lapse': self.request.user.settings.stream_time_lapse,
-                'stream_method': self.request.user.settings.stream_method,
+        data = {'stream_narrowness': self.request.user.settings.get_stream_narrowness_display(),
+                'stream_time_lapse': self.request.user.settings.get_stream_time_lapse_display(),
+                # 'stream_method': self.request.user.settings.stream_method,
+                # 'stream_model': self.request.user.settings.stream_model,
                 }
         return data
 
@@ -635,20 +638,49 @@ class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserTrendSettingsUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
+        self.request.user.settings.trend_narrowness = form.cleaned_data['trend_narrowness']
         self.request.user.settings.trend_time_lapse = form.cleaned_data['trend_time_lapse']
-        self.request.user.settings.trend_model = form.cleaned_data['trend_model']
-        self.request.user.settings.trend_method = form.cleaned_data['trend_method']
+        # self.request.user.settings.trend_model = form.cleaned_data['trend_model']
+        # self.request.user.settings.trend_method = form.cleaned_data['trend_method']
         self.request.user.settings.save()
         return super(UserTrendSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'trend_model': self.request.user.settings.trend_model.name,
-                'trend_time_lapse': self.request.user.settings.trend_time_lapse,
-                'trend_method': self.request.user.settings.trend_method,
+        data = {'trend_narrowness': self.request.user.settings.get_trend_narrowness_display(),
+                # 'trend_model': self.request.user.settings.trend_model.name,
+                'trend_time_lapse': self.request.user.settings.get_trend_time_lapse_display(),
+                # 'trend_method': self.request.user.settings.trend_method,
                 }
         return data
 
 update_trend_settings = UserTrendSettingsUpdateView.as_view()
+
+
+class UserEmailDigestSettingsUpdateView(LoginRequiredMixin,
+                                        AjaxableResponseMixin,
+                                        FormView):
+    form_class = UserEmailDigestSettingsForm
+
+    def get_object(self, queryset=None):
+        return self.request.user.settings
+
+    def get_success_url(self):
+        return reverse('core:home')
+
+    def form_invalid(self, form):
+        return super(UserEmailDigestSettingsUpdateView, self).form_invalid(form)
+
+    def form_valid(self, form):
+        self.request.user.settings.email_digest_frequency = form.cleaned_data['email_digest_frequency']
+        self.request.user.settings.save()
+        return super(UserEmailDigestSettingsUpdateView, self).form_valid(form)
+
+    def get_ajax_data(self):
+        data = {'email_digest_frequency': self.request.user.settings.get_email_digest_frequency_display(),
+                }
+        return data
+
+update_email_digest_settings = UserEmailDigestSettingsUpdateView.as_view()
 
 
 @login_required
@@ -855,6 +887,7 @@ def trash_call(request):
                 pk=pk,
                 pk_user=user.pk))
         return JsonResponse(data)
+
 
 @login_required
 def restore_call(request):

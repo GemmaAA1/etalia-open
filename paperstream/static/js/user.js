@@ -17,7 +17,7 @@ $(document).ready(function() {
     $('.signup-forms form[data-async]').on('submit', update_signup_forms);
 
 
-    // updates library
+    // Async updates library, stream, trend
     $('#update-lib, #update-stream, #update-trend').on('click', function () {
         console.log($(this).attr('action'));
         $.ajax({
@@ -188,7 +188,7 @@ function bind_profile_sections() {
 }
 
 function bind_settings() {
-    $('#stream-settings-section, #trend-settings-section')
+    $('#stream-settings-section, #trend-settings-section, #email-digest-settings-section')
         .on({
             'mouseenter': function (){
                 $(this).find('a').css('color', 'rgba(127, 127, 127, 1)');

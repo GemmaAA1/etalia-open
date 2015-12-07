@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^delete$', views.delete_user, name='delete-user'),
     url(r'^update-stream-settings$', views.update_stream_settings, name='update-stream-settings'),
     url(r'^update-trend-settings$', views.update_trend_settings, name='update-trend-settings'),
+    url(r'^update-email-digest-settings$', views.update_email_digest_settings, name='update-email-digest-settings'),
     url(r'^update-library$', views.update_library, name='update-library'),
     url(r'^user-init-step$', views.user_init_step, name='user-init-step'),
     url(r'^paper/tick', views.tick_call, name='tick'),

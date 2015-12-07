@@ -133,17 +133,21 @@ class UserStreamSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserStreamSettingsForm, self).__init__(*args, **kwargs)
-        self.fields['stream_model'].choices = [(mod.pk, mod.name)
-                                        for mod in Model.objects.filter(is_active=True)]
+        # self.fields['stream_model'].choices = [(mod.pk, mod.name)
+        #                                 for mod in Model.objects.filter(is_active=True)]
 
     class Meta:
         model = UserSettings
-        fields = ('stream_model', 'stream_time_lapse', 'stream_method',
+        fields = ('stream_narrowness',
+                  'stream_time_lapse',
+                  # 'stream_model',
+                  # 'stream_method',
                   )
         widgets = {
-            'stream_model': forms.Select(attrs={'class': 'form-control'}),
+            # 'stream_model': forms.Select(attrs={'class': 'form-control'}),
             'stream_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'stream_method': forms.Select(attrs={'class': 'form-control'}),
+            'stream_narrowness': forms.Select(attrs={'class': 'form-control'}),
+            # 'stream_method': forms.Select(attrs={'class': 'form-control'}),
         }
 
 
@@ -151,15 +155,30 @@ class UserTrendSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserTrendSettingsForm, self).__init__(*args, **kwargs)
-        self.fields['trend_model'].choices = [(mod.pk, mod.name)
-                                        for mod in Model.objects.filter(is_active=True)]
+        # self.fields['trend_model'].choices = [(mod.pk, mod.name)
+        #                                 for mod in Model.objects.filter(is_active=True)]
 
     class Meta:
         model = UserSettings
-        fields = ('trend_model', 'trend_time_lapse', 'trend_method'
+        fields = ('trend_narrowness',
+                  'trend_time_lapse',
+                  # 'trend_model',
+                  # 'trend_method',
                   )
         widgets = {
-            'trend_model': forms.Select(attrs={'class': 'form-control'}),
+            # 'trend_model': forms.Select(attrs={'class': 'form-control'}),
             'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'trend_method': forms.Select(attrs={'class': 'form-control'}),
+            'trend_narrowness': forms.Select(attrs={'class': 'form-control'}),
+            # 'trend_method': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class UserEmailDigestSettingsForm(forms.ModelForm):
+
+    class Meta:
+        model = UserSettings
+        fields = ('email_digest_frequency',
+                  )
+        widgets = {
+            'email_digest_frequency': forms.Select(attrs={'class': 'form-control'}),
         }

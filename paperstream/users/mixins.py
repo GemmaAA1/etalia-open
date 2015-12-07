@@ -5,7 +5,7 @@ from django.views.generic.base import ContextMixin
 
 from .forms import UpdateUserNameForm, UserAffiliationForm, \
     UserStreamSettingsForm, UserTrendSettingsForm,  UpdateUserTitleForm, \
-    UpdateUserPositionForm
+    UpdateUserPositionForm, UserEmailDigestSettingsForm
 
 
 class ProfileModalFormsMixin(ContextMixin):
@@ -35,4 +35,6 @@ class SettingsModalFormsMixin(ContextMixin):
                 UserStreamSettingsForm(instance=self.request.user.settings)
             context['form_trend_settings'] = \
                 UserTrendSettingsForm(instance=self.request.user.settings)
+            context['form_email_digest_settings'] = \
+                UserEmailDigestSettingsForm(instance=self.request.user.settings)
         return context

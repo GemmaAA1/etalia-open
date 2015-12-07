@@ -16,7 +16,7 @@ from paperstream.nlp.models import Model
 from paperstream.feeds.models import Stream
 from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES, \
-    NLP_NARROWNESS_CHOICES
+    NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
 from paperstream.core.models import TimeStampedModel
 
 from .validators import validate_first_name, validate_last_name
@@ -417,6 +417,12 @@ class UserSettings(TimeStampedModel):
     trend_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
                                             choices=NLP_NARROWNESS_CHOICES,
                                             verbose_name='Narrowness')
+
+    # Email digest
+    email_digest_frequency = models.IntegerField(
+        default=EMAIL_DIGEST_FREQUENCY_CHOICES[0][0],
+        choices=EMAIL_DIGEST_FREQUENCY_CHOICES,
+        verbose_name='Email digest frequency')
 
     objects = UserSettingsManager()
 

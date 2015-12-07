@@ -294,23 +294,6 @@ NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
 
-NLP_TIME_LAPSE_CHOICES = (
-    (7, 'Week'),
-    (30, 'Month'),
-    (60, 'Two Months'),
-    (180, 'Six Months'),
-    (365, 'Year'),
-    (-1, 'All'),
-)
-
-NLP_NARROWNESS_CHOICES = (
-    (-2, 'Narrowest'),
-    (-1, 'Narrower'),
-    (0, 'Normal'),
-    (1, 'Broader'),
-    (2, 'Broadest'),
-)
-
 # Time in days for recomputing neighbors is accessed
 NLP_NEIGHBORS_REFRESH_TIME_LAPSE = 7
 
