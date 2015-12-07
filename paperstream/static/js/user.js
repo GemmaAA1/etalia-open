@@ -16,7 +16,6 @@ $(document).ready(function() {
     // ajax call during signup
     $('.signup-forms form[data-async]').on('submit', update_signup_forms);
 
-
     // Async updates library, stream, trend
     $('#update-lib, #update-stream, #update-trend').on('click', function () {
         console.log($(this).attr('action'));
@@ -24,6 +23,7 @@ $(document).ready(function() {
             url: $(this).attr('action'),
             success: function (resp) {
               $('#message').html(resp.message);
+
             },
             error: function (resp) {
                 console.log('error');

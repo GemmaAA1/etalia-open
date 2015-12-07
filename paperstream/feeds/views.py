@@ -26,6 +26,7 @@ from endless_pagination.views import AjaxListView
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper, Stats, Author
 from paperstream.users.models import UserTaste, FeedLayout
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 
 from .models import Stream, StreamMatches, StreamSeeds, \
     TrendMatches
@@ -252,7 +253,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
 
         # time lapse settings
         context['time_lapse'] = \
-            dict(settings.NLP_TIME_LAPSE_CHOICES)\
+            dict(NLP_TIME_LAPSE_CHOICES)\
                 .get(user_settings.get('time_lapse'))
 
         return context
@@ -536,7 +537,8 @@ def update_stream_view(request, name):
     if request.is_ajax() or settings.DEBUG:
         stream_name = name
         update_stream.delay(request.user.pk, stream_name=stream_name)
-        data = {'message': 'Stream update launched.'}
+        data = {'display_update_modal': True,
+                'message': 'Stream update launched.'}
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')
@@ -547,7 +549,8 @@ def update_trend_view(request, name):
     if request.is_ajax() or settings.DEBUG:
         trend_name = name
         update_trend.delay(request.user.pk, trend_name=trend_name)
-        data = {'message': 'Trend update launched.'}
+        data = {'display_update_modal': True,
+                'message': 'Trend update launched.'}
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')
