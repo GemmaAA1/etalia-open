@@ -1,4 +1,4 @@
-{% extends 'landing.html' %}
+{% extends 'base.html' %}
 
 {% load staticfiles %}
 
@@ -11,7 +11,6 @@
 
 
 {% block content %}
-
 
 <div class="container settings">
     <div class="row">
@@ -28,6 +27,7 @@
                         <h4>Stream settings<a class="edit" href="javascript:" data-toggle="modal" data-target="#stream-settings-modal">Change</a></h4>
                         <h5>NLP model: <span id="stream_model">{{ user.settings.stream_model }}</span></h5>
                         <h5>Time lapse: <span id="stream_time_lapse">{{ user.settings.stream_time_lapse }}</span></h5>
+                        <h5>Narrowness: <span id="stream_narrowness">{{ user.settings.stream_narrowness }}</span></h5>
                         <h5>Method: <span id="stream_method">{{ user.settings.stream_method }}</span></h5>
                         <h5>Last update: {{ user.streams.first.modified }}</h5>
                     </div>
@@ -44,6 +44,7 @@
                         <h4>Trend settings<a class="edit" href="javascript:" data-toggle="modal" data-target="#trend-settings-modal">Change</a></h4>
                         <h5>NLP model: <span id="trend_model">{{ user.settings.trend_model }}</span></h5>
                         <h5>Time lapse: <span id="trend_time_lapse">{{ user.settings.trend_time_lapse }}</span></h5>
+                        <h5>Narrowness: <span id="trend_narrowness">{{ user.settings.trend_narrowness }}</span></h5>
                         <h5>Method: <span id="trend_method">{{ user.settings.trend_method }}</span></h5>
                         <h5>Last update: {{ user.trends.first.modified }}</h5>
                     </div>
@@ -104,11 +105,18 @@
     </div>
 
     {% include 'user/settings_modal.html' %}
+
 </div>
 
 {% endblock content %}
 
 {% block js %}
     {{ block.super }}
-     <script type="text/javascript" src="{% static 'js/user.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/user.js' %}"></script>
+    <script>
+        $(function() {
+            $( "#time_slider" ).slider();
+            $( "#focus_slider" ).slider();
+        });
+    </script>
 {% endblock js %}

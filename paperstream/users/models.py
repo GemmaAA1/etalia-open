@@ -15,7 +15,8 @@ from paperstream.library.models import Paper, Journal
 from paperstream.nlp.models import Model
 from paperstream.feeds.models import Stream
 from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
-from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
+from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES, \
+    NLP_NARROWNESS_CHOICES
 from paperstream.core.models import TimeStampedModel
 
 from .validators import validate_first_name, validate_last_name
@@ -393,6 +394,11 @@ class UserSettings(TimeStampedModel):
                                             choices=NLP_TIME_LAPSE_CHOICES,
                                             verbose_name='Time range')
 
+    # arbitrary units
+    stream_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
+                                            choices=NLP_NARROWNESS_CHOICES,
+                                            verbose_name='Narrowness')
+
     # Trend settings
     # nlp model
     trend_model = models.ForeignKey(Model, verbose_name='NLP Model',
@@ -406,6 +412,11 @@ class UserSettings(TimeStampedModel):
     trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
                                            choices=NLP_TIME_LAPSE_CHOICES,
                                            verbose_name='In the past for')
+
+    # arbitrary units
+    trend_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
+                                            choices=NLP_NARROWNESS_CHOICES,
+                                            verbose_name='Narrowness')
 
     objects = UserSettingsManager()
 
