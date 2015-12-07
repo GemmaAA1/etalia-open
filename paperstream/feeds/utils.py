@@ -266,5 +266,38 @@ class WeightedJournalCreatedDateAverage(StreamScoring):
         return self.target_pks, scores
 
 
+class OccurrenceCount(StreamScoring):
+
+    def __init__(self, **kwargs):
+        super(OccurrenceCount, self).__init__(**kwargs)
+        user = kwargs.get('user')
+        if user:
+            self.cutoff = np.max([1, 5 + user.settings.stream_narrowness])
+
+    def _run(self):
+        seed_mat = self.build_mat(self.seed_data)
+        targ_mat = self.build_mat(self.target_data)
+        # weight with journal
+        seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
+        targ_mat = self.weight_with_journal(self.target_data, targ_mat)
+        # build date vector
+        date_vec = self.build_created_date_vec(self.seed_data)
+
+        dis = 1.0 - np.dot(targ_mat, seed_mat.T)
+        ind = np.argpartition(dis, self.cutoff, axis=0)[:self.cutoff, :][:]
+
+        ind_unique = np.unique(ind[:])
+
+        # count occurrences
+        occ = []
+        for i, idx in enumerate(ind_unique):
+            occ.append((idx, np.sum(ind == idx)))
+        # normalize by number of paper in user lib
+        occ = list(map(lambda x: (x[0], x[1]/(user_mat.shape[0]*cutoff)), occ))
+        occ_sorted = sorted(occ, key=lambda x: x[1], reverse=True)
+
+
+
+
 class TrendScoring(object):
     pass

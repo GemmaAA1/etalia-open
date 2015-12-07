@@ -894,6 +894,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         a_year_ago = (timezone.now() - timezone.timedelta(days=365)).date()
 
+        # query
         data = list(PaperVectors.objects.raw(
             "SELECT nlp_papervectors.id, "
             "       nlp_papervectors.paper_id, "

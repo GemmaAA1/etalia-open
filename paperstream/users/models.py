@@ -386,7 +386,7 @@ class UserSettings(TimeStampedModel):
                                      related_name='stream_model')
 
     # scoring method to use
-    stream_method = models.IntegerField(verbose_name='Method', default=1,
+    stream_method = models.IntegerField(verbose_name='Method', default=0,
                                         choices=STREAM_METHODS)
 
     # in days
@@ -405,7 +405,7 @@ class UserSettings(TimeStampedModel):
                                     related_name='trend_model')
 
     # scoring method to use
-    trend_method = models.IntegerField(verbose_name='Method', default=1,
+    trend_method = models.IntegerField(verbose_name='Method', default=0,
                                        choices=TREND_METHODS)
 
     # in days

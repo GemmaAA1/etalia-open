@@ -15,7 +15,7 @@ from gensim import matutils
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
 from paperstream.altmetric.models import AltmetricModel
-from paperstream.nlp.models import Model
+from paperstream.nlp.models import Model, MostSimilar
 from config.celery import celery_app as app
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP
 from .utils import *
@@ -191,7 +191,8 @@ class Stream(TimeStampedModel):
         # and instantiate
         scoring = Score(
             model=self.user.settings.stream_model,
-            user=self.user)
+            user=self.user,
+            journal_ratio=MostSimilar.objects.get(is_active=True).journal_ratio)
 
         # Retrieve matches to score
         self.log('debug', 'Updating', 'fetching relevant matches...')
@@ -207,13 +208,18 @@ class Stream(TimeStampedModel):
         else:
             journal_pks = None
         # get neighbors of seed matches
+        # that will allow scoring only a subset of all the world papers
         seed_pks = self.seeds.all().values_list('pk', flat=True)
+        # compute # of k neighbors to limit number of total papers retrieved
+        k_neighbors = np.min(settings.FEED_K_NEIGHBORS,
+                             settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1)
+        # call task
         res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
                              time_lapse=self.user.settings.stream_time_lapse,
-                             k=settings.FEED_K_NEIGHBORS,
+                             k=k_neighbors,
                              journal_pks=journal_pks)
-        # wait for Results
+        # wait for results
         target_seed_pks = res.get()
         # build target matches list
         target_pks = list(ufp_pks_to_update) + \

@@ -8,19 +8,21 @@ FEED_STATUS_CHOICES = (
 )
 
 STREAM_METHODS = (
-    (0, 'Max'),
-    (1, 'Average'),
-    (2, 'Average Threshold binary'),
-    (3, 'Average weighted journal'),
-    (4, 'Average weighted journal-date'),
+    (0, 'Occurrence Count'),
+    (1, 'Max'),
+    (2, 'Average'),
+    (3, 'Average Threshold binary'),
+    (4, 'Average weighted journal'),
+    (5, 'Average weighted journal-date'),
 )
 
 STREAM_METHODS_MAP = (
-    (0, 'SimpleMax'),
-    (1, 'SimpleAverage'),
-    (2, 'ThresholdAverage'),
-    (3, 'WeightedJournalAverage'),
-    (4, 'WeightedJournalCreatedDateAverage'),
+    (0, 'OccurrenceCount'),
+    (1, 'SimpleMax'),
+    (2, 'SimpleAverage'),
+    (3, 'ThresholdAverage'),
+    (4, 'WeightedJournalAverage'),
+    (5, 'WeightedJournalCreatedDateAverage'),
 )
 
 TREND_METHODS = (
