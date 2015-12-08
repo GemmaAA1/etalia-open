@@ -80,7 +80,7 @@ class Parser(object):
     @staticmethod
     def generated_hash_id(paper, journal, authors):
         str_ = ''
-        str_ += paper['title']
+        str_ += paper.get('title', '')
         str_ += ' '.join([author['last_name'] for author in authors])
-        str_ += journal.title
+        str_ += journal.get('title', '')
         return hashlib.sha1(str_.encode('utf-8')).hexdigest()

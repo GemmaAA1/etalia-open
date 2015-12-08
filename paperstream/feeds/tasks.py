@@ -21,6 +21,8 @@ def update_stream(user_pk, stream_name='main', restrict_journal=False):
         # add all seeds
         user = User.objects.get(pk=user_pk)
         feed.add_papers_seed(user.lib.papers.all())
+    # reset
+    feed.reset()
     # update
     feed.update(restrict_journal=restrict_journal)
 

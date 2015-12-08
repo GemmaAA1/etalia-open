@@ -9,15 +9,12 @@ NLP_TIME_LAPSE_CHOICES = (
     (60, 'Two Months'),
     (180, 'Six Months'),
     (365, 'Year'),
-    (-1, 'All'),
 )
 
 NLP_NARROWNESS_CHOICES = (
-    (-2, 'Narrowest'),
     (-1, 'Narrower'),
     (0, 'Normal'),
     (1, 'Broader'),
-    (2, 'Broadest'),
 )
 
 EMAIL_DIGEST_FREQUENCY_CHOICES = (

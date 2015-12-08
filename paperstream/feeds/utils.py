@@ -272,7 +272,8 @@ class OccurrenceCount(StreamScoring):
         super(OccurrenceCount, self).__init__(**kwargs)
         user = kwargs.get('user')
         if user:
-            self.cutoff = np.max([1, 5 + user.settings.stream_narrowness])
+            # number of closest neighbors to keep per seed paper
+            self.cutoff = 5
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)
@@ -290,11 +291,18 @@ class OccurrenceCount(StreamScoring):
 
         # count occurrences
         occ = []
+        # replicate date_vec for computation ease
+        date_mat = np.tile(date_vec, (ind.shape[0], 1))
         for i, idx in enumerate(ind_unique):
-            occ.append((idx, np.sum(ind == idx)))
+            occ.append((idx, np.sum(date_mat[ind == idx])))
         # normalize by number of paper in user lib
-        occ = list(map(lambda x: (x[0], x[1]/(user_mat.shape[0]*cutoff)), occ))
+        occ = list(map(lambda x: (x[0], x[1]/(seed_mat.shape[0]*self.cutoff)), occ))
         occ_sorted = sorted(occ, key=lambda x: x[1], reverse=True)
+
+        scores = [x[1] for x in occ_sorted]
+        scores_pks = [self.target_pks[x[0]] for x in occ_sorted]
+
+        return scores_pks, scores
 
 
 

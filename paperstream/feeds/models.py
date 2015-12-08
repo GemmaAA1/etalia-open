@@ -169,7 +169,7 @@ class Stream(TimeStampedModel):
 
         - Get all matches in time range excluding untrusted and paper already
         in user lib
-        - Score matches
+        - Score
         - Get only the N top scored matches
         - Create/Update StreamPaper
         """
@@ -211,8 +211,8 @@ class Stream(TimeStampedModel):
         # that will allow scoring only a subset of all the world papers
         seed_pks = self.seeds.all().values_list('pk', flat=True)
         # compute # of k neighbors to limit number of total papers retrieved
-        k_neighbors = np.min(settings.FEED_K_NEIGHBORS,
-                             settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1)
+        k_neighbors = np.min([settings.FEED_K_NEIGHBORS,
+                             settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1])
         # call task
         res = ms_task.delay('get_partition',
                              paper_pks=seed_pks,
@@ -230,23 +230,21 @@ class Stream(TimeStampedModel):
         objs_list = []
         if target_pks:
             # compute scores
-            self.log('debug', 'Updating', 'preparing...')
             scoring.prepare(seed_pks, target_pks)
-            self.log('debug', 'Updating', 'scoring...')
             pks, scores = scoring.score()
-            # sort scores
-            self.log('debug', 'Updating', 'sorting...')
+            # Computed number of papers to keep based on user settings
+            # stream_narrowness is exponentially scaled.
             nb_papers = int(settings.FEED_SIZE_PER_DAY *
-                            self.user.settings.stream_time_lapse)
+                            self.user.settings.stream_time_lapse *
+                            2 ** self.user.settings.stream_narrowness)
+            # sort scores
             best = matutils.argsort(scores,
                                     topn=nb_papers,
                                     reverse=True)
             # reshape
             results = [(pks[ind], float(scores[ind])) for ind in best]
-            self.log('debug', 'Updating', 'done')
 
             # create/update UserFeedPaper
-            self.log('debug', 'Updating', 'populating...')
             for pk, val in results:
                 # update
                 if pk in ufp_pks_to_update:
@@ -264,7 +262,6 @@ class Stream(TimeStampedModel):
                         is_score_computed=True))
             # bulk create
             StreamMatches.objects.bulk_create(objs_list)
-            self.log('debug', 'Updating', 'done')
         self.set_state('IDL')
 
         self.log('info', 'Updating', 'DONE')
