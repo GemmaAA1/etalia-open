@@ -1079,6 +1079,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         return result
 
     def get_partition(self, paper_pks, time_lapse=-1, k=1, journal_pks=None):
+        """
+        """
 
         # get seed data
         data = list(PaperVectors.objects\
@@ -1086,11 +1088,15 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             .select_related('paper__journal')\
             .values('vector', 'paper__journal_id'))
 
-        journal_pks = [d.get('paper__journal_id') for d in data]
+        # Get corresponding journal data
+        j_pks = [d.get('paper__journal_id') for d in data]
         data_journal = dict(JournalVectors.objects\
-            .filter(model=self.model, journal_id__in=journal_pks)\
+            .filter(model=self.model, journal_id__in=j_pks)\
             .values_list('journal_id', 'vector'))
 
+        # Build the corresponding matrix data (paper weighted by journal in
+        # agreement with the journal ratio current used in the active
+        # MostSimilar object
         mat = np.zeros((self.model.size, len(data)))
         for i, d in enumerate(data):
             if d.get('paper__journal_id') and data_journal.get(d['paper__journal_id']):
