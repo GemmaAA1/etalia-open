@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 @app.task()
-def update_stream(user_pk, stream_name='main', restrict_journal=False):
+def reset_stream(user_pk, stream_name='main', restrict_journal=False):
     """Async task / Update user feed"""
     # create/update main feed
     feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
@@ -22,10 +22,23 @@ def update_stream(user_pk, stream_name='main', restrict_journal=False):
         user = User.objects.get(pk=user_pk)
         feed.add_papers_seed(user.lib.papers.all())
     # reset
-    feed.reset()
+    feed.clear_all()
     # update
     feed.update(restrict_journal=restrict_journal)
+    return user_pk
 
+
+@app.task()
+def update_stream(user_pk, stream_name='main', restrict_journal=False):
+    """Async task / Update user feed"""
+    # create/update main feed
+    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
+    if stream_name == 'main':
+        # add all seeds
+        user = User.objects.get(pk=user_pk)
+        feed.add_papers_seed(user.lib.papers.all())
+    # update
+    feed.update(restrict_journal=restrict_journal)
     return user_pk
 
 
@@ -33,5 +46,11 @@ def update_stream(user_pk, stream_name='main', restrict_journal=False):
 def update_trend(user_pk, trend_name='main'):
     df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
     df.update()
+    return user_pk
 
+
+@app.task()
+def reset_trend(user_pk, trend_name='main'):
+    df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
+    df.update()
     return user_pk

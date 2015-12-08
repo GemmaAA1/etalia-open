@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-3">
                         <h5>
-                            <button id="update-stream" class="btn btn-primary btn-sm update" action="{% url 'feeds:update-stream'  'main' %}">Update now</button>
+                            <button id="update-stream" class="btn btn-primary btn-sm update" action="{% url 'feeds:reset-stream'  'main' %}">Reset now</button>
                             <span class="errors"></span>
                         </h5>
                     </div>
@@ -64,7 +64,7 @@
                     </div>
                     <div class="col-md-3">
                         <h5>
-                            <button id="update-trend" class="btn btn-primary btn-sm update" action="{% url 'feeds:update-trend'  'main' %}">Update now</button>
+                            <button id="update-trend" class="btn btn-primary btn-sm update" action="{% url 'feeds:reset-trend'  'main' %}">Reset now</button>
                             <span class="errors"></span>
                         </h5>
                     </div>

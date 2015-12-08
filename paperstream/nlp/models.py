@@ -586,6 +586,14 @@ class Model(TimeStampedModel, S3Mixin):
             model = cls.objects.get(name=model_name)
             model.infer_papers(papers, **kwargs)
 
+    def get_words(self, paper, topn=10):
+        """retrieve closest top_n word from document vector"""
+        vec = np.array(paper.vectors.get(model=self).get_vector())
+        res = self._doc2vec.most_similar((vec, ), topn=topn)
+        closest_words = [r[0] for r in res]
+        dist = [r[1] for r in res]
+        return closest_words, dist
+
 
 class TextField(TimeStampedModel):
     """Store which fields of paper and related data are used in model training

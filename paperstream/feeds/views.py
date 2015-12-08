@@ -31,7 +31,7 @@ from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 from .models import Stream, StreamMatches, StreamSeeds, \
     TrendMatches
 from .forms import CreateUserFeedForm
-from .tasks import update_stream, update_trend
+from .tasks import update_stream, update_trend, reset_stream, reset_trend
 
 
 class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
@@ -533,6 +533,17 @@ delete_feed_view = DeleteFeedView.as_view()
 
 
 @login_required
+def reset_stream_view(request, name):
+    if request.is_ajax() or settings.DEBUG:
+        stream_name = name
+        reset_stream.delay(request.user.pk, stream_name=stream_name)
+        data = {'display_update_modal': True,
+                'message': 'Stream reset launched.'}
+        return JsonResponse(data)
+    else:
+        return redirect('feeds:stream')
+
+@login_required
 def update_stream_view(request, name):
     if request.is_ajax() or settings.DEBUG:
         stream_name = name
@@ -549,6 +560,18 @@ def update_trend_view(request, name):
     if request.is_ajax() or settings.DEBUG:
         trend_name = name
         update_trend.delay(request.user.pk, trend_name=trend_name)
+        data = {'display_update_modal': True,
+                'message': 'Trend update launched.'}
+        return JsonResponse(data)
+    else:
+        return redirect('feeds:stream')
+
+
+@login_required
+def reset_trend_view(request, name):
+    if request.is_ajax() or settings.DEBUG:
+        trend_name = name
+        reset_trend.delay(request.user.pk, trend_name=trend_name)
         data = {'display_update_modal': True,
                 'message': 'Trend update launched.'}
         return JsonResponse(data)

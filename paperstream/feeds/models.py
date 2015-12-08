@@ -159,11 +159,6 @@ class Stream(TimeStampedModel):
         else:
             raise ValueError('level unknown')
 
-    def reset(self):
-        """reset stream"""
-        self.clear_all()
-        self.update()
-
     def update(self, restrict_journal=False):
         """Update Stream
 
