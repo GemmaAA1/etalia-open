@@ -273,7 +273,7 @@ class OccurrenceCount(StreamScoring):
         user = kwargs.get('user')
         if user:
             # number of closest neighbors to keep per seed paper
-            self.cutoff = 5
+            self.cutoff = 5 + 3 * user.settings.stream_narrowness
 
     def _run(self):
         seed_mat = self.build_mat(self.seed_data)

@@ -1139,6 +1139,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             data = data[np.array(idx), :]
             index2pk = [x for i, x in enumerate(index2pk) if idx[i]]
             # index2journalpk = [x for i, x in enumerate(index2journalpk) if idx[i]]
+
         # compute distance
         dists = np.dot(data, seeds)
 
