@@ -304,8 +304,5 @@ class OccurrenceCount(StreamScoring):
 
         return scores_pks, scores
 
-
-
-
 class TrendScoring(object):
     pass

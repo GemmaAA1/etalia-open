@@ -536,12 +536,14 @@ delete_feed_view = DeleteFeedView.as_view()
 def reset_stream_view(request, name):
     if request.is_ajax() or settings.DEBUG:
         stream_name = name
-        reset_stream.delay(request.user.pk, stream_name=stream_name)
+        reset_stream.delay(request.user.pk, stream_name=stream_name,
+                           restrict_journal=True)
         data = {'display_update_modal': True,
                 'message': 'Stream reset launched.'}
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')
+
 
 @login_required
 def update_stream_view(request, name):

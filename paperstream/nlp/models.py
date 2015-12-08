@@ -6,6 +6,7 @@ import logging
 import glob
 from random import shuffle
 import numpy as np
+import collections
 
 from gensim import matutils
 from sklearn.externals import joblib
@@ -586,13 +587,30 @@ class Model(TimeStampedModel, S3Mixin):
             model = cls.objects.get(name=model_name)
             model.infer_papers(papers, **kwargs)
 
-    def get_words(self, paper, topn=10):
+    def get_words(self, paper, topn=20):
         """retrieve closest top_n word from document vector"""
         vec = np.array(paper.vectors.get(model=self).get_vector())
         res = self._doc2vec.most_similar((vec, ), topn=topn)
         closest_words = [r[0] for r in res]
         dist = [r[1] for r in res]
         return closest_words, dist
+
+    def get_words_distribution(self, papers, topn=10):
+        """retrieve closest top_n words from all papers a built distribution"""
+        words = []
+        for paper in papers:
+            vec = np.array(paper.vectors.get(model=self).get_vector())
+            res = self._doc2vec.most_similar((vec, ), topn=topn)
+            words += [r[0] for r in res]
+
+        # count occurences
+        dist = collections.Counter(words)
+
+        # remove single occurence
+        dist = dict((k, v) for k, v in dist.items() if v > 1)
+
+        return dist
+
 
 
 class TextField(TimeStampedModel):
