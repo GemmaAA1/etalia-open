@@ -87,7 +87,7 @@ class StreamScoring(object):
         return (date - timezone.datetime.today().date()).days
 
     @staticmethod
-    def logist_weight(day_lapse, baseline=0.5, k=0.1, delay=-60.0):
+    def logist_weight(day_lapse, baseline=0.3, k=0.1, delay=-356.0):
         """Logistic function with constant baseline term
 
         Args:
