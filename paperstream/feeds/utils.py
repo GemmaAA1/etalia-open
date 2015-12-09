@@ -283,7 +283,7 @@ class OccurrenceCount(StreamScoring):
         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
         # build date vector
         # date_vec = self.build_created_date_vec(self.seed_data)
-        date_vec = np.ones((self.seed_data.shape[0], ))
+        date_vec = np.ones((len(self.seed_data), ))
 
         dis = 1.0 - np.dot(targ_mat, seed_mat.T)
         ind = np.argpartition(dis, self.cutoff, axis=0)[:self.cutoff, :][:]
