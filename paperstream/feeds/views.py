@@ -25,7 +25,7 @@ from endless_pagination.views import AjaxListView
 
 from paperstream.core.mixins import ModalMixin, AjaxableResponseMixin
 from paperstream.library.models import Paper, Stats, Author
-from paperstream.users.models import UserTaste, FeedLayout
+from paperstream.users.models import UserTaste, StreamLayout, TrendLayout
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES
 
 from .models import Stream, StreamMatches, StreamSeeds, \
@@ -269,17 +269,11 @@ class StreamView(BaseFeedView):
         return self.context_settings
 
     def update_from_filter(self):
-        ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
+        ufl, new = StreamLayout.objects.get_or_create(user=self.request.user)
         if new:
             ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
                                  'authors_flag': self.authors_filter_flag,
                                  'sorting_flag': self.sorting_flag}
-            ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag,
-                                 'sorting_flag': self.sorting_flag}
-            ufl.library_filter = {'journals_flag': self.journals_filter_flag,
-                                  'authors_flag': self.authors_filter_flag,
-                                  'sorting_flag': self.sorting_flag}
             ufl.save()
         else:
             self.journals_filter = ufl.stream_filter.get('journals')
@@ -348,17 +342,11 @@ class TrendView(BaseFeedView):
         return self.context_settings
 
     def update_from_filter(self):
-        ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
+        ufl, new = TrendLayout.objects.get_or_create(user=self.request.user)
         if new:
-            ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag,
-                                 'sorting_flag': self.sorting_flag}
             ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
                                  'authors_flag': self.authors_filter_flag,
                                  'sorting_flag': self.sorting_flag}
-            ufl.library_filter = {'journals_flag': self.journals_filter_flag,
-                                  'authors_flag': self.authors_filter_flag,
-                                  'sorting_flag': self.sorting_flag}
             ufl.save()
         else:
             self.journals_filter = ufl.trend_filter.get('journals')

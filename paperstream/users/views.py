@@ -36,7 +36,7 @@ from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
     UserEmailDigestSettingsForm
-from .models import Affiliation, UserLibPaper, UserTaste, FeedLayout, \
+from .models import Affiliation, UserLibPaper, UserTaste, LibraryLayout, \
     UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
@@ -188,14 +188,8 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
     like_flag = False
 
     def update_from_filter(self):
-        ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
+        ufl, new = LibraryLayout.objects.get_or_create(user=self.request.user)
         if new:
-            ufl.stream_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag,
-                                 'sorting_flag': self.sorting_flag}
-            ufl.trend_filter = {'journals_flag': self.journals_filter_flag,
-                                 'authors_flag': self.authors_filter_flag,
-                                 'sorting_flag': self.sorting_flag}
             ufl.library_filter = {'journals_flag': self.journals_filter_flag,
                                   'authors_flag': self.authors_filter_flag,
                                   'sorting_flag': self.sorting_flag}

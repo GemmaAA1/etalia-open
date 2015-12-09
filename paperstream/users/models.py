@@ -463,15 +463,24 @@ class UserTaste(TimeStampedModel):
                 context=self.context_source)
 
 
-class FeedLayout(TimeStampedModel):
+class StreamLayout(TimeStampedModel):
     """Store settings for stream display"""
 
     user = models.OneToOneField(User)
-
     stream_filter = JSONField(null=True)
 
+
+class TrendLayout(TimeStampedModel):
+    """Store settings for stream display"""
+
+    user = models.OneToOneField(User)
     trend_filter = JSONField(null=True)
 
+
+class LibraryLayout(TimeStampedModel):
+    """Store settings for stream display"""
+
+    user = models.OneToOneField(User)
     library_filter = JSONField(null=True)
 
 
