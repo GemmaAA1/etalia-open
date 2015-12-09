@@ -602,6 +602,13 @@ def stop_all():
 def start_all():
     run('supervisorctl start all')
 
+@task
+def stop_all():
+    run('supervisorctl stop all')
+
+@task
+def restart_all():
+    run('supervisorctl restart all')
 
 @task
 def clear_nlp_data():
