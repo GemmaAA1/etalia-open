@@ -44,6 +44,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     size_max_author_filter = 40
     size_load_author_filter = 10
     original_qs = None
+    # default filter flag
     journals_filter = None
     journals_filter_flag = 'all'
     authors_filter = None
@@ -171,24 +172,15 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         # Get library stats
         context['stats'] = Stats.objects.last()
 
-        # Get data for filter
-        data = self.original_qs.values('paper',
-                                       'paper__journal__title',
-                                       'paper__authors')
-        j_titles = []
-        authors = []
-        check_papers = []
-        for d in data:
-            if d['paper'] not in check_papers:  # rows are for different authors
-                j_titles.append(d['paper__journal__title'])
-                check_papers.append(d['paper'])
-            authors.append(d['paper__authors'])
+        # Retrieve data for filter
+        j_titles = self.original_qs.values_list('paper__journal__title', flat=True)
+        authors = self.original_qs.values_list('paper__authors', flat=True).distinct()
 
-        # journal filter
+        # Build journal filter (ordering journal titles by occurrence)
         journals_counter = Counter(j_titles)
         j_titles = sorted(journals_counter, key=journals_counter.get,
                           reverse=True)[:self.size_max_journal_filter]
-        # group authors by block identified with block tag
+        # group journals by block of size size_load_journal_filter
         block = 0
         context['journals'] = []
         for i, title in enumerate(j_titles):
@@ -200,8 +192,10 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
         else:
             context['journals_show_more'] = True
 
-        # author filter
-        # get user lib authors
+        # Build author filter
+        # NB: The author filter is sorted by the occurrence of the author in the
+        # user library
+        # retrieve user lib authors
         authors_user_lib = self.request.user.lib.papers.all()\
             .values_list('authors', flat=True)
         authors_user_lib_counter = Counter(authors_user_lib)
@@ -214,6 +208,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
                 authors_dict[auth] = authors_user_lib_counter[auth]
             else:
                 authors_dict[auth] = 0
+        # build the query ordered based on author occurrence in user library
         authors_pks = sorted(authors_dict, key=authors_dict.get,
                                  reverse=True)
         clauses = ' '.join(['WHEN id=%s THEN %s' %
@@ -273,7 +268,6 @@ class StreamView(BaseFeedView):
         }
         return self.context_settings
 
-
     def update_from_filter(self):
         ufl, new = FeedLayout.objects.get_or_create(user=self.request.user)
         if new:
@@ -319,7 +313,7 @@ class StreamView(BaseFeedView):
 
     def get_queryset(self):
 
-        # get ticked paper
+        # get ticked/rejected paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user,
                     is_ticked=True)\
@@ -329,7 +323,8 @@ class StreamView(BaseFeedView):
             .filter(stream__name=self.kwargs.get('name', 'main'),
                     stream__user=self.request.user)\
             .exclude(paper__in=papers_ticked)\
-            .select_related('paper', 'paper__journal')
+            .select_related('paper',
+                            'paper__journal')
 
         query_set = self.filter_queryset(self.original_qs)
 
