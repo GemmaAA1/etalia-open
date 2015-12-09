@@ -149,3 +149,12 @@ lab = ['{0:05d}'.format(b) for b in range(len(bins)-1)]
 foo = dit.Distribution(lab, d16[0].tolist())
 bar = dit.Distribution(['A','B','C'],[0.1,0.0,0.9])
 dit.divergences.jensen_shannon_divergence([foo,bar])
+
+
+# skewness
+dot = np.dot(lib_mat, user_mat.T)
+sk = stats.skew(dot, axis=1)
+sk1 = stats.skew(dot, axis=1, bias=False)
+cutoff = 20
+ind = np.argsort(sk, cutoff, axis=0)[:cutoff]
+ind1 = np.argsort(sk1, cutoff, axis=0)[:cutoff]
