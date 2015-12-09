@@ -49,7 +49,7 @@ user_mat = np.apply_along_axis(normalize, 1, user_mat)
 
 
 # Get baseline stats
-nb_samples = 5000
+nb_samples = 10000
 samples = np.unique(np.random.randint(0, len(lib_titles), nb_samples))
 
 # Get baseline dist distribution
@@ -130,3 +130,22 @@ for i in range(100):
     eigs = np.linalg.eigvals(c)
     eigs_v.append(eigs)
     sdp.append(np.all(eigs > 0 ))
+
+
+#
+dist16 = np.dot(user_mat[16,:], lib_mat_red.T)
+dist2 = np.dot(user_mat[2,:], lib_mat_red.T)
+dist3 = np.dot(user_mat[3,:], lib_mat_red.T)
+
+step = 0.01
+bins = np.arange(-1., 1., step)
+d16 = np.histogram(dist16, bins, density=True)
+d2 = np.histogram(dist2, bins, density=True)
+d3 = np.histogram(dist3, bins, density=True)
+
+stats.entropy(d16[0][np.where(d16[0] > 0 and d2[0] > 0)], d2[0])
+stats.entropy(d16[0], d3[0])
+lab = ['{0:05d}'.format(b) for b in range(len(bins)-1)]
+foo = dit.Distribution(lab, d16[0].tolist())
+bar = dit.Distribution(['A','B','C'],[0.1,0.0,0.9])
+dit.divergences.jensen_shannon_divergence([foo,bar])

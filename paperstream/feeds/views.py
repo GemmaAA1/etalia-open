@@ -520,7 +520,7 @@ def reset_stream_view(request, name):
     if request.is_ajax() or settings.DEBUG:
         stream_name = name
         reset_stream.delay(request.user.pk, stream_name=stream_name,
-                           restrict_journal=True)
+                           restrict_journal=False)
         data = {'display_update_modal': True,
                 'message': 'Stream reset launched.'}
         return JsonResponse(data)
