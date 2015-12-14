@@ -72,7 +72,7 @@ class StreamScoring(object):
                     'paper__pk',
                     'paper__date_ep',
                     'paper__date_pp',
-                    'paper__journal__pk')
+                    'paper__journal__pk',)
         return data
 
     def build_mat(self, data):

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import collections
+
 from nameparser import HumanName
 from jsonfield import JSONField
 from django.db import models
@@ -10,8 +11,9 @@ from django.contrib.auth.models import AbstractBaseUser, \
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import transaction
 
-from paperstream.library.models import Paper, Journal
+from paperstream.library.models import Paper, Journal, Author
 from paperstream.nlp.models import Model
 from paperstream.feeds.models import Stream
 from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
@@ -203,6 +205,8 @@ class UserLib(TimeStampedModel):
 
     journals = models.ManyToManyField(Journal, through='UserLibJournal')
 
+    authors = models.ManyToManyField(Author, through='UserLibAuthor')
+
     state = models.CharField(max_length=3, blank=True, default='NON',
         choices=(('NON', 'Uninitialized'),
                  ('IDL', 'Idle'),
@@ -227,6 +231,27 @@ class UserLib(TimeStampedModel):
             return self
         else:
             raise ValueError('Cannot set state. State value not allowed')
+
+    def update_authors(self):
+        authors = self.papers\
+            .values_list('authors', flat=True)
+        counter = collections.Counter(authors)
+        for a, v in counter.items():
+            ula, _ = UserLibAuthor.objects.get_or_create(userlib=self,
+                                                         author_id=a)
+            ula.occurrence = v
+            ula.save()
+
+    def update_journals(self):
+        journals = self.papers\
+            .exclude(journal__isnull=True)\
+            .values_list('journal', flat=True)
+        counter = collections.Counter(journals)
+        for j, v in counter.items():
+            ula, _ = UserLibJournal.objects.get_or_create(userlib=self,
+                                                         journal_id=j)
+            ula.occurrence = v
+            ula.save()
 
 
 class UserLibPaper(TimeStampedModel):
@@ -268,7 +293,7 @@ class UserLibJournalManager(models.Manager):
 
     def add(self, **kwargs):
         obj, new = self.get_or_create(**kwargs)
-        obj.papers_in_journal += 1
+        obj.occurrence += 1
         obj.save()
         return obj
 
@@ -280,22 +305,41 @@ class UserLibJournal(TimeStampedModel):
 
     journal = models.ForeignKey(Journal)
 
-    # number of paper link to that journal for this user
-    papers_in_journal = models.IntegerField(default=0, null=False)
+    occurrence = models.IntegerField(default=0, null=False)
 
     objects = UserLibJournalManager()
 
     class Meta:
         unique_together = ('userlib', 'journal')
-        ordering = ('-papers_in_journal', )
+        ordering = ('-occurrence', )
 
-    def update_papers_in_journal(self):
-        self.papers_in_journal = self.userlib.papers.filter(
+    def update_occurrence(self):
+        self.occurrence = self.userlib.papers.filter(
             journal=self.journal).count()
         self.save()
 
     def __str__(self):
         return '%s@%s' % (self.userlib.user.email, self.journal.short_title)
+
+
+class UserLibAuthor(TimeStampedModel):
+
+    userlib = models.ForeignKey(UserLib)
+
+    author = models.ForeignKey(Author)
+
+    occurrence = models.IntegerField(default=0, null=False)
+
+    class Meta:
+        unique_together = ('userlib', 'author')
+        ordering = ('-occurrence', )
+
+    def __str__(self):
+        return '%s@%s' % (self.userlib.user.email, self.author.last_name)
+
+    def update_occurence(self):
+        self.occurence = self.userlib.papers.filter(author=self.author).count()
+        self.save()
 
 
 class UserStatsManager(models.Manager):

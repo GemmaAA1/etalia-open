@@ -18,7 +18,7 @@ def mostsimilar_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
         ms = MostSimilar.objects.load(model=model,
-                                     is_active=True)
+                                      is_active=True)
         ms.update()
 
 

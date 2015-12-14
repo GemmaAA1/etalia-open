@@ -606,7 +606,7 @@ class Model(TimeStampedModel, S3Mixin):
         # count occurences
         dist = collections.Counter(words)
 
-        # remove single occurence
+        # remove single occurrence
         dist = dict((k, v) for k, v in dist.items() if v > 1)
 
         return dist
@@ -969,8 +969,6 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
         if not self.index2pk:
             raise ValueError('Looks like you should run full_update instead')
-
-        self.deactivate()
 
         logger.info('Updating MS ({pk}/{name}) - fetching new data...'.format(
             pk=self.id, name=self.name))

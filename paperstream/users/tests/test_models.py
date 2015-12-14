@@ -165,7 +165,7 @@ class UserLibJournalTest(LibDataTestCase):
                                             journal=self.journal)
         self.assertTrue(ulj.full_clean, 0)
         UserLibPaper.objects.create(userlib=self.userlib, paper=self.paper3)
-        ulj.update_papers_in_journal()
+        ulj.update_occurrence()
         self.assertTrue(ulj.full_clean, 1)
 
 
