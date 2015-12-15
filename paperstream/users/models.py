@@ -335,7 +335,7 @@ class UserLibAuthor(TimeStampedModel):
         ordering = ('-occurrence', )
 
     def __str__(self):
-        return '%s@%s' % (self.userlib.user.email, self.author.last_name)
+        return '%s' % (self.author.last_name)
 
     def update_occurence(self):
         self.occurence = self.userlib.papers.filter(author=self.author).count()

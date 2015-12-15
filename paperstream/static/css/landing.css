@@ -137,12 +137,12 @@
 
 .what-img-streams {
     height: 80px;
-    margin-left: 20px;
+    margin-left: -1120px;
 }
 
 .what-img-trends {
     height: 80px;
-    margin-left: -140px;
+    margin-left: -1270px;
 }
 
 .what-img-library {
@@ -195,7 +195,14 @@
 
 .bubble
 {
-    width: 300px;
+    max-width: 300px;
+}
+
+.vcenter {
+    display: inline-block;
+    /*display: flex;*/
+    vertical-align: middle;
+    float: none;
 }
 
 .banner {
