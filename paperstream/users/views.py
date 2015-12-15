@@ -714,8 +714,8 @@ def update_library(request):
             data = {}
             return JsonResponse(data)
         else:
-            data = {'error': 'library is already syncing'}
-            return JsonResponse(data, status=400)
+            data = {'errors': 'Error: Your library is already syncing'}
+            return JsonResponse(data, status=409)
 
 
 @login_required

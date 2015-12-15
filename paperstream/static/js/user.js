@@ -27,9 +27,11 @@ $(document).ready(function() {
             },
             error: function (resp) {
                 console.log('error');
+                console.log(resp.responseText);
+                //$('#message').html(resp.message);
                 var res = JSON.parse(resp.responseText);
                 $.each(res, function (key, value) {
-                    $(this).siblings('.errors').html(value);
+                    $('#errors').html(value);
                 });
             }
         });

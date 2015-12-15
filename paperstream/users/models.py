@@ -242,6 +242,11 @@ class UserLib(TimeStampedModel):
             ula.occurrence = v
             ula.save()
 
+    def get_authors_dist(self):
+        return UserLibAuthor.objects\
+                    .filter(userlib=self)\
+                    .values_list('pk', 'occurrence')
+
     def update_journals(self):
         journals = self.papers\
             .exclude(journal__isnull=True)\
@@ -252,6 +257,11 @@ class UserLib(TimeStampedModel):
                                                          journal_id=j)
             ula.occurrence = v
             ula.save()
+
+    def get_journals_dist(self):
+        return UserLibJournal.objects\
+                    .filter(userlib=self)\
+                    .values_list('pk', 'occurrence')
 
 
 class UserLibPaper(TimeStampedModel):

@@ -138,11 +138,12 @@ class ParserMendeley(ParserBackend):
         authors = []
 
         full_authors = entry.authors
-        for auth in full_authors:
-            author = self.author_template.copy()
-            author['last_name'] = auth.last_name
-            author['first_name'] = auth.first_name
-            authors.append(author)
+        if full_authors:
+            for auth in full_authors:
+                author = self.author_template.copy()
+                author['last_name'] = auth.last_name
+                author['first_name'] = auth.first_name
+                authors.append(author)
         return authors
 
     def parse_corp_authors(self, entry):

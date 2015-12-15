@@ -226,6 +226,12 @@
     margin-top: 0;
 }
 
+.etal {
+    color: #0f7986;
+    font-style: italic;
+    font-weight: 500;
+}
+
 @media(max-width:1199px) {
     ul.banner-social-buttons {
         float: left;
