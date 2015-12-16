@@ -204,7 +204,7 @@ class Stream(TimeStampedModel):
             journal_pks = None
         # get neighbors of seed matches
         # that will allow scoring only a subset of all the world papers
-        seed_pks = self.seeds.all().values_list('pk', flat=True)
+        seed_pks = list(self.seeds.all().values_list('pk', flat=True))
         # compute # of k neighbors to limit number of total papers retrieved
         k_neighbors = np.min([settings.FEED_K_NEIGHBORS,
                              settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1])

@@ -23,7 +23,7 @@ def reset_stream(user_pk, stream_name='main', restrict_journal=False):
         feed.add_papers_seed(user.lib.papers.all())
     # reset
     feed.clear_all()
-    if user.streamlayout:
+    if hasattr(user, 'streamlayout'):
         user.streamlayout.delete()
     # update
     feed.update(restrict_journal=restrict_journal)
@@ -56,7 +56,7 @@ def reset_trend(user_pk, trend_name='main'):
     df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
     user = User.objects.get(pk=user_pk)
     # reset filter
-    if user.trendlayout:
+    if hasattr(user, 'trendlayout'):
         user.trendlayout.delete()
     # update
     df.update()

@@ -245,7 +245,7 @@ class UserLib(TimeStampedModel):
     def get_authors_dist(self):
         return UserLibAuthor.objects\
                     .filter(userlib=self)\
-                    .values_list('pk', 'occurrence')
+                    .values_list('author', 'occurrence')
 
     def update_journals(self):
         journals = self.papers\
@@ -261,7 +261,7 @@ class UserLib(TimeStampedModel):
     def get_journals_dist(self):
         return UserLibJournal.objects\
                     .filter(userlib=self)\
-                    .values_list('pk', 'occurrence')
+                    .values_list('journal', 'occurrence')
 
 
 class UserLibPaper(TimeStampedModel):
