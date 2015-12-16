@@ -33,7 +33,7 @@ class StreamScoring(object):
         self.seed_auth_data = []
         self.target_auth_data = []
         self.profile = []
-        self.vec_w = 1.
+        self.vec_w = 1
         self.auth_w = 5.
         self.jour_w = 1000.
         # contains all [journal_pk]:vectors for journals from matches in seed_pks
@@ -492,8 +492,8 @@ class ContentBasedProfile(StreamScoring):
 
         # concatenate
         target_mat = np.hstack((self.vec_w * target_vec_mat,
-                                self.vec_w * target_auth_mat,
-                                self.vec_w * target_jour_mat))
+                                self.auth_w * target_auth_mat,
+                                self.jour_w * target_jour_mat))
 
         # normalize
         target_mat /= np.linalg.norm(target_mat, axis=1)[:, None]
