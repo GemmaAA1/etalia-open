@@ -21,7 +21,7 @@ class StreamScoring(object):
         self.min_auth_cut = kwargs.get('min_auth_cut', 3)
         self.max_auth_cut = kwargs.get('max_auth_cut', 10)
         self.min_auth_p = kwargs.get('min_auth_p', 0.5)
-        self.min_jour_cut = kwargs.get('min_jour_cut', 1)
+        self.min_jour_cut = kwargs.get('min_jour_cut', 0)
         self.max_jour_cut = kwargs.get('max_jour_cut', 10)
         self.min_jour_p = kwargs.get('min_jour_p', 0.3)
         self.seed_pks = []
@@ -341,11 +341,18 @@ class StreamScoring(object):
                               self.auth_w * seed_auth_mat,
                               self.jour_w * seed_jour_mat))
 
+        # normalize
+        norm = np.linalg.norm(seed_mat, axis=1)
+        non_zeros = norm > 0.
+        seed_mat[non_zeros, :] /= norm[non_zeros, None]
+
         # weight average
         self.profile = np.average(seed_mat, weights=date_vec, axis=0)
 
         # normalize
-        self.profile /= np.linalg.norm(self.profile)
+        norm = np.linalg.norm(self.profile)
+        if norm > 0:
+            self.profile /= norm
 
         # return profile
         return self.profile
@@ -496,7 +503,9 @@ class ContentBasedProfile(StreamScoring):
                                 self.jour_w * target_jour_mat))
 
         # normalize
-        target_mat /= np.linalg.norm(target_mat, axis=1)[:, None]
+        norm = np.linalg.norm(target_mat, axis=1)
+        non_zeros = norm > 0.
+        target_mat[non_zeros, :] /= norm[non_zeros, None]
 
         # dot product
         dis = np.dot(target_mat, self.profile.T)
