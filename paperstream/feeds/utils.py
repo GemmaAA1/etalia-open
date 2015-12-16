@@ -368,7 +368,7 @@ class StreamScoring(object):
         seed_auth = [pk for l in self.seed_auth_data for pk in l]
         # compute occurrences
         seed_occ = collections.Counter(seed_auth)
-        # pop key that are below threshold
+
         for k,v in seed_occ.items():
             if v > self.min_auth_cut:
                 self.seed_auth_pk.append(k)
@@ -391,10 +391,10 @@ class StreamScoring(object):
         seed_jour = [d['paper__journal__pk'] for d in self.seed_data if d['paper__journal__pk']]
         # compute occurrences
         seed_occ = collections.Counter(seed_jour)
-        # pop key that are below threshold
+
         for k,v in seed_occ.items():
-            if v < self.min_jour_cut:
-                seed_occ.pop(k, None)
+            if v > self.min_jour_cut:
+                self.seed_jour_pk.append(k)
         # retrieve author pk list
         self.seed_jour_pk = list(seed_occ.keys())
 
