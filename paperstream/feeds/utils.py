@@ -33,9 +33,9 @@ class StreamScoring(object):
         self.seed_auth_data = []
         self.target_auth_data = []
         self.profile = []
-        self.vec_w = .001
-        self.auth_w = 100.
-        self.jour_w = 100.
+        self.vec_w = 0.
+        self.auth_w = 0.
+        self.jour_w = 0.
         # contains all [journal_pk]:vectors for journals from matches in seed_pks
         self._journal_dict = {}
         self._created_date_dict = {}
