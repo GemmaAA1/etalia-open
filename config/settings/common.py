@@ -305,8 +305,8 @@ FEEDS_SCORE_KEEP_N_PAPERS = 200
 FEEDS_DISPLAY_N_PAPERS = 50
 FEED_JOURNAL_VECTOR_RATIO = 0.2
 # Number of papers to rank
-FEED_K_NEIGHBORS = 100
-FEED_MAX_NB_NEIGHBORS = 50000
+FEED_K_NEIGHBORS = 500
+FEED_MAX_NB_NEIGHBORS = 200000
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
