@@ -206,7 +206,7 @@ class Stream(TimeStampedModel):
         # that will allow scoring only a subset of all the world papers
         seed_pks = list(self.seeds.all().values_list('pk', flat=True))
         # compute # of k neighbors to limit number of total papers retrieved
-        k_neighbors = np.min([settings.FEED_K_NEIGHBORS,
+        k_neighbors = np.min([settings.FEED_K_NEIGHBORS,  # if not enough paper
                              settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1])
         # call task
         res = ms_task.delay('get_partition',
