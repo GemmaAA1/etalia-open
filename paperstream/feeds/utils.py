@@ -24,6 +24,12 @@ class StreamScoring(object):
         self.min_jour_cut = kwargs.get('min_jour_cut', 0)
         self.max_jour_cut = kwargs.get('max_jour_cut', 10)
         self.min_jour_p = kwargs.get('min_jour_p', 0.3)
+
+        self.min_occ_seed_auth_pk = 3
+        self.min_occ_seed_jour_pk = 0
+        self.max_seed_auth_pk = 200
+        self.max_seed_jour_pk = 100
+
         self.seed_pks = []
         self.seed_auth_pk = []
         self.seed_jour_pk = []

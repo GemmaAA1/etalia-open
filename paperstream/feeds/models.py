@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
+from django.db import connection
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager
@@ -205,21 +206,36 @@ class Stream(TimeStampedModel):
         # get neighbors of seed matches
         # that will allow scoring only a subset of all the world papers
         seed_pks = list(self.seeds.all().values_list('pk', flat=True))
-        # compute # of k neighbors to limit number of total papers retrieved
-        k_neighbors = np.min([settings.FEED_K_NEIGHBORS,  # if not enough paper
-                             settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1])
-        # call task
-        res = ms_task.delay('get_partition',
-                             paper_pks=seed_pks,
-                             time_lapse=self.user.settings.stream_time_lapse,
-                             k=k_neighbors,
-                             journal_pks=journal_pks)
-        # wait for results
-        target_seed_pks = res.get()
+        # # compute # of k neighbors to limit number of total papers retrieved
+        # k_neighbors = np.min([settings.FEED_K_NEIGHBORS,  # if not enough paper
+        #                      settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1])
+        # # call task
+        # res = ms_task.delay('get_partition',
+        #                      paper_pks=seed_pks,
+        #                      time_lapse=self.user.settings.stream_time_lapse,
+        #                      k=k_neighbors,
+        #                      journal_pks=journal_pks)
+        # # wait for results
+        # target_seed_pks = res.get()
+
+
+        user_date_settings = \
+            (timezone.now() -
+             timezone.timedelta(days=self.user.settings.stream_time_lapse))\
+            .date()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT id "
+            "FROM library_paper "
+            "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+            "    AND is_trusted=TRUE "
+            "    AND abstract <> ''", (user_date_settings, ))
+        target_pks = cursor.fetchall()
+        target_pks = list(map(lambda x: x[0], target_pks))
+
         # build target matches list
         target_pks = list(ufp_pks_to_update) + \
-                     [pk for pk in target_seed_pks
-                      if pk not in list(lib_pks) + list(ufp_pks_to_update)]
+                     [pk for pk in target_pks if pk not in list(lib_pks) + list(ufp_pks_to_update)]
 
         # compute scores
         objs_list = []
