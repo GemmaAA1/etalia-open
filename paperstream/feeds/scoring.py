@@ -350,7 +350,7 @@ class ContentBasedSimple(StreamScoring):
         self.build_profile(time_weight=True)
 
         # Get target
-        seed = self.profile[:self.model.size]
+        seed = self.profile[:self.model.size].copy()
         seed /= np.linalg.norm(seed)
         if self.target_search == 'neighbor':
             self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
