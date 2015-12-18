@@ -8,6 +8,7 @@ from scipy.spatial import distance
 
 from django.utils import timezone
 from django.conf import settings
+from django.core.cache import caches
 
 from paperstream.nlp.models import PaperVectors, JournalVectors, Model
 from paperstream.library.models import Paper
@@ -17,6 +18,7 @@ class StreamScoring(object):
     """Scoring abstract class"""
 
     TIME_WEIGHT_CUTOFF = -180
+    cache = caches['default']
 
     def __init__(self, stream, **kwargs):
         self.stream = stream
@@ -33,9 +35,9 @@ class StreamScoring(object):
         self.seed_auth_data = self.get_auth_data(self.seed_pks)
 
         # Target data
-        self.target_pks = []
-        self.target_data = []
-        self.target_auth_data = []
+        self.target_pks = None
+        self.target_data = None
+        self.target_auth_data = None
 
         self.journal_ind2jourpk = []
         self.created_date_vec = []
@@ -227,12 +229,12 @@ class ContentBasedSimple(StreamScoring):
 
     MAX_SEED_AUTH_PK = 300
     MAX_SEED_JOUR_PK = 100
-    MIN_OCC_SEED_AUTH = 3
+    MIN_OCC_SEED_AUTH = 2
     MIN_OCC_SEED_JOUR = 1
     DEFAULT_VECTOR_WEIGHT = 1.
     DEFAULT_AUTHOR_WEIGHT = 1.
     DEFAULT_JOURNAL_WEIGHT = 1.
-    DEFAULT_TARGET_SEARCH = 'neighbor'
+    DEFAULT_TARGET_SEARCH = 'all'
 
     def __init__(self, **kwargs):
         super(ContentBasedSimple, self).__init__(**kwargs)
@@ -349,19 +351,37 @@ class ContentBasedSimple(StreamScoring):
         # Build profile
         self.build_profile(time_weight=True)
 
-        # Get target
+        # Get seed
         seed = self.profile[:self.model.size].copy()
-        seed /= np.linalg.norm(seed)
-        if self.target_search == 'neighbor':
-            self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
-        elif self.target_search == 'all':
-            self.target_pks = self.get_target_all_pks()
+        norm = np.linalg.norm(seed)
+        if norm > 0:
+            seed /= norm
+
+        # Get target data
+        if not self.cache.get('target_pks'):
+            if self.target_search == 'neighbor':
+                self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
+            elif self.target_search == 'all':
+                self.target_pks = self.get_target_all_pks()
+            else:
+                raise ValueError('')
+            self.cache.add('target_pks', self.target_pks, 60 * 60 * 24)
         else:
-            raise ValueError('')
+            self.target_pks = self.cache.get('target_pks')
 
         # Build target data
-        self.target_data = self.get_data(self.target_pks)
-        self.target_auth_data = self.get_auth_data(self.target_pks)
+        if not self.cache.get('target_data'):
+            self.target_data = self.get_data(self.target_pks)
+            self.cache.add('target_data', self.target_data, 60 * 60 * 24)
+        else:
+            self.target_data = self.cache.get('target_data')
+        # auth data
+        if not self.cache.get('target_auth_data'):
+            self.target_auth_data = self.get_auth_data(self.target_pks)
+            self.cache.add('target_auth_data', self.target_auth_data, 60 * 60 * 24)
+        else:
+            self.target_auth_data = self.cache.get('target_auth_data')
+
         # build target mat
         target_vec_mat = self.build_paper_vec_mat(self.target_data)
         # build target author mat
