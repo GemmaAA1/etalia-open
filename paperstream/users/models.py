@@ -453,6 +453,9 @@ class UserSettings(TimeStampedModel):
                                             choices=NLP_NARROWNESS_CHOICES,
                                             verbose_name='Narrowness')
 
+    # stream method arguments
+    stream_method_args = JSONField(null=True, default=None, blank=True)
+
     # Trend settings
     # nlp model
     trend_model = models.ForeignKey(Model, verbose_name='NLP Model',

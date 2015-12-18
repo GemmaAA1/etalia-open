@@ -185,7 +185,8 @@ class Stream(TimeStampedModel):
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
         # and instantiate
         journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
-        scoring = Score(stream=self, journal_ratio=journal_ratio)
+        method_arg = self.user.settings.stream_method_args or {}
+        scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
 
         # Score
         pks, scores = scoring.score()
