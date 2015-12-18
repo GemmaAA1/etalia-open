@@ -304,7 +304,7 @@ FEED_SIZE_PER_DAY = 1
 FEEDS_SCORE_KEEP_N_PAPERS = 200
 FEEDS_DISPLAY_N_PAPERS = 50
 # Number of papers to rank
-FEED_MAX_TARGETS = 10000
+FEED_MAX_TARGETS = 200000
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
