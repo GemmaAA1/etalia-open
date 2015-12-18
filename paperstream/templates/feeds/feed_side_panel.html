@@ -21,9 +21,9 @@
                             </div>
                             <div class="short">
                                 {% if journal.title|length > 25 %}
-                                    <span title={{ journal.title }}>{{ journal.title|truncatechars:25 }}</span>
+                                    <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }}</span>
                                 {% else %}
-                                    <span title={{ journal.title }}>{{ journal.title|truncatechars:25 }} ({{ count }})</span>
+                                    <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }} ({{ count }})</span>
                                 {% endif %}
                                 <span class="select">
                                     <button class="only">only</button>
@@ -56,10 +56,10 @@
                             <input type="checkbox" data-author-pk="{{ auth.pk }}"
                                 {% if  auth.pk in authors_filter %} checked="checked" {% endif %}>
                             <div class="long">
-                                <span title={{ author_full_name }}>{{ author_full_name|truncatechars:35 }}</span>
+                                <span title="{{ author_full_name }}">{{ author_full_name|truncatechars:35 }}</span>
                             </div>
                             <div class="short">
-                                <span title={{ author_full_name }}>{{ author_full_name|truncatechars:25 }}</span>
+                                <span title="{{ author_full_name }}">{{ author_full_name|truncatechars:25 }}</span>
                                 <span class="select">
                                     <button class="only">only</button>
                                 </span>
