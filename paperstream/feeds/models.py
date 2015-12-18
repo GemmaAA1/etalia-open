@@ -181,71 +181,11 @@ class Stream(TimeStampedModel):
 
         self.clear_old_papers()
 
-        # Retrieve scoring class
+        # Instantiate Score
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
         # and instantiate
         journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
         scoring = Score(stream=self, journal_ratio=journal_ratio)
-
-        # Retrieve matches to score
-        # self.log('debug', 'Updating', 'fetching relevant matches...')
-        # get mostsimilar task
-        # try:
-        #     ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
-        #         name=self.user.settings.stream_model.name)]
-        # except KeyError:
-        #     raise KeyError
-
-        # # get user journals
-        # if restrict_journal:
-        #     journal_pks = self.user.lib.journals.all().values_list('pk', flat=True)
-        # else:
-        #     journal_pks = None
-
-        # filter seed_pks through PaperVector instance
-        # seed_pks = list(self.seeds.all().values_list('pk', flat=True))
-        # seed_pks = PaperVectors.objects\
-        #     .filter(paper__pk__in=seed_pks, model=self.user.settings.stream_model)\
-        #     .values_list('paper__pk', flat=True)
-
-        # get neighbors of seed matches
-        # that will allow scoring only a subset of all the world papers
-        # # compute # of k neighbors to limit number of total papers retrieved
-        # k_neighbors = np.min([settings.FEED_K_NEIGHBORS,  # if not enough paper
-        #                      settings.FEED_MAX_NB_NEIGHBORS // len(seed_pks) or 1])
-        # # call task
-        # res = ms_task.delay('get_partition',
-        #                      paper_pks=seed_pks,
-        #                      time_lapse=self.user.settings.stream_time_lapse,
-        #                      k=k_neighbors,
-        #                      journal_pks=journal_pks)
-        # # wait for results
-        # target_pks = res.get()
-
-        # user_date_settings = \
-        #     (timezone.now() -
-        #      timezone.timedelta(days=self.user.settings.stream_time_lapse))\
-        #     .date()
-        # cursor = connection.cursor()
-        # cursor.execute(
-        #     "SELECT id "
-        #     "FROM library_paper "
-        #     "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
-        #     "    AND is_trusted=TRUE "
-        #     "    AND abstract <> ''", (user_date_settings, ))
-        # target_pks = cursor.fetchall()
-        # target_pks = list(map(lambda x: x[0], target_pks))
-
-        # Using get_recent_pks from MostSimilar object
-        # call task
-        # res = ms_task.delay('get_recent_pks',
-        #                      time_lapse=self.user.settings.stream_time_lapse)
-        # # wait for results
-        # target_pks = res.get()
-
-        # build target matches list
-        # target_pks = list(ufp_pks_to_update) + \
-        #              [pk for pk in target_pks if pk not in list(lib_pks) + list(ufp_pks_to_update)]
 
         # Score
         pks, scores = scoring.score()
