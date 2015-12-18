@@ -1181,6 +1181,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         result = [index2pk[ind] for ind in arg_part.flatten()]
         return list(set(result))
 
+    def get_recent_pks(self, time_lapse=30):
+        """Return last found/published paper pk"""
+        clip_start = self.get_clip_start(time_lapse)
+        return self.index2pk[clip_start:]
+
     def tasks(self, task, **kwargs):
         """Wrapper around MostSimilar tasks
 
@@ -1239,6 +1244,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             time_lapse = kwargs.get('time_lapse')
             top_n = kwargs.get('top_n')
             return self.knn_search(seed, time_lapse=time_lapse, top_n=top_n)
+        elif task == 'get_recent_pks':
+            time_lapse = kwargs.get('time_lapse')
+            return self.get_recent_pks(time_lapse=time_lapse)
         else:
             print(task)
             raise ValueError('Unknown task action')
