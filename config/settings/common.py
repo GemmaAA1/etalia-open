@@ -299,7 +299,7 @@ NLP_NEIGHBORS_REFRESH_TIME_LAPSE = 7
 
 # FEED APP
 # ------------------------------------------------------------------------------
-FEED_SIZE_PER_DAY = 1
+FEED_SIZE_PER_DAY = 5
 
 FEEDS_SCORE_KEEP_N_PAPERS = 200
 FEEDS_DISPLAY_N_PAPERS = 50
