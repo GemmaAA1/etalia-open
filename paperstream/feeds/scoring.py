@@ -357,7 +357,7 @@ class ContentBasedSimple(StreamScoring):
         if norm > 0:
             seed /= norm
 
-        # Get target data
+        # Get target data (from cache if available)
         if not self.cache.get('target_pks'):
             if self.target_search == 'neighbor':
                 self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)

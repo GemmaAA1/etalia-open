@@ -10,7 +10,10 @@
 {% block head %}
 {% endblock head %}
 
-{% block title %}PubStream | Your Guide to Scientific News{% endblock %}
+{% block title %}
+    {{ block.super }}
+    Your Guide to Scientific News
+{% endblock %}
 
 
 {% block content %}
