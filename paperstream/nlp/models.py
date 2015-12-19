@@ -598,7 +598,7 @@ class Model(TimeStampedModel, S3Mixin):
         """retrieve closest top_n word from document vector"""
         pv = PaperVectors.objects.get(model=self, paper_id=paper_pk)
         vec = np.array(pv.get_vector())
-        return self.get_words_from_vec(vec, topn=topn)
+        return self.get_words_vec(vec, topn=topn)
 
     def get_words_distribution(self, paper_pks, topn=10):
         """retrieve closest top_n words from all papers and build distribution"""
