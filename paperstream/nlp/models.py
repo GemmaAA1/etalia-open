@@ -587,24 +587,23 @@ class Model(TimeStampedModel, S3Mixin):
             model = cls.objects.get(name=model_name)
             model.infer_papers(papers, **kwargs)
 
-    def get_words_from_vec(self, vec, topn=20):
+    def get_words_vec(self, vec, topn=20):
         """retrieve closest top_n word from vector"""
         res = self._doc2vec.most_similar((vec, ), topn=topn)
         closest_words = [r[0] for r in res]
         dist = [r[1] for r in res]
         return closest_words, dist
 
-    def get_words(self, paper, topn=20):
+    def get_words_paper(self, paper_pk, topn=20):
         """retrieve closest top_n word from document vector"""
-        vec = np.array(paper.vectors.get(model=self).get_vector())
-        res = self._doc2vec.most_similar((vec, ), topn=topn)
-        closest_words = [r[0] for r in res]
-        dist = [r[1] for r in res]
-        return closest_words, dist
+        pv = PaperVectors.objects.get(model=self, paper_id=paper_pk)
+        vec = np.array(pv.get_vector())
+        return self.get_words_from_vec(vec, topn=topn)
 
-    def get_words_distribution(self, papers, topn=10):
-        """retrieve closest top_n words from all papers a built distribution"""
+    def get_words_distribution(self, paper_pks, topn=10):
+        """retrieve closest top_n words from all papers and build distribution"""
         words = []
+        papers = Paper.objects.filter(pk__in=paper_pks)
         for paper in papers:
             vec = np.array(paper.vectors.get(model=self).get_vector())
             res = self._doc2vec.most_similar((vec, ), topn=topn)
@@ -618,6 +617,20 @@ class Model(TimeStampedModel, S3Mixin):
 
         return dist
 
+    def tasks(self, task, **kwargs):
+        """Task dispatcher. See comments on MostSimilar.tasks method for rational"""
+
+        if task == 'infer_paper':
+            paper_pk = kwargs.pop('paper_pk')
+            return self.infer_paper(paper_pk, **kwargs)
+        elif task == 'infer_papers':
+            paper_pk = kwargs.pop('paper_pk')
+            return self.infer_papers(paper_pk, **kwargs)
+        elif task == 'get_words_vec':
+            vec = kwargs.pop('vec')
+            return self.get_words_vec(vec, **kwargs)
+        else:
+            raise ValueError('Unknown task action: {0}'.format(task))
 
 
 class TextField(TimeStampedModel):
@@ -1197,13 +1210,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         """Wrapper around MostSimilar tasks
 
         Use from tasks.py for calling task while object remains in-memory.
-        Possibly an akward design.
+        Possibly an awkward design.
 
         This method dispatches tasks that can be run from MostSimilar.
         It is so because we want to have the MostSimilar instance in-memory
         to avoid over-head of loading from file. Given the Task class of Celery
-        the work-around I found is to define this wrapper that dispatches to
-        sub tasks.
+        the work-around to define this wrapper that dispatches to sub tasks.
 
         Args:
             task (string): A string defining the task. 'update', 'populate_neighbors',
@@ -1231,29 +1243,18 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         if task == 'update':
             self.update()
         elif task == 'populate_neighbors':
-            paper_pk = kwargs.get('paper_pk')
-            time_lapse = kwargs.get('time_lapse')
-            return self.populate_neighbors(paper_pk, time_lapse=time_lapse)
+            paper_pk = kwargs.pop('paper_pk')
+            return self.populate_neighbors(paper_pk, **kwargs)
         elif task == 'get_knn':
-            paper_pk = kwargs.get('paper_pk')
-            time_lapse = kwargs.get('time_lapse')
-            k = kwargs.get('k')
-            return self.get_knn(paper_pk, time_lapse=time_lapse, k=k)
+            paper_pk = kwargs.pop('paper_pk')
+            return self.get_knn(paper_pk, **kwargs)
         elif task == 'get_partition':
-            paper_pks = kwargs.get('paper_pks')
-            journal_pks = kwargs.get('journal_pks', None)
-            time_lapse = kwargs.get('time_lapse')
-            k = kwargs.get('k')
-            return self.get_partition(paper_pks, time_lapse=time_lapse, k=k,
-                                      journal_pks=journal_pks)
+            paper_pks = kwargs.pop('paper_pks')
+            return self.get_partition(paper_pks, **kwargs)
         elif task == 'knn_search':
-            seed = kwargs.get('seed')
-            time_lapse = kwargs.get('time_lapse')
-            top_n = kwargs.get('top_n')
-            return self.knn_search(seed, time_lapse=time_lapse, top_n=top_n)
+            seed = kwargs.pop('seed')
+            return self.knn_search(seed, **kwargs)
         elif task == 'get_recent_pks':
-            time_lapse = kwargs.get('time_lapse')
-            return self.get_recent_pks(time_lapse=time_lapse)
+            return self.get_recent_pks(**kwargs)
         else:
-            print(task)
-            raise ValueError('Unknown task action')
+            raise ValueError('Unknown task action: {0}'.format(task))

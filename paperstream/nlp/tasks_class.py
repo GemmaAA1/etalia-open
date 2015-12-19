@@ -52,11 +52,9 @@ class EmbedPaperTask(Task):
 
         return self._model
 
-    def run(self, paper_pk, **kwargs):
-        if isinstance(paper_pk, list or QuerySet):
-            return self.model.infer_papers(paper_pk)
-        else:
-            return self.model.infer_paper(paper_pk)
+    def run(self, *args, **kwargs):
+        return self.model.tasks(*args, **kwargs)
+
 
 
 class MostSimilarTask(Task):

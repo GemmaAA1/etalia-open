@@ -21,7 +21,6 @@ def mostsimilar_update_all():
                                       is_active=True)
         ms.update()
 
-
 @app.task()
 def add_nlp(x, y):
     """dummy task"""
@@ -31,7 +30,7 @@ def add_nlp(x, y):
 
 def embed_papers(pks, model_name, batch_size=1000):
     try:
-        embed_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
+        model_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
             model_name=model_name)]
     except KeyError:
         logger.error('Embeding task for {model_name} not defined'.format(
@@ -44,4 +43,4 @@ def embed_papers(pks, model_name, batch_size=1000):
     pks_batched.append(pks[nb_batches * batch_size:])
 
     for batch in pks_batched:
-        embed_task.apply_async(args=(batch, ))
+        model_task.delay('infer_papers', batch)

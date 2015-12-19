@@ -26,11 +26,11 @@ def embed_all_models(paper_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            embed_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
+            model_task = app.tasks['paperstream.nlp.tasks.{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
-            logger.error('Embeding task for {model_name} not defined'.format(
+            logger.error('Model task for {model_name} not defined'.format(
                 model_name=model_name))
             continue
 
-        embed_task.apply_async(args=(paper_pk, ))
+        model_task.delay('infer_paper', paper_pk=paper_pk)
