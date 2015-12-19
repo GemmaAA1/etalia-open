@@ -629,6 +629,9 @@ class Model(TimeStampedModel, S3Mixin):
         elif task == 'get_words_vec':
             vec = kwargs.pop('vec')
             return self.get_words_vec(vec, **kwargs)
+        elif task == 'get_words_paper':
+            paper_pk = kwargs.pop('paper_pk')
+            return self.get_words_paper(paper_pk, **kwargs)
         else:
             raise ValueError('Unknown task action: {0}'.format(task))
 
