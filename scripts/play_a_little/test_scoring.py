@@ -5,6 +5,8 @@ from paperstream.users.models import UserLibPaper
 from django.contrib.auth import get_user_model
 from paperstream.nlp.models import PaperVectors, JournalVectors, Model
 from paperstream.library.models import Paper
+from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.cluster import AffinityPropagation, DBSCAN
 import numpy as np
 import os
 import datetime
@@ -136,3 +138,81 @@ for i, dist in enumerate(dists[:3]):
     # plt.setp(patches, 'facecolor', 'alpha', 0.6)
 plt.legend(['unrelated', 'DCE related', 'word2vec related'])
 plt.show()
+
+
+
+from django.contrib.auth import get_user_model
+from paperstream.feeds.scoring import ContentBasedSimple
+from sklearn import manifold, datasets
+
+import  matplotlib.pylab as plt
+
+User = get_user_model()
+us = User.objects.all()
+user = us[0]
+
+stream = user.streams.first()
+self = ContentBasedSimple(stream=stream)
+
+self.build_profile_ind2jourpk()
+self.build_profile_ind2authpk()
+date_vec = self.build_date_vec()
+# build seed mat
+seed_vec_mat = self.build_paper_vec_mat(self.seed_data)
+
+# build seed author mat
+seed_auth_mat = self.build_auth_utility_mat(self.seed_auth_data)
+
+# build journal mat
+seed_jour_mat = self.build_jour_utility_mat(self.seed_data)
+
+# concatenate these 3 mats
+seed_mat = np.hstack((self.vec_w * seed_vec_mat,
+                      self.auth_w * seed_auth_mat,
+                      self.jour_w * seed_jour_mat))
+
+for i in range(seed_mat.shape[1]):
+    tmp = seed_mat[:,i]
+    seed_mat[:,i] = (tmp - np.mean(tmp))/np.std(tmp)
+
+
+X = seed_mat[:, :128]
+
+# normalize
+norm = np.linalg.norm(X)
+if norm > 0:
+    X /= norm
+
+
+tsne = manifold.TSNE(n_components=2, init='pca', random_state=0,
+                     perplexity=50,
+                     early_exaggeration=8.0,
+                     learning_rate=200,
+                     verbose=2,
+                     method='exact')
+Y = tsne.fit_transform(X)
+
+fig = plt.figure()
+color = []
+plt.scatter(Y[:, 0], Y[:, 1], c=color, cmap=plt.cm.Spectral)
+plt.axis('tight')
+plt.show()
+
+
+cl = MiniBatchKMeans(n_clusters=5,
+                     init='k-means++',
+                     n_init=1,
+                     init_size=100,
+                     batch_size=100)
+
+cl.fit(Y)
+
+# cl = DBSCAN(eps=0.3*6, min_samples=20).fit(Y)
+# cl = AffinityPropagation(preference=-50).fit(Y)
+
+color = cl.labels_
+fig = plt.figure()
+plt.scatter(Y[:, 0], Y[:, 1], c=color, cmap=plt.cm.Spectral)
+plt.axis('tight')
+plt.show()
+

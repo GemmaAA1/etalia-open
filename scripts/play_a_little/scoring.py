@@ -158,3 +158,14 @@ sk1 = stats.skew(dot, axis=1, bias=False)
 cutoff = 20
 ind = np.argsort(sk, cutoff, axis=0)[:cutoff]
 ind1 = np.argsort(sk1, cutoff, axis=0)[:cutoff]
+
+
+
+
+from sklearn import manifold, datasets
+
+tsne = manifold.TSNE(n_components=2, init='pca',
+                     random_state=0,
+                     learning_rate=1000,
+                     verbose=2)
+Y = tsne.fit_transform(lib_mat)

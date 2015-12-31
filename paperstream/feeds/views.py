@@ -62,7 +62,7 @@ class BaseFeedView(LoginRequiredMixin, ModalMixin, AjaxListView):
     def filter_queryset(self, queryset):
 
         # load stored filter
-        self.update_from_filter()
+        # self.update_from_filter()
 
         # journals
         if self.journals_filter_flag == 'all':

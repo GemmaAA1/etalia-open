@@ -528,14 +528,14 @@ class StreamLayout(TimeStampedModel):
 
 
 class TrendLayout(TimeStampedModel):
-    """Store settings for stream display"""
+    """Store settings for trend display"""
 
     user = models.OneToOneField(User)
     trend_filter = JSONField(null=True)
 
 
 class LibraryLayout(TimeStampedModel):
-    """Store settings for stream display"""
+    """Store settings for library display"""
 
     user = models.OneToOneField(User)
     library_filter = JSONField(null=True)

@@ -306,6 +306,9 @@ FEEDS_DISPLAY_N_PAPERS = 50
 # Number of papers to rank
 FEED_MAX_TARGETS = 200000
 
+# Number of Clusters
+FEED_NB_CLUSTERS = 5
+
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
 ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')

@@ -1,6 +1,33 @@
 {% load staticfiles %}
 
 <div class="side-panel">
+    <div class="side-panel-section time-span">
+        <div class="side-panel-title">
+            Time span
+        </div>
+        <div class="side-panel-inner">
+            <div>
+                <a href="{% url 'feeds:stream' %}?time-span=last">
+                   last-visit
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'feeds:stream' %}?time-span=week">
+                   week
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'feeds:stream' %}?time-span=1-months">
+                   1-month
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'feeds:stream' %}?time-span=2-months">
+                   2-months
+                </a>
+            </div>
+        </div>
+    </div>
     <div class="side-panel-section journals">
         <div class="side-panel-title">
             Journals

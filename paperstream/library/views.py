@@ -90,7 +90,7 @@ class PaperView(ModalMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
-        time_lapse = self.time_lapse_map[self.kwargs.get('time_lapse', 'year')]
+        time_lapse = self.time_lapse_map[self.request.GET.get('time-span', 'year')]
         if self.request.user.is_authenticated():
             model = self.request.user.settings.stream_model
         else:
@@ -130,7 +130,7 @@ class PaperView(ModalMixin, DetailView):
             context['neighbors'] = []
 
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
-        context['time_lapse'] = self.kwargs.get('time_lapse', 'year')
+        context['time_lapse'] = self.request.GET.get('time-span', 'year')
 
         if not self.request.user.is_anonymous():
             try:
@@ -152,24 +152,25 @@ paper_slug = PaperView.as_view()
 class PaperViewPk(RedirectView):
     """Redirect to slug paper url"""
 
-    permanent = True
+    permanent = False
+    query_string = True
 
     def get_redirect_url(self, *args, **kwargs):
         paper = Paper.objects.get(pk=kwargs['pk'])
-        return paper.get_absolute_url()
+        return paper.get_absolute_url() + '?' + self.request.GET.urlencode()
 
 paper = PaperViewPk.as_view()
 
 
-class PaperViewPkTime(RedirectView):
-
-    permanent = True
-
-    def get_redirect_url(self, *args, **kwargs):
-        paper = Paper.objects.get(pk=kwargs['pk'])
-        return reverse('library:paper-slug-time',
-                       kwargs={'pk': paper.pk,
-                               'slug': slugify(paper.title),
-                               'time_lapse': kwargs.get('time_lapse')})
-
-paper_time = PaperViewPkTime.as_view()
+# class PaperViewPkTime(RedirectView):
+#
+#     permanent = True
+#
+#     def get_redirect_url(self, *args, **kwargs):
+#         paper = Paper.objects.get(pk=kwargs['pk'])
+#         return reverse('library:paper-slug-time',
+#                        kwargs={'pk': paper.pk,
+#                                'slug': slugify(paper.title),
+#                                'time_lapse': kwargs.get('time_lapse')})
+#
+# paper_time = PaperViewPkTime.as_view()

@@ -94,9 +94,9 @@
                         <div class="neighbors">
                             <div class="title">Similar Papers</div>
                             <span>
-                                <a href="{% url 'library:paper-time' paper.id 'year' %}" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
-                                <a href="{% url 'library:paper-time' paper.id 'month' %}" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
-                                <a href="{% url 'library:paper-time' paper.id 'week' %}" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
+                                <a href="{% url 'library:paper' paper.id %}?time-span=year" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
+                                <a href="{% url 'library:paper' paper.id %}?time-span=month" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
+                                <a href="{% url 'library:paper' paper.id %}?time-span=week" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
                             <span>
                             {% if neighbors %}
                             <div class="neighbors-list" title="">

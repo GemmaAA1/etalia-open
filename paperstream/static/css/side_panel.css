@@ -25,6 +25,10 @@
     padding: 2px;
 }
 
+.side-panel a {
+    color: #000000;
+}
+
 .side-panel li {
     list-style: none;
 }

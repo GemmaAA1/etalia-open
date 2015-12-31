@@ -189,19 +189,7 @@ class Stream(TimeStampedModel):
         scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
 
         # Score
-        pks, scores = scoring.score()
-
-        # Computed number of papers to keep based on user settings
-        # stream_narrowness is exponentially scaled.
-        nb_papers = int(settings.FEED_SIZE_PER_DAY *
-                        self.user.settings.stream_time_lapse *
-                        2 ** self.user.settings.stream_narrowness)
-        # sort scores
-        best = matutils.argsort(scores,
-                                topn=nb_papers,
-                                reverse=True)
-        # reshape
-        results = [(pks[ind], float(scores[ind])) for ind in best]
+        results = scoring.score()
 
         # create/update UserFeedPaper
         objs_list = []

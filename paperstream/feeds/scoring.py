@@ -5,12 +5,13 @@ import numpy as np
 import collections
 from config.celery import celery_app as app
 from scipy.spatial import distance
+from gensim import matutils
 
 from django.utils import timezone
 from django.conf import settings
 from django.core.cache import caches
 
-from paperstream.nlp.models import PaperVectors, JournalVectors, Model
+from paperstream.nlp.models import PaperVectors, Model
 from paperstream.library.models import Paper
 
 
@@ -203,6 +204,24 @@ class StreamScoring(object):
             self.created_date_vec.append(w)
 
         return self.created_date_vec
+
+
+    def order_results(self, pks, scores):
+        """"Sort scores in descending order
+        """
+        # number of paper to keep
+        nb_papers = int(
+            settings.FEED_SIZE_PER_DAY *
+            self.stream.user.settings.stream_time_lapse *
+            2 ** self.stream.user.settings.stream_narrowness)
+
+        # sort scores
+        best = matutils.argsort(scores,
+                                topn=nb_papers,
+                                reverse=True)
+
+        return [(pks[ind], float(scores[ind])) for ind in best]
+
 
     def score(self):
         """Score target matches related to seed matches if ready
@@ -400,7 +419,10 @@ class ContentBasedSimple(StreamScoring):
         # Dot product
         dis = np.dot(target_mat, self.profile.T)
 
-        return self.target_pks, dis
+        # Order
+        res = self.order_results(self.target_pks, dis)
+
+        return res
 
 
 # class SimpleMax(StreamScoring):
