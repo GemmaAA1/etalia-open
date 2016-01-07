@@ -7,23 +7,23 @@
         </div>
         <div class="side-panel-inner">
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=last">
-                   last-visit
+                <a href="{% url 'feeds:stream' %}?time-span=lv" {% if time_span == 'lv' %} style="text-decoration: underline;" {%  endif %}>
+                   last visit
                 </a>
             </div>
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=week">
-                   week
+                <a href="{% url 'feeds:stream' %}?time-span=1w" {% if time_span == '1w' %} style="text-decoration: underline;" {%  endif %}>
+                   1 week
                 </a>
             </div>
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=1-months">
-                   1-month
+                <a href="{% url 'feeds:stream' %}?time-span=1m" {% if time_span == '1m' %} style="text-decoration: underline;" {%  endif %}>
+                   1 month
                 </a>
             </div>
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=2-months">
-                   2-months
+                <a href="{% url 'feeds:stream' %}?time-span=2m" {% if time_span == '2m' %} style="text-decoration: underline;" {%  endif %}>
+                   2 months
                 </a>
             </div>
         </div>
@@ -31,9 +31,9 @@
     <div class="side-panel-section journals">
         <div class="side-panel-title">
             Journals
-            <span class="select">
-            <button class="all">all</button>/<button class="none">none</button>
-            </span>
+{#            <span class="select">#}
+{#            <button class="all">all</button>/<button class="none">none</button>#}
+{#            </span>#}
         </div>
         <div class="side-panel-inner">
             <ul>
@@ -44,18 +44,18 @@
                             <input type="checkbox" data-journal-title="{{ journal.title }}"
                                     {% if journal.title|lower in journals_filter %} checked="checked" {% endif %}>
                             <div class="long">
-                                {{ journal.title|truncatechars:25 }} ({{ count }})
+                                <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }} ({{ count }})</span>
                             </div>
-                            <div class="short">
-                                {% if journal.title|length > 25 %}
-                                    <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }}</span>
-                                {% else %}
-                                    <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }} ({{ count }})</span>
-                                {% endif %}
-                                <span class="select">
-                                    <button class="only">only</button>
-                                </span>
-                            </div>
+{#                            <div class="short">#}
+{#                                {% if journal.title|length > 25 %}#}
+{#                                    <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }}</span>#}
+{#                                {% else %}#}
+{#                                    <span title="{{ journal.title }}">{{ journal.title|truncatechars:25 }} ({{ count }})</span>#}
+{#                                {% endif %}#}
+{#                                <span class="select">#}
+{#                                    <button class="only">only</button>#}
+{#                                </span>#}
+{#                            </div>#}
                         </label>
                     </div>
                 </li>
@@ -70,9 +70,9 @@
     <div class="side-panel-section authors">
         <div class="side-panel-title">
             Authors
-            <span class="select">
-            <button class="all">all</button>/<button class="none">none</button>
-            </span>
+{#            <span class="select">#}
+{#            <button class="all">all</button>/<button class="none">none</button>#}
+{#            </span>#}
         </div>
         <div class="side-panel-inner">
             <ul >
@@ -85,12 +85,12 @@
                             <div class="long">
                                 <span title="{{ author_full_name }}">{{ author_full_name|truncatechars:35 }}</span>
                             </div>
-                            <div class="short">
-                                <span title="{{ author_full_name }}">{{ author_full_name|truncatechars:25 }}</span>
-                                <span class="select">
-                                    <button class="only">only</button>
-                                </span>
-                            </div>
+{#                            <div class="short">#}
+{#                                <span title="{{ author_full_name }}">{{ author_full_name|truncatechars:25 }}</span>#}
+{#                                <span class="select">#}
+{#                                    <button class="only">only</button>#}
+{#                                </span>#}
+{#                            </div>#}
                         </label>
                     </div>
                 </li>

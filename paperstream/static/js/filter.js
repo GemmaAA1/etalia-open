@@ -1,7 +1,3 @@
-/**
- * Created by nicolaspannetier on 10/19/15.
- */
-
 $(document).ready(function() {
 
     $('.like-img').on('click', function () {
@@ -10,54 +6,54 @@ $(document).ready(function() {
     });
 
     $('.checkbox').on('click', function () {
-        send_filter(undefined, undefined);
+        send_filter();
     });
 
-    $('.journals .only').on('click', function (event) {
-        $(this).closest('.side-panel-section').find('input').each(function () {
-            $(this).prop('checked', false);
-        });
-        $(this).parents().siblings('input').prop('checked', true);
-        send_filter('none', undefined);
-        event.stopPropagation();
-    });
+    //$('.journals .only').on('click', function (event) {
+    //    $(this).closest('.side-panel-section').find('input').each(function () {
+    //        $(this).prop('checked', false);
+    //    });
+    //    $(this).parents().siblings('input').prop('checked', true);
+    //    send_filter('none', undefined);
+    //    event.stopPropagation();
+    //});
+    //
+    //$('.authors .only').on('click', function (event) {
+    //    $(this).closest('.side-panel-section').find('input').each(function () {
+    //        $(this).prop('checked', false);
+    //    });
+    //    $(this).parents().siblings('input').prop('checked', true);
+    //    send_filter(undefined, 'none');
+    //    event.stopPropagation();
+    //});
+    //
+    //$('.journals .all').on('click', function () {
+    //    $(this).closest('.side-panel-section').find('input').each(function () {
+    //        $(this).prop('checked', true);
+    //    });
+    //    send_filter('all', undefined);
+    //});
+    //
+    //$('.journals .none').on('click', function () {
+    //    $(this).closest('.side-panel-section').find('input').each(function () {
+    //        $(this).prop('checked', false);
+    //    });
+    //    send_filter('none', undefined);
+    //});
 
-    $('.authors .only').on('click', function (event) {
-        $(this).closest('.side-panel-section').find('input').each(function () {
-            $(this).prop('checked', false);
-        });
-        $(this).parents().siblings('input').prop('checked', true);
-        send_filter(undefined, 'none');
-        event.stopPropagation();
-    });
-
-    $('.journals .all').on('click', function () {
-        $(this).closest('.side-panel-section').find('input').each(function () {
-            $(this).prop('checked', true);
-        });
-        send_filter('all', undefined);
-    });
-
-    $('.journals .none').on('click', function () {
-        $(this).closest('.side-panel-section').find('input').each(function () {
-            $(this).prop('checked', false);
-        });
-        send_filter('none', undefined);
-    });
-
-    $('.authors .all').on('click', function () {
-        $(this).closest('.side-panel-section').find('input').each(function () {
-            $(this).prop('checked', true);
-        });
-        send_filter(undefined, 'all');
-    });
-
-    $('.authors .none').on('click', function () {
-        $(this).closest('.side-panel-section').find('input').each(function () {
-            $(this).prop('checked', false);
-        });
-        send_filter(undefined, 'none');
-    });
+    //$('.authors .all').on('click', function () {
+    //    $(this).closest('.side-panel-section').find('input').each(function () {
+    //        $(this).prop('checked', true);
+    //    });
+    //    send_filter(undefined, 'all');
+    //});
+    //
+    //$('.authors .none').on('click', function () {
+    //    $(this).closest('.side-panel-section').find('input').each(function () {
+    //        $(this).prop('checked', false);
+    //    });
+    //    send_filter(undefined, 'none');
+    //});
 
     //$('.journal, .author')
     //    .on('mouseenter', function () {
@@ -114,7 +110,8 @@ $(document).ready(function() {
 
 });
 
-function send_filter(journals_flag, authors_flag, sorting_flag) {
+//function send_filter(journals_flag, authors_flag, sorting_flag) {
+function send_filter() {
 
     var json_data = {};
     json_data.source = 'filter';
@@ -128,20 +125,22 @@ function send_filter(journals_flag, authors_flag, sorting_flag) {
     // build json object
     $('.journals').find('input').each(function () {
         if ($(this).is(':checked')) {
-            json_data['journals'].push([$(this).data('journal-title'), true]);
+            //json_data['journals'].push([$(this).data('journal-title'), true]);
+            json_data['journals'].push($(this).data('journal-title'));
         }
-        else {
-            json_data['journals'].push([$(this).data('journal-title'), false]);
-        }
+        //else {
+        //    json_data['journals'].push([$(this).data('journal-title'), false]);
+        //}
     });
 
     $('.authors').find('input').each(function () {
         if ($(this).is(':checked')) {
-            json_data['authors'].push([$(this).data('author-pk'), true]);
+            //json_data['authors'].push([$(this).data('author-pk'), true]);
+            json_data['authors'].push($(this).data('author-pk'));
         }
-        else {
-            json_data['authors'].push([$(this).data('author-pk'), false]);
-        }
+        //else {
+        //    json_data['authors'].push([$(this).data('author-pk'), false]);
+        //}
     });
 
     if ($('.like-img').hasClass('active')) {

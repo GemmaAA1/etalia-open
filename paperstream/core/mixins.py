@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from paperstream.users.mixins import ProfileModalFormsMixin
 from paperstream.feeds.mixins import CreateFeedModalMixin
 
+
 class AjaxableResponseMixin(object):
     """
     Mixin to add AJAX support to a form.

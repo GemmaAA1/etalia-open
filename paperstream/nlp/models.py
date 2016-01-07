@@ -1207,7 +1207,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def get_recent_pks(self, time_lapse=30):
         """Return last found/published paper pk"""
         clip_start = self.get_clip_start(time_lapse)
-        return self.index2pk[clip_start:]
+        return self.index2pk[clip_start:], self.date[clip_start:]
 
     def tasks(self, task, **kwargs):
         """Wrapper around MostSimilar tasks

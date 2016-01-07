@@ -132,11 +132,7 @@ class Stream(TimeStampedModel):
 
         # clean old matches
         StreamMatches.objects\
-            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
-                                      "FROM library_paper "
-                                      "WHERE id = paper_id", []))\
-            .filter(Q(stream=self) &
-                    Q(date__lt=from_date))\
+            .filter(Q(stream=self) & Q(date__lt=from_date))\
             .delete()
 
     def clear_all(self):
@@ -189,7 +185,7 @@ class Stream(TimeStampedModel):
         scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
 
         # Score
-        results = scoring.score()
+        results, date = scoring.score()
 
         # create/update UserFeedPaper
         objs_list = []
@@ -198,6 +194,7 @@ class Stream(TimeStampedModel):
                 stream=self,
                 paper_id=pk,
                 score=val,
+                date=date[pk],
                 is_score_computed=True))
         # bulk create
         StreamMatches.objects.bulk_create(objs_list)
@@ -230,6 +227,8 @@ class StreamMatches(TimeStampedModel):
     paper = models.ForeignKey(Paper)
 
     score = models.FloatField(default=0.)
+
+    date = models.DateField()
 
     is_score_computed = models.BooleanField(default=False)
 
@@ -370,6 +369,8 @@ class TrendMatches(TimeStampedModel):
     paper = models.ForeignKey(Paper)
 
     score = models.FloatField(default=0.0)
+
+    date = models.DateField()
 
     class Meta:
         unique_together = [('trend', 'paper'), ]

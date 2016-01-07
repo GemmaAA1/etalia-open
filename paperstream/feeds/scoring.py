@@ -37,6 +37,7 @@ class StreamScoring(object):
 
         # Target data
         self.target_pks = None
+        self.target_date = None
         self.target_data = None
         self.target_auth_data = None
 
@@ -66,14 +67,16 @@ class StreamScoring(object):
         res = ms_task.delay('get_recent_pks',
                             time_lapse=self.stream.user.settings.stream_time_lapse)
         # wait for results
-        target_pks = res.get()
+        target_pks, pks_date = res.get()
 
         # Remove paper already in library
         lib_pks = self.stream.user.lib.papers.all().values_list('pk', flat=True)
         target_pks = [pk for pk in target_pks
                       if pk not in list(lib_pks)][:settings.FEED_MAX_TARGETS]
+        pks_date = dict([(pk, pks_date[i]) for i, pk in enumerate(target_pks)
+                    if pk not in list(lib_pks)][:settings.FEED_MAX_TARGETS])
 
-        return target_pks
+        return target_pks, pks_date
 
     def get_target_neigh_pks_from_seed(self, seed):
         """Get all recent paper pks in the neighborhood of seed using
@@ -381,12 +384,14 @@ class ContentBasedSimple(StreamScoring):
             if self.target_search == 'neighbor':
                 self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
             elif self.target_search == 'all':
-                self.target_pks = self.get_target_all_pks()
+                self.target_pks, self.target_date = self.get_target_all_pks()
             else:
                 raise ValueError('')
             self.cache.add('target_pks', self.target_pks, 60 * 60 * 24)
+            self.cache.add('target_date', self.target_date, 60 * 60 * 24)
         else:
             self.target_pks = self.cache.get('target_pks')
+            self.target_date = self.cache.get('target_date')
 
         # Build target data
         if not self.cache.get('target_data'):
@@ -422,7 +427,7 @@ class ContentBasedSimple(StreamScoring):
         # Order
         res = self.order_results(self.target_pks, dis)
 
-        return res
+        return res, self.target_date
 
 
 # class SimpleMax(StreamScoring):
