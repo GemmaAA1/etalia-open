@@ -67,6 +67,7 @@ docs/_build/
 target/
 
 # PaperStream
+config/settings/common.py
 nlp_data/
 nlp_data_test/
 paperstream/trash
