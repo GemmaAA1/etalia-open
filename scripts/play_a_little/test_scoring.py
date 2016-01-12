@@ -142,7 +142,7 @@ plt.show()
 
 
 from django.contrib.auth import get_user_model
-from paperstream.feeds.scoring import ContentBasedSimple
+from paperstream.feeds.scoring import ContentBasedScoring
 from sklearn import manifold, datasets
 
 import  matplotlib.pylab as plt
@@ -152,7 +152,7 @@ us = User.objects.all()
 user = us[0]
 
 stream = user.streams.first()
-self = ContentBasedSimple(stream=stream)
+self = ContentBasedScoring(stream=stream)
 
 self.build_profile_ind2jourpk()
 self.build_profile_ind2authpk()

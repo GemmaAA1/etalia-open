@@ -475,6 +475,9 @@ class UserSettings(TimeStampedModel):
                                             choices=NLP_NARROWNESS_CHOICES,
                                             verbose_name='Narrowness')
 
+    # stream method arguments
+    trend_method_args = JSONField(null=True, default=None, blank=True)
+
     # Email digest
     email_digest_frequency = models.IntegerField(
         default=EMAIL_DIGEST_FREQUENCY_CHOICES[0][0],

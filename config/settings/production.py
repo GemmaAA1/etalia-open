@@ -5,23 +5,23 @@ from .common import *
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['www.pubstream.io', 'pubstream.io']
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': env.str('AWS_RDS_DB_NAME'),
-#         'USER': env.str('AWS_RDS_USERNAME'),
-#         'PASSWORD': env.str('AWS_RDS_PASSWORD'),
-#         'HOST': env.str('AWS_RDS_HOSTNAME'),
-#         'PORT': env.str('AWS_RDS_PORT'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(ROOT_DIR.path('db.sqlite3')),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env.str('AWS_RDS_DB_NAME'),
+        'USER': env.str('AWS_RDS_USERNAME'),
+        'PASSWORD': env.str('AWS_RDS_PASSWORD'),
+        'HOST': env.str('AWS_RDS_HOSTNAME'),
+        'PORT': env.str('AWS_RDS_PORT'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': str(ROOT_DIR.path('db.sqlite3')),
+#     }
+# }
 
 # S3 NLP buckets
 NLP_DATA_BUCKET_NAME = 'pubstream-production-nlp-data'

@@ -20,8 +20,8 @@ from paperstream.altmetric.models import AltmetricModel
 from paperstream.nlp.models import Model, MostSimilar
 from paperstream.library.models import Paper
 from config.celery import celery_app as app
-from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP
-from .scoring import ContentBasedSimple
+from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
+from .scoring import *
 
 
 logger = logging.getLogger(__name__)
@@ -316,50 +316,26 @@ class Trend(TimeStampedModel):
         # clear stream
         self.clear()
 
-        # Get mostsimilar task
-        try:
-            ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
-                name=self.user.settings.trend_model.name)]
-        except KeyError:
-            raise KeyError
+        # Instantiate Score
+        Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
+        # and instantiate
+        journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
+        method_arg = self.user.settings.trend_method_args or {}
+        scoring = Score(stream=self.user.streams.first(), journal_ratio=journal_ratio, **method_arg)
 
-        # get main stream signature vector
-        stream = Stream.objects.get(user=self.user, name='main')
-        sv, _ = StreamVector.objects\
-            .get_or_create(stream=stream, model=self.user.settings.trend_model)
-        vec = sv.update_vector()
+        # Score
+        results, date = scoring.score()
 
-        # Submit Celery Task to get k_neighbors from stream signature
-        res = ms_task.delay('knn_search',
-                            seed=vec,
-                            time_lapse=self.user.settings.trend_time_lapse,
-                            top_n=self.top_n_closest)
-        target_seed_pks = res.get()
-
-        # Get altmetric scores for target_seed_pks and top matches
-        d = timezone.now().date() - \
-            timezone.timedelta(days=self.time_lapse_top_altmetric)
-        # get paper in the neighborhood of vec of lib ranked by alt score +
-        # add very high impact recent altmetric matches
-        nb_papers = int(settings.FEED_SIZE_PER_DAY * \
-                        self.user.settings.trend_time_lapse)
-        data_altm = AltmetricModel.objects\
-            .annotate(date=RawSQL("SELECT LEAST(date_ep, date_fs, date_pp) "
-                                  "FROM library_paper "
-                                  "WHERE id = paper_id", []))\
-            .filter(Q(paper_id__in=target_seed_pks) |
-                    (Q(date__gt=d) & Q(score__gt=self.score_threshold)))\
-            .order_by('-score')\
-            .values('paper__pk', 'score')[:nb_papers]
-
-        # Populate trendfeedpaper
-        obj_list = []
-        for p in data_altm:
-            obj_list.append(TrendMatches(
-                        trend=self,
-                        paper_id=p['paper__pk'],
-                        score=p['score']))
-        TrendMatches.objects.bulk_create(obj_list)
+        # create/update UserFeedPaper
+        objs_list = []
+        for pk, val in results:
+            objs_list.append(TrendMatches(
+                trend=self,
+                paper_id=pk,
+                score=val,
+                date=date[pk]))
+        # bulk create
+        TrendMatches.objects.bulk_create(objs_list)
 
 
 class TrendMatches(TimeStampedModel):

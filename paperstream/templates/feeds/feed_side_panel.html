@@ -7,22 +7,22 @@
         </div>
         <div class="side-panel-inner">
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=lv" {% if time_span == 'lv' %} style="text-decoration: underline;" {%  endif %}>
+                <a href="{{ request.path }}?time-span=lv" {% if time_span == 'lv' %} style="text-decoration: underline;" {%  endif %}>
                    last visit
                 </a>
             </div>
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=1w" {% if time_span == '1w' %} style="text-decoration: underline;" {%  endif %}>
+                <a href="{{ request.path }}?time-span=1w" {% if time_span == '1w' %} style="text-decoration: underline;" {%  endif %}>
                    1 week
                 </a>
             </div>
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=1m" {% if time_span == '1m' %} style="text-decoration: underline;" {%  endif %}>
+                <a href="{{ request.path }}?time-span=1m" {% if time_span == '1m' %} style="text-decoration: underline;" {%  endif %}>
                    1 month
                 </a>
             </div>
             <div>
-                <a href="{% url 'feeds:stream' %}?time-span=2m" {% if time_span == '2m' %} style="text-decoration: underline;" {%  endif %}>
+                <a href="{{ request.path }}?time-span=2m" {% if time_span == '2m' %} style="text-decoration: underline;" {%  endif %}>
                    2 months
                 </a>
             </div>

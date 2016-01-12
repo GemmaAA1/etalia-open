@@ -440,7 +440,9 @@ class TrendView(BaseFeedView):
         self.original_qs = self.model.objects\
             .filter(trend__name=self.kwargs.get('name', 'main'),
                     trend__user=self.request.user)\
-            .exclude(paper__in=papers_ticked)
+            .exclude(paper__in=papers_ticked)\
+            .select_related('paper',
+                            'paper__journal')
 
         # filter time span
         if self.request.GET.get('time-span') == '1w':
