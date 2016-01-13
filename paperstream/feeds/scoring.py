@@ -385,9 +385,9 @@ class ContentBasedScoring(Scoring):
         seed_jour_mat = self.build_jour_utility_mat(self.seed_data)
 
         # concatenate these 3 mats
-        seed_mat = np.hstack((self.vec_w * seed_vec_mat,
-                              self.auth_w * seed_auth_mat,
-                              self.jour_w * seed_jour_mat))
+        seed_mat = np.hstack((self.vec_w * seed_vec_mat / seed_vec_mat.shape[1],
+                              self.auth_w * seed_auth_mat / seed_auth_mat.shape[1],
+                              self.jour_w * seed_jour_mat / seed_jour_mat.shape[1]))
 
         # normalize
         norm = np.linalg.norm(seed_mat, axis=1)
@@ -450,9 +450,9 @@ class ContentBasedScoring(Scoring):
         # build target journal mat
         target_jour_mat = self.build_jour_utility_mat(self.target_data)
         # concatenate
-        target_mat = np.hstack((self.vec_w * target_vec_mat,
-                                self.auth_w * target_auth_mat,
-                                self.jour_w * target_jour_mat))
+        target_mat = np.hstack((self.vec_w * target_vec_mat / target_vec_mat.shape[1],
+                                self.auth_w * target_auth_mat / target_auth_mat.shape[1],
+                                self.jour_w * target_jour_mat / target_jour_mat.shape[1]))
         # normalize
         norm = np.linalg.norm(target_mat, axis=1)
         non_zeros = norm > 0.
