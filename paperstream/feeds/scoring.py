@@ -648,15 +648,19 @@ class TrendScoring(Scoring):
         else:
             # get from cache
             target_altmetric = self.cache.get('target_altmetric')
-
         # Get altmetric score and normalize
         alt_score = np.array([p['score'] for p in target_altmetric])
-
         # normalize in [0,1]
         alt_score /= alt_score.max()
+        # get altmetric pks
+        alt_pks = [p['paper__pk'] for p in target_altmetric]
+
+        # Intersect altmetric pks and target pks
+        pk_idx = np.array([pk in alt_pks for pk in self.target_pks])
+        dis_reduced = dis[pk_idx]
 
         # compute weighted score
-        score = self.doc_w * dis + self.alt_w * alt_score
+        score = self.doc_w * dis_reduced + self.alt_w * alt_score
 
         # Order
         res = self.order_and_trim_results(self.target_pks, score)
