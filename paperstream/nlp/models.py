@@ -1026,7 +1026,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         date = []
         index2pk = []
         index2journalpk = []
-        data = np.zeros((nb_items, vec_size))
+        data_mat = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data):
             if dat.vector:
                 # get min date
@@ -1037,16 +1037,16 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
                 if data_journal.get(dat.journal_id):
-                    data[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
+                    data_mat[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
                         self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
                 else:
-                    data[i, :] = np.array(dat.vector[:vec_size])
+                    data_mat[i, :] = np.array(dat.vector[:vec_size])
 
         # concatenate
         self.date += date
         self.index2pk += index2pk
         self.index2journalpk += index2journalpk
-        self.data = np.vstack((self.data, data))
+        self.data = np.vstack((self.data, data_mat))
 
         self.save()
 
