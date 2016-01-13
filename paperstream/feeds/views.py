@@ -322,26 +322,28 @@ class StreamView(BaseFeedView):
 
         # From ajaxable filter
         if self.request.is_ajax():
-            try:
-                data = json.loads(list(self.request.GET)[0])
-                if data['source'] == 'filter':
-                    # get data
-                    self.journals_filter = data.get('journals')
-                    self.authors_filter = data.get('authors')
-                    # self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
-                    # self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
-                    # self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
-                    self.like_flag = data.get('like_flag')
-                    # ufl.stream_filter = {
-                    #     'journals': self.journals_filter,
-                    #     'authors': self.authors_filter,
-                    #     'journals_flag': self.journals_filter_flag,
-                    #     'authors_flag': self.authors_filter_flag,
-                    #     'sorting_flag': self.sorting_flag,
-                    # }
-                    # ufl.save()
-            except ValueError:  # likely data from AjaxListView
-                pass
+            get_l = list(self.request.GET)
+            for get_ in get_l:
+                try:
+                    data = json.loads(get_)
+                    if data.get('source') == 'filter':
+                        # get data
+                        self.journals_filter = data.get('journals')
+                        self.authors_filter = data.get('authors')
+                        # self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
+                        # self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+                        # self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
+                        self.like_flag = data.get('like_flag')
+                        # ufl.stream_filter = {
+                        #     'journals': self.journals_filter,
+                        #     'authors': self.authors_filter,
+                        #     'journals_flag': self.journals_filter_flag,
+                        #     'authors_flag': self.authors_filter_flag,
+                        #     'sorting_flag': self.sorting_flag,
+                        # }
+                        # ufl.save()
+                except ValueError:  # likely data from AjaxListView
+                    pass
 
     def get_queryset(self):
 
