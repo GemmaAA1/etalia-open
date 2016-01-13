@@ -387,7 +387,11 @@ class ContentBasedScoring(Scoring):
         # concatenate these 3 mats
         seed_mat = np.hstack((self.vec_w * seed_vec_mat / seed_vec_mat.shape[1],
                               self.auth_w * seed_auth_mat / seed_auth_mat.shape[1],
+<<<<<<< HEAD
                               self.jour_w * seed_jour_mat / seed_jour_mat.shape[1]))
+=======
+                              self.jour_w * seed_jour_mat / seed_jour_mat.shape[1])
+>>>>>>> bb6323cc171d91923dce889f1b44059641c713c8
 
         # normalize
         norm = np.linalg.norm(seed_mat, axis=1)
