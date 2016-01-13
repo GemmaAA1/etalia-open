@@ -133,21 +133,42 @@ class UserStreamSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserStreamSettingsForm, self).__init__(*args, **kwargs)
-        # self.fields['stream_model'].choices = [(mod.pk, mod.name)
-        #                                 for mod in Model.objects.filter(is_active=True)]
+        if kwargs.get('instance'):
+            self.fields['stream_vector_weight'].widget.attrs['data-slider-value'] = \
+                '{0:.0f}'.format(kwargs['instance'].stream_vector_weight)
+            self.fields['stream_author_weight'].widget.attrs['data-slider-value'] = \
+                '{0:.0f}'.format(kwargs['instance'].stream_author_weight)
+            self.fields['stream_journal_weight'].widget.attrs['data-slider-value'] = \
+                '{0:.0f}'.format(kwargs['instance'].stream_journal_weight)
 
     class Meta:
         model = UserSettings
-        fields = ('stream_narrowness',
-                  'stream_time_lapse',
-                  # 'stream_model',
-                  # 'stream_method',
+        fields = ('stream_vector_weight',
+                  'stream_author_weight',
+                  'stream_journal_weight',
                   )
         widgets = {
-            # 'stream_model': forms.Select(attrs={'class': 'form-control'}),
-            'stream_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'stream_narrowness': forms.Select(attrs={'class': 'form-control'}),
-            # 'stream_method': forms.Select(attrs={'class': 'form-control'}),
+            'stream_vector_weight': forms.TextInput(attrs={
+                'data-slider-id': 'stream_vector_weight_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '10',
+                'data-slider-step': '1',
+                'data-slider-value': '1'}),
+            'stream_author_weight': forms.TextInput(attrs={
+                'data-slider-id': 'stream_author_weight_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '10',
+                'data-slider-step': '1',
+                'data-slider-value': '1'}),
+            'stream_journal_weight': forms.TextInput(attrs={
+                'data-slider-id': 'stream_journal_weight_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '10',
+                'data-slider-step': '1',
+                'data-slider-value': '1'}),
         }
 
 
@@ -155,21 +176,33 @@ class UserTrendSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserTrendSettingsForm, self).__init__(*args, **kwargs)
-        # self.fields['trend_model'].choices = [(mod.pk, mod.name)
-        #                                 for mod in Model.objects.filter(is_active=True)]
+        if kwargs.get('instance'):
+            self.fields['trend_doc_weight'].widget.attrs['data-slider-value'] = \
+                '{0:.0f}'.format(kwargs['instance'].trend_doc_weight)
+            self.fields['trend_altmetric_weight'].widget.attrs['data-slider-value'] = \
+                '{0:.0f}'.format(kwargs['instance'].trend_altmetric_weight)
 
     class Meta:
         model = UserSettings
-        fields = ('trend_narrowness',
-                  'trend_time_lapse',
-                  # 'trend_model',
-                  # 'trend_method',
-                  )
+        fields = (
+            'trend_doc_weight',
+            'trend_altmetric_weight',
+        )
         widgets = {
-            # 'trend_model': forms.Select(attrs={'class': 'form-control'}),
-            'trend_time_lapse': forms.Select(attrs={'class': 'form-control'}),
-            'trend_narrowness': forms.Select(attrs={'class': 'form-control'}),
-            # 'trend_method': forms.Select(attrs={'class': 'form-control'}),
+            'trend_doc_weight': forms.TextInput(attrs={
+                'data-slider-id': 'trend_doc_weight_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '10',
+                'data-slider-step': '1',
+                'data-slider-value': '1'}),
+            'trend_altmetric_weight': forms.TextInput(attrs={
+                'data-slider-id': 'trend_altmetric_weight_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '10',
+                'data-slider-step': '1',
+                'data-slider-value': '1'}),
         }
 
 

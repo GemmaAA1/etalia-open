@@ -10,7 +10,7 @@
             {% csrf_token %}
             <span id="id_errors"></span>
             {% for field in form_stream_settings %}
-                <div class="form-group">
+                <div class="form-group form-rows">
                     {{ field.label_tag }}
                     {{ field }}
                 </div>
@@ -37,7 +37,7 @@
             {% csrf_token %}
             <span id="id_errors"></span>
             {% for field in form_trend_settings %}
-                <div class="form-group">
+                <div class="form-group form-rows">
                     {{ field.label_tag }}
                     {{ field }}
                 </div>

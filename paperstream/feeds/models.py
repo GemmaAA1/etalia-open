@@ -181,7 +181,12 @@ class Stream(TimeStampedModel):
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
         # and instantiate
         journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
-        method_arg = self.user.settings.stream_method_args or {}
+        # method_arg = self.user.settings.stream_method_args or {}
+        method_arg = {
+            'vector_weight': self.user.settings.stream_vector_weight,
+            'author_weight': self.user.settings.stream_author_weight,
+            'journal_weight': self.user.settings.stream_journal_weight,
+        }
         scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
 
         # Score
@@ -320,8 +325,14 @@ class Trend(TimeStampedModel):
         Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
         # and instantiate
         journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
-        method_arg = self.user.settings.trend_method_args or {}
-        scoring = Score(stream=self.user.streams.first(), journal_ratio=journal_ratio, **method_arg)
+        # method_arg = self.user.settings.trend_method_args or {}
+        method_arg = {
+            'doc_weight': self.user.settings.trend_doc_weight,
+            'altmetric_weight': self.user.settings.trend_altmetric_weight,
+        }
+        scoring = Score(stream=self.user.streams.first(),
+                        journal_ratio=journal_ratio,
+                        **method_arg)
 
         # Score
         results, date = scoring.score()

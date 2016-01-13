@@ -577,13 +577,13 @@ class ContentBasedScoring(Scoring):
 class TrendScoring(Scoring):
 
     DEFAULT_DOC_WEIGHT = 1.
-    DEFAULT_ALMETRIC_WEIGHT = 1.
+    DEFAULT_ALTMETRIC_WEIGHT = 1.
     DEFAULT_TARGET_SEARCH = 'all'
 
     def __init__(self, **kwargs):
         super(TrendScoring, self).__init__(**kwargs)
         self.doc_w = kwargs.get('document_weight', self.DEFAULT_DOC_WEIGHT)
-        self.alt_w = kwargs.get('altmetric_weight', self.DEFAULT_ALMETRIC_WEIGHT)
+        self.alt_w = kwargs.get('altmetric_weight', self.DEFAULT_ALTMETRIC_WEIGHT)
 
         self.target_search = kwargs.get('target_search',
                                         self.DEFAULT_TARGET_SEARCH)

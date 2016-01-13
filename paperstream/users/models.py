@@ -443,16 +443,30 @@ class UserSettings(TimeStampedModel):
     stream_method = models.IntegerField(verbose_name='Method', default=0,
                                         choices=STREAM_METHODS)
 
+    # author weight
+    stream_author_weight = models.FloatField(default=1.0,
+                                             verbose_name='Author weight')
+
+    # journal weight
+    stream_journal_weight = models.FloatField(default=1.0,
+                                              verbose_name='Journal weight')
+
+    # vector weight
+    stream_vector_weight = models.FloatField(default=1.0,
+                                             verbose_name='Content weight')
+
+    # DEPRECATED
     # in days
     stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
                                             choices=NLP_TIME_LAPSE_CHOICES,
                                             verbose_name='Time range')
-
+    # DEPRECATED
     # arbitrary units
     stream_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
                                             choices=NLP_NARROWNESS_CHOICES,
                                             verbose_name='Narrowness')
 
+    # DEPRECATED
     # stream method arguments
     stream_method_args = JSONField(null=True, default=None, blank=True)
 
@@ -464,19 +478,28 @@ class UserSettings(TimeStampedModel):
     # scoring method to use
     trend_method = models.IntegerField(verbose_name='Method', default=0,
                                        choices=TREND_METHODS)
-
+    # DEPRECATED
     # in days
     trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
                                            choices=NLP_TIME_LAPSE_CHOICES,
                                            verbose_name='Time range')
 
+    # DEPRECATED
     # arbitrary units
     trend_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
                                             choices=NLP_NARROWNESS_CHOICES,
                                             verbose_name='Narrowness')
-
+    # DEPRECATED
     # stream method arguments
     trend_method_args = JSONField(null=True, default=None, blank=True)
+
+    # doc vector weight
+    trend_doc_weight = models.FloatField(default=1.0,
+                                         verbose_name='Content weight')
+
+    # altmetric vector weight
+    trend_altmetric_weight = models.FloatField(default=1.0,
+                                               verbose_name='Altmetric weight')
 
     # Email digest
     email_digest_frequency = models.IntegerField(

@@ -600,18 +600,16 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserStreamSettingsUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
-        self.request.user.settings.stream_time_lapse = form.cleaned_data['stream_time_lapse']
-        self.request.user.settings.stream_narrowness = form.cleaned_data['stream_narrowness']
-        # self.request.user.settings.stream_model = form.cleaned_data['stream_model']
-        # self.request.user.settings.stream_method = form.cleaned_data['stream_method']
+        self.request.user.settings.stream_vector_weight = form.cleaned_data['stream_vector_weight']
+        self.request.user.settings.stream_author_weight = form.cleaned_data['stream_author_weight']
+        self.request.user.settings.stream_journal_weight = form.cleaned_data['stream_journal_weight']
         self.request.user.settings.save()
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'stream_narrowness': self.request.user.settings.get_stream_narrowness_display(),
-                'stream_time_lapse': self.request.user.settings.get_stream_time_lapse_display(),
-                # 'stream_method': self.request.user.settings.stream_method,
-                # 'stream_model': self.request.user.settings.stream_model,
+        data = {'stream_vector_weight': '{0:.0f}'.format(self.request.user.settings.stream_vector_weight),
+                'stream_author_weight': '{0:.0f}'.format(self.request.user.settings.stream_author_weight),
+                'stream_journal_weight': '{0:.0f}'.format(self.request.user.settings.stream_journal_weight),
                 }
         return data
 
@@ -632,18 +630,14 @@ class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         return super(UserTrendSettingsUpdateView, self).form_invalid(form)
 
     def form_valid(self, form):
-        self.request.user.settings.trend_narrowness = form.cleaned_data['trend_narrowness']
-        self.request.user.settings.trend_time_lapse = form.cleaned_data['trend_time_lapse']
-        # self.request.user.settings.trend_model = form.cleaned_data['trend_model']
-        # self.request.user.settings.trend_method = form.cleaned_data['trend_method']
+        self.request.user.settings.trend_doc_weight = form.cleaned_data['trend_doc_weight']
+        self.request.user.settings.trend_altmetric_weight = form.cleaned_data['trend_altmetric_weight']
         self.request.user.settings.save()
         return super(UserTrendSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self):
-        data = {'trend_narrowness': self.request.user.settings.get_trend_narrowness_display(),
-                # 'trend_model': self.request.user.settings.trend_model.name,
-                'trend_time_lapse': self.request.user.settings.get_trend_time_lapse_display(),
-                # 'trend_method': self.request.user.settings.trend_method,
+        data = {'trend_doc_weight': '{0:.0f}'.format(self.request.user.settings.trend_doc_weight),
+                'trend_altmetric_weight': '{0:.0f}'.format(self.request.user.settings.trend_altmetric_weight),
                 }
         return data
 

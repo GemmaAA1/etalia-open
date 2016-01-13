@@ -43,6 +43,34 @@ $(document).ready(function() {
                 label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
             input.parents('.avatar-upload-form').find('#file-name').html(label);
         });
+
+    $('#id_stream_vector_weight').slider({
+        formatter: function(value) {
+            return 'Current value: ' + value;
+        }
+    });
+    $('#id_stream_author_weight').slider({
+        formatter: function(value) {
+            return 'Current value: ' + value;
+        }
+    });
+    $('#id_stream_journal_weight').slider({
+        formatter: function(value) {
+            return 'Current value: ' + value;
+        }
+    });
+
+    $('#id_trend_doc_weight').slider({
+        formatter: function(value) {
+            return 'Current value: ' + value;
+        }
+    });
+
+    $('#id_trend_altmetric_weight').slider({
+        formatter: function(value) {
+            return 'Current value: ' + value;
+        }
+    });
 });
 
 function update_signup_forms(event) {
@@ -138,7 +166,8 @@ function update_settings_forms(event) {
     var $form = $(this);
     var $data = $($form.attr('data-target'));
     var $rootModal = $($form.attr('root-modal'));
-    //console.log('form submitted!');
+    console.log('form submitted!');
+    console.log($data);
     $.ajax({
         type: $form.attr('method'),
         url: $form.attr('action'),
