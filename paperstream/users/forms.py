@@ -152,23 +152,23 @@ class UserStreamSettingsForm(forms.ModelForm):
                 'data-slider-id': 'stream_vector_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '10',
-                'data-slider-step': '1',
-                'data-slider-value': '1'}),
+                'data-slider-max': '1000',
+                'data-slider-step': '10',
+                'data-slider-value': '100'}),
             'stream_author_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_author_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '10',
-                'data-slider-step': '1',
-                'data-slider-value': '1'}),
+                'data-slider-max': '1000',
+                'data-slider-step': '10',
+                'data-slider-value': '100'}),
             'stream_journal_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_journal_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '10',
-                'data-slider-step': '1',
-                'data-slider-value': '1'}),
+                'data-slider-max': '1000',
+                'data-slider-step': '10',
+                'data-slider-value': '100'}),
         }
 
 
@@ -193,16 +193,16 @@ class UserTrendSettingsForm(forms.ModelForm):
                 'data-slider-id': 'trend_doc_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '10',
-                'data-slider-step': '1',
-                'data-slider-value': '1'}),
+                'data-slider-max': '1000',
+                'data-slider-step': '10',
+                'data-slider-value': '100'}),
             'trend_altmetric_weight': forms.TextInput(attrs={
                 'data-slider-id': 'trend_altmetric_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '10',
-                'data-slider-step': '1',
-                'data-slider-value': '1'}),
+                'data-slider-max': '1000',
+                'data-slider-step': '10',
+                'data-slider-value': '100'}),
         }
 
 
