@@ -1,0 +1,392 @@
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    font-family: 'Lato', Helvetica, Arial, sans-serif;
+}
+
+*:focus {
+    outline: none !important;
+}
+
+a:focus {
+    text-decoration: none;
+}
+
+/* ---------------------------------- LAYOUT ---------------------------------- */
+
+.document {
+    position: relative;
+    z-index: 2;
+    padding-top: 56px;
+    transition: margin .25s;
+}
+
+#backdrop {
+    z-index: 6;
+    position: fixed;
+    top: 0;
+    right:0;
+    bottom: 0;
+    left:0;
+
+    background: #ffffff;
+    opacity: 0;
+    transition: opacity .25s;
+
+    display: none;
+}
+
+.bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+
+    background: #d0e6e3;
+    border-bottom: 1px solid #cbced1;
+}
+
+.flap {
+    position: fixed;
+    top: 0;
+
+    min-height: 100%;
+    width: 244px;
+
+    background-color: #f5f5f5;
+}
+
+.wrapper {
+    box-sizing: content-box;
+    transition: padding .25s, margin .25s;
+}
+
+.inner {
+    position: relative;
+    max-width: 740px;
+    margin: auto;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.flap.left {
+    z-index: 7;
+    left: -244px;
+    transition: left .25s;
+}
+
+.flap.right {
+    z-index: 8;
+    right: -244px;
+    transition: right .25s;
+}
+
+body.flap-opened #backdrop {
+    display: block;
+    opacity: .9;
+}
+
+body.flap-opened.left .flap.left {
+    left: 0;
+}
+
+body.flap-opened.right .flap.right {
+    right: 0;
+}
+
+/* ------------------------------------ TOP BAR ------------------------------------ */
+
+#top-bar {
+    z-index: 5;
+}
+
+#top-bar .wrap {
+    float: right;
+    margin: 8px 8px 0 0;
+}
+
+#brand {
+    display: none;
+    float: left;
+    margin: 8px 0 0 10px;
+}
+
+/* BUTTONS */
+
+.bar button {
+    background: #ffffff;
+    border: 1px solid #cbced1;
+    color: #7a7d80;
+    text-align: center;
+    overflow: hidden;
+}
+
+.bar button:hover {
+    border-color: #7a7d80;
+    color: #313233;
+}
+
+.bar button:active {
+    border-color: #006666;
+    color: #313233;
+}
+
+.bar button .eai {
+    display:inline-block;
+    font-size: 24px;
+    height: 36px;
+    line-height: 36px;
+}
+
+.bar .btn-square {
+    width: 38px;
+    height: 38px;
+    border-radius: 2px;
+}
+
+.bar .btn-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+}
+
+#toggle-nav {
+    float: left;
+    margin: 9px 0 0 9px;
+    padding: 10px 9px;
+}
+
+#toggle-nav .icon-bar {
+    display: block;
+    height: 3px;
+    margin-bottom: 3px;
+    background-color: #7a7d80;
+}
+
+#toggle-nav:hover .icon-bar {
+    background-color: #313233;
+}
+
+#toggle-nav .icon-bar:last-child {
+    margin: 0;
+}
+
+#toggle-profile {
+    float: right;
+    margin: 8px 8px 0 0;
+    padding: 0;
+    text-align: center;
+    overflow: hidden;
+}
+
+#toggle-profile img {
+
+}
+
+/* PROFILE */
+
+#profile-dropdown {
+    display: none;
+    position: fixed;
+    z-index: 40;
+    top: 56px;
+    right: 0;
+    background-color: #006666;
+    width: 244px;
+    padding: 15px 15px 15px 20px;
+}
+
+#profile-dropdown > ul {
+    float: left;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#profile-dropdown > ul > li {
+    margin-bottom: 10px;
+}
+
+#profile-dropdown > ul > li:last-child {
+    margin-bottom: 0;
+}
+
+#profile-dropdown > ul > li > a {
+    display: block;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+}
+
+#profile-dropdown > img {
+    float: right;
+    border-radius: 50px;
+    overflow: hidden;
+}
+
+/* ------------------------------------ NAVS ------------------------------------ */
+
+#nav-flap {
+    padding-bottom: 100px;
+}
+
+#main-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#main-nav > li {
+    height: 54px;
+    line-height: 54px;
+}
+
+#main-nav > li > a {
+    display: block;
+    height: 54px;
+    padding-left: 20px;
+    font-size: 15px;
+    color: #7a7d80;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+#main-nav > li.separator {
+    padding: 27px 42px 0 42px;
+}
+
+#main-nav > li.separator:before {
+    display: block;
+    content: " ";
+    border-bottom: 1px solid #cbced1;
+}
+
+#main-nav > li > a:hover {
+    background-color: #dfe2e6;
+    color: #313233;
+}
+
+#main-nav > li.active > a {
+    background-color: #00695c;
+    color: #ffffff;
+}
+
+#sub-nav {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    background: #a0a4a8;
+}
+
+#sub-nav > ul {
+    list-style: none;
+    margin: 0;
+    padding: 14px 0 14px 20px;
+    width: 112px;
+    float: left;
+    font-size: 14px;
+}
+
+#sub-nav > ul > li {
+    line-height: 24px;
+}
+
+#sub-nav > ul > li > a {
+    color: #ffffff;
+}
+
+/* ------------------------------------ ANIMATIONS ------------------------------------ */
+
+@-ms-keyframes spin {
+    from { -ms-transform: rotate(0deg); }
+    to { -ms-transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from { transform:rotate(0deg); }
+    to { transform:rotate(360deg); }
+}
+
+/* ------------------------------------ RESPONSIVE ------------------------------------ */
+
+@media (min-width: 400px) {
+    #brand {
+        display: block;
+    }
+}
+
+@media (min-width: 600px) {
+    #brand {
+        display: block;
+    }
+
+    .inner {
+        padding: 20px;
+    }
+}
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+    #brand {
+        display: block;
+    }
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .wrapper {
+        margin-left: 244px;
+    }
+
+    .flap.left {
+        z-index: 3;
+        padding-top: 56px;
+        left: 0 !important;
+    }
+
+    body.flap-opened.left #backdrop {
+        display: none !important;
+    }
+
+    #brand {
+        margin-left: 65px;
+    }
+
+    #toggle-nav {
+        display: none;
+    }
+
+    .bar .wrap {
+        float: none !important;
+        margin: 9px 244px 0 244px !important;
+    }
+}
+
+/* Large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .wrapper {
+        margin-right: 244px;
+    }
+
+    .flap.right {
+        z-index: 4;
+        padding-top: 56px;
+        right: 0 !important;
+    }
+
+    body.flap-opened.right #backdrop {
+        display: none !important;
+    }
+}

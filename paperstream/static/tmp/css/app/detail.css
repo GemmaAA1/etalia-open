@@ -1,0 +1,129 @@
+#detail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 0;
+}
+
+#detail .document {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    padding-top: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* OPENED STATE */
+
+body.detail-opened {
+    overflow: hidden;
+}
+
+body.detail-opened #backdrop {
+    display: block;
+    opacity: .9;
+}
+
+body.detail-opened #detail {
+    z-index: 10;
+}
+
+/* LOADING */
+
+#detail .loading {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 64px;
+    height: 64px;
+    font-size: 64px;
+    line-height: 64px;
+    margin: -32px 0 0 -32px;
+    color: #6b6d70;
+}
+
+#detail .loading:before {
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-name: spin;
+    -moz-animation-duration: 1s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: linear;
+    -ms-animation-name: spin;
+    -ms-animation-duration: 1s;
+    -ms-animation-iteration-count: infinite;
+    -ms-animation-timing-function: linear;
+    animation-name: spin;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+/*#detail > .bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+
+    background: #d0e6e3;
+    border-bottom: 1px solid #cbced1;
+}*/
+
+/* TOP BAR */
+
+#detail > .bar > .wrapper > .inner {
+    background-color: transparent !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    text-align: center;
+}
+
+#detail > .bar button {
+    display: inline-block;
+}
+
+#detail > .bar .eai {
+    font-size: 16px;
+}
+
+#detail-prev {
+    float: left;
+}
+
+#detail-next {
+    float: right;
+}
+
+#detail > .document > .wrapper > .inner > .actions {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+}
+
+#detail .document .content {
+    padding-right: 45px;
+}
+
+.actions .detail-library-add,
+.actions .detail-pdf {
+    margin-bottom: 40px;
+}
+
+#detail h2 {
+    clear: both;
+    color: #cbced1;
+    font-size: 24px;
+    line-height: 24px;
+    padding-bottom: 8px;
+    margin: 40px 0 20px 0;
+    border-bottom: 1px solid #cbced1;
+}
