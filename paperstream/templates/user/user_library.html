@@ -46,7 +46,7 @@
                                 <div {% if tab == 'library' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library' %}">
                                         <div class="side-panel-title library-icon">
-                                            My Library (<span id="library_counter">{{ library_counter }}</span>)
+                                            Publications (<span id="library_counter">{{ library_counter }}</span>)
                                         </div>
                                     </a>
                                 </div>
@@ -54,11 +54,10 @@
                                 <div {% if tab == 'likes' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library-likes' %}">
                                         <div class="side-panel-title like-icon">
-                                            My Likes (<span id="likes_counter">{{ likes_counter }}</span>)
+                                            Pins (<span id="likes_counter">{{ likes_counter }}</span>)
                                         </div>
                                     </a>
                                 </div>
-
                                 <div {% if tab == 'trash' %} class="active" {% endif %}>
                                     <a href="{% url 'user:library-trash' %}">
                                         <div class="side-panel-title trash-icon">
@@ -67,85 +66,9 @@
                                     </a>
                                 </div>
                             </div>
-                            <hr class="divider">
-                            <div class="side-panel-section journals">
-                                <div class="side-panel-title">
-                                    Journals
-                                    <span class="select">
-                                        <button class="all">all</button>/<button class="none">none</button>
-                                    </span>
-                                </div>
-                                <div class="side-panel-inner">
-                                    <ul>
-                                    {% for journal, count, block in journals %}
-                                        <li class="journal" data-block="{{ block }}">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" data-journal-title="{{ journal.title }}"
-                                                            {% if journal.title|lower in journals_filter %} checked="checked" {% endif %}>
-                                                    <div class="long">
-                                                        {{ journal.title|truncatechars:25 }} ({{ count }})
-                                                    </div>
-                                                    <div class="short">
-                                                        {% if journal.title|length > 25 %}
-                                                            {{ journal.title|truncatechars:25 }}
-                                                        {% else %}
-                                                            {{ journal.title|truncatechars:25 }} ({{ count }})
-                                                        {% endif %}
-                                                        <span class="select">
-                                                            <button class="only">only</button>
-                                                        </span>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                    {% if journals_show_more %}
-                                        <button class="show-more">show more</button>
-                                        <button class="show-less">/show less</button>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="side-panel-section authors">
-                                <div class="side-panel-title">
-                                    Authors
-                                    <span class="select">
-                                        <button class="all">all</button>/<button class="none">none</button>
-                                    </span>
-                                </div>
-                                <div class="side-panel-inner">
-                                    <ul >
-                                    {% for auth, author_full_name, block in authors %}
-                                        <li class="author" data-block="{{ block }}">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" data-author-pk="{{ auth.pk }}"
-                                                            {% if  auth.pk in authors_filter %} checked="checked" {% endif %}>
-{#                                                    checked="checked">#}
-                                                    <div class="long">
-                                                        {{ author_full_name|truncatechars:35 }}
-                                                    </div>
-                                                    <div class="short">
-                                                        {{ author_full_name|truncatechars:25 }}
-                                                        <span class="select">
-                                                            <button class="only">only</button>
-                                                        </span>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                    {% if authors_show_more %}
-                                        <button class="show-more">show more</button>
-                                        <button class="show-less">/show less</button>
-                                    {% endif %}
-                                </div>
-                            </div>
 
                             <hr class="divider">
-                            {% include 'footer_side.html' %}
+                            {% include 'user/filter_panel.html' %}
                         </div>
                     </div>
                 </div>
@@ -162,7 +85,7 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
     <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/side_panel.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/filter.js' %}"></script>
     <script>$.endlessPaginate({
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,

@@ -29,6 +29,7 @@ from braces.views import LoginRequiredMixin
 
 from endless_pagination.views import AjaxListView
 
+from paperstream.feeds.views import BasePaperListView
 from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
 from paperstream.library.models import Paper, Author
 
@@ -168,146 +169,20 @@ def validation_sent(request):
 
 # User Library
 # ---------------
-class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
+class UserLibraryView(BasePaperListView):
     model = UserLibPaper
     template_name = 'user/user_library.html'
     page_template = 'user/user_library_sub_page.html'
-    first_page = 30
-    per_page = 20
-    context_object_name = 'ulp_list'
-    list_n_ujl = 10
-    size_max_journal_filter = 40
-    size_load_journal_filter = 10
-    size_max_author_filter = 40
-    size_load_author_filter = 10
-    journals_filter = None
-    journals_filter_flag = 'all'
-    authors_filter = None
-    authors_filter_flag = 'all'
-    sorting_flag = 'relevant'
-    like_flag = False
 
-    def update_from_filter(self):
-        ufl, new = LibraryLayout.objects.get_or_create(user=self.request.user)
-        if new:
-            ufl.library_filter = {'journals_flag': self.journals_filter_flag,
-                                  'authors_flag': self.authors_filter_flag,
-                                  'sorting_flag': self.sorting_flag}
-            ufl.save()
-        else:
-            self.journals_filter = ufl.library_filter.get('journals')
-            self.authors_filter = ufl.library_filter.get('authors')
-            self.authors_filter_flag = ufl.library_filter.get('authors_flag') or self.authors_filter_flag
-            self.journals_filter_flag = ufl.library_filter.get('journals_flag') or self.journals_filter_flag
-            self.sorting_flag = ufl.library_filter.get('sorting_flag') or self.sorting_flag
+    def get_queryset(self):
 
-        # From ajaxable filter
-        if self.request.is_ajax():
-            try:
-                data = json.loads(list(self.request.GET)[0])
-                if data['action'] == 'filter':
-                    # get data
-                    self.journals_filter = data.get('journals')
-                    self.authors_filter = data.get('authors')
-                    self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
-                    self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
-                    self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
-                    self.like_flag = data.get('like_flag')
-                    ufl.library_filter = {
-                        'journals': self.journals_filter,
-                        'authors': self.authors_filter,
-                        'journals_flag': self.journals_filter_flag,
-                        'authors_flag': self.authors_filter_flag,
-                        'sorting_flag': self.sorting_flag,
-                    }
-                    ufl.save()
-            except ValueError:  # likely data from AjaxListView
-                pass
+        self.original_qs = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib,
+                    is_trashed=False)
+        return self.filter_queryset(self.original_qs)
 
     def get_context_data(self, **kwargs):
-        context = super(AjaxListView, self).get_context_data(**kwargs)
-        context = dict(context,
-                       **super(UserLibraryView, self).get_context_data(**kwargs))
-        context['first_page'] = self.first_page
-        context['per_page'] = self.per_page
-        if self.request.GET.get("query"):
-            context['current_query'] = self.request.GET.get("query")
-
-        # Get data for filter
-        data = self.request.user.lib.papers.values('pk', 'journal__title', 'authors')
-        j_titles = []
-        authors = []
-        check_papers = []
-        for d in data:
-            if d['journal__title'] and d['pk'] not in check_papers:  # rows are for different authors
-                j_titles.append(d['journal__title'])
-                check_papers.append(d['pk'])
-            authors.append(d['authors'])
-
-        # journal filter
-        journals_counter = Counter(j_titles)
-        j_titles = sorted(journals_counter, key=journals_counter.get,
-                          reverse=True)[:self.size_max_journal_filter]
-        # group authors by block identified with block tag
-        block = 0
-        context['journals'] = []
-        for i, title in enumerate(j_titles):
-            if not i % self.size_load_journal_filter:
-                block += 1
-            context['journals'].append((title, journals_counter[title], block))
-        if len(context['journals']) <= self.size_load_journal_filter:
-            context['journals_show_more'] = False
-        else:
-            context['journals_show_more'] = True
-
-        # author filter
-        authors_counter = Counter(authors)
-        authors_pks = sorted(authors_counter, key=authors_counter.get,
-                             reverse=True)
-        clauses = ' '.join(['WHEN id=%s THEN %s' %
-                            (pk, i) for i, pk in enumerate(authors_pks)])
-        ordering = 'CASE %s END' % clauses
-
-        authors_ordered = Author.objects\
-            .filter(pk__in=authors_pks)\
-            .exclude(Q(first_name='') & Q(last_name=''))\
-            .extra(select={'ordering': ordering},
-                   order_by=('ordering',))[:self.size_max_author_filter]
-        # group authors by block identified with block tag
-        block = 0
-        context['authors'] = []
-        for i, auth in enumerate(authors_ordered):
-            if not i % 10:
-                block += 1
-            context['authors'].append((auth, auth.print_full, block))
-        if len(context['authors']) <= self.size_load_author_filter:
-            context['authors_show_more'] = False
-        else:
-            context['authors_show_more'] = True
-
-        # Get user tastes label
-        user_taste = UserTaste.objects\
-            .filter(user=self.request.user)\
-            .values_list('paper_id', 'is_liked')
-        # reformat to dict
-        user_taste = dict((key, {'liked': v1})
-                          for key, v1 in user_taste)
-        context['user_taste'] = user_taste
-
-        # Set filter context
-        if self.request.GET.get('query'):
-            context['get_query'] = self.request.GET.get('query')
-
-        if self.journals_filter:
-            context['journals_filter'] = [title.lower() for title, val in self.journals_filter if val]
-        else:
-            context['journals_filter'] = [title.lower() for title in j_titles]
-        if self.authors_filter:
-            context['authors_filter'] = [pk for pk, val in self.authors_filter if val]
-        else:
-            context['authors_filter'] = authors_pks
-
-        context['sorting_flag'] = self.sorting_flag
+        context = super(UserLibraryView, self).get_context_data(**kwargs)
 
         # Trash counter
         context['trash_counter'] = UserLibPaper.objects\
@@ -324,102 +199,261 @@ class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
             .filter(userlib=self.request.user.lib, is_trashed=False)\
             .count()
 
-        # library tab
-        context['tab'] = 'library'
-
         return context
 
-    def get_queryset(self):
-        query_set = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib,
-                    is_trashed=False)
-        return self.filter_queryset(query_set)
-
-    def filter_queryset(self, queryset):
-        # load stored filter
-        self.update_from_filter()
-
-        # journals
-        if self.journals_filter_flag == 'all':
-            if self.journals_filter:
-                subset = []
-                for journal, val in self.journals_filter:
-                    if not val:
-                        subset.append(Q(paper__journal__title__icontains=journal))
-                if subset:
-                    queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
-        if self.journals_filter_flag == 'only':
-            if self.journals_filter:
-                subset = []
-                for journal, val in self.journals_filter:
-                    if val:
-                        subset.append(Q(paper__journal__title__icontains=journal))
-                if subset:
-                    queryset = queryset.filter(reduce(operator.or_, subset)).distinct()
-                else:
-                    queryset = None
-            else:
-                queryset = None
-
-        # authors
-        if self.authors_filter_flag == 'all':
-            if self.authors_filter:
-                subset = []
-                for pk, val in self.authors_filter:
-                    if not val:
-                        subset.append(Q(paper__authors__pk=pk))
-                if subset:
-                    queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
-        if self.authors_filter_flag == 'only':
-            if self.authors_filter:
-                subset = []
-                for pk, val in self.authors_filter:
-                    if val:
-                        subset.append(Q(paper__authors__pk=pk))
-                if subset:
-                    queryset = queryset.filter(reduce(operator.or_, subset)).distinct()
-                else:
-                    queryset = None
-            else:
-                queryset = None
-
-        # like filter
-        if self.like_flag:
-            like_pks = UserTaste.objects\
-                .filter(user=self.request.user,
-                        is_liked=True,
-                        scoring_method=self.request.user.settings.scoring_method)\
-                .values('paper__pk')
-            queryset = queryset.filter(paper_id__in=like_pks)
-
-        # search query
-        q = self.request.GET.get("query")
-        if q:
-            # return a filtered queryset
-            queryset = queryset.filter(Q(paper__title__icontains=q) |
-                                   Q(paper__abstract__icontains=q) |
-                                   Q(paper__journal__title__icontains=q) |
-                                   Q(paper__authors__last_name__icontains=q) |
-                                   Q(paper__authors__first_name__icontains=q))\
-                .distinct()
-
-        # sort queryset
-        if self.sorting_flag == 'relevant':
-            # this is by default for feed
-            pass
-        elif self.sorting_flag == 'recent':
-            # order by date
-            queryset = queryset.order_by(Coalesce('paper__date_ep',
-                                                  'paper__date_pp',
-                                                  'paper__date_fs').desc())
-        elif self.sorting_flag == 'trendy':
-            # order by altmetric score
-            queryset = queryset.order_by('-paper__altmetric__score')
-        elif self.sorting_flag == 'nothing':
-            # let's shuffle the results
-            queryset = queryset.order_by("?")
-
-        return queryset
+# class UserLibraryView(LoginRequiredMixin, ModalMixin, AjaxListView):
+#     model = UserLibPaper
+#     template_name = 'user/user_library.html'
+#     page_template = 'user/user_library_sub_page.html'
+#     first_page = 30
+#     per_page = 20
+#     context_object_name = 'ulp_list'
+#     list_n_ujl = 10
+#     size_max_journal_filter = 40
+#     size_load_journal_filter = 10
+#     size_max_author_filter = 40
+#     size_load_author_filter = 10
+#     journals_filter = None
+#     journals_filter_flag = 'all'
+#     authors_filter = None
+#     authors_filter_flag = 'all'
+#     sorting_flag = 'relevant'
+#     like_flag = False
+#
+#     def update_from_filter(self):
+#         ufl, new = LibraryLayout.objects.get_or_create(user=self.request.user)
+#         if new:
+#             ufl.library_filter = {'journals_flag': self.journals_filter_flag,
+#                                   'authors_flag': self.authors_filter_flag,
+#                                   'sorting_flag': self.sorting_flag}
+#             ufl.save()
+#         else:
+#             self.journals_filter = ufl.library_filter.get('journals')
+#             self.authors_filter = ufl.library_filter.get('authors')
+#             self.authors_filter_flag = ufl.library_filter.get('authors_flag') or self.authors_filter_flag
+#             self.journals_filter_flag = ufl.library_filter.get('journals_flag') or self.journals_filter_flag
+#             self.sorting_flag = ufl.library_filter.get('sorting_flag') or self.sorting_flag
+#
+#         # From ajaxable filter
+#         if self.request.is_ajax():
+#             try:
+#                 data = json.loads(list(self.request.GET)[0])
+#                 if data['action'] == 'filter':
+#                     # get data
+#                     self.journals_filter = data.get('journals')
+#                     self.authors_filter = data.get('authors')
+#                     self.authors_filter_flag = data.get('authors_flag') or self.authors_filter_flag
+#                     self.journals_filter_flag = data.get('journals_flag') or self.journals_filter_flag
+#                     self.sorting_flag = data.get('sorting_flag') or self.sorting_flag
+#                     self.like_flag = data.get('like_flag')
+#                     ufl.library_filter = {
+#                         'journals': self.journals_filter,
+#                         'authors': self.authors_filter,
+#                         'journals_flag': self.journals_filter_flag,
+#                         'authors_flag': self.authors_filter_flag,
+#                         'sorting_flag': self.sorting_flag,
+#                     }
+#                     ufl.save()
+#             except ValueError:  # likely data from AjaxListView
+#                 pass
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AjaxListView, self).get_context_data(**kwargs)
+#         context = dict(context,
+#                        **super(UserLibraryView, self).get_context_data(**kwargs))
+#         context['first_page'] = self.first_page
+#         context['per_page'] = self.per_page
+#         if self.request.GET.get("query"):
+#             context['current_query'] = self.request.GET.get("query")
+#
+#         # Get data for filter
+#         data = self.request.user.lib.papers.values('pk', 'journal__title', 'authors')
+#         j_titles = []
+#         authors = []
+#         check_papers = []
+#         for d in data:
+#             if d['journal__title'] and d['pk'] not in check_papers:  # rows are for different authors
+#                 j_titles.append(d['journal__title'])
+#                 check_papers.append(d['pk'])
+#             authors.append(d['authors'])
+#
+#         # journal filter
+#         journals_counter = Counter(j_titles)
+#         j_titles = sorted(journals_counter, key=journals_counter.get,
+#                           reverse=True)[:self.size_max_journal_filter]
+#         # group authors by block identified with block tag
+#         block = 0
+#         context['journals'] = []
+#         for i, title in enumerate(j_titles):
+#             if not i % self.size_load_journal_filter:
+#                 block += 1
+#             context['journals'].append((title, journals_counter[title], block))
+#         if len(context['journals']) <= self.size_load_journal_filter:
+#             context['journals_show_more'] = False
+#         else:
+#             context['journals_show_more'] = True
+#
+#         # author filter
+#         authors_counter = Counter(authors)
+#         authors_pks = sorted(authors_counter, key=authors_counter.get,
+#                              reverse=True)
+#         clauses = ' '.join(['WHEN id=%s THEN %s' %
+#                             (pk, i) for i, pk in enumerate(authors_pks)])
+#         ordering = 'CASE %s END' % clauses
+#
+#         authors_ordered = Author.objects\
+#             .filter(pk__in=authors_pks)\
+#             .exclude(Q(first_name='') & Q(last_name=''))\
+#             .extra(select={'ordering': ordering},
+#                    order_by=('ordering',))[:self.size_max_author_filter]
+#         # group authors by block identified with block tag
+#         block = 0
+#         context['authors'] = []
+#         for i, auth in enumerate(authors_ordered):
+#             if not i % 10:
+#                 block += 1
+#             context['authors'].append((auth, auth.print_full, block))
+#         if len(context['authors']) <= self.size_load_author_filter:
+#             context['authors_show_more'] = False
+#         else:
+#             context['authors_show_more'] = True
+#
+#         # Get user tastes label
+#         user_taste = UserTaste.objects\
+#             .filter(user=self.request.user)\
+#             .values_list('paper_id', 'is_liked')
+#         # reformat to dict
+#         user_taste = dict((key, {'liked': v1})
+#                           for key, v1 in user_taste)
+#         context['user_taste'] = user_taste
+#
+#         # Set filter context
+#         if self.request.GET.get('query'):
+#             context['get_query'] = self.request.GET.get('query')
+#
+#         if self.journals_filter:
+#             context['journals_filter'] = [pk for pk, val in self.journals_filter if val]
+#         # else:
+#         #     context['journals_filter'] =
+#
+#         if self.authors_filter:
+#             context['authors_filter'] = [pk for pk, val in self.authors_filter if val]
+#         else:
+#             context['authors_filter'] = authors_pks
+#
+#         context['sorting_flag'] = self.sorting_flag
+#
+#         # Trash counter
+#         context['trash_counter'] = UserLibPaper.objects\
+#             .filter(userlib=self.request.user.lib, is_trashed=True)\
+#             .count()
+#
+#         # Like counter
+#         context['likes_counter'] = UserTaste.objects\
+#             .filter(user=self.request.user, is_liked=True)\
+#             .count()
+#
+#         # library counter
+#         context['library_counter'] = UserLibPaper.objects\
+#             .filter(userlib=self.request.user.lib, is_trashed=False)\
+#             .count()
+#
+#         # library tab
+#         context['tab'] = 'library'
+#
+#         return context
+#
+#     def get_queryset(self):
+#         query_set = UserLibPaper.objects\
+#             .filter(userlib=self.request.user.lib,
+#                     is_trashed=False)
+#         return self.filter_queryset(query_set)
+#
+#     def filter_queryset(self, queryset):
+#         # load stored filter
+#         self.update_from_filter()
+#
+#         # journals
+#         if self.journals_filter_flag == 'all':
+#             if self.journals_filter:
+#                 subset = []
+#                 for journal, val in self.journals_filter:
+#                     if not val:
+#                         subset.append(Q(paper__journal__title__icontains=journal))
+#                 if subset:
+#                     queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
+#         if self.journals_filter_flag == 'only':
+#             if self.journals_filter:
+#                 subset = []
+#                 for journal, val in self.journals_filter:
+#                     if val:
+#                         subset.append(Q(paper__journal__title__icontains=journal))
+#                 if subset:
+#                     queryset = queryset.filter(reduce(operator.or_, subset)).distinct()
+#                 else:
+#                     queryset = None
+#             else:
+#                 queryset = None
+#
+#         # authors
+#         if self.authors_filter_flag == 'all':
+#             if self.authors_filter:
+#                 subset = []
+#                 for pk, val in self.authors_filter:
+#                     if not val:
+#                         subset.append(Q(paper__authors__pk=pk))
+#                 if subset:
+#                     queryset = queryset.exclude(reduce(operator.or_, subset)).distinct()
+#         if self.authors_filter_flag == 'only':
+#             if self.authors_filter:
+#                 subset = []
+#                 for pk, val in self.authors_filter:
+#                     if val:
+#                         subset.append(Q(paper__authors__pk=pk))
+#                 if subset:
+#                     queryset = queryset.filter(reduce(operator.or_, subset)).distinct()
+#                 else:
+#                     queryset = None
+#             else:
+#                 queryset = None
+#
+#         # like filter
+#         if self.like_flag:
+#             like_pks = UserTaste.objects\
+#                 .filter(user=self.request.user,
+#                         is_liked=True,
+#                         scoring_method=self.request.user.settings.scoring_method)\
+#                 .values('paper__pk')
+#             queryset = queryset.filter(paper_id__in=like_pks)
+#
+#         # search query
+#         q = self.request.GET.get("query")
+#         if q:
+#             # return a filtered queryset
+#             queryset = queryset.filter(Q(paper__title__icontains=q) |
+#                                    Q(paper__abstract__icontains=q) |
+#                                    Q(paper__journal__title__icontains=q) |
+#                                    Q(paper__authors__last_name__icontains=q) |
+#                                    Q(paper__authors__first_name__icontains=q))\
+#                 .distinct()
+#
+#         # sort queryset
+#         if self.sorting_flag == 'relevant':
+#             # this is by default for feed
+#             pass
+#         elif self.sorting_flag == 'recent':
+#             # order by date
+#             queryset = queryset.order_by(Coalesce('paper__date_ep',
+#                                                   'paper__date_pp',
+#                                                   'paper__date_fs').desc())
+#         elif self.sorting_flag == 'trendy':
+#             # order by altmetric score
+#             queryset = queryset.order_by('-paper__altmetric__score')
+#         elif self.sorting_flag == 'nothing':
+#             # let's shuffle the results
+#             queryset = queryset.order_by("?")
+#
+#         return queryset
 
 library = UserLibraryView.as_view()
 
@@ -427,10 +461,10 @@ library = UserLibraryView.as_view()
 class UserLibraryTrashView(UserLibraryView):
 
     def get_queryset(self):
-        query_set = UserLibPaper.objects\
+        self.original_qs = UserLibPaper.objects\
             .filter(userlib=self.request.user.lib,
                     is_trashed=True)
-        return self.filter_queryset(query_set)
+        return self.filter_queryset(self.original_qs)
 
     def get_context_data(self, **kwargs):
         context = super(UserLibraryTrashView, self).get_context_data(**kwargs)
@@ -445,11 +479,11 @@ class UserLibraryLikesView(UserLibraryView):
 
     def get_queryset(self):
 
-        query_set = UserTaste.objects\
+        self.original_qs = UserTaste.objects\
             .filter(user=self.request.user,
                     is_liked=True)
 
-        return self.filter_queryset(query_set)
+        return self.filter_queryset(self.original_qs)
 
     def get_context_data(self, **kwargs):
         context = super(UserLibraryLikesView, self).get_context_data(**kwargs)

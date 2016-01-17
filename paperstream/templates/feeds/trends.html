@@ -31,8 +31,7 @@
                                 </div>
                                 <div class="col-md-7">
                                     <div class="header-text">
-                                        <h3>Trending</h3>
-                                        <h5><em>Broaden your interest and explore new topics</em></h5>
+                                        <h4>{{ number_of_papers }} trending publications suggested for you</h4>
                                     </div>
                                 </div>
                                 <div class="col-md-4 text-right">
@@ -41,15 +40,6 @@
                                             <img src="{% static 'img/like_select.png' %}" class="like-img" title="Show liked publications">
                                         </button>
                                     </div>
-{#                                    <div class="dropdown sort-by">#}
-{#                                        <span class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
-{#                                            <div class="text-right"><em>sort-by<span class="caret"></span></em></div>#}
-{#                                        </span>#}
-{#                                        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">#}
-{#                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>#}
-{#                                            <li><a id="most-recent" class="sort-option {% if sorting_flag == 'recent' %}active{% endif %}" href="#">most recent</a></li>#}
-{#                                        </ul>#}
-{#                                    </div>#}
                                 </div>
                             </div>
                             <div class="endless_data">
@@ -58,7 +48,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 hidden-sm">
-                        {% include 'feeds/feed_side_panel.html' %}
+                        {% include 'feeds/filter_panel.html' %}
                     </div>
                 </div>
             </div>
@@ -74,7 +64,7 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
     <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/side_panel.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/filter.js' %}"></script>
     <script>$.endlessPaginate({
         paginateOnScroll: true,
         paginateOnScrollMargin: 10,

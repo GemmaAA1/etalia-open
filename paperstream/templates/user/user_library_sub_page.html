@@ -3,8 +3,8 @@
 
 
 {% if object_list %}
-    {% paginate first_page,per_page ulp_list %}
-    {% for ulp in ulp_list %}
+    {% paginate first_page,per_page object_list %}
+    {% for ulp in object_list %}
         <div id="{{ ulp.paper.pk }}" class="paper-list">
             <div class="altmetric">
                 {% if ulp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ ulp.paper.id_doi }}"></div>

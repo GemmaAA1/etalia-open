@@ -30,8 +30,7 @@
                                 </div>
                                 <div class="col-md-7">
                                     <div class="header-text">
-                                        <h3>Recommended</h3>
-                                        <h5><em>Out of {{ stats.nb_papers_last_month }} articles published last {{ time_lapse|lower }}</em></h5>
+                                        <h4>{{ number_of_papers }} publications suggested for you</h4>
                                     </div>
                                 </div>
                                 <div class="col-md-4 text-right">
@@ -40,15 +39,6 @@
                                             <img src="{% static 'img/like_select.png' %}" class="like-img" title="Show liked publications">
                                         </button>
                                     </div>
-{#                                    <div class="dropdown sort-by">#}
-{#                                        <span class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
-{#                                            <div class="text-right"><em>sort-by<span class="caret"></span></em></div>#}
-{#                                        </span>#}
-{#                                        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">#}
-{#                                            <li><a id="most-relevant" class="sort-option {% if sorting_flag == 'relevant' %}active{% endif %}" href="#">most relevant</a></li>#}
-{#                                            <li><a id="most-recent" class="sort-option {% if sorting_flag == 'recent' %}active{% endif %}" href="#">most recent</a></li>#}
-{#                                        </ul>#}
-{#                                    </div>#}
                                 </div>
                             </div>
                             <div class="endless_data">
@@ -57,7 +47,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 hidden-sm">
-                        {% include 'feeds/feed_side_panel.html' %}
+                        {% include 'feeds/filter_panel.html' %}
                     </div>
                 </div>
             </div>
