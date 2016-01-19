@@ -200,3 +200,9 @@ opacity: 0;
     padding-top: 10px;
     padding-bottom: 10px;
 }
+
+.blurb {
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}

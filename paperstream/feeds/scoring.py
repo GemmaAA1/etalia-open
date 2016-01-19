@@ -226,8 +226,7 @@ class Scoring(object):
         # number of paper to keep
         nb_papers = int(
             settings.FEED_SIZE_PER_DAY *
-            self.stream.user.settings.stream_time_lapse *
-            2 ** self.stream.user.settings.stream_narrowness)
+            self.stream.user.settings.stream_time_lapse)
 
         # sort scores
         best = matutils.argsort(scores,
@@ -389,7 +388,6 @@ class ContentBasedScoring(Scoring):
                               self.auth_w * seed_auth_mat,
                               self.jour_w * seed_jour_mat))
 
-
         # normalize
         norm = np.linalg.norm(seed_mat, axis=1)
         non_zeros = norm > 0.
@@ -451,9 +449,13 @@ class ContentBasedScoring(Scoring):
         # build target journal mat
         target_jour_mat = self.build_jour_utility_mat(self.target_data)
         # concatenate
-        target_mat = np.hstack((self.vec_w * target_vec_mat,
-                                self.auth_w * target_auth_mat,
-                                self.jour_w * target_jour_mat))
+        # target_mat = np.hstack((self.vec_w * target_vec_mat,
+        #                         self.auth_w * target_auth_mat,
+        #                         self.jour_w * target_jour_mat))
+        target_mat = np.hstack((target_vec_mat,
+                                target_auth_mat,
+                                target_jour_mat))
+
         # normalize
         norm = np.linalg.norm(target_mat, axis=1)
         non_zeros = norm > 0.
@@ -466,6 +468,102 @@ class ContentBasedScoring(Scoring):
         res = self.order_and_trim_results(self.target_pks, dis)
 
         return res, self.target_date
+
+
+class TrendScoring(Scoring):
+
+    DEFAULT_DOC_WEIGHT = 1.
+    DEFAULT_ALTMETRIC_WEIGHT = 1.
+    DEFAULT_TARGET_SEARCH = 'all'
+
+    def __init__(self, **kwargs):
+        super(TrendScoring, self).__init__(**kwargs)
+        self.doc_w = kwargs.get('document_weight', self.DEFAULT_DOC_WEIGHT)
+        self.alt_w = kwargs.get('altmetric_weight', self.DEFAULT_ALTMETRIC_WEIGHT)
+
+        self.target_search = kwargs.get('target_search',
+                                        self.DEFAULT_TARGET_SEARCH)
+
+        # profile array
+        self.profile = []
+
+    def score(self):
+
+        # Build profile
+        self.profile = self.build_doc_profile(time_weight=True)
+
+        # Get seed
+        seed = self.profile[:self.model.size].copy()
+        norm = np.linalg.norm(seed)
+        if norm > 0:
+            seed /= norm
+
+        # Get target data (from cache if available)
+        if not self.cache.get('target_pks'):
+            if self.target_search == 'neighbor':
+                self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
+            elif self.target_search == 'all':
+                self.target_pks, self.target_date = self.get_target_all_pks()
+            else:
+                raise ValueError('')
+            self.cache.add('target_pks', self.target_pks, 60 * 60 * 24)
+            self.cache.add('target_date', self.target_date, 60 * 60 * 24)
+        else:
+            self.target_pks = self.cache.get('target_pks')
+            self.target_date = self.cache.get('target_date')
+
+        # Build target data (from cache if available)
+        if not self.cache.get('target_data'):
+            self.target_data = self.get_data(self.target_pks)
+            self.cache.add('target_data', self.target_data, 60 * 60 * 24)
+        else:
+            self.target_data = self.cache.get('target_data')
+        # auth data
+        if not self.cache.get('target_auth_data'):
+            self.target_auth_data = self.get_auth_data(self.target_pks)
+            self.cache.add('target_auth_data', self.target_auth_data, 60 * 60 * 24)
+        else:
+            self.target_auth_data = self.cache.get('target_auth_data')
+
+        # build target mat
+        target_mat = self.build_paper_vec_mat(self.target_data)
+
+        # normalize
+        norm = np.linalg.norm(target_mat, axis=1)
+        non_zeros = norm > 0.
+        target_mat[non_zeros, :] /= norm[non_zeros, None]
+
+        # Dot product
+        dis = np.dot(target_mat, self.profile.T)
+
+        # Get Altmetric data (from cache if available)
+        if not self.cache.get('target_altmetric'):
+            target_altmetric = self.get_altmetric_data(self.target_pks)
+            # cache
+            self.cache.add('target_altmetric', target_altmetric, 60 * 60 * 24)
+        else:
+            # get from cache
+            target_altmetric = self.cache.get('target_altmetric')
+        # Get altmetric score and normalize
+        alt_score = np.array([p['score'] for p in target_altmetric])
+        # normalize in [0,1]
+        alt_score /= alt_score.max()
+        # get altmetric pks
+        alt_pks = [p['paper__pk'] for p in target_altmetric]
+
+        # Intersect altmetric pks and target pks
+        pk_idx = np.array([pk in alt_pks for pk in self.target_pks])
+        dis_reduced = dis[pk_idx]
+
+        # compute weighted score
+        score = self.doc_w * dis_reduced + self.alt_w * alt_score
+
+        # Order
+        res = self.order_and_trim_results(self.target_pks, score)
+
+        return res, self.target_date
+
+
 
 
 # class SimpleMax(StreamScoring):
@@ -573,101 +671,3 @@ class ContentBasedScoring(Scoring):
 #         scores_pks = [self.target_pks[x[0]] for x in occ_sorted]
 #
 #         return scores_pks, scores
-
-
-class TrendScoring(Scoring):
-
-    DEFAULT_DOC_WEIGHT = 1.
-    DEFAULT_ALTMETRIC_WEIGHT = 1.
-    DEFAULT_TARGET_SEARCH = 'all'
-
-    def __init__(self, **kwargs):
-        super(TrendScoring, self).__init__(**kwargs)
-        self.doc_w = kwargs.get('document_weight', self.DEFAULT_DOC_WEIGHT)
-        self.alt_w = kwargs.get('altmetric_weight', self.DEFAULT_ALTMETRIC_WEIGHT)
-
-        self.target_search = kwargs.get('target_search',
-                                        self.DEFAULT_TARGET_SEARCH)
-
-        # profile array
-        self.profile = []
-
-    def score(self):
-
-        # Build profile
-        self.profile = self.build_doc_profile(time_weight=True)
-
-        # Get seed
-        seed = self.profile[:self.model.size].copy()
-        norm = np.linalg.norm(seed)
-        if norm > 0:
-            seed /= norm
-
-        # Get target data (from cache if available)
-        if not self.cache.get('target_pks'):
-            if self.target_search == 'neighbor':
-                self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
-            elif self.target_search == 'all':
-                self.target_pks, self.target_date = self.get_target_all_pks()
-            else:
-                raise ValueError('')
-            self.cache.add('target_pks', self.target_pks, 60 * 60 * 24)
-            self.cache.add('target_date', self.target_date, 60 * 60 * 24)
-        else:
-            self.target_pks = self.cache.get('target_pks')
-            self.target_date = self.cache.get('target_date')
-
-        # Build target data (from cache if available)
-        if not self.cache.get('target_data'):
-            self.target_data = self.get_data(self.target_pks)
-            self.cache.add('target_data', self.target_data, 60 * 60 * 24)
-        else:
-            self.target_data = self.cache.get('target_data')
-        # auth data
-        if not self.cache.get('target_auth_data'):
-            self.target_auth_data = self.get_auth_data(self.target_pks)
-            self.cache.add('target_auth_data', self.target_auth_data, 60 * 60 * 24)
-        else:
-            self.target_auth_data = self.cache.get('target_auth_data')
-
-        # build target mat
-        target_mat = self.build_paper_vec_mat(self.target_data)
-
-        # normalize
-        norm = np.linalg.norm(target_mat, axis=1)
-        non_zeros = norm > 0.
-        target_mat[non_zeros, :] /= norm[non_zeros, None]
-
-        # Dot product
-        dis = np.dot(target_mat, self.profile.T)
-
-        # Get Altmetric data (from cache if available)
-        if not self.cache.get('target_altmetric'):
-            target_altmetric = self.get_altmetric_data(self.target_pks)
-            # cache
-            self.cache.add('target_altmetric', target_altmetric, 60 * 60 * 24)
-        else:
-            # get from cache
-            target_altmetric = self.cache.get('target_altmetric')
-        # Get altmetric score and normalize
-        alt_score = np.array([p['score'] for p in target_altmetric])
-        # normalize in [0,1]
-        alt_score /= alt_score.max()
-        # get altmetric pks
-        alt_pks = [p['paper__pk'] for p in target_altmetric]
-
-        # Intersect altmetric pks and target pks
-        pk_idx = np.array([pk in alt_pks for pk in self.target_pks])
-        dis_reduced = dis[pk_idx]
-
-        # compute weighted score
-        score = self.doc_w * dis_reduced + self.alt_w * alt_score
-
-        # Order
-        res = self.order_and_trim_results(self.target_pks, score)
-
-        return res, self.target_date
-
-
-
-

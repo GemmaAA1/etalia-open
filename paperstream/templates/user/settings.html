@@ -27,14 +27,10 @@
             <div class="col-md-9">
                 <div class="row">
                     <div class="col-md-9">
-{#                        <h5>NLP model: <span id="stream_model">{{ user.settings.stream_model }}</span></h5>#}
-{#                        <h5>Time range: <span id="stream_time_lapse">{{ user.settings.get_stream_time_lapse_display }}</span></h5>#}
-{#                        <h5>Narrowness: <span id="stream_narrowness">{{ user.settings.get_stream_narrowness_display }}</span></h5>#}
-{#                        <h5>Method: <span id="stream_method">{{ user.settings.stream_method }}</span></h5>#}
                         <h5>Method: <span id="stream_method">{{ user.settings.get_stream_method_display }}</span></h5>
-                        <h5>Content weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:0 }}</span></h5>
-                        <h5>Author weight: <span id="stream_author_weight">{{ user.settings.stream_author_weight|floatformat:0 }}</span></h5>
-                        <h5>Journal weight: <span id="stream_journal_weight">{{ user.settings.stream_journal_weight|floatformat:0 }}</span></h5>
+                        <h5>Content weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:2 }}</span></h5>
+                        <h5>Author weight: <span id="stream_author_weight">{{ user.settings.stream_author_weight|floatformat:2 }}</span></h5>
+                        <h5>Journal weight: <span id="stream_journal_weight">{{ user.settings.stream_journal_weight|floatformat:2 }}</span></h5>
                         <h5>Last update: {{ user.streams.first.modified }}</h5>
                     </div>
                     <div class="col-md-3">
@@ -61,12 +57,9 @@
             <div class="col-md-9">
                 <div class="row">
                     <div class="col-md-9">
-{#                        <h5>NLP model: <span id="trend_model">{{ user.settings.trend_model }}</span></h5>#}
-{#                        <h5>Time range: <span id="trend_time_lapse">{{ user.settings.get_trend_time_lapse_display }}</span></h5>#}
-{#                        <h5>Narrowness: <span id="trend_narrowness">{{ user.settings.get_trend_narrowness_display }}</span></h5>#}
                         <h5>Method: <span id="trend_method">{{ user.settings.get_trend_method_display }}</span></h5>
-                        <h5>Content weight: <span id="trend_doc_weight">{{ user.settings.trend_doc_weight|floatformat:0 }}</span></h5>
-                        <h5>Altmetric weight: <span id="trend_altmetric_weight">{{ user.settings.trend_altmetric_weight|floatformat:0 }}</span></h5>
+                        <h5>Content weight: <span id="trend_doc_weight">{{ user.settings.trend_doc_weight|floatformat:2 }}</span></h5>
+                        <h5>Altmetric weight: <span id="trend_altmetric_weight">{{ user.settings.trend_altmetric_weight|floatformat:2 }}</span></h5>
                         <h5>Last update: {{ user.trends.first.modified }}</h5>
                     </div>
                     <div class="col-md-3">

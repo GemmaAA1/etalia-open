@@ -135,11 +135,11 @@ class UserStreamSettingsForm(forms.ModelForm):
         super(UserStreamSettingsForm, self).__init__(*args, **kwargs)
         if kwargs.get('instance'):
             self.fields['stream_vector_weight'].widget.attrs['data-slider-value'] = \
-                '{0:.0f}'.format(kwargs['instance'].stream_vector_weight)
+                '{0:.2f}'.format(kwargs['instance'].stream_vector_weight)
             self.fields['stream_author_weight'].widget.attrs['data-slider-value'] = \
-                '{0:.0f}'.format(kwargs['instance'].stream_author_weight)
+                '{0:.2f}'.format(kwargs['instance'].stream_author_weight)
             self.fields['stream_journal_weight'].widget.attrs['data-slider-value'] = \
-                '{0:.0f}'.format(kwargs['instance'].stream_journal_weight)
+                '{0:.2f}'.format(kwargs['instance'].stream_journal_weight)
 
     class Meta:
         model = UserSettings
@@ -152,23 +152,23 @@ class UserStreamSettingsForm(forms.ModelForm):
                 'data-slider-id': 'stream_vector_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '1000',
-                'data-slider-step': '10',
-                'data-slider-value': '100'}),
+                'data-slider-max': '1',
+                'data-slider-step': '.05',
+                'data-slider-value': '1'}),
             'stream_author_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_author_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '1000',
-                'data-slider-step': '10',
-                'data-slider-value': '100'}),
+                'data-slider-max': '1',
+                'data-slider-step': '.05',
+                'data-slider-value': '1'}),
             'stream_journal_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_journal_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '1000',
-                'data-slider-step': '10',
-                'data-slider-value': '100'}),
+                'data-slider-max': '1',
+                'data-slider-step': '.05',
+                'data-slider-value': '1'}),
         }
 
 
@@ -178,9 +178,9 @@ class UserTrendSettingsForm(forms.ModelForm):
         super(UserTrendSettingsForm, self).__init__(*args, **kwargs)
         if kwargs.get('instance'):
             self.fields['trend_doc_weight'].widget.attrs['data-slider-value'] = \
-                '{0:.0f}'.format(kwargs['instance'].trend_doc_weight)
+                '{0:.2f}'.format(kwargs['instance'].trend_doc_weight)
             self.fields['trend_altmetric_weight'].widget.attrs['data-slider-value'] = \
-                '{0:.0f}'.format(kwargs['instance'].trend_altmetric_weight)
+                '{0:.2f}'.format(kwargs['instance'].trend_altmetric_weight)
 
     class Meta:
         model = UserSettings
@@ -193,16 +193,16 @@ class UserTrendSettingsForm(forms.ModelForm):
                 'data-slider-id': 'trend_doc_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '1000',
-                'data-slider-step': '10',
-                'data-slider-value': '100'}),
+                'data-slider-max': '1',
+                'data-slider-step': '.05',
+                'data-slider-value': '1'}),
             'trend_altmetric_weight': forms.TextInput(attrs={
                 'data-slider-id': 'trend_altmetric_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
-                'data-slider-max': '1000',
-                'data-slider-step': '10',
-                'data-slider-value': '100'}),
+                'data-slider-max': '1',
+                'data-slider-step': '.05',
+                'data-slider-value': '1'}),
         }
 
 

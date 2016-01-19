@@ -76,11 +76,6 @@
                     <h5>
                         <span class="has-value {% if object.affiliation.is_empty %}hidden{% endif %}">
                             <span id="print-affiliation">{{ object.affiliation.print_affiliation }}</span>
-{#                            <span id="department">{{ object.affiliation.department }}</span>#}
-{#                            <span id="institution">{{ object.affiliation.institution }}</span>#}
-{#                            <span id="city">{{ object.affiliation.city }}</span>#}
-{#                            <span id="state">{{ object.affiliation.state }}</span>#}
-{#                            <span id="country">{{ object.affiliation.country }}</span>#}
                         </span>
                         <span class="has-no-value {% if not object.affiliation or object.affiliation.is_empty  %}{% else %}hidden{% endif %}">
                             <div class="empty">Add your affiliation</div>

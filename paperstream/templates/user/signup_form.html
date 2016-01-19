@@ -8,7 +8,7 @@
 {% endblock css %}
 
 {% block navbar %}
-    {% include 'nav_bar_header.html' %}
+    {% include "nav_bar_anonymous.html" %}
 {% endblock navbar %}
 
 {% block title %} {{ block.super }} Sign-Up {% endblock %}
@@ -42,10 +42,9 @@
                     <button id="signup" type="submit" class="btn btn-primary btn-lg">Done</button>
                 </div>
             </form>
-            <div>
-                By clicking on the done button, your are allowing Etalia to access the metadata of the scientific publications
-                that you have saved in your reference software manager. This information is used to provide your with personalized
-                content. This information will not be shared with any other entity without your consent.
+            <div class="blurb">
+                By clicking on the done button, your are allowing Etalia to access the data that you store in your reference software manager.
+                This information will not be shared with any other entity without your consent.
             </div>
         </div>
     </div>

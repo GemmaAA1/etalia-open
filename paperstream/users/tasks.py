@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
-
 @app.task()
 def update_lib(user_pk, provider_name):
     """Async task for updating user library"""
