@@ -553,13 +553,14 @@ class TrendScoring(Scoring):
 
         # Intersect altmetric pks and target pks
         pk_idx = np.array([pk in alt_pks for pk in self.target_pks])
+        target_pks_reduced = np.array([pk for pk in self.target_pks if pk in alt_pks])
         dis_reduced = dis[pk_idx]
 
         # compute weighted score
         score = self.doc_w * dis_reduced + self.alt_w * alt_score
 
         # Order
-        res = self.order_and_trim_results(self.target_pks, score)
+        res = self.order_and_trim_results(target_pks_reduced, score)
 
         return res, self.target_date
 
