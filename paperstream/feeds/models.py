@@ -360,5 +360,6 @@ class TrendMatches(TimeStampedModel):
     date = models.DateField()
 
     class Meta:
+        ordering = ['-score']
         unique_together = [('trend', 'paper'), ]
 
