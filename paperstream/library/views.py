@@ -14,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.expressions import RawSQL
 
 from config.celery import celery_app as app
+from celery.exceptions import SoftTimeLimitExceeded
 
 from paperstream.nlp.models import PaperNeighbors, Model, MostSimilar
 from paperstream.core.mixins import ModalMixin
@@ -91,6 +92,8 @@ class PaperView(ModalMixin, DetailView):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
         time_lapse = self.time_lapse_map[self.request.GET.get('time-span', 'year')]
+        neighbors = []
+
         if self.request.user.is_authenticated():
             model = self.request.user.settings.stream_model
         else:
@@ -115,8 +118,11 @@ class PaperView(ModalMixin, DetailView):
                 res = ms_task.apply_async(args=('populate_neighbors',),
                                           kwargs={'paper_pk': paper_.pk,
                                                   'time_lapse': time_lapse},
-                                          timeout=3)
+                                          timeout=10,
+                                          soft_timeout=5)
                 neighbors = res.get()
+            except SoftTimeLimitExceeded:
+                neighbors = []
             except KeyError:
                 raise
 
