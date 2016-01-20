@@ -1,0 +1,131 @@
+{% extends 'default.html' %}
+
+
+{% load staticfiles %}
+
+
+{% block top-bar_controls %}
+    <div class="wrap">
+
+    <button id="toggle-pinned" class="btn-circle" type="button">
+        <span class="eai eai-pin"></span>
+    </button>
+
+    <div id="cluster" class="selector">
+        <button id="toggle-cluster" class="btn-circle" type="button">
+            <span id="cluster-selection" class="cluster-value"></span>
+                <span class="cluster-icon">
+                    <span class="cluster-0"></span>
+                    <span class="cluster-1"></span>
+                    <span class="cluster-2"></span>
+                    <span class="cluster-3"></span>
+                </span>
+        </button>
+        <div class="choices">
+            <ul>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-0" data-cluster="0"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-1" data-cluster="1"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-2" data-cluster="2"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-3" data-cluster="3"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-none" data-cluster="none">
+                            <span class="cluster-icon">
+                                <span class="cluster-0"></span>
+                                <span class="cluster-1"></span>
+                                <span class="cluster-2"></span>
+                                <span class="cluster-3"></span>
+                            </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="timespan" class="selector">
+        <button id="toggle-timespan" class="btn-circle" type="button">
+            <span class="eai eai-clock"></span>
+            <span id="timespan-selection" class="timespan-value">1m</span>
+        </button>
+        <div class="choices">
+            <ul>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="0">
+                        <span class="timespan-value">L</span> <strong>L</strong>ast visit
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="1">
+                        <span class="timespan-value">W</span> <strong>W</strong>eek
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="2">
+                        <span class="timespan-value">1m</span> <strong>1 m</strong>onth
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="3">
+                        <span class="timespan-value">2m</span> <strong>2 m</strong>onths
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <button id="toggle-search" class="btn-circle" type="button">
+        <span class="eai eai-search"></span>
+    </button>
+
+    <div id="search">
+        <button id="close-search" class="btn-circle" type="button">
+            <span class="eai eai-close"></span>
+        </button>
+        <form id="search-bar" onsubmit="return false;">
+            <button type="submit">
+                <span class="eai eai-search"></span>
+            </button>
+            <label for="search-input">
+                <input type="text" id="search-input" name="search" placeholder="Search...">
+            </label>
+        </form>
+    </div>
+
+</div>
+{% endblock top-bar_controls %}
+
+
+{% block left-flap %}
+    {% include '_fragment/nav-flap.html' %}
+{% endblock left-flap %}
+
+
+{% block right-flap %}
+    {% include '_fragment/filter-flap.html' %}
+{% endblock right-flap %}
+
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link href="{% static 'tmp/css/app/browse.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'tmp/css/app/card.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'tmp/css/app/detail.css' %}" rel="stylesheet" type="text/css">
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+    <div id="backdrop"></div>
+    <script src="{% static 'tmp/js/require.js' %}"></script>
+    <script>
+        requirejs(['{% static "tmp/js/common.js" %}'], function () {
+            requirejs(['app/browse']);
+        });
+    </script>
+{% endblock javascript %}

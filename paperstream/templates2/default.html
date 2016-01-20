@@ -1,0 +1,63 @@
+{% extends 'root.html' %}
+
+{% load staticfiles %}
+
+
+{% block body %}
+
+    {% block content %}{% endblock content %}
+
+    <!-- start top-bar -->
+    <div id="top-bar" class="bar">
+        <!-- TODO (js) hide if no left flap -->
+        <button id="toggle-nav" class="btn-square" type="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+
+        <a id="brand" href="javascript: void(0)" title="Et al.">
+            <img src="{% static 'tmp/img/logo.svg' %}" alt="Et al.">
+        </a>
+
+        <!-- TODO sign-in button if user is not logged -->
+        <!-- start top-bar-profile -->
+        <button id="toggle-profile" class="btn-circle" type="button">
+            <img src="{% static 'tmp/img/avatar.jpg' %}" alt="Profile" width="38" height="38">
+        </button>
+        <div id="profile-dropdown">
+            <ul>
+                <li>
+                    <a href="javascript: void(0)">My Profile</a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)">Invite</a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)">Logout</a>
+                </li>
+            </ul>
+            <img src="{% static 'tmp/img/avatar.jpg' %}" alt="Avatar" width="100" height="100">
+        </div>
+        <!-- end top-bar-profile -->
+
+        {% block top-bar_controls %}{% endblock top-bar_controls %}
+    </div>
+    <!-- end top-bar -->
+
+    {% block left-flap %}{% endblock left-flap %}
+
+    {% block right-flap %}{% endblock right-flap %}
+
+{% endblock body %}
+
+
+{% block javascript %}
+    <script src="{% static 'tmp/js/require.js' %}"></script>
+    <script>
+        requirejs(['{% static "tmp/js/common.js" %}'], function () {
+            requirejs(['app/default']);
+        });
+    </script>
+{% endblock javascript %}

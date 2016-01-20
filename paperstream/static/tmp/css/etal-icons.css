@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'etalia';
-    src:    url('../fonts/etalia.eot?pjnr56');
-    src:    url('../fonts/etalia.eot?pjnr56#iefix') format('embedded-opentype'),
-        url('../fonts/etalia.ttf?pjnr56') format('truetype'),
-        url('../fonts/etalia.woff?pjnr56') format('woff'),
-        url('../fonts/etalia.svg?pjnr56#etalia') format('svg');
+    src:    url('../fonts/etalia.eot?7cb2xz');
+    src:    url('../fonts/etalia.eot?7cb2xz#iefix') format('embedded-opentype'),
+        url('../fonts/etalia.ttf?7cb2xz') format('truetype'),
+        url('../fonts/etalia.woff?7cb2xz') format('woff'),
+        url('../fonts/etalia.svg?7cb2xz#etalia') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -24,6 +24,9 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+.eai-facebook:before {
+    content: "\e913";
+}
 .eai-tick:before {
     content: "\e90f";
 }

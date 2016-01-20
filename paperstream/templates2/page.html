@@ -1,0 +1,39 @@
+{% extends 'default.html' %}
+
+{% load staticfiles %}
+
+
+{% block content %}
+<div class="document">
+    <div class="wrap-container">
+        <div class="container" style="position: relative">
+            <div class="row">
+                <div class="col-md-9">
+                    <div id="page-content">
+                        {% block page_content %}{% endblock page_content %}
+                    </div>
+                </div>
+                <div class="col-md-3 hidden-xs hidden-sm">
+                    {% include '_fragment/page-nav.html' %}
+                </div>
+                <div id="side-background" class="hidden-xs hidden-sm"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block stylesheets %}
+<link href="{% static 'tmp/css/app/page.css' %}" rel="stylesheet" type="text/css">
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+<script src="{% static 'tmp/js/require.js' %}"></script>
+<script>
+    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+        requirejs(['app/page']);
+    });
+</script>
+{% endblock javascript %}

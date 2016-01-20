@@ -6,14 +6,29 @@ html {
 body {
     min-height: 100%;
     font-family: 'Lato', Helvetica, Arial, sans-serif;
+    color: #313233;
 }
 
 *:focus {
     outline: none !important;
 }
 
+a {
+    color: #006666;
+}
+
+a:hover,
+a:visited,
+a:active {
+    color: #004d44;
+}
+
 a:focus {
     text-decoration: none;
+}
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+    color: #1e232f;
 }
 
 /* ---------------------------------- LAYOUT ---------------------------------- */

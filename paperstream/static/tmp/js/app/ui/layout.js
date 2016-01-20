@@ -1,4 +1,4 @@
-define(['jquery', 'app/ui/flap'], function ($, Flap) {
+define(['jquery', 'app/ui/flap', 'app/util/utils'], function ($, Flap, Util) {
 
     var Layout = function (config) {
         this.config = $.extend({
@@ -31,23 +31,33 @@ define(['jquery', 'app/ui/flap'], function ($, Flap) {
             }
         };
     };
+
     Layout.prototype.init = function () {
         var $leftFlap = $(this.config.leftFlap),
-            $rightFlap = $(this.config.rightFlap);
+            $leftFlapButton = $(this.config.leftFlapButton),
+            $rightFlap = $(this.config.rightFlap),
+            $rightFlapButton = $(this.config.rightFlapButton),
+            attacheResizeHandler = false;
 
         this.log('Init');
 
+        // Left Flap
         if ($leftFlap.length) {
             this.log('Left flap found');
             this.leftFlap = new Flap({
                 debug: this.config.debug,
                 flap: $leftFlap,
                 side: 'left',
-                button: this.config.leftFlapButton,
+                button: $leftFlapButton,
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 992
             });
+            attacheResizeHandler = true;
+        } else {
+            $leftFlapButton.hide();
         }
+
+        // Right flap
         if ($rightFlap.length) {
             this.log('Right flap found');
             this.rightFlap = new Flap({
@@ -58,16 +68,47 @@ define(['jquery', 'app/ui/flap'], function ($, Flap) {
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 1200
             });
+            attacheResizeHandler = true;
+        } else {
+            $rightFlapButton.hide();
         }
 
-        var that = this;
-        $(window).on('resize', function () {
-            if (that.resizeTimeout) {
-                clearTimeout(that.resizeTimeout);
-            }
-            that.resizeTimeout = setTimeout(that.resizeHandler, 100);
-        });
-        that.resizeHandler();
+        // Resize handler
+        if (attacheResizeHandler) {
+            var that = this;
+            $(window).on('resize', function () {
+                if (that.resizeTimeout) {
+                    clearTimeout(that.resizeTimeout);
+                }
+                that.resizeTimeout = setTimeout(that.resizeHandler, 100);
+            });
+            that.resizeHandler();
+        }
+
+        // Profile dropdown
+        var $toggleProfile = $('#toggle-profile'),
+            $profileDropDown = $('#profile-dropdown');
+
+        if ($profileDropDown.length) {
+            $toggleProfile.on('click', function (e) {
+                if (Util.toggleClass($(e.delegateTarget), 'active')) {
+                    $profileDropDown.show();
+                } else {
+                    $profileDropDown.hide();
+                }
+            });
+            $profileDropDown.on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            $(window).on('click', function(e) {
+                // Profile dropdown
+                if (0 == $(e.target).closest('#toggle-profile').length) {
+                    $('#toggle-profile').removeClass('active');
+                    $('#profile-dropdown').hide();
+                }
+            });
+        }
     };
 
     return Layout;

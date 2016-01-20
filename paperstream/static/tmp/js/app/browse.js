@@ -1,18 +1,10 @@
-define(['jquery', 'app/ui/layout', 'app/ui/detail', 'bootstrap'], function($, Layout, Detail) {
+define(
+    ['jquery', 'app/ui/layout', 'app/ui/detail', 'app/util/utils', 'bootstrap'],
+    function($, Layout, Detail, Util) {
 
     var layout, detail, $search,
-        $toggleProfile, $profileDropDown,
         $toggleCluster, $clusterSelection, selectedCluster,
-        $toggleTimeSpan, $timeSpanSelection;
-
-    function toggleClass($element, cssClass) {
-        if ($element.hasClass(cssClass)) {
-            $element.removeClass(cssClass);
-            return false;
-        }
-        $element.addClass(cssClass);
-        return true;
-    }
+        $toggleTimespan, $timespanSelection;
 
     $(function() {
 
@@ -23,35 +15,20 @@ define(['jquery', 'app/ui/layout', 'app/ui/detail', 'bootstrap'], function($, La
 
         $search = $('#search');
 
-        $toggleProfile = $('#toggle-profile');
-        $profileDropDown = $('#profile-dropdown');
-
         $toggleCluster = $('#toggle-cluster');
         $clusterSelection = $('#cluster-selection');
 
-        $toggleTimeSpan = $('#toggle-timespan');
-        $timeSpanSelection = $('#timespan-selection');
-
-        // Profile
-        $toggleProfile.on('click', function(e) {
-            if (toggleClass($(e.delegateTarget), 'active')) {
-                $profileDropDown.show();
-            } else {
-                $profileDropDown.hide();
-            }
-        });
-        $profileDropDown.on('click', function(e) {
-            e.stopPropagation();
-        });
+        $toggleTimespan = $('#toggle-timespan');
+        $timespanSelection = $('#timespan-selection');
 
         // Toggle pinned
         $('#toggle-pinned').on('click', function(e) {
-            toggleClass($(e.delegateTarget), 'active');
+            Util.toggleClass($(e.delegateTarget), 'active');
         });
 
         // Toggle search bar
         $('#toggle-search, #close-search').on('click', function() {
-            toggleClass($search, 'opened');
+            Util.toggleClass($search, 'opened');
         });
 
         // Search bar active
@@ -69,7 +46,7 @@ define(['jquery', 'app/ui/layout', 'app/ui/detail', 'bootstrap'], function($, La
         $('.selector button').on('click', function(e) {
             //e.stopPropagation();
             var $selector = $(e.target).parents('.selector').eq(0);
-            toggleClass($selector, 'opened');
+            Util.toggleClass($selector, 'opened');
         });
 
         // Cluster selection
@@ -106,77 +83,57 @@ define(['jquery', 'app/ui/layout', 'app/ui/detail', 'bootstrap'], function($, La
                 }
             })($(e.target).closest('a').data('timespan'));
 
-            $timeSpanSelection.html(value);
-            $toggleTimeSpan.trigger('click');
+            $timespanSelection.html(value);
+            $toggleTimespan.trigger('click');
         });
+
+        // Close selectors on click out
+        $(window).on('click', function(e) {
+            if (0 == $(e.target).closest('.selector').length) {
+                $('.selector').removeClass('opened');
+            }
+        });
+
 
         // Filters
         $('.filter-toggle').on('click', function(e) {
             var $group = $(e.delegateTarget).parents('.filter-group').eq(0);
-            if (toggleClass($group, 'active')) {
+            if (Util.toggleClass($group, 'active')) {
                 $group.find('.filter-filters').collapse('show');
             } else {
                 $group.find('.filter-filters').collapse('hide');
             }
         });
         $('.filter-group ul a').on('click', function(e) {
-            toggleClass($(e.delegateTarget), 'active');
+            Util.toggleClass($(e.delegateTarget), 'active');
         });
-
         $('.filter-group.active .collapse').collapse('show');
 
-        $('.filter-group .collapse')
-            .on('hidden.bs.collapse', function (e) {
-                e.stopPropagation();
-                // TODO filtersScroll.redraw();
-            })
-            .on('shown.bs.collapse', function (e) {
-                e.stopPropagation();
-                // TODO filtersScroll.redraw();
-            });
 
         // Thumbs
         $('.document, #detail')
             .on('click', '.thumb-pin', function(e) {
                 e.stopPropagation();
-                toggleClass($(e.target).closest('.thumb-pin'), 'active');
+                Util.toggleClass($(e.target).closest('.thumb-pin'), 'active');
             })
             .on('click', '.thumb-remove', function(e) {
                 e.stopPropagation();
                 // TODO
             });
 
+
         // Detail
-        $('.document')
-            .on('click', '.thumb .title a', function(e) {
-                e.preventDefault();
-                detail.load();
-                return false;
-            });
+        $('.document').on('click', '.thumb .title a', function(e) {
+            e.preventDefault();
+            detail.load();
+            return false;
+        });
         $('#detail-close, #backdrop').on('click', function() {
             detail.close();
         });
         $('#detail-next, #detail-prev').on('click', function() {
             detail.load();
         });
-
-        $(window)
-            // Close opened elements on window click
-            .on('click', function(e) {
-                e.stopPropagation();
-
-                // Profile dropdown
-                if (0 == $(e.target).closest('#toggle-profile').length) {
-                    $('#toggle-profile').removeClass('active');
-                    $('#profile-dropdown').hide();
-                }
-
-                // Selectors
-                if (0 == $(e.target).closest('.selector').length) {
-                    $('.selector').removeClass('opened');
-                }
-            })
-
     });
 });
 
