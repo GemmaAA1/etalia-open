@@ -486,7 +486,7 @@ def user_update_step(request):
         redirect = ''
         if request.user.streams.first().state == 'ING':
             messages = ['Updating Your News']
-        elif request.user.streams.first().state == 'ING':
+        elif request.user.trends.first().state == 'ING':
             messages = ['Updating Top News']
         elif request.user.streams.first().state == 'IDL' and \
                         request.user.trends.first().state == 'IDL':

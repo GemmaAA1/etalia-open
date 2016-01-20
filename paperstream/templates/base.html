@@ -78,8 +78,8 @@
             {% if user.is_authenticated %}
                 {% if user.init_step != 'IDL' %}
                     {% include "user/init_modal.html" %}
-                {% elif %}
-                    {% include "user/update_modal.html" %}
+                {% elif user.streams.first.state != 'IDL' or user.trends.first.state != 'IDL'%}
+                    {% include "user/update_feed_modal.html" %}
                 {% endif %}
             {% endif %}
         {% endblock modal %}

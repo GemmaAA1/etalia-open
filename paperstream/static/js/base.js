@@ -77,7 +77,6 @@ function update_settings($block,  $modal, $messages, url) {
             $modal.hide()
                 .siblings('#updating-modal-backdrop')
                 .hide();
-            window.location.href = json.redirect;
         }
         else {
             $modal.show();

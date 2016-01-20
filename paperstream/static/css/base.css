@@ -54,6 +54,14 @@ p.copyright {
     /*margin-top: 100px;*/
 }
 
+#updating-modal {
+    position: absolute;
+    padding-top: 100px;
+    text-align: center;
+    color: #f3f3f3;
+    z-index: 9999;
+    /*margin-top: 100px;*/
+}
 
 /*#loading-lib-modal {*/
     /*top: 20%;*/
