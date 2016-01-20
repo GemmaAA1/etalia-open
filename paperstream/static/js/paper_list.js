@@ -176,7 +176,7 @@ function extendPaper(){
 function tick () {
     var $tick = $(this);
     var id = $(this).parents('.paper-list').attr('id');
-    var url = '/user/paper/tick';
+    var url = '/user/paper/ban';
     $.ajax({
         type: 'POST',
         url: url,
@@ -197,7 +197,7 @@ function like (event) {
     $like.removeClass('like')
         .addClass('loading');
     var id = $(this).parents('.paper-list').attr('id');
-    var url = '/user/paper/like';
+    var url = '/user/paper/pin';
     $.ajax({
         type: 'POST',
         url: url,

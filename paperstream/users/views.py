@@ -512,7 +512,7 @@ def update_library(request):
 
 
 @login_required
-def like_call(request):
+def pin_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
         source = request.POST.get('source', '')
@@ -545,7 +545,7 @@ def like_call(request):
 
 
 @login_required
-def tick_call(request):
+def ban_call(request):
     if request.method == 'POST':
         pk = int(request.POST.get('pk'))
         source = request.POST.get('source')
