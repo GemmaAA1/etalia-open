@@ -306,17 +306,25 @@ class Trend(TimeStampedModel):
     time_lapse_top_altmetric = models.IntegerField(default=15)
     score_threshold = models.FloatField(default=1000.0)
 
+    state = models.CharField(max_length=3, blank=True, choices=FEED_STATUS_CHOICES)
+
     def __str__(self):
         return self.user.email
 
     class Meta:
         unique_together = (('user', 'name'),)
 
+    def set_state(self, state):
+        self.state = state
+        self.save()
+
     def clear(self):
         """Remove all paper relations"""
         TrendMatches.objects.filter(trend=self).all().delete()
 
     def update(self):
+
+        self.set_state('ING')
 
         # clear stream
         self.clear()
@@ -348,6 +356,7 @@ class Trend(TimeStampedModel):
         # bulk create
         TrendMatches.objects.bulk_create(objs_list)
 
+        self.set_state('IDL')
 
 class TrendMatches(TimeStampedModel):
 

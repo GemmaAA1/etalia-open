@@ -78,6 +78,8 @@
             {% if user.is_authenticated %}
                 {% if user.init_step != 'IDL' %}
                     {% include "user/init_modal.html" %}
+                {% elif %}
+                    {% include "user/update_modal.html" %}
                 {% endif %}
             {% endif %}
         {% endblock modal %}

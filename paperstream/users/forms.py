@@ -153,21 +153,21 @@ class UserStreamSettingsForm(forms.ModelForm):
                 'type': 'text',
                 'data-slider-min': '0',
                 'data-slider-max': '1',
-                'data-slider-step': '.05',
+                'data-slider-step': '.01',
                 'data-slider-value': '1'}),
             'stream_author_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_author_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
                 'data-slider-max': '1',
-                'data-slider-step': '.05',
+                'data-slider-step': '.01',
                 'data-slider-value': '1'}),
             'stream_journal_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_journal_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
                 'data-slider-max': '1',
-                'data-slider-step': '.05',
+                'data-slider-step': '.01',
                 'data-slider-value': '1'}),
         }
 
@@ -194,14 +194,14 @@ class UserTrendSettingsForm(forms.ModelForm):
                 'type': 'text',
                 'data-slider-min': '0',
                 'data-slider-max': '1',
-                'data-slider-step': '.05',
+                'data-slider-step': '.01',
                 'data-slider-value': '1'}),
             'trend_altmetric_weight': forms.TextInput(attrs={
                 'data-slider-id': 'trend_altmetric_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
                 'data-slider-max': '1',
-                'data-slider-step': '.05',
+                'data-slider-step': '.01',
                 'data-slider-value': '1'}),
         }
 

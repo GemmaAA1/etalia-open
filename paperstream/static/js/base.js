@@ -8,6 +8,15 @@ $(document).ready(function() {
         update_init,
         1000);
 
+    applyWhenElementExists(
+        $('#updating-block'),
+        $('#updating-modal'),
+        [$('#update-step'), $('#update-message')],
+        '/user/user-update-step',
+        update_settings,
+        1000);
+
+
     $(".learn-more").click(function() {
        scrollToAnchor('learn-more');
     });
@@ -43,6 +52,30 @@ function update_init($block,  $modal, $messages, url) {
             $block.removeData('interval');
             $modal.hide()
                 .siblings('#initializing-modal-backdrop')
+                .hide();
+            window.location.href = json.redirect;
+        }
+        else {
+            $modal.show();
+            $.each($messages, function (index, $sel) {
+                console.log($sel);
+                console.log(json.messages[index]);
+                $sel.html(json.messages[index]);
+            });
+        }
+    });
+}
+
+function update_settings($block,  $modal, $messages, url) {
+    $.getJSON(url, function (json) {
+        console.log(json);
+        console.log($messages);
+        if (json.done) {
+            var libInterval = $block.data('interval');
+            clearInterval(libInterval);
+            $block.removeData('interval');
+            $modal.hide()
+                .siblings('#updating-modal-backdrop')
                 .hide();
             window.location.href = json.redirect;
         }

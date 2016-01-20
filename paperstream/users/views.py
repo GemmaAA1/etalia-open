@@ -478,6 +478,25 @@ def user_init_step(request):
 
         return JsonResponse(data)
 
+@login_required
+def user_update_step(request):
+    if request.method == 'GET':
+        messages = []
+        done = False
+        redirect = ''
+        if request.user.streams.first().state == 'ING':
+            messages = ['Updating Your News']
+        elif request.user.streams.first().state == 'ING':
+            messages = ['Updating Top News']
+        elif request.user.streams.first().state == 'IDL' and \
+                        request.user.trends.first().state == 'IDL':
+            done = True
+
+        data = {'done': done,
+                'messages': messages}
+
+        return JsonResponse(data)
+
 
 @login_required
 def update_library(request):

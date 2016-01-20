@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^update-email-digest-settings$', views.update_email_digest_settings, name='update-email-digest-settings'),
     url(r'^update-library$', views.update_library, name='update-library'),
     url(r'^user-init-step$', views.user_init_step, name='user-init-step'),
+    url(r'^user-update-step$', views.user_update_step, name='user-update-step'),
     url(r'^paper/tick', views.tick_call, name='tick'),
     url(r'^paper/like$', views.like_call, name='like'),
     url(r'^paper/add$', views.add_call, name='add'),
