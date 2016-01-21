@@ -107,3 +107,8 @@
 .response {
     display: none;
 }
+
+.question:hover {
+    cursor: pointer;
+    cursor: hand;
+}
