@@ -67,17 +67,20 @@ function send_filter() {
     $('.journals').find('input').each(function () {
         if ($(this).is(':checked')) {
             json_data['journals'].push($(this).data('journal-pk'));
+            ga('send', 'event', 'Filter', 'select', $(this).data('journal-title'), parseInt($(this).data('journal-pk')));
         }
     });
 
     $('.authors').find('input').each(function () {
         if ($(this).is(':checked')) {
             json_data['authors'].push($(this).data('author-pk'));
+            ga('send', 'event', 'Filter', 'select', $(this).data('author-fullname'), parseInt($(this).data('author-pk')));
         }
     });
 
     if ($('.like-img').hasClass('active')) {
         json_data.like_flag = true;
+        ga('send', 'event', 'Pin', 'select');
     }
 
     console.log(JSON.stringify(json_data));

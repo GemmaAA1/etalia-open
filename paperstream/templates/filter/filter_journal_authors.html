@@ -8,7 +8,7 @@
             <li class="journal" data-block="{{ block }}">
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" data-journal-pk="{{ jpk }}"
+                        <input type="checkbox" data-journal-pk="{{ jpk }}" data-journal-title="{{ jtitle }}"
                                 {% if jtitle|lower in journals_filter %} checked="checked" {% endif %}>
                         <div class="long">
                             <span title="{{ jtitle }}">{{ jtitle|truncatechars:25 }} ({{ count }})</span>
@@ -34,7 +34,7 @@
             <li class="author" data-block="{{ block }}">
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" data-author-pk="{{ auth.pk }}"
+                        <input type="checkbox" data-author-pk="{{ auth.pk }}" data-author-fullname="{{ author_full_name }}"
                             {% if  auth.pk in authors_filter %} checked="checked" {% endif %}>
                         <div class="long">
                             <span title="{{ author_full_name }}">{{ author_full_name|truncatechars:35 }}</span>
