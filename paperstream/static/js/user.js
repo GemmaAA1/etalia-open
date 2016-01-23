@@ -22,8 +22,10 @@ $(document).ready(function() {
         $.ajax({
             url: $(this).attr('action'),
             success: function (resp) {
-              $('#message').html(resp.message);
-
+              //$('#message').html(resp.message);
+              $('#updating-modal').show()
+                .siblings('#updating-modal-backdrop')
+                .show();
             },
             error: function (resp) {
                 console.log('error');
