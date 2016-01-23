@@ -48,16 +48,15 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
         super(BasePaperListView, self).__init__(*args, **kwargs)
         self.journals_filter = []
         self.authors_filter = []
+        self.time_span = 7
         self.like_flag = False
         self.context_settings = None
+        self.search_query = ''
 
     def get_context_settings(self):
         raise NotImplemented
 
     def filter_queryset(self, queryset):
-
-        # load stored filter
-        self.update_from_filter()
 
         # filter journals
         if self.journals_filter:
@@ -88,14 +87,13 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
             queryset = queryset.filter(paper_id__in=like_pks)
 
         # search query
-        q = self.request.GET.get("query")
-        if q:
+        if self.search_query:
             # return a filtered queryset
-            queryset = queryset.filter(Q(paper__title__icontains=q) |
-                                   Q(paper__abstract__icontains=q) |
-                                   Q(paper__journal__title__icontains=q) |
-                                   Q(paper__authors__last_name__icontains=q) |
-                                   Q(paper__authors__first_name__icontains=q))\
+            queryset = queryset.filter(Q(paper__title__icontains=self.search_query) |
+                                   Q(paper__abstract__icontains=self.search_query) |
+                                   Q(paper__journal__title__icontains=self.search_query) |
+                                   Q(paper__authors__last_name__icontains=self.search_query) |
+                                   Q(paper__authors__first_name__icontains=self.search_query))\
                 .distinct()
 
         return queryset
@@ -203,8 +201,7 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
             context['authors_show_more'] = True
 
         # Set filter context
-        if self.request.GET.get('query'):
-            context['get_query'] = self.request.GET.get('query')
+        context['search_query'] = self.search_query
 
         if self.journals_filter:
             context['journals_filter'] = self.journals_filter
@@ -216,25 +213,38 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
         else:
             context['authors_filter'] = []
 
-        context['time_span'] = self.request.GET.get('time-span', '1w')
+        context['time_span'] = self.time_span
 
         return context
 
-    def update_from_filter(self):
+    def update_args(self):
+        """Retrieve ajax and GET arguments"""
 
-        # From ajaxable filter
+        get_args = self.request.GET.dict()
+
+        # Get time-span GET arg
+        try:
+            self.time_span = int(get_args.pop('time-span'))
+        except KeyError:
+            pass
+
+        # What remains should be ajax args
         if self.request.is_ajax():
-            get_l = list(self.request.GET)
-            for get_ in get_l:
-                try:
-                    data = json.loads(get_)
-                    if data.get('source') == 'filter':
-                        # get data
-                        self.journals_filter = data.get('journals')
-                        self.authors_filter = data.get('authors')
-                        self.like_flag = data.get('like_flag')
-                except ValueError:  # likely data from AjaxListView
-                    pass
+            try:
+                data = json.loads(list(get_args.keys())[0])
+                if data.get('source') == 'filter':
+                    # get data
+                    self.journals_filter = data.get('journals')
+                    self.authors_filter = data.get('authors')
+                    self.like_flag = data.get('like_flag')
+                    self.search_query = data.get('search_query')
+            except ValueError:  # likely data from AjaxListView
+                pass
+
+    def trim_time_span(self, queryset):
+        """Trim queryset based on time span"""
+        from_date = (timezone.now() - timezone.timedelta(days=self.time_span)).date()
+        return queryset.filter(date__gt=from_date)
 
 
 class StreamView(BasePaperListView):
@@ -266,19 +276,13 @@ class StreamView(BasePaperListView):
             .select_related('paper',
                             'paper__journal')
 
-        # filter time span
-        if self.request.GET.get('time-span') == '1w':
-            from_date = (timezone.now() - timezone.timedelta(days=7)).date()
-        elif self.request.GET.get('time-span') == '1m':
-            from_date = (timezone.now() - timezone.timedelta(days=30)).date()
-        elif self.request.GET.get('time-span') == '2m':
-            from_date = (timezone.now() - timezone.timedelta(days=60)).date()
-        elif self.request.GET.get('time-span') == 'lv':
-            from_date = self.request.user.last_login.date()
-        else:
-            from_date = (timezone.now() - timezone.timedelta(days=7)).date()
-        self.original_qs = self.original_qs.filter(date__gt=from_date)
+        # Retrieve get args
+        self.update_args()
 
+        # trim time span
+        self.original_qs = self.trim_time_span(self.original_qs)
+
+        # filter
         query_set = self.filter_queryset(self.original_qs)
 
         return query_set
@@ -315,20 +319,13 @@ class TrendView(BasePaperListView):
             .select_related('paper',
                             'paper__journal')
 
-        # filter time span
-        if self.request.GET.get('time-span') == '1w':
-            from_date = (timezone.now() - timezone.timedelta(days=7)).date()
-        elif self.request.GET.get('time-span') == '1m':
-            from_date = (timezone.now() - timezone.timedelta(days=30)).date()
-        elif self.request.GET.get('time-span') == '2m':
-            from_date = (timezone.now() - timezone.timedelta(days=60)).date()
-        elif self.request.GET.get('time-span') == 'lv':
-            from_date = self.request.user.last_login.date()
-        else:
-            from_date = (timezone.now() - timezone.timedelta(days=7)).date()
-        self.original_qs = self.original_qs.filter(date__gt=from_date)
+        # Retrieve get args
+        self.update_args()
 
-        # filter from searchbox
+        # trim time span
+        self.original_qs = self.trim_time_span(self.original_qs)
+
+        # filter
         query_set = self.filter_queryset(self.original_qs)
 
         return query_set

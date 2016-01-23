@@ -1,25 +1,20 @@
-<div class="side-panel-section time-span">
+<div class="side-panel-section time-spans">
     <div class="side-panel-title">
         Time span
     </div>
     <div class="side-panel-inner">
-        <div>
-            <a href="{{ request.path }}?time-span=lv" {% if time_span == 'lv' %} style="text-decoration: underline;" {%  endif %}>
-               last visit
-            </a>
-        </div>
-        <div>
-            <a href="{{ request.path }}?time-span=1w" {% if time_span == '1w' %} style="text-decoration: underline;" {%  endif %}>
+        <div class="time-span">
+            <a href="{{ request.path }}?time-span=7" {% if time_span == 7 %} class="active" {%  endif %}>
                1 week
             </a>
         </div>
-        <div>
-            <a href="{{ request.path }}?time-span=1m" {% if time_span == '1m' %} style="text-decoration: underline;" {%  endif %}>
+        <div class="time-span">
+            <a href="{{ request.path }}?time-span=30" {% if time_span == 30 %} class="active" {%  endif %}>
                1 month
             </a>
         </div>
-        <div>
-            <a href="{{ request.path }}?time-span=2m" {% if time_span == '2m' %} style="text-decoration: underline;" {%  endif %}>
+        <div class="time-span">
+            <a href="{{ request.path }}?time-span=60" {% if time_span == 60 %} class="active" {%  endif %}>
                2 months
             </a>
         </div>

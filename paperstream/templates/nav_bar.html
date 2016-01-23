@@ -32,13 +32,12 @@
 
         <div class="collapse navbar-collapse" id="navbar-collapse-1">
             {% if "feed" in request.path or "user" in request.path %}
-                <button class="glass navbar-left">
+                <span class="glass navbar-left">
                     <img class="glass-image" src="{% static 'img/glass.png' %}">
-                </button>
-                <form class="navbar-form navbar-left" role="search">
-                    <input type="text" name="query" class="searchbox" placeholder="Search" {% if get_query %}value="{{ get_query }}"{% endif %}>
-                    {% csrf_token %}
-                </form>
+                </span>
+                <span class="navbar-form navbar-left" role="search">
+                    <input id='search-query' type="text" name="query" class="searchbox" placeholder="Search" {% if search_query %}value="{{ search_query }}"{% endif %}>
+                </span>
             {% endif %}
             <ul class="nav navbar-nav navbar-right">
                 <li class="{% active request 'feed/stream.+' %}">

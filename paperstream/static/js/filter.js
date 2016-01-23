@@ -9,6 +9,18 @@ $(document).ready(function() {
         send_filter();
     });
 
+    $('#search-query').keypress(function (e) {
+      if (e.which == 13) {
+        send_filter();
+        return false;
+      }
+    });
+
+    //$('#search-query').on('input', function (e) {
+    //    send_filter();
+    //});
+
+
     // display first block at load
     $('ul').find('[data-block="1"]').show();
 
@@ -62,8 +74,11 @@ function send_filter() {
     json_data.like_flag = false;
     json_data.journals = [];
     json_data.authors = [];
+    json_data.search_query = '';
 
     // build json object
+    json_data.search_query = $('#search-query').val();
+
     $('.journals').find('input').each(function () {
         if ($(this).is(':checked')) {
             json_data['journals'].push($(this).data('journal-pk'));
