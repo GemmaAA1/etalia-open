@@ -23,9 +23,10 @@ $(document).ready(function() {
             url: $(this).attr('action'),
             success: function (resp) {
               //$('#message').html(resp.message);
-              $('#updating-modal').show()
-                .siblings('#updating-modal-backdrop')
-                .show();
+              $('#updating-modal')
+                  .removeClass('hide')
+                  .siblings('#updating-modal-backdrop')
+                  .removeClass('hide');
             },
             error: function (resp) {
                 console.log('error');
