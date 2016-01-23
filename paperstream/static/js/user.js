@@ -23,10 +23,18 @@ $(document).ready(function() {
             url: $(this).attr('action'),
             success: function (resp) {
               //$('#message').html(resp.message);
-              $('#updating-modal')
-                  .removeClass('hide')
-                  .siblings('#updating-modal-backdrop')
-                  .removeClass('hide');
+                $('#updating-modal')
+                    .removeClass('hide')
+                    .siblings('#updating-modal-backdrop')
+                    .removeClass('hide');
+
+                applyWhenElementExists(
+                    $('#updating-block'),
+                    $('#updating-modal'),
+                    [$('#update-step'), $('#update-message')],
+                    '/user/user-update-step',
+                    update_settings,
+                    1000);
             },
             error: function (resp) {
                 console.log('error');
