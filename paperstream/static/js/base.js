@@ -74,9 +74,9 @@ function update_settings($block,  $modal, $messages, url) {
             var libInterval = $block.data('interval');
             clearInterval(libInterval);
             $block.removeData('interval');
-            $modal.hide()
+            $modal.addClass('hide')
                 .siblings('#updating-modal-backdrop')
-                .hide();
+                .addClass('hide');
         }
         else {
             $modal.show();

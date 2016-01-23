@@ -90,9 +90,9 @@
                 {% if user.init_step != 'IDL' %}
                     {% include "user/init_modal.html" %}
 {#                {% elif user.streams.first.state != 'IDL' or user.trends.first.state != 'IDL'%}#}
-
                 {% endif %}
                 {% include "user/update_feed_modal.html" %}
+
             {% endif %}
         {% endblock modal %}
 
@@ -166,6 +166,14 @@
             </script>
 
         <script src="https://apis.google.com/js/platform.js" async defer></script>
+        {% endif %}
+        {% if user.streams.first.state != 'IDL' or user.trends.first.state != 'IDL'%}
+            <script>
+                $('#updating-modal')
+                    .removeClass('hide')
+                    .siblings('#updating-modal-backdrop')
+                    .removeClass('hide');
+            </script>
         {% endif %}
     {% endblock js %}
     </body>
