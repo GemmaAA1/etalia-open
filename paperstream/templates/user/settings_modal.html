@@ -2,11 +2,14 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title" id="gridSystemModalLabel">Change stream settings</h4>
       </div>
       <div class="modal-body">
-        <form role="form" method="POST" id="stream-settings-form" root-modal="#stream-settings-modal" data-async data-target="#stream-settings-section" action="{% url "user:update-stream-settings" %}">
+        <form role="form" method="POST" id="stream-settings-form" root-modal="#stream-settings-modal"
+              data-async data-target="#stream-settings-section" action="{% url 'user:update-stream-settings' %}">
             {% csrf_token %}
             <span id="id_errors"></span>
             {% for field in form_stream_settings %}
@@ -29,11 +32,14 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title" id="gridSystemModalLabel">Change trend settings</h4>
       </div>
       <div class="modal-body">
-        <form role="form" method="POST" id="trend-settings-form" root-modal="#trend-settings-modal" data-async data-target="#trend-settings-section" action="{% url "user:update-trend-settings" %}">
+        <form role="form" method="POST" id="trend-settings-form" root-modal="#trend-settings-modal"
+              data-async data-target="#trend-settings-section" action="{% url 'user:update-trend-settings' %}">
             {% csrf_token %}
             <span id="id_errors"></span>
             {% for field in form_trend_settings %}
@@ -52,16 +58,18 @@
   </div>
 </div>
 
-
 <div class="modal" id="email-digest-settings-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title" id="gridSystemModalLabel">Change Email Digest settings</h4>
       </div>
       <div class="modal-body">
-        <form role="form" method="POST" id="email-digest-settings-form" root-modal="#email-digest-settings-modal" data-async data-target="#email-digest-settings-section" action="{% url "user:update-email-digest-settings" %}">
+        <form role="form" method="POST" id="email-digest-settings-form" root-modal="#email-digest-settings-modal"
+              data-async data-target="#email-digest-settings-section" action="{% url 'user:update-email-digest-settings' %}">
             {% csrf_token %}
             <span id="id_errors"></span>
             {% for field in form_email_digest_settings %}

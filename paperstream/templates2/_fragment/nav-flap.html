@@ -2,40 +2,40 @@
 <div id="nav-flap" class="flap left">
     <ul id="main-nav">
         <li>
-            <a href="javascript: void(0)">My news</a>
+            <a href="{% url 'feeds:stream' %}">My news</a>
         </li>
         <li class="active">
-            <a href="javascript: void(0)">Top news</a>
+            <a href="{% url 'feeds:trend' %}">Top news</a>
         </li>
         <li>
-            <a href="javascript: void(0)">Library</a>
+            <a href="{% url 'user:library' %}">Library</a>
         </li>
         <li class="separator"></li>
         <li>
-            <a href="javascript: void(0)">Settings</a>
+            <a href="{% url 'user:settings' %}">Settings</a>
         </li>
         <li>
             <a href="javascript: void(0)">Stats</a>
         </li>
         <li>
-            <a href="javascript: void(0)">Help</a>
+            <a href="{% url 'core:help' %}">Help</a>
         </li>
     </ul>
     <div id="sub-nav">
         <ul>
             <li>
-                <a href="javascript: void(0)">Support</a>
+                <a href="{% url 'core:support' %}">Support</a>
             </li>
             <li>
-                <a href="javascript: void(0)">Blog</a>
+                <a href="http://blog.pubstream.io">Blog</a>
             </li>
             <li>
-                <a href="javascript: void(0)">Terms</a>
+                <a href="{% url 'core:terms' %}">Terms</a>
             </li>
         </ul>
         <ul>
             <li>
-                <a href="javascript: void(0)">About</a>
+                <a href="{% url 'core:about' %}">About</a>
             </li>
             <li>
                 <a href="javascript: void(0)">Contact</a>

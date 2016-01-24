@@ -35,8 +35,8 @@
 }
 
 #toggle-pinned.active {
-    background-color: #006666 !important;
-    border-color: #006666 !important;
+    background-color: #00695c !important;
+    border-color: #00695c !important;
     color: #ffffff !important;
 }
 
@@ -83,7 +83,7 @@
 }
 
 #search-bar.active {
-    border-color: #006666 !important;
+    border-color: #00695c !important;
 }
 
 #search-bar:hover button,
@@ -132,7 +132,7 @@
     position: absolute;
     right: 0;
     display: none;
-    background-color: #006666;
+    background-color: #00695c;
     color: #ffffff;
     border-radius: 0 0 20px 20px;
 }
@@ -164,7 +164,7 @@
 }
 
 #top-bar .selector.opened button {
-    background-color: #006666;
+    background-color: #00695c;
     border: none;
     color: #ffffff;
     /*height: 46px;*/

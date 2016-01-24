@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+
+{% load staticfiles %}
+
+
+{% block left-flap %}
+    {% include '_fragment/nav-flap.html' %}
+{% endblock left-flap %}
+
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'tmp/css/app/user.css' %}" type="text/css" >
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+    <div id="backdrop"></div>
+    <script src="{% static 'tmp/js/require.js' %}"></script>
+    <script>
+        requirejs(['{% static "tmp/js/common.js" %}'], function () {
+            requirejs(['app/browse']);
+        });
+    </script>
+{% endblock javascript %}

@@ -5,6 +5,7 @@
     bottom: 0;
     right: 0;
     z-index: 0;
+    display: none;
 }
 
 #detail .document {
@@ -30,6 +31,7 @@ body.detail-opened #backdrop {
 }
 
 body.detail-opened #detail {
+    display: block;
     z-index: 10;
 }
 

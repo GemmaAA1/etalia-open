@@ -2,7 +2,7 @@ define(['jquery', 'app/ui/flap', 'app/util/utils'], function ($, Flap, Util) {
 
     var Layout = function (config) {
         this.config = $.extend({
-            debug: true,
+            debug: false,
             leftFlap: '#nav-flap',
             leftFlapButton: '#toggle-nav',
             rightFlap: '#filter-flap',
@@ -111,5 +111,8 @@ define(['jquery', 'app/ui/flap', 'app/util/utils'], function ($, Flap, Util) {
         }
     };
 
-    return Layout;
+    var layout = new Layout();
+    layout.init();
+
+    return layout;
 });

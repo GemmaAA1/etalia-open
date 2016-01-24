@@ -14,7 +14,7 @@ body {
 }
 
 a {
-    color: #006666;
+    color: #00695c;
 }
 
 a:hover,
@@ -147,7 +147,7 @@ body.flap-opened.right .flap.right {
 }
 
 .bar button:active {
-    border-color: #006666;
+    border-color: #00695c;
     color: #313233;
 }
 
@@ -211,7 +211,7 @@ body.flap-opened.right .flap.right {
     z-index: 40;
     top: 56px;
     right: 0;
-    background-color: #006666;
+    background-color: #00695c;
     width: 244px;
     padding: 15px 15px 15px 20px;
 }

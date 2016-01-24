@@ -1,15 +1,12 @@
 define(
-    ['jquery', 'app/ui/layout', 'app/ui/detail', 'app/util/utils', 'bootstrap'],
-    function($, Layout, Detail, Util) {
+    ['jquery', 'app/ui/detail', 'app/util/utils', 'app/ui/layout', 'bootstrap'],
+    function($, Detail, Util) {
 
-    var layout, detail, $search,
+    var detail, $search,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection;
 
     $(function() {
-
-        layout = new Layout({debug: false});
-        layout.init();
 
         detail = new Detail();
 

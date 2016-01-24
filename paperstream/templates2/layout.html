@@ -9,7 +9,6 @@
 
     <!-- start top-bar -->
     <div id="top-bar" class="bar">
-        <!-- TODO (js) hide if no left flap -->
         <button id="toggle-nav" class="btn-square" type="button">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
@@ -17,7 +16,7 @@
             <span class="icon-bar"></span>
         </button>
 
-        <a id="brand" href="javascript: void(0)" title="Et al.">
+        <a id="brand" href="{% url 'core:home' %}" title="Et al.">
             <img src="{% static 'tmp/img/logo.svg' %}" alt="Et al.">
         </a>
 
@@ -29,13 +28,13 @@
         <div id="profile-dropdown">
             <ul>
                 <li>
-                    <a href="javascript: void(0)">My Profile</a>
+                    <a href="{% url 'user:profile' %}">My Profile</a>
                 </li>
                 <li>
                     <a href="javascript: void(0)">Invite</a>
                 </li>
                 <li>
-                    <a href="javascript: void(0)">Logout</a>
+                    <a href="{% url 'user:logout' %}">Logout</a>
                 </li>
             </ul>
             <img src="{% static 'tmp/img/avatar.jpg' %}" alt="Avatar" width="100" height="100">

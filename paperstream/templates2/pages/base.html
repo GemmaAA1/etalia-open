@@ -1,4 +1,4 @@
-{% extends 'default.html' %}
+{% extends 'layout.html' %}
 
 {% load staticfiles %}
 
@@ -33,7 +33,7 @@
 <script src="{% static 'tmp/js/require.js' %}"></script>
 <script>
     requirejs(['{% static "tmp/js/common.js" %}'], function () {
-        requirejs(['app/page']);
+        requirejs(['app/pages']);
     });
 </script>
 {% endblock javascript %}

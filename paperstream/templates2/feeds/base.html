@@ -1,11 +1,11 @@
-{% extends 'default.html' %}
+{% extends 'layout.html' %}
 
 
 {% load staticfiles %}
 
 
 {% block top-bar_controls %}
-    <div class="wrap">
+<div class="wrap">
 
     <button id="toggle-pinned" class="btn-circle" type="button">
         <span class="eai eai-pin"></span>
@@ -37,12 +37,12 @@
                 </li>
                 <li>
                     <a href="javascript: void(0)" class="cluster-value cluster-none" data-cluster="none">
-                            <span class="cluster-icon">
-                                <span class="cluster-0"></span>
-                                <span class="cluster-1"></span>
-                                <span class="cluster-2"></span>
-                                <span class="cluster-3"></span>
-                            </span>
+                        <span class="cluster-icon">
+                            <span class="cluster-0"></span>
+                            <span class="cluster-1"></span>
+                            <span class="cluster-2"></span>
+                            <span class="cluster-3"></span>
+                        </span>
                     </a>
                 </li>
             </ul>
@@ -114,7 +114,7 @@
 
 {% block stylesheets %}
     {{ block.super }}
-    <link href="{% static 'tmp/css/app/browse.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'tmp/css/app/list.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'tmp/css/app/card.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'tmp/css/app/detail.css' %}" rel="stylesheet" type="text/css">
 {% endblock stylesheets %}
@@ -125,7 +125,7 @@
     <script src="{% static 'tmp/js/require.js' %}"></script>
     <script>
         requirejs(['{% static "tmp/js/common.js" %}'], function () {
-            requirejs(['app/browse']);
+            requirejs(['app/feeds']);
         });
     </script>
 {% endblock javascript %}
