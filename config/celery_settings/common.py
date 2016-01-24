@@ -45,6 +45,14 @@ CELERYBEAT_SCHEDULE = {
         'task': 'paperstream.nlp.tasks.mostsimilar_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
     },
+    'update-all-main-streams': {
+        'task': 'paperstream.feeds.tasks.update_all_main_streams',
+        'schedule': crontab(minute=0, hour=1),  # every day at UTC+1
+    },
+    'update-all-main-trends': {
+        'task': 'paperstream.feeds.tasks.update_all_main_trends',
+        'schedule': crontab(minute=0, hour=2),  # every day at UTC+2
+    },
     'pubmed-once-a-day': {
         'task': 'paperstream.consumers.tasks.pubmed_run_all',
         'schedule': crontab(minute=0, hour=6),  # daily at UCT+6

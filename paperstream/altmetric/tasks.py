@@ -19,7 +19,6 @@ def update_altmetric_periodic():
     d = timezone.datetime.now().date() - timezone.timedelta(days=60)
 
     # Fetch paper
-
     ps_pks = Paper.objects\
         .filter(Q(date_ep__gt=d) | (Q(date_ep=None) & Q(date_fs__gt=d)))\
         .values_list('pk', flat=True)[:settings.ALTMETRIC_MAX_PAPERS_PER_PERIOD]
