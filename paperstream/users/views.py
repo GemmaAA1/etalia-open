@@ -727,7 +727,7 @@ def send_invite(request):
     if request.POST:
         email_to = request.POST.get('email')
 
-        subject = 'An invitation to try PubStream'
+        subject = 'An invitation to try Etalia'
         to = [email_to]
         from_email = request.user.email
         ctx = {'bucket_url': settings.EMAIL_STATIC_BUCKET,
