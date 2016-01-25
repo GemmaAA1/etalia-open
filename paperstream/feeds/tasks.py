@@ -16,14 +16,14 @@ User = get_user_model()
 def update_all_main_streams():
     us_pk = User.objects.all().values_list('pk', flat=True)
     for user_pk in us_pk:
-        update_stream.delay(user_pk)
+        reset_stream.delay(user_pk)
 
 
 @app.task()
 def update_all_main_trends():
     us_pk = User.objects.all().values_list('pk', flat=True)
     for user_pk in us_pk:
-        update_trend.delay(user_pk)
+        reset_trend.delay(user_pk)
 
 
 @app.task()
