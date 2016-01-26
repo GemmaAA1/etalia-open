@@ -34,7 +34,7 @@ return: XML
             }
        </data>
        <thumb-list>
-    
+
         <![CDATA[
             HTML block
         ]]>
