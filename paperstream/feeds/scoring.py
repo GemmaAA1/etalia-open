@@ -246,11 +246,6 @@ class Scoring(object):
         # build seed mat
         seed_mat = self.build_paper_vec_mat(self.seed_data)
 
-        # normalize
-        norm = np.linalg.norm(seed_mat, axis=1)
-        non_zeros = norm > 0.
-        seed_mat[non_zeros, :] /= norm[non_zeros, None]
-
         # weight average
         profile = np.average(seed_mat, weights=date_vec, axis=0)
 
@@ -384,17 +379,32 @@ class ContentBasedScoring(Scoring):
         seed_jour_mat = self.build_jour_utility_mat(self.seed_data)
 
         # concatenate these 3 mats
-        seed_mat = np.hstack((self.vec_w * seed_vec_mat,
-                              self.auth_w * seed_auth_mat,
-                              self.jour_w * seed_jour_mat))
+        # seed_mat = np.hstack((self.vec_w * seed_vec_mat,
+        #                       self.auth_w * seed_auth_mat,
+        #                       self.jour_w * seed_jour_mat))
 
-        # normalize
-        norm = np.linalg.norm(seed_mat, axis=1)
-        non_zeros = norm > 0.
-        seed_mat[non_zeros, :] /= norm[non_zeros, None]
+        # average with time-stamps logistic weights
+        seed_vec_av = np.average(seed_vec_mat, weights=date_vec, axis=0)
+        seed_auth_av = np.average(seed_auth_mat, weights=date_vec, axis=0)
+        seed_jour_av = np.average(seed_jour_mat, weights=date_vec, axis=0)
 
-        # weight average
-        self.profile = np.average(seed_mat, weights=date_vec, axis=0)
+        # Squashing journal using softmax
+        seed_jour_av = np.exp(seed_jour_av) / np.sum(np.exp(seed_jour_av))
+        # Squashing authors using softmax
+        seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
+
+        # concatenate with weight
+        self.profile = np.hstack((self.vec_w * seed_vec_av,
+                              self.auth_w * seed_auth_av * seed_vec_av.shape[0],
+                              self.jour_w * seed_jour_av * seed_vec_av.shape[0]))
+
+        # # normalize
+        # norm = np.linalg.norm(seed_av, axis=0)
+        # non_zeros = norm > 0.
+        # seed_mat[non_zeros, :] /= norm[non_zeros, None]
+
+        # # weight average
+        # self.profile = np.average(seed_mat, weights=date_vec, axis=0)
 
         # normalize
         norm = np.linalg.norm(self.profile)
