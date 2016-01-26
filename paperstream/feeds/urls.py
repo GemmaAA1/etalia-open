@@ -8,6 +8,7 @@ urlpatterns = [
     # url(r'^$', views.stream_main, name='main'),
     url(r'stream/$', views.stream_view, name='home'),
     url(r'stream/$', views.stream_view, name='stream'),
+    url(r'stream/filter$', views.stream_view2, name='stream_filter'),
     url(r'stream/(?P<name>[\w-]+)/update$', views.update_stream_view,
         name='update-stream'),
     url(r'stream/(?P<name>[\w-]+)/reset$', views.reset_stream_view,

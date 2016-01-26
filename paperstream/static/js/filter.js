@@ -75,9 +75,11 @@ function send_filter() {
     json_data.journals = [];
     json_data.authors = [];
     json_data.search_query = '';
+    json_data.time_span = null;
 
     // build json object
     json_data.search_query = $('#search-query').val();
+
 
     $('.journals').find('input').each(function () {
         if ($(this).is(':checked')) {

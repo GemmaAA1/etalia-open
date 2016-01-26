@@ -33,7 +33,7 @@ from .forms import CreateUserFeedForm
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
 
 
-class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
+class BasePaperListView(LoginRequiredMixin, AjaxListView):
     """Abstract View for displaying a feed type instance"""
     first_page = 10
     per_page = 5
@@ -152,6 +152,7 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
         for i, j in enumerate(journal_filter):
             if not i % self.size_load_journal_filter:
                 block += 1
+            # (journal.pk, journal.title, occurence, block )
             context['journals'].append((j[0], j[1], journals_counter[j], block))
         if len(context['journals']) <= self.size_load_journal_filter:
             context['journals_show_more'] = False
@@ -194,7 +195,7 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
         for i, auth in enumerate(authors_ordered):
             if not i % 10:
                 block += 1
-            context['authors'].append((auth, auth.print_full, block))
+            context['authors'].append((auth.pk, auth.print_full, block))
         if len(context['authors']) <= self.size_load_author_filter:
             context['authors_show_more'] = False
         else:
@@ -238,6 +239,7 @@ class BasePaperListView(LoginRequiredMixin, ModalMixin, AjaxListView):
                     self.authors_filter = data.get('authors')
                     self.like_flag = data.get('like_flag')
                     self.search_query = data.get('search_query')
+                    self.time_span = data.get('time_span') or self.time_span
             except ValueError:  # likely data from AjaxListView
                 pass
 
@@ -288,6 +290,82 @@ class StreamView(BasePaperListView):
         return query_set
 
 stream_view = StreamView.as_view()
+
+
+class StreamView2(BasePaperListView):
+    model = StreamMatches
+    template_name = 'feeds/feed.html'
+    page_template = 'feeds/feed_sub_page2.html'
+
+    def get_context_settings(self):
+        self.context_settings = {
+            'time_lapse': self.request.user.settings.stream_time_lapse,
+            'method': self.request.user.settings.stream_method,
+            'model': self.request.user.settings.stream_model,
+        }
+        return self.context_settings
+
+    def get_queryset(self):
+
+        # get ticked/rejected paper
+        papers_ticked = UserTaste.objects\
+            .filter(user=self.request.user,
+                    is_ticked=True)\
+            .values('paper')
+
+        self.original_qs = self.model.objects\
+            .filter(stream__name=self.kwargs.get('name', 'main'),
+                    stream__user=self.request.user)\
+            .exclude(paper__in=papers_ticked)\
+            .select_related('paper',
+                            'paper__journal')
+
+        # Retrieve get args
+        self.update_args()
+
+        # trim time span
+        self.original_qs = self.trim_time_span(self.original_qs)
+
+        # filter
+        query_set = self.filter_queryset(self.original_qs)
+
+        return query_set
+
+    def get_context_data(self, **kwargs):
+        context = super(StreamView2, self).get_context_data(**kwargs)
+
+        # add to journal filter context if journal is checked
+        journal_filters = []
+        for j in context.get('journals'):
+            if j[0] in self.journals_filter:
+                j += (True, )
+            else:
+                j += (False, )
+            journal_filters.append(j)
+
+        # add to author filter context if author is checked
+        author_filters = []
+        for a in context.get('authors'):
+            if a[0] in self.authors_filter:
+                a += (True, )
+            else:
+                a += (False, )
+            author_filters.append(a)
+
+        filter_ = {
+            'journals_filter': journal_filters,
+            'authors_filter': author_filters,
+            'pin': self.like_flag,
+            'timespan': self.time_span,
+            'cluster': None,
+            'search_query': self.search_query,
+        }
+
+        context['filter'] = json.dumps(filter_)
+
+        return context
+
+stream_view2 = StreamView2.as_view()
 
 
 class TrendView(BasePaperListView):
