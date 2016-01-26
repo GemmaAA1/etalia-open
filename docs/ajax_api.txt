@@ -42,6 +42,9 @@ return: XML
     </response>
 
 
+url: /feed/trend/filter
+same as /feed/stream/filter for trends
+
 url: /user/paper/pin
 POST:
     {
