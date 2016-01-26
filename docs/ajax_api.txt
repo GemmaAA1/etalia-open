@@ -21,16 +21,25 @@ XHR GET:
         'search_query': (str),
     }
 return: XML
-    CDATA:
-    {
-        'journals_filter': [[pk, title, # of papers (int), block #, is_checked], ...],
-        'authors_filter': [[pk, author name, block #, is_checked], ...],
-        'time_span': (int),
-        'cluster': (int) or null,
-        'pin': (bool),
-        'search_query': (str),
-    }
-    HTML:
+    <?xml encoding="UTF-8">
+    <response>
+       <data>
+            {
+                'journals_filter': [[pk, title, # of papers (int), block #, is_checked], ...],
+                'authors_filter': [[pk, author name, block #, is_checked], ...],
+                'time_span': (int),
+                'cluster': (int) or null,
+                'pin': (bool),
+                'search_query': (str),
+            }
+       </data>
+       <thumb-list>
+    
+        <![CDATA[
+            HTML block
+        ]]>
+       </thumb-list>
+    </response>
 
 
 url: /user/paper/pin
