@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'stream/(?P<name>[\w-]+)/reset$', views.reset_stream_view,
         name='reset-stream'),
     url(r'trend/$', views.trend_view, name='trend'),
+    url(r'trend/filter$', views.trend_view2, name='trend_filter'),
     url(r'trend/(?P<name>[\w-]+)/update$', views.update_trend_view,
         name='update-trend'),
     url(r'trend/(?P<name>[\w-]+)/reset$', views.reset_trend_view,

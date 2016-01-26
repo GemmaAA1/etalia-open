@@ -1,0 +1,100 @@
+{% load endless %}
+{% load user_taste %}
+
+<?xml encoding="UTF-8">
+<response>
+   <data>
+      {{ filter|safe }}
+   </data>
+   <thumb-list>
+
+    <![CDATA[
+{% if object_list %}
+    {% paginate first_page,per_page object_list %}
+    {% for dfp in object_list %}
+        <div id="{{ dfp.paper.pk }}" class="paper-list">
+{#            <div class="altmetric">#}
+{#                {% if dfp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ dfp.paper.id_doi }}"></div>#}
+{#                {% elif dfp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-arxiv="{{ dfp.paper.id_arx }}"></div>#}
+{#                {% elif dfp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ dfp.paper.id_pmi }}"></div>#}
+{#                {% endif %}#}
+{#            </div>#}
+            <div class="row compact {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
+                {% if user_taste|get_is_liked:dfp.paper.pk %}
+                <div class="short">
+                {% else %}
+                <div class="long">
+                {% endif %}
+                    <div class="title">{{ dfp.paper.title }}</div>
+                    <div class="authors-journal-date">
+                        <span class="authors">{{ dfp.paper.print_full_authors|truncatechars:70 }}</span>
+                        {{ dfp.paper.print_journal_title }}
+    {#                    {{ dfp.paper.print_date }}#}
+                        {{ dfp.paper.print_first_seen }}
+                    </div>
+                </div>
+            </div>
+            <div class="row extended {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
+                <div class="row">
+                    <div class="col-lg-10 nopadding">
+                        <div class="title">{{ dfp.paper.title }}</div>
+                        <div class="authors">{{ dfp.paper.print_full_authors}}</div>
+                        <div class="journal-date">
+                            {{ dfp.paper.print_journal_title}}
+                            <em>{{ dfp.paper.print_first_seen }}</em>
+    {#                        {{ dfp.paper.print_date }}#}
+                        </div>
+                        <div class="abstract">{{ dfp.paper.abstract }}</div>
+                    </div>
+                    <div class="col-lg-2 nopadding">
+                        <ul class="stamps-ext no-toggling" data-url="{{ dfp.paper.url }}"  data-title="{{ dfp.paper.title }}" data-first-compact="{{ dfp.paper.print_compact_first_author }}">
+                            <li>
+                                <a class="go-to-pdf" href="{{ dfp.paper.url }}" target="_blank">Pdf</a>
+                            </li>
+                            <li>
+                                <a class="{% if dfp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)">Library</a>
+                            </li>
+    {#                        <li>#}
+    {#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
+    {#                        </li>#}
+                            <li>
+                                <a  class="email" href="mailto:?subject=&body={{ dfp.paper.title }}%0D%0A{{ dfp.paper.print_compact_authors }}%0D%0A{{ dfp.paper.journal.title }}.%20{{ dfp.paper.print_date }}%0D%0A{{ dfp.paper.url }}">Email</a>
+                            </li>
+                            <li>
+                                <a class="tweet" href="javascript:void(0)">Tweet</a>
+                            </li>
+                            <li>
+                                <a class="google-plus" href="javascript:void(0)">Google+</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div  class="stamps">
+                <ul>
+                    <li>
+                        <a class="open no-toggling" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank" text="Open in new window"></a>
+                    </li>
+                    <li>
+                        <a class="like no-toggling {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
+                    </li>
+                    <li>
+                        <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0) text="Remove from stream"></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    {% endfor %}
+    {% show_more %}
+{% endif %}
+
+    ]]>
+
+    </thumb-list>
+</response>
+
+
+
+
+

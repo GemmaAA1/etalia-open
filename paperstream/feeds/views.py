@@ -250,6 +250,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
 
 
 class StreamView(BasePaperListView):
+    # TODO: should be depreciated to StreamView2
     """ClassView for displaying a UserFeed instance"""
     model = StreamMatches
     template_name = 'feeds/feed.html'
@@ -369,6 +370,7 @@ stream_view2 = StreamView2.as_view()
 
 
 class TrendView(BasePaperListView):
+    # TODO: should be depreciated for TrendView2
     """ClassView for displaying a UserFeed instance"""
     model = TrendMatches
     template_name = 'feeds/trends.html'
@@ -409,6 +411,83 @@ class TrendView(BasePaperListView):
         return query_set
 
 trend_view = TrendView.as_view()
+
+
+class TrendView2(BasePaperListView):
+    """ClassView for displaying a UserFeed instance"""
+    model = TrendMatches
+    template_name = 'feeds/trends.html'
+    page_template = 'feeds/trends_sub_page2.html'
+
+    def get_context_settings(self):
+        self.context_settings = {
+            'time_lapse': self.request.user.settings.trend_time_lapse,
+            'method': self.request.user.settings.trend_method,
+            'model': self.request.user.settings.trend_model,
+        }
+        return self.context_settings
+
+    def get_queryset(self):
+
+        # get ticked paper
+        papers_ticked = UserTaste.objects\
+            .filter(user=self.request.user,
+                    is_ticked=True)\
+            .values('paper')
+
+        self.original_qs = self.model.objects\
+            .filter(trend__name=self.kwargs.get('name', 'main'),
+                    trend__user=self.request.user)\
+            .exclude(paper__in=papers_ticked)\
+            .select_related('paper',
+                            'paper__journal')
+
+        # Retrieve get args
+        self.update_args()
+
+        # trim time span
+        self.original_qs = self.trim_time_span(self.original_qs)
+
+        # filter
+        query_set = self.filter_queryset(self.original_qs)
+
+        return query_set
+
+    def get_context_data(self, **kwargs):
+        context = super(TrendView2, self).get_context_data(**kwargs)
+
+        # add to journal filter context if journal is checked
+        journal_filters = []
+        for j in context.get('journals'):
+            if j[0] in self.journals_filter:
+                j += (True, )
+            else:
+                j += (False, )
+            journal_filters.append(j)
+
+        # add to author filter context if author is checked
+        author_filters = []
+        for a in context.get('authors'):
+            if a[0] in self.authors_filter:
+                a += (True, )
+            else:
+                a += (False, )
+            author_filters.append(a)
+
+        filter_ = {
+            'journals_filter': journal_filters,
+            'authors_filter': author_filters,
+            'pin': self.like_flag,
+            'timespan': self.time_span,
+            'cluster': None,
+            'search_query': self.search_query,
+        }
+
+        context['filter'] = json.dumps(filter_)
+
+        return context
+
+trend_view2 = TrendView2.as_view()
 
 
 class CreateFeedView(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
