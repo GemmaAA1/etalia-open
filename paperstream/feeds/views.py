@@ -52,6 +52,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         self.like_flag = False
         self.context_settings = None
         self.search_query = ''
+        self.cluster = None
 
     def get_context_settings(self):
         raise NotImplemented
@@ -305,6 +306,31 @@ class StreamView2(BasePaperListView):
             'model': self.request.user.settings.stream_model,
         }
         return self.context_settings
+
+    def update_args(self):
+        """Retrieve JSON"""
+
+        get_args = self.request.GET.dict()
+
+        # What remains should be ajax args
+        if self.request.is_ajax():
+            try:
+                data = json.loads(list(get_args.keys())[0])
+                self.time_span = data.get('time_span') or self.time_span
+                self.cluster = data.get('cluster')
+                self.like_flag = data.get('pin')
+                self.search_query = data.get('search_query')
+                filters_ = data.get('filters')
+                for filter_ in filters_.items():
+                    if filter_.get('id') == 
+
+                if data.get('source') == 'filter':
+                    # get data
+                    self.journals_filter = data.get('journals')
+                    self.authors_filter = data.get('authors')
+
+            except ValueError:  # likely data from AjaxListView
+                pass
 
     def get_queryset(self):
 
