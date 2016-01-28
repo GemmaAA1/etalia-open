@@ -363,7 +363,7 @@
     text-transform: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    content: "\e90f";
+    content: "\e912";
 }
 
 .filter-count {
@@ -387,7 +387,7 @@
 }
 
 .filter-group.active .filter-toggle span:before {
-    content: "\e912";
+    content: "\e907";
 }
 
 /* ------------------------------------ THUMB ------------------------------------ */

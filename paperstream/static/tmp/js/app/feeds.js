@@ -107,15 +107,80 @@ define(
         $('.filter-group.active .collapse').collapse('show');
 
 
+        /* TODO MOVE */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+// Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
         // Thumbs
-        $('.document, #detail')
+        $('#list, #detail')
             .on('click', '.thumb-pin', function(e) {
                 e.stopPropagation();
-                Util.toggleClass($(e.target).closest('.thumb-pin'), 'active');
+
+                var $button = $(this);
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                var pinXhr = $.ajax({
+                    type: 'POST',
+                    url: '/user/paper/pin',
+                    data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
+                });
+                pinXhr.done(function(json) {
+                    if (json.hasOwnProperty('is_liked')) {
+                        $button.toggleClass('active', json['is_liked']);
+                    }
+                });
+                pinXhr.fail(function() {
+                    console.log('ERROR');
+                });
+
+                return false;
             })
             .on('click', '.thumb-remove', function(e) {
                 e.stopPropagation();
-                // TODO
+
+                var $button = $(this);
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                var pinXhr = $.ajax({
+                    type: 'POST',
+                    url: '/user/paper/ban',
+                    data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
+                });
+                pinXhr.done(function(json) {
+                    if (json.hasOwnProperty('is_liked') && json['is_ticked']) {
+                        $thumb.remove();
+                    }
+                });
+                pinXhr.fail(function() {
+                    console.log('ERROR');
+                });
+
+                return false;
             });
 
 
