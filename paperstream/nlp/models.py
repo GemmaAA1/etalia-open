@@ -1048,6 +1048,14 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.index2journalpk += index2journalpk
         self.data = np.vstack((self.data, data_mat))
 
+        # reorder data by date
+        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
+        self.date = [self.date[i] for i in idx]
+        self.index2pk = [self.index2pk[i] for i in idx]
+        self.index2journalpk = [self.index2journalpk[i] for i in idx]
+        self.data = self.data[idx, :]
+
+        # save
         self.save()
 
     def populate_neighbors(self, paper_pk, time_lapse=-1):

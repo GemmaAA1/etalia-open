@@ -1,0 +1,125 @@
+url: /feed/stream/
+XHR GET:
+    {
+        'journals': [pk1, pk2, ...],
+        'authors': [pk1, pk2, ...],
+        'cluster': (int) or null,
+        'pin': (bool),
+        'search_query': (str),
+    }
+return:
+    HTML block
+
+url: /feed/stream/filter
+XHR GET:
+    {
+        'journals': [pk1, pk2, ...],
+        'authors': [pk1, pk2, ...],
+        'time_span': (int),
+        'cluster': (int) or null,
+        'pin': (bool),
+        'search_query': (str),
+    }
+return: XML
+    <?xml encoding="UTF-8">
+    <response>
+       <data>
+            {
+                'journals_filter': [[pk, title, # of papers (int), block #, is_checked], ...],
+                'authors_filter': [[pk, author name, block #, is_checked], ...],
+                'time_span': (int),
+                'cluster': (int) or null,
+                'pin': (bool),
+                'search_query': (str),
+            }
+       </data>
+       <thumb-list>
+
+        <![CDATA[
+            HTML block
+        ]]>
+       </thumb-list>
+    </response>
+
+
+url: /feed/trend/filter
+same as /feed/stream/filter for trends
+
+url: /user/paper/pin
+POST:
+    {
+        'pk': paper.pk,
+        'source':  window.location.pathname,
+    }
+return:
+    {
+        'is_liked': (bool),
+        'is_ticked': (bool), 
+        'likes_counter': (int),
+    }
+
+url: /user/paper/ban
+POST:
+    {
+        'pk': paper.pk,
+        'source':  window.location.pathname,
+    }
+return:
+    {
+        'is_liked': (bool),
+        'is_ticked': (bool), 
+        'likes_counter': (int),
+    }
+
+url: /user/paper/add
+POST:
+    {
+        'pk': paper.pk
+    }
+return:
+    {
+        'success': True,
+        'trash_counter':  (int),
+        'library_counter': (int),
+        'likes_counter': (int),
+        'message': ''
+    }
+    OR
+    {
+        'success': False,
+        'message': (str),
+    }
+
+url: /usr/paper/trash
+POST:
+    {
+        'pk': paper.pk
+    }
+return:
+    {
+        'success': True,
+        'trash_counter':  (int),
+        'library_counter': (int),
+        'likes_counter': (int),
+        'message': ''
+    }
+    OR
+    {
+        'success': False,
+        'message': (str),
+    }
+
+url: /user/paper/restore
+POST:
+    {
+        'success': True,
+        'trash_counter':  (int),
+        'library_counter': (int),
+        'likes_counter': (int),
+        'message': ''
+    }
+    OR
+    {
+        'success': False,
+        'message': (str),
+    }

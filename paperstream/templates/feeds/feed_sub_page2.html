@@ -1,0 +1,101 @@
+{% load endless %}
+{% load user_taste %}
+
+<?xml encoding="UTF-8">
+<response>
+   <data>
+      {{ filter|safe }}
+   </data>
+   <thumb-list>
+
+    <![CDATA[
+{% if object_list %}
+    {% paginate first_page,per_page object_list %}
+
+    {% for ufmp in object_list %}
+        <div id="{{ ufmp.paper.pk }}" class="paper-list">
+            <div class="row compact">
+                {% if user_taste|get_is_liked:ufmp.paper.pk %}
+                <div class="short">
+                {% else %}
+                <div class="long">
+                {% endif %}
+                    <div class="title">{{ ufmp.paper.title }}</div>
+                    <div class="authors-journal-date">
+                        <span class="authors">{{ ufmp.paper.print_full_authors|truncatechars:70 }}</span>
+                        {{ ufmp.paper.print_journal_title }}
+    {#                    {{ ufmp.paper.print_date }}#}
+                        {{ ufmp.paper.print_first_seen }}
+                    </div>
+                </div>
+            </div>
+            <div class="row extended {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
+                <div class="col-lg-10 nopadding">
+                    <div class="title">{{ ufmp.paper.title }}</div>
+                    <div class="authors">{{ ufmp.paper.print_full_authors}}</div>
+                    <div class="journal-date">
+                        {{ ufmp.paper.print_journal_title}}
+    {#                    <em>{{ ufmp.paper.print_date }}</em>#}
+                        <em>{{ ufmp.paper.print_first_seen }}</em>
+                    </div>
+                    <div class="abstract">{{ ufmp.paper.abstract }}</div>
+                </div>
+                <div class="col-lg-2 nopadding">
+                    <ul class="stamps-ext no-toggling" data-url="{{ ufmp.paper.url }}"  data-title="{{ ufmp.paper.title }}" data-first-compact="{{ ufmp.paper.print_compact_first_author }}">
+                        <li>
+                            <a class="go-to-pdf" href="{{ ufmp.paper.url }}" target="_blank" title="Go to journal page">Pdf</a>
+                        </li>
+                        <li>
+                            <a class="{% if ufmp.paper.pk in user_lib %} trash {% else %} add-to-library {% endif %}"
+                               href="javascript:void(0)"
+                               title="{% if ufmp.paper.pk in user_lib %} Move to trash {% else %} Add to your library {% endif %}">
+                                Library
+                            </a>
+                        </li>
+    {#                    <li>#}
+    {#                        <a class="comment" href="javascript:void(0)" title="Follow comments">Comment</a>#}
+    {#                    </li>#}
+                        <li>
+                            <a  class="email" href="mailto:?subject=&body={{ ufmp.paper.title }}%0D%0A{{ ufmp.paper.print_compact_authors }}%0D%0A{{ ufmp.paper.journal.title }}.%20{{ ufmp.paper.print_date }}%0D%0A{{ ufmp.paper.url }}">Email</a>
+                        </li>
+                        <li>
+                            <a class="tweet" href="javascript:;" title="Share on tweeter" target="popup">Tweet</a>
+                        </li>
+                        <li>
+                            <a class="google-plus" href="javascript:;" title="Share on Google+" target="popup">Google+</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <span class="stamps">
+                <ul>
+                    <li>
+                        <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank" title="Open in new window"></a>
+                    </li>
+                    <li>
+                        <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Like"></a>
+                    </li>
+                    <li>
+                        <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Remove from stream"></a>
+                    </li>
+    {#                <li>#}
+    {#                    <a class="more" href="javascript:void(0)"></a>#}
+    {#                </li>#}
+                </ul>
+            </span>
+        </div>
+
+    {% endfor %}
+
+    {% show_more %}
+{% endif %}
+
+    ]]>
+
+    </thumb-list>
+</response>
+
+
+
+
+
