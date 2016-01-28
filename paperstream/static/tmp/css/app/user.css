@@ -178,23 +178,15 @@
     padding-top: 50px;
 }
 
-.fade {
+/*.fade {
 opacity: 0;
 -webkit-transition: opacity 0.1s linear;
   -moz-transition: opacity 0.1s linear;
    -ms-transition: opacity 0.1s linear;
     -o-transition: opacity 0.1s linear;
        transition: opacity 0.1s linear;
-}
+}*/
 
-#stream_vector_weight_slider .slider-selection,
-#stream_author_weight_slider .slider-selection,
-#stream_journal_weight_slider .slider-selection,
-#trend_doc_weight_slider .slider-selection,
-#trend_altmetric_weight_slider .slider-selection
-{
-	background: #BABABA;
-}
 
 .form-rows {
     padding-top: 10px;

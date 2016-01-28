@@ -3,6 +3,9 @@ requirejs.config({
     shim: {
         bootstrap: {
             deps: ['jquery']
+        },
+        'jquery-ui': {
+            deps: ['jquery']
         }
     },
     paths: {

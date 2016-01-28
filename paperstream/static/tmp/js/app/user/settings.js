@@ -1,4 +1,4 @@
-define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
+define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($) {
 
     function submitForm(e) {
         var $form = $(this);
@@ -14,7 +14,7 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
             data: $form.serialize(),
             success: function (json) {
                 $.each(json, function (key, value) {
-                    console.log(json);
+                    //console.log(json);
                     var $field = $('input[name=' + key + ']');
                     $field.val(value);
                     $field.removeClass("alert alert-danger");
@@ -32,7 +32,7 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
                 var res = JSON.parse(resp.responseText);
                 $('input').removeClass("alert alert-danger");
                 $.each(res, function (key, value) {
-                    console.log(key + ': ' + value);
+                    //console.log(key + ': ' + value);
                     $('input[name=' + key + ']').addClass("alert alert-danger");
                     $('#id_errors').prepend(
                         '<div class="alert alert-danger" role="alert">' +
@@ -49,5 +49,31 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
 
     $(function() {
         $('form[data-async]').on('submit', submitForm);
+
+        $('#id_stream_vector_weight, ' +
+            '#id_stream_author_weight, ' +
+            '#id_stream_journal_weight, ' +
+            '#id_trend_doc_weight, ' +
+            '#id_trend_altmetric_weight')
+            .hide()
+            .wrap('<div class="slider"></div>');
+
+        $('.slider').each(function(i, slider) {
+            var $slider = $(slider),
+                $input = $slider.find('input');
+
+            $slider.slider({
+                range: false,
+                animate: false,
+                min: parseFloat($input.data('slider-min'))*100,
+                max: parseFloat($input.data('slider-max'))*100,
+                step: parseFloat($input.data('slider-step'))*100,
+                value: parseFloat($input.val())*100,
+                slide: function( event, ui ) {
+                    $input.val(ui.value/100);
+                }
+            });
+        });
+
     });
 });

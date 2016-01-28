@@ -140,3 +140,13 @@
 {% include 'user/settings_modal.html' %}
 
 {% endblock content %}
+
+
+{% block javascript %}
+<script src="{% static 'tmp/js/require.js' %}"></script>
+<script>
+    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+        requirejs(['app/user/settings']);
+    });
+</script>
+{% endblock javascript %}
