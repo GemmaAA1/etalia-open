@@ -544,14 +544,14 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
     def update_args(self):
         """Retrieve JSON"""
 
-        get_args = self.request.GET.dict()
+        data = self.request.GET.dict()
 
         # What remains should be ajax args
         if self.request.is_ajax():
             try:
-                data = json.loads(list(get_args.keys())[0])
-                self.time_span = data.get('time_span', self.time_span)
-                self.cluster = data.get('cluster', self.cluster)
+                # data = json.loads(list(get_args.keys())[0])
+                self.time_span = int(data.get('time_span', self.time_span))
+                self.cluster = int(data.get('cluster', self.cluster))
                 self.like_flag = data.get('pin', self.like_flag)
                 self.search_query = data.get('search_query', '')
                 filters_ = data.get('filters', [])
@@ -571,6 +571,48 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
 
 
 class StreamView2(BasePaperListView2):
+    model = StreamMatches
+    template_name = 'feeds/feed.html'
+    page_template = 'feeds/feed_sub_page.html'
+
+    def get_context_settings(self):
+        self.context_settings = {
+            'time_lapse': self.request.user.settings.stream_time_lapse,
+            'method': self.request.user.settings.stream_method,
+            'model': self.request.user.settings.stream_model,
+        }
+        return self.context_settings
+
+    def get_queryset(self):
+
+        # get ticked/rejected paper
+        papers_ticked = UserTaste.objects\
+            .filter(user=self.request.user,
+                    is_ticked=True)\
+            .values('paper')
+
+        self.original_qs = self.model.objects\
+            .filter(stream__name=self.kwargs.get('name', 'main'),
+                    stream__user=self.request.user)\
+            .exclude(paper__in=papers_ticked)\
+            .select_related('paper',
+                            'paper__journal')
+
+        # Retrieve get args
+        self.update_args()
+
+        # trim time span
+        self.original_qs = self.trim_time_span(self.original_qs)
+
+        # filter
+        query_set = self.filter_queryset(self.original_qs)
+
+        return query_set
+
+stream_view2 = StreamView2.as_view()
+
+
+class StreamView2Filter(BasePaperListView2):
     model = StreamMatches
     template_name = 'feeds/feed.html'
     page_template = 'feeds/feed_sub_page2.html'
@@ -609,7 +651,7 @@ class StreamView2(BasePaperListView2):
 
         return query_set
 
-stream_view2 = StreamView2.as_view()
+stream_view2_filter = StreamView2Filter.as_view()
 
 
 class TrendView2(BasePaperListView2):

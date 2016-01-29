@@ -100,7 +100,7 @@ define(
         }
 
         loadThumbsXhr = $.ajax({
-            url: '/feed/stream/filter',
+            url: '/feed/stream2/filter',
             data: getControlsStates(),
             dataType: 'xml',
             method: 'GET'
