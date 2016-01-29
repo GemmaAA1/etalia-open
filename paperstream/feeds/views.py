@@ -550,10 +550,10 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         if self.request.is_ajax():
             try:
                 data = json.loads(list(get_args.keys())[0])
-                self.time_span = data.get('time_span') or self.time_span
-                self.cluster = data.get('cluster')
-                self.like_flag = data.get('pin')
-                self.search_query = data.get('search_query')
+                self.time_span = data.get('time_span', self.time_span)
+                self.cluster = data.get('cluster', self.cluster)
+                self.like_flag = data.get('pin', self.like_flag)
+                self.search_query = data.get('search_query', '')
                 filters_ = data.get('filters', [])
                 for filter_ in filters_:
                     if filter_.get('id') == 'journal':
