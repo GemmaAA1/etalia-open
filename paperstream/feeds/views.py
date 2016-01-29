@@ -353,7 +353,7 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         super(BasePaperListView2, self).__init__(*args, **kwargs)
         self.journals_filter = []
         self.authors_filter = []
-        self.time_span = 7
+        self.time_span = 30
         self.like_flag = False
         self.context_settings = None
         self.search_query = ''
@@ -508,48 +508,56 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         }
 
         # add to journal filter context if journal is checked
+        entries = []
         for j in journals:
             is_checked = j[0] in self.journals_filter
-            filter_['filters'].append(
-                {
-                    'id': 'journal',
-                    'entry': {
-                        'pk': j[0],
-                        'name': j[1],
-                        'count': j[2],
-                        'is_checked': is_checked,
-                    }
-                }
-            )
+            entries.append({
+                'pk': j[0],
+                'name': j[1],
+                'count': j[2],
+                'is_checked': is_checked
+            })
+        filter_['filters'].append({'id': 'journal', 'entries': entries})
 
         # add to author filter context if author is checked
+        entries = []
         for a in authors:
             is_checked = a[0] in self.authors_filter
-            filter_['filters'].append(
-                {
-                    'id': 'author',
-                    'entry': {
-                        'pk': a[0],
-                        'name': a[1],
-                        'count': a[2],
-                        'is_checked': is_checked,
-                    }
-                }
-            )
+            entries.append({
+                'pk': a[0],
+                'name': a[1],
+                'count': None,
+                'is_checked': is_checked
+            })
+        filter_['filters'].append({'id': 'author', 'entries': entries})
 
         context['filter'] = json.dumps(filter_)
+
+        context['authors'] = []
+        block = 1
+        for i, auth in enumerate(authors_ordered):
+            if not i % 10:
+                block += 1
+            context['authors'].append((auth.pk, auth.print_full, block))
+
+        context['journals'] = []
+        block = 1
+        for i, j in enumerate(journal_filter):
+            if not i % self.size_load_journal_filter:
+                block += 1
+            # (journal.pk, journal.title, occurence, block )
+            context['journals'].append((j[0], j[1], journals_counter[j], block))
 
         return context
 
     def update_args(self):
         """Retrieve JSON"""
 
-        data = self.request.GET.dict()
+        data = json.loads(self.request.GET.dict().get('data'))
 
         # What remains should be ajax args
         if self.request.is_ajax():
             try:
-                # data = json.loads(list(get_args.keys())[0])
                 self.time_span = int(data.get('time_span', self.time_span))
                 self.cluster = int(data.get('cluster', self.cluster))
                 self.like_flag = data.get('pin', self.like_flag)

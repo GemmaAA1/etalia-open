@@ -8,18 +8,18 @@ define(
         loadThumbsXhr;
 
     function selectCluster(selection) {
-        if (selection == null || selection == 'none') {
-            selection = 'none';
-        } else {
-            selection = parseInt(selection);
-        }
+        //if (selection == 0 || selection == 'none') {
+        //    selection = 0;
+        //} else {
+        selection = parseInt(selection);
+        //}
 
         $clusterSelection.removeClass('cluster-' + selectedCluster);
         selectedCluster = selection;
-        if (selectedCluster == 'none') {
+        if (selectedCluster == 0) {
             $clusterSelection.hide();
             $toggleCluster.find('.cluster-icon').show();
-        } else if (0 <= selection && selection <= 3) {
+        } else if (0 < selection && selection <= 4) {
             $clusterSelection
                 .css({display: 'inline-block'})
                 .addClass('cluster-' + selectedCluster);
@@ -47,7 +47,7 @@ define(
         var cluster = $clusterSelection.data('value'),
             filters = [];
 
-        cluster = cluster == 'none' ? null : parseInt(cluster);
+        //cluster = parseInt(cluster);
 
         $('.filter-group').each(function() {
             var $group = $(this),
@@ -62,7 +62,7 @@ define(
 
         return {
             time_span: parseInt($timespanSelection.data('value')),
-            cluster: cluster,
+            cluster: 0,
             pin: ($('#toggle-pinned').hasClass('active')),
             search_query: null, //$('#search-input').val(),
             filters: filters
@@ -101,7 +101,7 @@ define(
 
         loadThumbsXhr = $.ajax({
             url: '/feed/stream2/filter',
-            data: getControlsStates(),
+            data: {'data': JSON.stringify(getControlsStates())},
             dataType: 'xml',
             method: 'GET'
         });

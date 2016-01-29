@@ -34,7 +34,7 @@ return: XML
                 'filters': [
                     {
                         'id': (string), # Values: journal, author
-                        'entry': [
+                        'entries': [
                             {
                                 'pk': (int),
                                 'name': (string),
