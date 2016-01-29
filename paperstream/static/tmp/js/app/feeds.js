@@ -1,14 +1,16 @@
 define(
-    ['jquery', 'app/ui/detail', 'app/util/utils', 'app/ui/layout', 'bootstrap'],
-    function($, Detail, Util) {
+    ['jquery', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'endless', 'bootstrap'],
+    function($, Detail, Layout, Util) {
 
     var detail, $search,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection;
 
-    $(function() {
+    function loadThumbs() {
 
-        detail = new Detail();
+    }
+
+    $(function() {
 
         $search = $('#search');
 
@@ -48,7 +50,6 @@ define(
 
         // Cluster selection
         $('#cluster').on('click', '.choices .cluster-value', function(e) {
-            //e.stopPropagation();
             var $target = $(e.target);
             if (!$target.hasClass('cluster-value')) {
                 $target = $target.parents('.cluster-value').eq(0);
@@ -70,7 +71,6 @@ define(
 
         // Timespan selection
         $('#timespan').on('click', '.choices a', function(e) {
-            //e.stopPropagation();
             var value = (function(selection) {
                 switch (selection) {
                     case 0 : return 'L';
@@ -107,35 +107,6 @@ define(
         $('.filter-group.active .collapse').collapse('show');
 
 
-        /* TODO MOVE */
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-// Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        var csrftoken = getCookie('csrftoken');
-        function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
-        $.ajaxSetup({
-            beforeSend: function (xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
-
         // Thumbs
         $('#list, #detail')
             .on('click', '.thumb-pin', function(e) {
@@ -149,7 +120,7 @@ define(
                     url: '/user/paper/pin',
                     data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
                 });
-                pinXhr.done(function(json) {
+                pinXhr.success(function(json) {
                     if (json.hasOwnProperty('is_liked')) {
                         $button.toggleClass('active', json['is_liked']);
                     }
@@ -163,7 +134,6 @@ define(
             .on('click', '.thumb-remove', function(e) {
                 e.stopPropagation();
 
-                var $button = $(this);
                 var $thumb = $(e.target).parents('.thumb').eq(0);
 
                 var pinXhr = $.ajax({
@@ -171,7 +141,7 @@ define(
                     url: '/user/paper/ban',
                     data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
                 });
-                pinXhr.done(function(json) {
+                pinXhr.success(function(json) {
                     if (json.hasOwnProperty('is_liked') && json['is_ticked']) {
                         $thumb.remove();
                     }
@@ -183,18 +153,28 @@ define(
                 return false;
             });
 
+        // Endless scroll
+        $.endlessPaginate({
+            paginateOnScroll: true,
+            paginateOnScrollMargin: 10
+        });
+
 
         // Detail
+        detail = new Detail();
+        $(detail)
+            .on('etalia.detail.loading', function() {
+                Layout.setBusy();
+            })
+            .on('etalia.detail.loaded', function() {
+                Layout.setAvailable();
+            });
         $('.document').on('click', '.thumb .title a', function(e) {
             e.preventDefault();
-            detail.load();
+
+            detail.load($(e.target).closest('.thumb'));
+
             return false;
-        });
-        $('#detail-close, #backdrop').on('click', function() {
-            detail.close();
-        });
-        $('#detail-next, #detail-prev').on('click', function() {
-            detail.load();
         });
     });
 });

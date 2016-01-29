@@ -14,6 +14,7 @@
     <link href="{% static 'tmp/css/etal-icons.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'tmp/css/lib/bootstrap.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'tmp/css/lib/jquery-ui.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'tmp/css/lib/jquery-qtip.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'tmp/css/app/root.css' %}" rel="stylesheet" type="text/css">
     {% block stylesheets %}{% endblock stylesheets %}
 
@@ -26,6 +27,14 @@
 
 {% block body %}{% endblock body %}
 
+<div id="backdrop"></div>
+<div id="busy-backdrop">
+    <div id="busy-modal">
+        <span class="eai eai-loading"></span>
+        <p>Please&nbsp;wait&hellip;</p>
+        <div id="busy-content"></div>
+    </div>
+</div>
 {% block javascript %}{% endblock javascript %}
 
 </body>

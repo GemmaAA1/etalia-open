@@ -57,22 +57,17 @@
         <div class="choices">
             <ul>
                 <li>
-                    <a href="javascript: void(0)" data-timespan="0">
-                        <span class="timespan-value">L</span> <strong>L</strong>ast visit
-                    </a>
-                </li>
-                <li>
-                    <a href="javascript: void(0)" data-timespan="1">
+                    <a href="javascript: void(0)" data-timespan="7">
                         <span class="timespan-value">W</span> <strong>W</strong>eek
                     </a>
                 </li>
                 <li>
-                    <a href="javascript: void(0)" data-timespan="2">
+                    <a href="javascript: void(0)" data-timespan="30">
                         <span class="timespan-value">1m</span> <strong>1 m</strong>onth
                     </a>
                 </li>
                 <li>
-                    <a href="javascript: void(0)" data-timespan="3">
+                    <a href="javascript: void(0)" data-timespan="60">
                         <span class="timespan-value">2m</span> <strong>2 m</strong>onths
                     </a>
                 </li>
@@ -121,7 +116,6 @@
 
 
 {% block javascript %}
-    <div id="backdrop"></div>
     <script src="{% static 'tmp/js/require.js' %}"></script>
     <script>
         requirejs(['{% static "tmp/js/common.js" %}'], function () {

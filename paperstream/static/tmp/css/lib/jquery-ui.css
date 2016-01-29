@@ -1,4 +1,4 @@
-/*! jQuery UI - v1.11.4 - 2016-01-28
+/*! jQuery UI - v1.11.4 - 2016-01-29
 * http://jqueryui.com
 * Includes: core.css, slider.css, theme.css
 * To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=segoe%20ui%2CArial%2Csans-serif&fsDefault=1.1em&fwDefault=bold&cornerRadius=4px&bgColorHeader=%23ffffff&bgTextureHeader=flat&borderColorHeader=%23cbced1&fcHeader=%23313233&iconColorHeader=%23847e71&bgColorContent=%23ffffff&bgTextureContent=flat&borderColorContent=%23cbced1&fcContent=%23313233&iconColorContent=%23808080&bgColorDefault=%2300695c&bgTextureDefault=flat&borderColorDefault=%2300695c&fcDefault=%23ffffff&iconColorDefault=%23eeeeee&bgColorHover=%23004f46&bgTextureHover=flat&borderColorHover=%23004f46&fcHover=%23ffffff&iconColorHover=%23ffffff&bgColorActive=%23fafaf4&bgTextureActive=flat&borderColorActive=%23cbced1&fcActive=%2300695c&iconColorActive=%238DC262&bgColorHighlight=%23cbced1&bgTextureHighlight=glass&borderColorHighlight=%23cbced1&fcHighlight=%23363636&iconColorHighlight=%238DC262&bgColorError=%23ffedad&bgTextureError=highlight_soft&borderColorError=%23e3a345&fcError=%23cd5c0a&iconColorError=%23cd0a0a&bgColorOverlay=%232b2922&bgTextureOverlay=inset_soft&bgImgOpacityOverlay=15&opacityOverlay=90&bgColorShadow=%23cccccc&bgTextureShadow=highlight_hard&bgImgOpacityShadow=95&opacityShadow=20&thicknessShadow=12px&offsetTopShadow=-12px&offsetLeftShadow=-12px&cornerRadiusShadow=10px&bgImgOpacityHeader=0&bgImgOpacityContent=0&bgImgOpacityDefault=0&bgImgOpacityHover=0&bgImgOpacityActive=0&bgImgOpacityHighlight=55&bgImgOpacityError=95
@@ -66,7 +66,7 @@
 /* Icons
 ----------------------------------*/
 
-/* states and images */
+/* states and ../../img/jquery-ui */
 .ui-icon {
 	display: block;
 	text-indent: -99999px;
@@ -296,7 +296,7 @@
 /* Icons
 ----------------------------------*/
 
-/* states and images */
+/* states and ../../img/jquery-ui */
 .ui-icon {
 	width: 16px;
 	height: 16px;

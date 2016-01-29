@@ -1,0 +1,46 @@
+{% extends 'landing.html' %}
+
+{% load staticfiles %}
+
+{% block body %}
+
+
+<div class="container signup-forms">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            {% if has_email  %}
+            <div class="text-center title">
+                <h3>Please, edit this info if incorrect</h3>
+            </div>
+            {% else %}
+            <div class="text-center title">
+                <h3>Please, fill up this short form</h3>
+            </div>
+            {% endif %}
+            <form role="form" method="POST" id="signup-form" data-async action="{% url "user:require-basic-info" %}">
+            {% csrf_token %}
+            <span id="id_errors"></span>
+            {% for field in form %}
+            <div class="form-group">
+                {#                        {{ field.label_tag }}#}
+                {{ field }}
+            </div>
+            {% endfor %}
+            <div class="text-center submit">
+                <button id="signup" type="submit" class="btn btn-primary btn-lg">Done</button>
+            </div>
+            </form>
+            <div class="blurb">
+                By clicking on the done button, your are allowing Etalia to access the data that you store in your reference software manager.
+                This information will not be shared with any other entity without your consent.
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+{# {% block js %}
+{{ block.super }}
+<script type="text/javascript" src="{% static 'js/user.js' %}"></script>
+{% endblock js %} #}

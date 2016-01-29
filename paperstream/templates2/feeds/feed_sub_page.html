@@ -16,7 +16,7 @@
     </div>
     <div class="card">
         <p class="title">
-            <a href="javascript: void(0)">{{ ufmp.paper.title }}</a>
+            <a href="{% url 'library:paper' ufmp.paper.pk %}">{{ ufmp.paper.title }}</a>
         </p>
         <p class="authors">
             {{ ufmp.paper.print_full_authors|truncatechars:70 }}

@@ -13,6 +13,8 @@ define(['jquery', 'app/ui/flap', 'app/util/utils'], function ($, Flap, Util) {
         this.leftFlap = null;
         this.rightFlap = null;
 
+        this.busy = false;
+
         var that = this;
         this.log = function(msg) {
             if (that.config.debug) {
@@ -109,6 +111,27 @@ define(['jquery', 'app/ui/flap', 'app/util/utils'], function ($, Flap, Util) {
                 }
             });
         }
+    };
+
+    Layout.prototype.setBusy = function(content) {
+        $('#busy-content').html(content);
+
+        if (this.busy) {
+            return;
+        }
+        this.busy = true;
+
+        $('body').addClass('busy');
+    };
+
+    Layout.prototype.setAvailable = function() {
+        if (!this.busy) {
+            return;
+        }
+        this.busy = false;
+
+        $('#busy-content').html('');
+        $('body').removeClass('busy');
     };
 
     var layout = new Layout();

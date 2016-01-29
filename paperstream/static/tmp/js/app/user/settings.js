@@ -1,4 +1,4 @@
-define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($) {
+define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($, layout) {
 
     function submitForm(e) {
         var $form = $(this);
@@ -47,9 +47,7 @@ define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($) {
         return false;
     }
 
-    $(function() {
-        $('form[data-async]').on('submit', submitForm);
-
+    function initSliders() {
         $('#id_stream_vector_weight, ' +
             '#id_stream_author_weight, ' +
             '#id_stream_journal_weight, ' +
@@ -70,10 +68,41 @@ define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($) {
                 step: parseFloat($input.data('slider-step'))*100,
                 value: parseFloat($input.val())*100,
                 slide: function( event, ui ) {
-                    $input.val(ui.value/100);
+                    var value = ui.value/100;
+
+                    $slider.find('span')
+                        .tooltip('destroy')
+                        .tooltip({
+                            title: value,
+                            animation: false,
+                            container: $slider.find('span')
+                        })
+                        .tooltip('show');
+
+                    $input.val(value);
+                },
+                create: function() {
+                    $slider.find('span')
+                        .tooltip({
+                            title: $input.val(),
+                            animation: false,
+                            container: $slider.find('span')
+                        });
                 }
             });
         });
+    }
 
+    $(function() {
+        // ASync form submission
+        $('form[data-async]').on('submit', submitForm);
+
+        // Jquery UI Sliders
+        initSliders();
+
+
+        $('#update-stream').on('click', function() {
+            layout.setBusy('<p>Test message</p>');
+        });
     });
 });

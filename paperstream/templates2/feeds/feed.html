@@ -11,8 +11,9 @@
             <div class="inner">
                 <p class="list-title">321 papers suggested</p>
 
-                {% include page_template %}
-
+                <div class="endless_data">
+                    {% include page_template %}
+                </div>
             </div>
         </div>
     </div>
@@ -20,17 +21,21 @@
 
     <!-- start detail -->
     <div id="detail">
-        <div class="loading eai eai-loading"></div>
-
         <div class="bar">
             <div class="wrapper">
                 <div class="inner">
-                    <button id="detail-prev" class="btn-circle" type="button">
-                        <span class="eai eai-left"></span>
-                    </button>
-                    <button id="detail-next" class="btn-circle" type="button">
-                        <span class="eai eai-right"></span>
-                    </button>
+                    <div id="detail-prev" class="detail-nav">
+                        <button class="btn-circle" type="button">
+                            <span class="eai eai-left"></span>
+                        </button>
+                        <span></span>
+                    </div>
+                    <div id="detail-next" class="detail-nav">
+                        <button class="btn-circle" type="button">
+                            <span class="eai eai-right"></span>
+                        </button>
+                        <span></span>
+                    </div>
                     <button id="detail-close" class="btn-circle" type="button">
                         <span class="eai eai-close"></span>
                     </button>
@@ -40,221 +45,9 @@
 
         <div id="detail-document" class="document">
             <div class="wrapper">
-                <div class="inner">
-                    <div id="detail-actions" class="actions">
-                        <a href="javascript: void(0)" class="detail-pin">
-                            <span class="eai eai-pin"></span>
-                        </a>
-                        <a href="javascript: void(0)" class="detail-remove">
-                            <span class="eai eai-remove"></span>
-                        </a>
-                        <a href="javascript: void(0)" class="detail-library-add">
-                            <span class="eai eai-library-add"></span>
-                        </a>
-
-                        <a href="javascript: void(0)" class="detail-comments">
-                            <span class="eai eai-comments"></span>
-                        </a>
-                        <a href="javascript: void(0)" class="detail-suggestions">
-                            <span class="eai eai-suggestions"></span>
-                        </a>
-                        <a href="javascript: void(0)" class="detail-pdf">
-                            <span class="eai eai-pdf"></span>
-                        </a>
-
-                        <a href="javascript: void(0)" class="detail-mail">
-                            <span class="eai eai-mail"></span>
-                        </a>
-                        <a href="javascript: void(0)" class="detail-twitter">
-                            <span class="eai eai-twitter"></span>
-                        </a>
-                        <a href="javascript: void(0)" class="detail-google-plus">
-                            <span class="eai eai-google-plus"></span>
-                        </a>
-                    </div>
-
-                    <div class="content">
-                        <div class="card">
-                            <h1 class="title">Hierarchical Invariant Feature Learning with Marginalization for Person Re-Identification</h1>
-                            <p class="authors">
-                                <strong>Ping Chi</strong>, <strong>Yu Chen</strong>, Michael F Berger, Klaus J Busam, Marc Ladanyi, Deyou Zheng, James A Fagin, Charlotte E Ariyan, Michael A Postow, Gary K Schwartz&hellip;
-                            </p>
-                            <p class="journal">The New England journal of medicine</p>
-                            <p class="date">Sept 25, 2015</p>
-                            <p class="icons">
-                                <span class="cluster-icon">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                    <span class="cluster-3"></span>
-                                </span>
-                                <span class="metric">
-                                    <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
-                                </span>
-                                <span class="comment">
-                                    <span class="count">16</span>
-                                    <span class="eai eai-comment"></span>
-                                </span>
-                            </p>
-                        </div>
-
-                        <h2>Abstract</h2>
-                        <p>This paper addresses the problem of matching pedestrians across multiple camera views, known as person re-identification. Variations in lighting conditions, environment and pose changes across camera views make re-identification a challenging problem. Previous methods address these challenges by designing specific features or by learning a distance function. We propose a hierarchical feature learning framework that learns invariant representations from labeled image pairs. A mapping is learned such that the extracted features are invariant for images belonging to same individual across views. To learn robust representations and to achieve better generalization to unseen data, the system has to be trained with a large amount of data. Critically, most of the person re-identification datasets are small. Manually augmenting the dataset by partial corruption of input data introduces additional computational burden as it requires several training epochs to converge. We propose a hierarchical network which incorporates a marginalization technique that can reap the benefits of training on large datasets without explicit augmentation. We compare our approach with several baseline algorithms as well as popular linear and non-linear metric learning algorithms and demonstrate improved performance on challenging publicly available datasets, VIPeR, CUHK01, CAVIAR4REID and iLIDS. Our approach also achieves the stateof-the-art results on these datasets.</p>
-
-                        <h2>Comments</h2>
-                        <p>TODO</p>
-
-                        <h2>Suggestions</h2>
-
-                        <div class="thumb">
-                            <div class="actions">
-                                <a href="javascript: void(0)" class="thumb-pin active">
-                                    <span class="eai eai-pin"></span>
-                                </a>
-                                <a href="javascript: void(0)" class="thumb-remove">
-                                    <span class="eai eai-remove"></span>
-                                </a>
-                            </div>
-                            <div class="card">
-                                <p class="title">
-                                    <a href="javascript: void(0)">Fast Automatic Video Retrieval using Web Images</a>
-                                </p>
-                                <p class="authors">
-                                    <strong>Larry S Davis</strong>, <strong>Vlad I Morariu</strong>, Bharat Singh, Xintong Han
-                                </p>
-                                <p class="journal">The New England journal of medicine</p>
-                                <p class="date">Sept 25, 2015</p>
-                                <p class="icons">
-                                    <span class="cluster-icon">
-                                        <span class="cluster-0"></span>
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                    </span>
-                                    <span class="metric">
-                                        <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
-                                    </span>
-                                    <span class="comment">
-                                        <span class="count">16</span>
-                                        <span class="eai eai-comment"></span>
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="thumb">
-                            <div class="actions">
-                                <a href="javascript: void(0)" class="thumb-pin">
-                                    <span class="eai eai-pin"></span>
-                                </a>
-                                <a href="javascript: void(0)" class="thumb-remove">
-                                    <span class="eai eai-remove"></span>
-                                </a>
-                            </div>
-                            <div class="card">
-                                <p class="title">
-                                    <a href="javascript: void(0)">Fast Automatic Video Retrieval using Web Images</a>
-                                </p>
-                                <p class="authors">
-                                    <strong>Larry S Davis</strong>, <strong>Vlad I Morariu</strong>, Bharat Singh, Xintong Han
-                                </p>
-                                <p class="journal">The New England journal of medicine</p>
-                                <p class="date">Sept 25, 2015</p>
-                                <p class="icons">
-                                    <span class="cluster-icon">
-                                        <span></span>
-                                        <span class="cluster-1"></span>
-                                        <span></span>
-                                        <span></span>
-                                    </span>
-                                    <span class="metric">
-                                        <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
-                                    </span>
-                                    <span class="comment">
-                                        <span class="count">16</span>
-                                        <span class="eai eai-comment"></span>
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="thumb">
-                            <div class="actions">
-                                <a href="javascript: void(0)" class="thumb-pin active">
-                                    <span class="eai eai-pin"></span>
-                                </a>
-                                <a href="javascript: void(0)" class="thumb-remove">
-                                    <span class="eai eai-remove"></span>
-                                </a>
-                            </div>
-                            <div class="card">
-                                <p class="title">
-                                    <a href="javascript: void(0)">Fast Automatic Video Retrieval using Web Images</a>
-                                </p>
-                                <p class="authors">
-                                    <strong>Larry S Davis</strong>, <strong>Vlad I Morariu</strong>, Bharat Singh, Xintong Han
-                                </p>
-                                <p class="journal">The New England journal of medicine</p>
-                                <p class="date">Sept 25, 2015</p>
-                                <p class="icons">
-                                    <span class="cluster-icon">
-                                        <span></span>
-                                        <span></span>
-                                        <span class="cluster-2"></span>
-                                        <span></span>
-                                    </span>
-                                    <span class="metric">
-                                        <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
-                                    </span>
-                                    <span class="comment">
-                                        <span class="count">16</span>
-                                        <span class="eai eai-comment"></span>
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="thumb">
-                            <div class="actions">
-                                <a href="javascript: void(0)" class="thumb-pin">
-                                    <span class="eai eai-pin"></span>
-                                </a>
-                                <a href="javascript: void(0)" class="thumb-remove">
-                                    <span class="eai eai-remove"></span>
-                                </a>
-                            </div>
-                            <div class="card">
-                                <p class="title">
-                                    <a href="javascript: void(0)">Fast Automatic Video Retrieval using Web Images</a>
-                                </p>
-                                <p class="authors">
-                                    <strong>Larry S Davis</strong>, <strong>Vlad I Morariu</strong>, Bharat Singh, Xintong Han
-                                </p>
-                                <p class="journal">The New England journal of medicine</p>
-                                <p class="date">Sept 25, 2015</p>
-                                <p class="icons">
-                                    <span class="cluster-icon">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                        <span class="cluster-3"></span>
-                                    </span>
-                                    <span class="metric">
-                                        <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
-                                    </span>
-                                    <span class="comment">
-                                        <span class="count">16</span>
-                                        <span class="eai eai-comment"></span>
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+                <div class="inner"></div>
             </div>
         </div>
     </div>
     <!-- end detail -->
 {% endblock content %}
-

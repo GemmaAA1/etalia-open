@@ -1,0 +1,137 @@
+{% load disqus_tags %}
+{% load disqus %}
+{% load staticfiles %}
+
+
+<div id="detail-actions" class="actions">
+    {% if user.is_authenticated %}
+    <a href="javascript: void(0)" class="detail-pin{% if is_liked %} active {% endif %}">
+        <span class="eai eai-pin"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-remove">
+        <span class="eai eai-remove"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-library-add">
+        <span class="eai eai-library-add"></span>
+    </a>
+
+    <a href="javascript: void(0)" class="detail-comments">
+        <span class="eai eai-comments"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-suggestions">
+        <span class="eai eai-suggestions"></span>
+    </a>
+    <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
+        <span class="eai eai-pdf"></span>
+    </a>
+
+    <a href="mailto:?subject=&body={{ paper.title }}%0D%0A{{ paper.print_compact_authors }}%0D%0A{{ paper.journal.title }}.%20{{ paper.print_date }}%0D%0A{{ paper.url }}"
+       class="detail-mail">
+        <span class="eai eai-mail"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-twitter">
+        <span class="eai eai-twitter"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-google-plus">
+        <span class="eai eai-google-plus"></span>
+    </a>
+    {% else %}
+    <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
+        <span class="eai eai-pdf"></span>
+    </a>
+    {% endif %}
+</div>
+
+<div class="content">
+    <div class="card">
+        <h1 class="title">
+            {{ paper.title }}
+        </h1>
+        <p class="authors">
+            {{ paper.print_full_authors }}
+        </p>
+        <p class="journal">
+            {{ paper.print_journal_title }}
+        </p>
+        <p class="date">
+            {{ paper.print_month_year }}
+        </p>
+        <p class="icons">
+            <!-- TODO -->
+            <span class="cluster-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span class="cluster-3"></span>
+            </span>
+            <!-- TODO -->
+            <span class="metric">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
+            </span>
+            <!-- TODO -->
+            <span class="comment">
+                <span class="count">16</span>
+                <span class="eai eai-comment"></span>
+            </span>
+        </p>
+    </div>
+
+
+    {% if paper.abstract %}
+    <h2>Abstract</h2>
+    <div>
+        {{ paper.abstract }}
+    </div>
+    {% endif %}
+
+
+    {% if user.is_authenticated %}
+    <h2>Comments</h2>
+    <div>
+        {% disqus_sso %}
+        {% get_disqus_sso request %}
+        <!-- comments -->
+        {% disqus_show_comments %}
+    </div>
+    {%  endif %}
+
+
+    <h2>Suggestions</h2>
+    <!-- TODO -->
+    <div class="thumb">
+        <div class="actions">
+            <a href="javascript: void(0)" class="thumb-pin active">
+                <span class="eai eai-pin"></span>
+            </a>
+            <a href="javascript: void(0)" class="thumb-remove">
+                <span class="eai eai-remove"></span>
+            </a>
+        </div>
+        <div class="card">
+            <p class="title">
+                <a href="javascript: void(0)">Fast Automatic Video Retrieval using Web Images</a>
+            </p>
+            <p class="authors">
+                <strong>Larry S Davis</strong>, <strong>Vlad I Morariu</strong>, Bharat Singh, Xintong Han
+            </p>
+            <p class="journal">The New England journal of medicine</p>
+            <p class="date">Sept 25, 2015</p>
+            <p class="icons">
+                <span class="cluster-icon">
+                    <span class="cluster-0"></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <span class="metric">
+                    <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
+                </span>
+                <span class="comment">
+                    <span class="count">16</span>
+                    <span class="eai eai-comment"></span>
+                </span>
+            </p>
+        </div>
+    </div>
+
+</div>

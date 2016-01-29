@@ -6,31 +6,60 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
             debug: false,
             element: '#detail',
             document: '.document',
-            loading: '.loading',
             actions: '.inner > .actions'
         }, options);
 
         this.$element = $(this.config.element);
 
         this.$document = this.$element.find(this.config.document);
-        this.$loading = this.$element.find(this.config.loading);
         this.actions = null;
+
+        this.$nextButton = $('#detail-next');
+        this.$prevButton = $('#detail-prev');
 
         this.loaded = false;
         this.loadXhr = null;
-    };
-    Detail.prototype.load = function () {
+
         var that = this;
+        $('#detail-close, #backdrop').on('click', function() {
+            that.close();
+        });
+    };
+    Detail.prototype.load = function ($thumb) {
+        var that = this,
+            $prev = $thumb.prev(),
+            $next = $thumb.next();
+
+        $(that).trigger('etalia.detail.loading');
+
         that.clear();
 
         that.$document.hide();
-        that.$loading.show();
-
         $('body').addClass('detail-opened');
 
-        // Fake XHR
-        that.loadXhr = setTimeout(function () {
-            that.$loading.hide();
+        // Previous button
+        if ($prev.length) {
+            var prevTitle = $prev.find('.title').text();
+            that.$prevButton.show().attr('title', prevTitle);
+            that.$prevButton.find('> span').html(prevTitle);
+            that.$prevButton.find('> button').on('click', function() {
+                that.load($prev);
+            });
+        }
+        // Next button
+        if ($next.length) {
+            var nextTitle = $next.find('.title').text();
+            that.$nextButton.show().attr('title', nextTitle);
+            that.$nextButton.find('> span').html(nextTitle);
+            that.$nextButton.find('> button').on('click', function() {
+                that.load($next);
+            });
+        }
+
+        var uri = $thumb.find('.title a').attr('href');
+        $.get(uri, function(html) {
+            that.$document.find('.inner').html(html);
+
             that.$document.show();
 
             that.actions = new Sticky({
@@ -44,7 +73,9 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
 
             that.loaded = true;
             that.loadXhr = null;
-        }, 1500);
+
+            $(that).trigger('etalia.detail.loaded');
+        });
     };
     Detail.prototype.clear = function () {
         this.loaded = false;
@@ -52,10 +83,16 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
             clearTimeout(this.loadXhr);
             this.loadXhr = null;
         }
+
         if (this.actions) {
             this.actions.disable();
             this.actions = null;
         }
+
+        var $navButtons = $('.detail-nav');
+        $navButtons.hide().removeAttr('title');
+        $navButtons.find('> button').off('click');
+        $navButtons.find('> span').empty();
     };
     Detail.prototype.close = function () {
         this.clear();

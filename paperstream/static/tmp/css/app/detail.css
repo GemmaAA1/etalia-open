@@ -8,17 +8,6 @@
     display: none;
 }
 
-#detail .document {
-    position: fixed;
-    top: 56px;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    padding-top: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
 /* OPENED STATE */
 
 body.detail-opened {
@@ -34,51 +23,6 @@ body.detail-opened #detail {
     display: block;
     z-index: 10;
 }
-
-/* LOADING */
-
-#detail .loading {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 64px;
-    height: 64px;
-    font-size: 64px;
-    line-height: 64px;
-    margin: -32px 0 0 -32px;
-    color: #6b6d70;
-}
-
-#detail .loading:before {
-    -webkit-animation-name: spin;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -moz-animation-name: spin;
-    -moz-animation-duration: 1s;
-    -moz-animation-iteration-count: infinite;
-    -moz-animation-timing-function: linear;
-    -ms-animation-name: spin;
-    -ms-animation-duration: 1s;
-    -ms-animation-iteration-count: infinite;
-    -ms-animation-timing-function: linear;
-    animation-name: spin;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-}
-
-/*#detail > .bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 56px;
-
-    background: #d0e6e3;
-    border-bottom: 1px solid #cbced1;
-}*/
 
 /* TOP BAR */
 
@@ -97,12 +41,57 @@ body.detail-opened #detail {
     font-size: 16px;
 }
 
+#detail-close {
+    position: absolute;
+    left: 50%;
+    margin-left: -20px;
+}
+
+.detail-nav > span {
+    height: 40px;
+    line-height: 40px;
+    font-style: italic;
+}
+
+/* Prev button */
 #detail-prev {
+    float: left;
+    text-align: left;
+}
+#detail-prev > span {
+    display: none;
+    float: left;
+    margin-left: 10px;
+}
+#detail-prev > button {
     float: left;
 }
 
+/* Next button */
 #detail-next {
     float: right;
+    text-align: right;
+}
+#detail-next > span {
+    display: none;
+    float: right;
+    margin-right: 10px;
+}
+#detail-next > button {
+    float: right;
+}
+
+/* DOCUMENT */
+
+#detail > .document {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    padding-top: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 #detail > .document > .wrapper > .inner > .actions {
@@ -128,4 +117,17 @@ body.detail-opened #detail {
     padding-bottom: 8px;
     margin: 40px 0 20px 0;
     border-bottom: 1px solid #cbced1;
+}
+
+/* RESPONSIVE */
+
+@media (min-width: 768px) {
+    #detail-prev > span,
+    #detail-next > span {
+        display: inline-block;
+        max-width: 240px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
