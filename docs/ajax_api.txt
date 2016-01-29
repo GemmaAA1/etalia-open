@@ -10,13 +10,19 @@ XHR GET:
 return:
     HTML block
 
+
 url: /feed/stream/filter
 XHR GET:
     {
-        'journals': [pk1, pk2, ...],
-        'authors': [pk1, pk2, ...],
-        'time_span': (int),
-        'cluster': (int) or null,
+        'filters': [
+            {
+                'id': (string),         # Values: journal, author
+                'pk': [(int), ...]
+            },
+            ...
+        ],
+        'time_span': (int),             # Values: 7, 30, 60
+        'cluster': (int) or null,       # Values: null, 0, 1, 2, 3
         'pin': (bool),
         'search_query': (str),
     }
@@ -25,8 +31,21 @@ return: XML
     <response>
        <data>
             {
-                'journals_filter': [[pk, title, # of papers (int), block #, is_checked], ...],
-                'authors_filter': [[pk, author name, block #, is_checked], ...],
+                'filters': [
+                    {
+                        'id': (string), # Values: journal, author
+                        'entry': [
+                            {
+                                'pk': (int),
+                                'name': (string),
+                                'count': (int|null),
+                                'is_checked': (bool)
+                            },
+                            ...
+                        ]
+                    },
+                    ...
+                ],
                 'time_span': (int),
                 'cluster': (int) or null,
                 'pin': (bool),
@@ -34,7 +53,6 @@ return: XML
             }
        </data>
        <thumb-list>
-
         <![CDATA[
             HTML block
         ]]>

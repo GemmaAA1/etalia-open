@@ -52,6 +52,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         self.like_flag = False
         self.context_settings = None
         self.search_query = ''
+        self.cluster = None
 
     def get_context_settings(self):
         raise NotImplemented
@@ -293,82 +294,6 @@ class StreamView(BasePaperListView):
 stream_view = StreamView.as_view()
 
 
-class StreamView2(BasePaperListView):
-    model = StreamMatches
-    template_name = 'feeds/feed.html'
-    page_template = 'feeds/feed_sub_page2.html'
-
-    def get_context_settings(self):
-        self.context_settings = {
-            'time_lapse': self.request.user.settings.stream_time_lapse,
-            'method': self.request.user.settings.stream_method,
-            'model': self.request.user.settings.stream_model,
-        }
-        return self.context_settings
-
-    def get_queryset(self):
-
-        # get ticked/rejected paper
-        papers_ticked = UserTaste.objects\
-            .filter(user=self.request.user,
-                    is_ticked=True)\
-            .values('paper')
-
-        self.original_qs = self.model.objects\
-            .filter(stream__name=self.kwargs.get('name', 'main'),
-                    stream__user=self.request.user)\
-            .exclude(paper__in=papers_ticked)\
-            .select_related('paper',
-                            'paper__journal')
-
-        # Retrieve get args
-        self.update_args()
-
-        # trim time span
-        self.original_qs = self.trim_time_span(self.original_qs)
-
-        # filter
-        query_set = self.filter_queryset(self.original_qs)
-
-        return query_set
-
-    def get_context_data(self, **kwargs):
-        context = super(StreamView2, self).get_context_data(**kwargs)
-
-        # add to journal filter context if journal is checked
-        journal_filters = []
-        for j in context.get('journals'):
-            if j[0] in self.journals_filter:
-                j += (True, )
-            else:
-                j += (False, )
-            journal_filters.append(j)
-
-        # add to author filter context if author is checked
-        author_filters = []
-        for a in context.get('authors'):
-            if a[0] in self.authors_filter:
-                a += (True, )
-            else:
-                a += (False, )
-            author_filters.append(a)
-
-        filter_ = {
-            'journals_filter': journal_filters,
-            'authors_filter': author_filters,
-            'pin': self.like_flag,
-            'timespan': self.time_span,
-            'cluster': None,
-            'search_query': self.search_query,
-        }
-
-        context['filter'] = json.dumps(filter_)
-
-        return context
-
-stream_view2 = StreamView2.as_view()
-
-
 class TrendView(BasePaperListView):
     # TODO: should be depreciated for TrendView2
     """ClassView for displaying a UserFeed instance"""
@@ -413,7 +338,281 @@ class TrendView(BasePaperListView):
 trend_view = TrendView.as_view()
 
 
-class TrendView2(BasePaperListView):
+class BasePaperListView2(LoginRequiredMixin, AjaxListView):
+    """Abstract View for displaying a feed type instance"""
+    first_page = 10
+    per_page = 5
+    context_object_name = 'object_list'
+    size_max_journal_filter = 40
+    size_load_journal_filter = 10
+    size_max_author_filter = 40
+    size_load_author_filter = 10
+    original_qs = None
+
+    def __init__(self, *args, **kwargs):
+        super(BasePaperListView2, self).__init__(*args, **kwargs)
+        self.journals_filter = []
+        self.authors_filter = []
+        self.time_span = 7
+        self.like_flag = False
+        self.context_settings = None
+        self.search_query = ''
+        self.cluster = None
+
+    def get_context_settings(self):
+        raise NotImplemented
+
+    def filter_queryset(self, queryset):
+
+        # filter journals
+        if self.journals_filter:
+            subset = []
+            for pk in self.journals_filter:
+                subset.append(Q(paper__journal__pk=pk))
+            if subset:
+                queryset = queryset\
+                    .filter(reduce(operator.or_, subset))\
+                    .distinct()
+
+        # filter authors
+        if self.authors_filter:
+            subset = []
+            for pk in self.authors_filter:
+                subset.append(Q(paper__authors__pk=pk))
+            if subset:
+                queryset = queryset\
+                    .filter(reduce(operator.or_, subset))\
+                    .distinct()
+
+        # filter pinned
+        if self.like_flag:
+            like_pks = UserTaste.objects\
+                .filter(user=self.request.user,
+                        is_liked=True)\
+                .values('paper__pk')
+            queryset = queryset.filter(paper_id__in=like_pks)
+
+        # search query
+        if self.search_query:
+            # return a filtered queryset
+            queryset = queryset.filter(Q(paper__title__icontains=self.search_query) |
+                                   Q(paper__abstract__icontains=self.search_query) |
+                                   Q(paper__journal__title__icontains=self.search_query) |
+                                   Q(paper__authors__last_name__icontains=self.search_query) |
+                                   Q(paper__authors__first_name__icontains=self.search_query))\
+                .distinct()
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(AjaxListView, self).get_context_data(**kwargs)
+        context = dict(context, **super(BasePaperListView2, self).get_context_data(**kwargs))
+
+        context['first_page'] = self.first_page
+        context['per_page'] = self.per_page
+        context['number_of_papers'] = self.object_list.count()
+
+        # Get user tastes label
+        user_taste = UserTaste.objects\
+            .filter(user=self.request.user)\
+            .values_list('paper_id', 'is_liked', 'is_ticked')
+        # reformat to dict
+        user_taste = dict((key, {'liked': v1, 'is_ticked': v2})
+                          for key, v1, v2 in user_taste)
+        context['user_taste'] = user_taste
+
+        # Get paper is_in_lib
+        context['user_lib'] = self.request.user.lib.papers.all()\
+            .values_list('pk', flat=True)
+
+        # BUILD FILTERS
+        # Journal filter
+        # Retrieve stream journal data for filters
+        journals = self.original_qs\
+            .values_list('paper__journal__pk',
+                         'paper__journal__title')
+
+        # Retrieve journal list from user lib
+        journals_userlib = self.request.user.lib.userlibjournal_set.all()\
+            .values_list('journal__pk',
+                         'journal__title')
+
+        # Count journal occurrence in current stream
+        journals_counter = Counter(journals)
+        journals_occ_sorted = sorted(journals_counter, key=journals_counter.get,
+                                     reverse=True)[:self.size_max_journal_filter]
+
+        # Concatenate userlibjournal and journal in current stream,
+        # checking for uniqueness
+        journal_filter = []
+        for j in journals_userlib:
+            if j in journals_occ_sorted:
+                journal_filter.append(j)
+        for j in journals_occ_sorted:
+            if j not in journal_filter:
+                journal_filter.append(j)
+
+        # group journals by block of size size_load_journal_filter
+        journals = []
+        for i, j in enumerate(journal_filter):
+            journals.append((j[0], j[1], journals_counter[j]))
+
+        # Author filter
+        # Retrieve stream authors data for filters
+        authors = self.original_qs\
+            .values_list('paper__authors', flat=True)\
+            .distinct()
+
+        # retrieve user lib authors and count occurence
+        authors_user_lib = self.request.user.lib.papers.all()\
+            .values_list('authors', flat=True)
+        authors_user_lib_counter = Counter(authors_user_lib)
+        authors_user_lib_pk_sorted = sorted(authors_user_lib_counter,
+                                            key=authors_user_lib_counter.get,
+                                            reverse=True)
+        authors_dict = {}
+        for auth in authors:
+            if auth in authors_user_lib_pk_sorted:
+                authors_dict[auth] = authors_user_lib_counter[auth]
+            else:
+                authors_dict[auth] = 0
+        # build the query ordered based on author occurrence in user library
+        authors_pks = sorted(authors_dict, key=authors_dict.get,
+                                 reverse=True)
+        clauses = ' '.join(['WHEN id=%s THEN %s' %
+                            (pk, i) for i, pk in enumerate(authors_pks)])
+        ordering = 'CASE %s END' % clauses
+        authors_ordered = Author.objects\
+            .filter(pk__in=authors_pks)\
+            .exclude(Q(first_name='') & Q(last_name=''))\
+            .extra(select={'ordering': ordering},
+                   order_by=('ordering',))[:self.size_max_author_filter]
+        # group authors by block identified with block tag
+        # block = 0
+        authors = []
+        for i, auth in enumerate(authors_ordered):
+            authors.append((auth.pk, auth.print_full, None))
+
+        # Set filter context
+        context['search_query'] = self.search_query
+
+        context['time_span'] = self.time_span
+
+        # build JSON object
+        filter_ = {
+            'filters': [],
+            'pin': self.like_flag,
+            'time_span': self.time_span,
+            'cluster': None,
+            'search_query': self.search_query,
+        }
+
+        # add to journal filter context if journal is checked
+        for j in journals:
+            is_checked = j[0] in self.journals_filter
+            filter_['filters'].append(
+                {
+                    'id': 'journal',
+                    'entry': {
+                        'pk': j[0],
+                        'name': j[1],
+                        'count': j[2],
+                        'is_checked': is_checked,
+                    }
+                }
+            )
+
+        # add to author filter context if author is checked
+        for a in authors:
+            is_checked = a[0] in self.authors_filter
+            filter_['filters'].append(
+                {
+                    'id': 'author',
+                    'entry': {
+                        'pk': a[0],
+                        'name': a[1],
+                        'count': a[2],
+                        'is_checked': is_checked,
+                    }
+                }
+            )
+
+        context['filter'] = json.dumps(filter_)
+
+        return context
+
+    def update_args(self):
+        """Retrieve JSON"""
+
+        get_args = self.request.GET.dict()
+
+        # What remains should be ajax args
+        if self.request.is_ajax():
+            try:
+                data = json.loads(list(get_args.keys())[0])
+                self.time_span = data.get('time_span', self.time_span)
+                self.cluster = data.get('cluster', self.cluster)
+                self.like_flag = data.get('pin', self.like_flag)
+                self.search_query = data.get('search_query', '')
+                filters_ = data.get('filters', [])
+                for filter_ in filters_:
+                    if filter_.get('id') == 'journal':
+                        self.journals_filter = filter_.get('pk')
+                    if filter_.get('id') == 'author':
+                        self.authors_filter = filter_.get('pk')
+
+            except ValueError:  # likely data from AjaxListView
+                pass
+
+    def trim_time_span(self, queryset):
+        """Trim queryset based on time span"""
+        from_date = (timezone.now() - timezone.timedelta(days=self.time_span)).date()
+        return queryset.filter(date__gt=from_date)
+
+
+class StreamView2(BasePaperListView2):
+    model = StreamMatches
+    template_name = 'feeds/feed.html'
+    page_template = 'feeds/feed_sub_page2.html'
+
+    def get_context_settings(self):
+        self.context_settings = {
+            'time_lapse': self.request.user.settings.stream_time_lapse,
+            'method': self.request.user.settings.stream_method,
+            'model': self.request.user.settings.stream_model,
+        }
+        return self.context_settings
+
+    def get_queryset(self):
+
+        # get ticked/rejected paper
+        papers_ticked = UserTaste.objects\
+            .filter(user=self.request.user,
+                    is_ticked=True)\
+            .values('paper')
+
+        self.original_qs = self.model.objects\
+            .filter(stream__name=self.kwargs.get('name', 'main'),
+                    stream__user=self.request.user)\
+            .exclude(paper__in=papers_ticked)\
+            .select_related('paper',
+                            'paper__journal')
+
+        # Retrieve get args
+        self.update_args()
+
+        # trim time span
+        self.original_qs = self.trim_time_span(self.original_qs)
+
+        # filter
+        query_set = self.filter_queryset(self.original_qs)
+
+        return query_set
+
+stream_view2 = StreamView2.as_view()
+
+
+class TrendView2(BasePaperListView2):
     """ClassView for displaying a UserFeed instance"""
     model = TrendMatches
     template_name = 'feeds/trends.html'
@@ -452,40 +651,6 @@ class TrendView2(BasePaperListView):
         query_set = self.filter_queryset(self.original_qs)
 
         return query_set
-
-    def get_context_data(self, **kwargs):
-        context = super(TrendView2, self).get_context_data(**kwargs)
-
-        # add to journal filter context if journal is checked
-        journal_filters = []
-        for j in context.get('journals'):
-            if j[0] in self.journals_filter:
-                j += (True, )
-            else:
-                j += (False, )
-            journal_filters.append(j)
-
-        # add to author filter context if author is checked
-        author_filters = []
-        for a in context.get('authors'):
-            if a[0] in self.authors_filter:
-                a += (True, )
-            else:
-                a += (False, )
-            author_filters.append(a)
-
-        filter_ = {
-            'journals_filter': journal_filters,
-            'authors_filter': author_filters,
-            'pin': self.like_flag,
-            'timespan': self.time_span,
-            'cluster': None,
-            'search_query': self.search_query,
-        }
-
-        context['filter'] = json.dumps(filter_)
-
-        return context
 
 trend_view2 = TrendView2.as_view()
 

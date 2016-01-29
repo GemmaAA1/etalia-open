@@ -109,5 +109,5 @@ function send_filter() {
         $.getScript( "https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js", function( data, textStatus, jqxhr ) {
                 console.log('load performed');
         });
-    })
+    });
 }
