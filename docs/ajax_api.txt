@@ -16,7 +16,7 @@ XHR GET:
     {
         'filters': [
             {
-                'id': (string),
+                'id': (string),         # Values: journal, author
                 'pk': [(int), ...]
             },
             ...
@@ -33,11 +33,11 @@ return: XML
             {
                 'filters': [
                     {
-                        'id': (string),
-                        'entries': [
+                        'id': (string), # Values: journal, author
+                        'entry': [
                             {
                                 'pk': (int),
-                                'title': (string),
+                                'name': (string),
                                 'count': (int|null),
                                 'is_checked': (bool)
                             },
