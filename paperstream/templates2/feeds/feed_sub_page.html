@@ -1,53 +1,16 @@
+{% spaceless %}
+
 {% load endless %}
 {% load user_taste %}
 
 {% if object_list %}
-{% paginate first_page,per_page object_list %}
+    {% paginate first_page,per_page object_list %}
 
-{% for ufmp in object_list %}
-<div class="thumb" data-id="{{ ufmp.paper.pk }}">
-    <div class="actions">
-        <a href="javascript: void(0)" class="thumb-pin {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}">
-            <span class="eai eai-pin"></span>
-        </a>
-        <a href="javascript: void(0)" class="thumb-remove {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}">
-            <span class="eai eai-remove"></span>
-        </a>
-    </div>
-    <div class="card">
-        <p class="title">
-            <a href="{% url 'library:paper' ufmp.paper.pk %}">{{ ufmp.paper.title }}</a>
-        </p>
-        <p class="authors">
-            {{ ufmp.paper.print_full_authors|truncatechars:70 }}
-            {# <strong>Larry S Davis</strong>, <strong>Vlad I Morariu</strong>, Bharat Singh, Xintong Han" #}
-        </p>
-        <p class="journal">
-            {{ ufmp.paper.print_journal_title }}
-            {# The New England journal of medicine #}
-        </p>
-        <p class="date">
-            {{ ufmp.paper.print_first_seen }}
-            {# Sept 25, 2015 #}
-        </p>
-        <p class="icons">
-            <span class="cluster-icon">
-                <span class="cluster-0"></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </span>
-            <span class="metric">
-                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
-            </span>
-            <span class="comment">
-                <span class="count">16</span>
-                <span class="eai eai-comment"></span>
-            </span>
-        </p>
-    </div>
-</div>
-{% endfor %}
+    {% for ufmp in object_list %}
+        {% include 'feeds/feed_thumb.html' with paper=ufmp.paper %}
+    {% endfor %}
 
-{% show_more %}
+    {% show_more %}
 {% endif %}
+
+{% endspaceless %}

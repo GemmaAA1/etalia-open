@@ -1,0 +1,41 @@
+{% spaceless %}
+<div class="thumb" data-id="{{ paper.pk }}">
+    <div class="actions">
+        <a href="javascript: void(0)" class="thumb-pin {% if user_taste|get_is_liked:paper.pk %} active {% endif %}">
+            <span class="eai eai-pin"></span>
+        </a>
+        <a href="javascript: void(0)" class="thumb-remove {% if user_taste|get_is_ticked:paper.pk %} active {% endif %}">
+            <span class="eai eai-remove"></span>
+        </a>
+    </div>
+    <div class="card">
+        <p class="title">
+            <a href="{% url 'library:paper' paper.pk %}">{{ paper.title }}</a>
+        </p>
+        <p class="authors">
+            {{ paper.print_full_authors|truncatechars:70 }}
+        </p>
+        <p class="journal">
+            {{ paper.print_journal_title }}
+        </p>
+        <p class="date">
+            {{ paper.print_first_seen }}
+        </p>
+        <p class="icons">
+            <span class="cluster-icon">
+                <span class="cluster-0"></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+            <span class="metric">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
+            </span>
+            <span class="comment">
+                <span class="count">16</span>
+                <span class="eai eai-comment"></span>
+            </span>
+        </p>
+    </div>
+</div>
+{% endspaceless %}

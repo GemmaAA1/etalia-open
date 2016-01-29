@@ -1,10 +1,11 @@
 {% extends "root.html" %}
 
+
 {% load staticfiles %}
 
 
 {% block body %}
-
+{% endspaceless %}
 <div id="hero" class="wrap-container">
     <div class="container">
         <div class="row">
@@ -210,11 +211,13 @@
         <p>&copy; 2015 etalia All rights reserved.</p>
     </div>
 </div>
-
+{% endspaceless %}
 {% endblock body %}
 
 
 {% block stylesheets %}
+{% spaceless %}
     {{ block.super }}
     <link href="{% static 'tmp/css/app/landing.css' %}" rel="stylesheet" type="text/css">
+{% endspaceless %}
 {% endblock stylesheets %}

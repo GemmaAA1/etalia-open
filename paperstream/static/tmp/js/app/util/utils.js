@@ -30,7 +30,15 @@ define(['jquery'], function($) {
     });
 
     return {
-        toggleClass: function($element, cssClass) {
+        toggleClass: function($element, cssClass, state) {
+            if (typeof state != 'undefined') {
+                if (state) {
+                    $element.addClass(cssClass);
+                } else {
+                    $element.removeClass(cssClass);
+                }
+                return state;
+            }
             if ($element.hasClass(cssClass)) {
                 $element.removeClass(cssClass);
                 return false;

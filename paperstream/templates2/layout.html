@@ -1,10 +1,11 @@
 {% extends 'root.html' %}
 
+
 {% load staticfiles %}
 
 
 {% block body %}
-
+{% spaceless %}
     {% block content %}{% endblock content %}
 
     <!-- start top-bar -->
@@ -48,15 +49,17 @@
     {% block left-flap %}{% endblock left-flap %}
 
     {% block right-flap %}{% endblock right-flap %}
-
+{% endspaceless %}
 {% endblock body %}
 
 
 {% block javascript %}
+{% spaceless %}
     <script src="{% static 'tmp/js/require.js' %}"></script>
     <script>
         requirejs(['{% static "tmp/js/common.js" %}'], function () {
             requirejs(['app/default']);
         });
     </script>
+{% endspaceless %}
 {% endblock javascript %}

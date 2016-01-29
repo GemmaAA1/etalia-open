@@ -5,6 +5,7 @@
 
 
 {% block top-bar_controls %}
+{% spaceless %}
 <div class="wrap">
 
     <button id="toggle-pinned" class="btn-circle" type="button">
@@ -13,13 +14,13 @@
 
     <div id="cluster" class="selector">
         <button id="toggle-cluster" class="btn-circle" type="button">
-            <span id="cluster-selection" class="cluster-value"></span>
-                <span class="cluster-icon">
-                    <span class="cluster-0"></span>
-                    <span class="cluster-1"></span>
-                    <span class="cluster-2"></span>
-                    <span class="cluster-3"></span>
-                </span>
+            <span id="cluster-selection" class="cluster-value" data-value="none"></span>
+            <span class="cluster-icon">
+                <span class="cluster-0"></span>
+                <span class="cluster-1"></span>
+                <span class="cluster-2"></span>
+                <span class="cluster-3"></span>
+            </span>
         </button>
         <div class="choices">
             <ul>
@@ -52,7 +53,7 @@
     <div id="timespan" class="selector">
         <button id="toggle-timespan" class="btn-circle" type="button">
             <span class="eai eai-clock"></span>
-            <span id="timespan-selection" class="timespan-value">1m</span>
+            <span id="timespan-selection" class="timespan-value" data-value="{{ time_span }}">1m</span>
         </button>
         <div class="choices">
             <ul>
@@ -94,6 +95,7 @@
     </div>
 
 </div>
+{% endspaceless %}
 {% endblock top-bar_controls %}
 
 
