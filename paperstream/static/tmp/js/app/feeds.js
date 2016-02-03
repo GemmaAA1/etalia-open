@@ -1,6 +1,6 @@
 define(
-    ['jquery', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'endless', 'bootstrap'],
-    function($, Detail, Layout, Util) {
+    ['jquery', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
+    function($, Detail, Layout, Util, Templates) {
 
     var detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
@@ -8,26 +8,27 @@ define(
         loadThumbsXhr;
 
     function selectCluster(selection) {
-        //if (selection == 0 || selection == 'none') {
-        //    selection = 0;
-        //} else {
         selection = parseInt(selection);
-        //}
 
+        // Unselect current
         $clusterSelection.removeClass('cluster-' + selectedCluster);
-        selectedCluster = selection;
-        if (selectedCluster == 0) {
+
+        // Select 'none'
+        if (selection == 0) {
             $clusterSelection.hide();
             $toggleCluster.find('.cluster-icon').show();
+        // Select color
         } else if (0 < selection && selection <= 4) {
             $clusterSelection
                 .css({display: 'inline-block'})
-                .addClass('cluster-' + selectedCluster);
+                .addClass('cluster-' + (selectedCluster - 1));
             $toggleCluster.find('.cluster-icon').hide();
         } else {
             throw 'Unexpected cluster selection';
         }
+        // Store value
         $clusterSelection.data('value', selection);
+        selectedCluster = selection;
     }
 
     function selectTimespan(selection) {
@@ -38,17 +39,13 @@ define(
                 case 60 : return '2m';
             }
             throw 'Unexpected timespan selection';
-        })(selection);
+        })(parseInt(selection));
 
         $timespanSelection.html(value).data('value', selection);
     }
 
     function getControlsStates() {
-        var cluster = $clusterSelection.data('value'),
-            filters = [];
-
-        //cluster = parseInt(cluster);
-
+        var filters = [];
         $('.filter-group').each(function() {
             var $group = $(this),
                 values = [];
@@ -62,17 +59,30 @@ define(
 
         return {
             time_span: parseInt($timespanSelection.data('value')),
-            cluster: 0,
+            cluster: parseInt($clusterSelection.data('value')),
             pin: ($('#toggle-pinned').hasClass('active')),
-            search_query: null, //$('#search-input').val(),
+            search_query: $('#search-input').val(),
             filters: filters
         };
+    }
+
+    function updateFiltersVisibility($group) {
+        var $filters = $group.find('ul a'),
+            index = $group.data('gt-index') || 10;
+        if (index > $filters.length) {
+            $filters.show();
+            $group.find('.filter-more').hide();
+        } else {
+            $filters.filter(':lt(' + index + ')').show();
+            $filters.filter(':gt(' + index + ')').hide();
+            $group.find('.filter-more').show();
+        }
     }
 
     function updateControlsStates(data) {
         // Cluster
         if (data.hasOwnProperty('cluster')) {
-            selectCluster(data['cluster'])
+            selectCluster(data['cluster'] || 0); // TODO remove 'or zero' (check server side)
         }
         // Time span
         if (data.hasOwnProperty('time_span')) {
@@ -88,10 +98,17 @@ define(
         }
         // Filters
         if (data.hasOwnProperty('filters')) {
-            $(data['filters']).each(function (i, filter) {
-                // TODO
-            });
+            $('#filter-flap').html(Templates.filters.render({groups: data['filters']}));
         }
+
+        $('.filter-group').each(function(i, group) {
+            var $group = $(group);
+            if (i == 0) {
+                $group.find('.filter-toggle').addClass('active');
+                $group.find('.filter-filters').addClass('in');
+            }
+            updateFiltersVisibility($group);
+        });
     }
 
     function loadThumbs() {
@@ -134,18 +151,15 @@ define(
         $toggleTimespan = $('#toggle-timespan');
         $timespanSelection = $('#timespan-selection');
 
-        // Toggle pinned
-        $togglePinned.on('click', function(e) {
-            Util.toggleClass($(e.delegateTarget), 'active');
-            loadThumbs();
-        });
 
-        // Toggle search bar
+        /** ---------------------------------------------------------------------------------------------
+         *  SEARCH BAR
+         */
         $('#toggle-search, #close-search').on('click', function() {
             Util.toggleClass($search, 'opened');
         });
 
-        // Search bar active
+        var searchKeyUpTimeout;
         $('#search-input')
             .on('focus', function(e) {
                 e.stopPropagation();
@@ -154,23 +168,39 @@ define(
             .on('blur', function(e) {
                 e.stopPropagation();
                 $(e.delegateTarget).parents('form').removeClass('active');
+            })
+            .on('keyup', function(e) {
+                if (searchKeyUpTimeout) {
+                    clearTimeout(searchKeyUpTimeout);
+                }
+                var code = e.keyCode || e.which;
+                if (code == 13) { // Enter pressed
+                    loadThumbs();
+                } else {
+                    searchKeyUpTimeout = setTimeout(function() {
+                        loadThumbs();
+                    }, 1000);
+                }
             });
 
-        // Toggle selector
+
+        /** ---------------------------------------------------------------------------------------------
+         *  SELECTORS
+         */
         $('.selector button').on('click', function(e) {
             //e.stopPropagation();
             var $selector = $(e.target).parents('.selector').eq(0);
             Util.toggleClass($selector, 'opened');
         });
 
-        // Cluster selection
+        // Cluster
         $('#cluster').on('click', '.choices .cluster-value', function(e) {
             selectCluster($(e.target).closest('.cluster-value').data('cluster'));
             $toggleCluster.trigger('click');
             loadThumbs();
         });
 
-        // Timespan selection
+        // Timespan
         $('#timespan').on('click', '.choices a', function(e) {
             selectTimespan($(e.target).closest('a').data('timespan'));
             $toggleTimespan.trigger('click');
@@ -184,24 +214,42 @@ define(
             }
         });
 
+        // Toggle pinned
+        $togglePinned.on('click', function(e) {
+            Util.toggleClass($(e.delegateTarget), 'active');
+            loadThumbs();
+        });
 
-        // Filters
+
+        /** ---------------------------------------------------------------------------------------------
+         *  FILTERS
+         */
         $('#filter-flap')
             .on('click', '.filter-toggle', function(e) {
                 var $group = $(e.target).parents('.filter-group').eq(0);
                 if (Util.toggleClass($group, 'active')) {
                     $group.find('.filter-filters').collapse('show');
                 } else {
-                    $group.find('.filter-filters').collapse('hide');
+                    $group.data('gt-index', 10)
+                        .find('.filter-filters').collapse('hide');
+                    updateFiltersVisibility($group);
                 }
             })
             .on('click', '.filter-group ul a', function(e) {
                 Util.toggleClass($(e.target), 'active');
                 loadThumbs();
+            })
+            .on('click', '.filter-more', function(e) {
+                var $group = $(e.target).closest('.filter-group');
+                var index = $group.data('gt-index') || 10;
+                $group.data('gt-index', index + 10);
+                updateFiltersVisibility($group);
             });
 
 
-        // Thumbs
+        /** ---------------------------------------------------------------------------------------------
+         *  THUMBS
+         */
         $('#list, #detail')
             .on('click', '.thumb-pin', function(e) {
                 e.stopPropagation();
@@ -254,7 +302,9 @@ define(
         });
 
 
-        // Detail
+        /** ---------------------------------------------------------------------------------------------
+         *  DETAIL
+         */
         detail = new Detail();
         $(detail)
             .on('etalia.detail.loading', function() {

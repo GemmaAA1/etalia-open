@@ -329,10 +329,14 @@
 }
 
 .filter-group ul a {
+    position: relative;
     display: block;
-    padding: 8px 0;
+    padding: 8px 24px 8px 0;
     line-height: 14px;
     color: #313233;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .filter-checkbox {
@@ -367,7 +371,8 @@
 }
 
 .filter-count {
-    float: right;
+    position: absolute;
+    right: 0;
     color: #7a7d80;
 }
 
@@ -461,11 +466,6 @@
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px) {
-
-    #toggle-filter {
-        z-index: 12;
-    }
-
     #toggle-search, #close-search {
         display: none;
     }

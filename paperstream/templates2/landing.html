@@ -4,8 +4,11 @@
 {% load staticfiles %}
 
 
+{% block title %}{{ block.super }} - Your Guide to Scientific News{% endblock %}
+
+
 {% block body %}
-{% endspaceless %}
+{% spaceless %}
 <div id="hero" class="wrap-container">
     <div class="container">
         <div class="row">

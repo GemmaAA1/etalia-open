@@ -1,24 +1,27 @@
 {% spaceless %}
+
+{% load navbar_extra %}
+
 <!-- start nav-flap -->
 <div id="nav-flap" class="flap left">
     <ul id="main-nav">
-        <li>
+        <li class="{% active request 'feed/stream.+' %}">
             <a href="{% url 'feeds:stream' %}">My news</a>
         </li>
-        <li class="active">
+        <li class="{% active request 'feed/trend.+' %}">
             <a href="{% url 'feeds:trend' %}">Top news</a>
         </li>
-        <li>
+        <li class="{% active request 'user/library.+' %}">
             <a href="{% url 'user:library' %}">Library</a>
         </li>
         <li class="separator"></li>
-        <li>
+        <li class="{% active request 'user/settings.+' %}">
             <a href="{% url 'user:settings' %}">Settings</a>
         </li>
-        <li>
+        <li class="{% active request 'stats.+' %}">
             <a href="javascript: void(0)">Stats</a>
         </li>
-        <li>
+        <li class="{% active request 'help.+' %}">
             <a href="{% url 'core:help' %}">Help</a>
         </li>
     </ul>

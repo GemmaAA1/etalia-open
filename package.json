@@ -1,0 +1,11 @@
+{
+  "name": "etalia",
+  "version": "1.0.0",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "hogan.js": "^3.0.2",
+    "gulp": "^3.9.0",
+    "gulp-hogan-compile": "^0.4.1"
+  }
+}

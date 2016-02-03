@@ -1,0 +1,24 @@
+{% extends 'user/base.html' %}
+
+{% load staticfiles %}
+
+
+{% block title %}{{ block.super }} - Profile{% endblock %}
+
+
+{% block content %}
+<div id="user-confirm-delete" class="document">
+    <div class="wrapper">
+        <div class="inner">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 text-center">
+                    <form action="" method="post">{% csrf_token %}
+                        <p>Are you sure you want to delete "{{ object }}"?</p>
+                        <input class="btn btn-danger" type="submit" value="Confirm" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
