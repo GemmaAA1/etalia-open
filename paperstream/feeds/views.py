@@ -553,24 +553,25 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
     def update_args(self):
         """Retrieve JSON"""
 
-        data = json.loads(self.request.GET.dict().get('data'))
+        if self.request.GET.dict().get('data'):
+            data = json.loads(self.request.GET.dict().get('data'))
 
-        # What remains should be ajax args
-        if self.request.is_ajax():
-            try:
-                self.time_span = int(data.get('time_span', self.time_span))
-                self.cluster = int(data.get('cluster', self.cluster))
-                self.like_flag = data.get('pin', self.like_flag)
-                self.search_query = data.get('search_query', '')
-                filters_ = data.get('filters', [])
-                for filter_ in filters_:
-                    if filter_.get('id') == 'journal':
-                        self.journals_filter = filter_.get('pk')
-                    if filter_.get('id') == 'author':
-                        self.authors_filter = filter_.get('pk')
+            # What remains should be ajax args
+            if self.request.is_ajax():
+                try:
+                    self.time_span = int(data.get('time_span', self.time_span))
+                    self.cluster = int(data.get('cluster', self.cluster))
+                    self.like_flag = data.get('pin', self.like_flag)
+                    self.search_query = data.get('search_query', '')
+                    filters_ = data.get('filters', [])
+                    for filter_ in filters_:
+                        if filter_.get('id') == 'journal':
+                            self.journals_filter = filter_.get('pk')
+                        if filter_.get('id') == 'author':
+                            self.authors_filter = filter_.get('pk')
 
-            except ValueError:  # likely data from AjaxListView
-                pass
+                except ValueError:  # likely data from AjaxListView
+                    pass
 
     def trim_time_span(self, queryset):
         """Trim queryset based on time span"""
