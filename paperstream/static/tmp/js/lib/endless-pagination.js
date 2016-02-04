@@ -39,6 +39,7 @@ define(['jquery'], function($) {
 
             // Twitter-style pagination.
             element.on('click', settings.moreSelector, function () {
+                console.log($(this));
                 var link = $(this),
                     html_link = link.get(0),
                     container = link.closest(settings.containerSelector),
@@ -52,7 +53,12 @@ define(['jquery'], function($) {
                 var context = getContext(link);
                 // Fire onClick callback.
                 if (settings.onClick.apply(html_link, [context]) !== false) {
-                    var data = 'querystring_key=' + context.key;
+                    //var data = 'querystring_key=' + context.key;
+                    var data = {
+                        'querystring_key': context.key,
+                        'data': context.extraData
+                    };
+                    context.url = context.url + '?page=' + loadedPages;
                     // Send the Ajax request.
                     $.get(context.url, data, function (fragment) {
                         container.before(fragment);

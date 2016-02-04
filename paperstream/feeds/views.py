@@ -579,10 +579,9 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         return queryset.filter(date__gt=from_date)
 
 
-class StreamView2(BasePaperListView2):
+class BaseStreamView2(BasePaperListView2):
     model = StreamMatches
     template_name = 'feeds/feed.html'
-    page_template = 'feeds/feed_sub_page.html'
 
     def get_context_settings(self):
         self.context_settings = {
@@ -617,57 +616,23 @@ class StreamView2(BasePaperListView2):
         query_set = self.filter_queryset(self.original_qs)
 
         return query_set
+
+
+class StreamView2(BaseStreamView2):
+    page_template = 'feeds/feed_sub_page.html'
 
 stream_view2 = StreamView2.as_view()
 
 
-class StreamView2Filter(BasePaperListView2):
-    model = StreamMatches
-    template_name = 'feeds/feed.html'
+class StreamView2Filter(BaseStreamView2):
     page_template = 'feeds/feed_sub_page2.html'
-
-    def get_context_settings(self):
-        self.context_settings = {
-            'time_lapse': self.request.user.settings.stream_time_lapse,
-            'method': self.request.user.settings.stream_method,
-            'model': self.request.user.settings.stream_model,
-        }
-        return self.context_settings
-
-    def get_queryset(self):
-
-        # get ticked/rejected paper
-        papers_ticked = UserTaste.objects\
-            .filter(user=self.request.user,
-                    is_ticked=True)\
-            .values('paper')
-
-        self.original_qs = self.model.objects\
-            .filter(stream__name=self.kwargs.get('name', 'main'),
-                    stream__user=self.request.user)\
-            .exclude(paper__in=papers_ticked)\
-            .select_related('paper',
-                            'paper__journal')
-
-        # Retrieve get args
-        self.update_args()
-
-        # trim time span
-        self.original_qs = self.trim_time_span(self.original_qs)
-
-        # filter
-        query_set = self.filter_queryset(self.original_qs)
-
-        return query_set
 
 stream_view2_filter = StreamView2Filter.as_view()
 
 
-class TrendView2(BasePaperListView2):
-    """ClassView for displaying a UserFeed instance"""
+class BaseTrendView2(BasePaperListView2):
     model = TrendMatches
     template_name = 'feeds/trends.html'
-    page_template = 'feeds/trends_sub_page2.html'
 
     def get_context_settings(self):
         self.context_settings = {
@@ -703,7 +668,17 @@ class TrendView2(BasePaperListView2):
 
         return query_set
 
+
+class TrendView2(BasePaperListView2):
+    page_template = 'feeds/trends_sub_page.html'
+
 trend_view2 = TrendView2.as_view()
+
+
+class TrendView2Filter(BasePaperListView2):
+    page_template = 'feeds/trends_sub_page2.html'
+
+trend_view2_filter = TrendView2Filter.as_view()
 
 
 class CreateFeedView(LoginRequiredMixin, AjaxableResponseMixin, CreateView):

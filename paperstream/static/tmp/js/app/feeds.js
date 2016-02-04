@@ -298,7 +298,13 @@ define(
         // Endless scroll
         $.endlessPaginate({
             paginateOnScroll: true,
-            paginateOnScrollMargin: 10
+            paginateOnScrollMargin: 10,
+            onClick: function (context) {
+                context.extraData = JSON.stringify(getControlsStates());
+                context.url = window.location.href;
+            },
+            onCompleted: function (fragment) {
+            }
         });
 
 
