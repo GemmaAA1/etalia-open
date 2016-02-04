@@ -16,7 +16,7 @@
                     <a href="javascript: void(0)" data-id="{{ jpk }}" title="{{ jtitle }}"
                        {% if jtitle|lower in journals_filter %} class="active" {% endif %}>
                         <span class="filter-count">({{ count }})</span>
-                        <span class="filter-checkbox"></span> {{ jtitle|truncatechars:20 }}
+                        <span class="filter-checkbox"></span> {{ jtitle }}
                     </a>
                 </li>
                 {% endfor %}
@@ -38,7 +38,7 @@
                 <li{% if forloop.counter0 > 10 and not auth.pk in authors_filter %} style="display:none;"{% endif %}>
                     <a href="javascript: void(0)" data-id="{{ auth.pk }}" title="{{ author_full_name }}"
                        {% if auth.pk in authors_filter %} class="active" {% endif %}>
-                        <span class="filter-checkbox"></span> {{ author_full_name|truncatechars:27 }}
+                        <span class="filter-checkbox"></span> {{ author_full_name }}
                     </a>
                 </li>
                 {% endfor %}

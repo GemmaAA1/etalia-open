@@ -1,9 +1,11 @@
 define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
 
     function submitForm(e) {
+        e.preventDefault();
+
         var $form = $(this),
-            $data = $($form.attr('data-target')),
-            $rootModal = $($form.attr('root-modal'));
+            $data = $($form.data('target')),
+            $modal = $($form.data('root'));
 
         //console.log('form submitted!');
         $.ajax({
@@ -12,16 +14,18 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
             data: $form.serialize(),
 
             success: function (json) {
-                $('#id_errors').empty();
+                $form.find('.form-errors').empty();
+
                 // if all fields are empty switch to empty span else populate data
                 // modal fields
                 var all_fields_length = 0;
                 $.each(json, function (key, value) {
                     all_fields_length += value.length;
                 });
-                console.log(all_fields_length);
+                //console.log(all_fields_length);
+
                 if (all_fields_length == 0) {
-                    console.log($data.find('.has-value'));
+                    //console.log($data.find('.has-value'));
                     $data.find('.has-value')
                         .addClass('hidden')
                         .siblings('.has-no-value')
@@ -31,6 +35,7 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
                         .removeClass('hidden')
                         .siblings('.has-no-value')
                         .addClass('hidden');
+
                     $.each(json, function (key, value) {
                         var $field = $('input[name=' + key + ']');
                         $field.val(value);
@@ -38,27 +43,36 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
                         $('#' + key).html(value);
                     });
                 }
-                $rootModal.modal('hide');
+                $modal.modal('hide');
+
                 //redirect if key exists
-                if(json.hasOwnProperty('redirect')) {
-                    $(location).attr('href', json.redirect);
+                if (json.hasOwnProperty('redirect')) {
+                    window.location.href = json['redirect'];
                 }
             },
 
             error: function (resp) {
-                console.log(resp.responseText);
-                $('#id_errors').empty();
-                var res = JSON.parse(resp.responseText);
+                //console.log(resp.responseText);
+
+                $form.find('.form-errors').empty();
                 $('input').removeClass("alert alert-danger");
+
+                var res = JSON.parse(resp.responseText);
                 $.each(res, function (key, value) {
-                    console.log(key + ': ' + value);
+                    //console.log(key + ': ' + value);
+
                     $('input[name=' + key + ']').addClass("alert alert-danger");
-                    $('#id_errors').prepend('<div class="alert alert-danger" role="alert"> <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>' + value + ' </div>');
+
+                    $form.find('.form-errors').prepend(
+                        '<div class="alert alert-danger" role="alert">' +
+                            '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>' +
+                            value +
+                        '</div>'
+                    );
                 });
             }
         });
 
-        e.preventDefault();
         return false;
     }
 

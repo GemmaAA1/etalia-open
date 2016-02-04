@@ -5,8 +5,8 @@ define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($, layout
         var $data = $($form.attr('data-target'));
         var $rootModal = $($form.attr('root-modal'));
 
-        console.log('form submitted!');
-        console.log($data);
+        //console.log('form submitted!');
+        //console.log($data);
 
         $.ajax({
             type: $form.attr('method'),
@@ -27,7 +27,7 @@ define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($, layout
                 })
             },
             error: function (resp) {
-                console.log(resp.responseText);
+                //console.log(resp.responseText);
                 $('#id_errors').empty();
                 var res = JSON.parse(resp.responseText);
                 $('input').removeClass("alert alert-danger");
@@ -93,16 +93,55 @@ define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($, layout
         });
     }
 
+
+    function asyncUserUpdate(url) {
+        var statusInterval,
+            initXhr;
+
+        layout.setBusy();
+
+        initXhr = $.ajax(url);
+        initXhr.done(function() {
+            statusInterval = setInterval(function() {
+                $.getJSON('/user/user-update-step', function (data) {
+                    if (data.done) {
+                        clearInterval(statusInterval);
+                        if (data.hasOwnProperty('redirect')) {
+                            window.location.href = data['redirect'];
+                            return;
+                        }
+                        layout.setAvailable();
+                    } else {
+                        // TODO improve response json format ...
+                        layout.setBusy(
+                            '<p><strong>' + data.messages[0] + '</strong></p>' +
+                            '<p>' + data.messages[1] + '</p>'
+                        );
+                    }
+                });
+            }, 1000);
+        });
+        initXhr.fail(function(data) {
+            // TODO improve response json format, return last update date
+            var res = JSON.parse(data.responseText);
+            $.each(res, function (key, value) {
+                $('#errors').html(value);
+            });
+            layout.setAvailable();
+        });
+    }
+
+
     $(function() {
-        // ASync form submission
+        // Async form submission
         $('form[data-async]').on('submit', submitForm);
 
         // Jquery UI Sliders
         initSliders();
 
-
-        $('#update-stream').on('click', function() {
-            layout.setBusy('<p>Test message</p>');
+        // Update and sync buttons
+        $('#update-lib, #update-stream, #update-trend').on('click', function() {
+            asyncUserUpdate($(this).attr('action'));
         });
     });
 });
