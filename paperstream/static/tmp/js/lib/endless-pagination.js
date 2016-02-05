@@ -1,4 +1,4 @@
-define(['jquery'], function($) {
+define(['jquery', 'app/util/utils'], function($, Util) {
     $.fn.endlessPaginate = function (options) {
         var defaults = {
                 // Twitter-style pagination container selector.
@@ -39,7 +39,6 @@ define(['jquery'], function($) {
 
             // Twitter-style pagination.
             element.on('click', settings.moreSelector, function () {
-                console.log($(this));
                 var link = $(this),
                     html_link = link.get(0),
                     container = link.closest(settings.containerSelector),
@@ -56,11 +55,12 @@ define(['jquery'], function($) {
                     //var data = 'querystring_key=' + context.key;
                     var data = {
                         'querystring_key': context.key,
-                        'data': context.extraData
+                        'data': context.extraData,
+                        'page': Util.getParameterByName('page', context.url)
                     };
-                    context.url = context.url + '?page=' + loadedPages;
+
                     // Send the Ajax request.
-                    $.get(context.url, data, function (fragment) {
+                    $.get(context.urlOrigin, data, function (fragment) {
                         container.before(fragment);
                         container.remove();
                         // Increase the number of loaded pages.

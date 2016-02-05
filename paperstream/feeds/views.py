@@ -348,6 +348,7 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
     size_max_author_filter = 40
     size_load_author_filter = 10
     original_qs = None
+    return_filter = True
 
     def __init__(self, *args, **kwargs):
         super(BasePaperListView2, self).__init__(*args, **kwargs)
@@ -358,6 +359,7 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         self.context_settings = None
         self.search_query = ''
         self.cluster = None
+        self.endless_only = False
 
     def get_context_settings(self):
         raise NotImplemented
@@ -425,7 +427,15 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         context['user_lib'] = self.request.user.lib.papers.all()\
             .values_list('pk', flat=True)
 
-        # BUILD FILTERS
+        if self.return_filter:
+            context = dict(context, **self.get_context_filter())
+
+        return context
+
+    def get_context_filter(self):
+        """Build context filter"""
+        context = {}
+
         # Journal filter
         # Retrieve stream journal data for filters
         journals = self.original_qs\
@@ -551,13 +561,11 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
         return context
 
     def update_args(self):
-        """Retrieve JSON"""
+        """Get ajax args"""
 
-        if self.request.GET.dict().get('data'):
-            data = json.loads(self.request.GET.dict().get('data'))
-
-            # What remains should be ajax args
-            if self.request.is_ajax():
+        if self.request.is_ajax():
+            if self.request.GET.dict().get('data'):
+                data = json.loads(self.request.GET.dict().get('data'))
                 try:
                     self.time_span = int(data.get('time_span', self.time_span))
                     self.cluster = int(data.get('cluster', self.cluster))
@@ -570,7 +578,7 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
                         if filter_.get('id') == 'author':
                             self.authors_filter = filter_.get('pk')
 
-                except ValueError:  # likely data from AjaxListView
+                except ValueError:
                     pass
 
     def trim_time_span(self, queryset):
@@ -620,6 +628,11 @@ class BaseStreamView2(BasePaperListView2):
 
 class StreamView2(BaseStreamView2):
     page_template = 'feeds/feed_sub_page.html'
+
+    def update_args(self):
+        if self.request.GET.dict().get('querystring_key'):  # endless scrolling
+            self.return_filter = False
+        super(StreamView2, self).update_args()
 
 stream_view2 = StreamView2.as_view()
 

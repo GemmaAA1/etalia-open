@@ -301,9 +301,7 @@ define(
             paginateOnScrollMargin: 10,
             onClick: function (context) {
                 context.extraData = JSON.stringify(getControlsStates());
-                context.url = window.location.href;
-            },
-            onCompleted: function (fragment) {
+                context.urlOrigin = window.location.href;
             }
         });
 
