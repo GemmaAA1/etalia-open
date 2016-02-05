@@ -649,7 +649,7 @@ stream_view2_filter = StreamView2Filter.as_view()
 
 class BaseTrendView2(BasePaperListView2):
     model = TrendMatches
-    template_name = 'feeds/trends.html'
+    template_name = 'feeds/feed.html'
 
     def get_context_settings(self):
         self.context_settings = {
@@ -686,14 +686,14 @@ class BaseTrendView2(BasePaperListView2):
         return query_set
 
 
-class TrendView2(BasePaperListView2):
-    page_template = 'feeds/trends_sub_page.html'
+class TrendView2(BaseTrendView2):
+    page_template = 'feeds/feed_sub_page.html'
 
 trend_view2 = TrendView2.as_view()
 
 
-class TrendView2Filter(BasePaperListView2):
-    page_template = 'feeds/trends_sub_page2.html'
+class TrendView2Filter(BaseTrendView2):
+    page_template = 'feeds/feed_sub_page2.html'
 
 trend_view2_filter = TrendView2Filter.as_view()
 
