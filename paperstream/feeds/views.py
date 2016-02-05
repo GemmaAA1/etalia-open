@@ -396,13 +396,17 @@ class BasePaperListView2(LoginRequiredMixin, AjaxListView):
 
         # search query
         if self.search_query:
-            # return a filtered queryset
-            queryset = queryset.filter(Q(paper__title__icontains=self.search_query) |
-                                   Q(paper__abstract__icontains=self.search_query) |
-                                   Q(paper__journal__title__icontains=self.search_query) |
-                                   Q(paper__authors__last_name__icontains=self.search_query) |
-                                   Q(paper__authors__first_name__icontains=self.search_query))\
-                .distinct()
+            subset = []
+            for word in self.search_query.split():
+                subset.append(Q(paper__title__icontains=word) |
+                              Q(paper__abstract__icontains=word) |
+                              Q(paper__journal__title__icontains=word) |
+                              Q(paper__authors__last_name__icontains=word) |
+                              Q(paper__authors__first_name__icontains=word))
+            if subset:
+                queryset = queryset\
+                    .filter(reduce(operator.and_, subset))\
+                    .distinct()
 
         return queryset
 
