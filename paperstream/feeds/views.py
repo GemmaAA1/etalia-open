@@ -90,7 +90,7 @@ class BaseStreamView(FeedPaperListView):
 class StreamView(BaseStreamView):
     page_template = 'feeds/feed_sub_page.html'
 
-stream_view = StreamView.as_view()
+stream = StreamView.as_view()
 
 
 class StreamViewXML(BaseStreamView):
@@ -101,7 +101,7 @@ class StreamViewXML(BaseStreamView):
         context.update(self.get_context_filter_json(context))
         return context
 
-stream_view_xml = StreamViewXML.as_view()
+stream_xml = StreamViewXML.as_view()
 
 
 class BaseTrendView(FeedPaperListView):
@@ -119,7 +119,7 @@ class BaseTrendView(FeedPaperListView):
 class TrendView(BaseTrendView):
     page_template = 'feeds/feed_sub_page.html'
 
-trend_view = TrendView.as_view()
+trend = TrendView.as_view()
 
 
 class TrendViewXML(BaseTrendView):
@@ -130,7 +130,7 @@ class TrendViewXML(BaseTrendView):
         context.update(self.get_context_filter_json(context))
         return context
 
-trend_view_xml = TrendViewXML.as_view()
+trend_xml = TrendViewXML.as_view()
 
 
 @login_required
