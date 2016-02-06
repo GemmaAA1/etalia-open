@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import operator
-import json
-from functools import reduce
 import logging
-from collections import Counter
 
 
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView, DetailView
 from django.views.generic.edit import DeleteView
@@ -19,26 +14,21 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models.functions import Coalesce
-from django.template.loader import render_to_string, get_template
-from django.core.mail import EmailMessage
+from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 
 from braces.views import LoginRequiredMixin
 
-from endless_pagination.views import AjaxListView
-
-from paperstream.feeds.views import BasePaperListView
-from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
-from paperstream.library.models import Paper, Author
+from paperstream.feeds.views import BasePaperListView, BasePaperListView
+from paperstream.core.mixins import AjaxableResponseMixin
+from paperstream.library.models import Paper
 
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
     UserEmailDigestSettingsForm
-from .models import Affiliation, UserLibPaper, UserTaste, LibraryLayout, \
-    UserSettings
+from .models import Affiliation, UserLibPaper, UserTaste, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
 
@@ -202,6 +192,55 @@ class UserLibraryView(BasePaperListView):
         return context
 
 library = UserLibraryView.as_view()
+
+
+class BaseUserLibraryView2(BasePaperListView):
+    model = UserLibPaper
+    template_name = 'user/user_library.html'
+
+    def get_queryset(self):
+
+        self.original_qs = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib,
+                    is_trashed=False)
+        return self.filter_queryset(self.original_qs)
+
+    def get_context_data(self, **kwargs):
+        context = super(BaseUserLibraryView2, self).get_context_data(**kwargs)
+
+        # Trash counter
+        context['trash_counter'] = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib, is_trashed=True)\
+            .count()
+
+        # Like counter
+        context['likes_counter'] = UserTaste.objects\
+            .filter(user=self.request.user, is_liked=True)\
+            .count()
+
+        # library counter
+        context['library_counter'] = UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib, is_trashed=False)\
+            .count()
+
+        return context
+
+
+class UserLibraryView2(BaseUserLibraryView2):
+    page_template = 'user/user_library_sub_page.html'
+
+    def update_args(self):
+        if self.request.GET.dict().get('querystring_key'):  # endless scrolling
+            self.return_filter = False
+        super(UserLibraryView2, self).update_args()
+
+library_view2 = UserLibraryView2.as_view()
+
+
+class UserLibraryView2Filter(BaseUserLibraryView2):
+    page_template = 'feeds/user_library_sub_page2.html'
+
+library_view2_filter = UserLibraryView2Filter.as_view()
 
 
 class UserLibraryTrashView(UserLibraryView):

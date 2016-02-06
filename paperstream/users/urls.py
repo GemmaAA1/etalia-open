@@ -16,6 +16,8 @@ urlpatterns = [
     url(r'^send-invite$', views.send_invite, name='send-invite'),
     url(r'^avatar/', include('avatar.urls')),
     url(r'^library/$', views.library, name='library'),
+    url(r'^library2/$', views.library_view2, name='library2'),
+    url(r'^library2/filter$', views.library_view2_filter, name='library2_filter'),
     url(r'^library/trash/$', views.library_trash, name='library-trash'),
     url(r'^library/likes/$', views.library_likes, name='library-likes'),
     url(r'^update-name$', views.update_name, name='update-name'),
