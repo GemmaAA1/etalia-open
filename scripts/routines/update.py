@@ -1,7 +1,9 @@
+# To be run in django context:
+# ./manage.py shell < scripts/routines/update.py
+
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import yaml
 import copy
 import random
 
@@ -43,6 +45,8 @@ for paper in papers:
     alt_obj = alt_objs[random.randint(0, 9)]
     altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper.pk)
     for key, value in alt_obj.items():
+        if key == 'score':
+            value = float(random.randrange(1, 1000))
         setattr(altmetric, key, value)
 
 # update mostsimilar
@@ -56,4 +60,3 @@ for user_pk in us_pk:
 # Update users trend
 for user_pk in us_pk:
     reset_trend(user_pk)
-
