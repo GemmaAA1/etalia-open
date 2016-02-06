@@ -14,9 +14,7 @@ from .models import Stream, StreamMatches, TrendMatches
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
 
 
-class BaseStreamView(BasePaperListView):
-    model = StreamMatches
-    template_name = 'feeds/feed.html'
+class FeedPaperListView(BasePaperListView):
 
     def get_context_settings(self):
         self.context_settings = {
@@ -32,18 +30,14 @@ class BaseStreamView(BasePaperListView):
         self.parse_ajax_data()
 
         # Get data
-        # get paper rejected
+        self.original_qs = self.get_original_queryset()
+
+        # Exclude rejected paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user,
                     is_ticked=True)\
             .values('paper')
-        # get paper
-        self.original_qs = self.model.objects\
-            .filter(stream__name=self.kwargs.get('name', 'main'),
-                    stream__user=self.request.user)\
-            .exclude(paper__in=papers_ticked)\
-            .select_related('paper',
-                            'paper__journal')
+        self.original_qs = self.original_qs.exclude(paper__in=papers_ticked)
 
         # filter time span
         self.original_qs = self.filter_time_span(self.original_qs)
@@ -64,14 +58,37 @@ class BaseStreamView(BasePaperListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super(FeedPaperListView, self).get_context_data(**kwargs)
+        context.update(self.get_context_endless(**kwargs))
+        context.update(self.get_context_stats())
+        context.update(self.get_context_usertaste())
+        context.update(self.get_context_userlib())
+        context.update(self.get_context_journals_filter())
+        context.update(self.get_context_authors_filter())
+        context.update(self.get_context_time_span())
+        context.update(self.get_context_search_query())
+
+        return context
+
+    def get_original_queryset(self):
+        raise NotImplemented
+
+
+class BaseStreamView(FeedPaperListView):
+    model = StreamMatches
+    template_name = 'feeds/feed.html'
+
+    def get_original_queryset(self):
+        return self.model.objects\
+            .filter(stream__name=self.kwargs.get('name', 'main'),
+                    stream__user=self.request.user)\
+            .select_related('paper',
+                            'paper__journal')
+
 
 class StreamView(BaseStreamView):
     page_template = 'feeds/feed_sub_page.html'
-
-    def parse_ajax_data(self):
-        if self.request.GET.dict().get('querystring_key'):  # endless scrolling
-            self.return_filter = False
-        super(StreamView, self).parse_ajax_data()
 
 stream_view = StreamView.as_view()
 
@@ -79,56 +96,24 @@ stream_view = StreamView.as_view()
 class StreamViewXML(BaseStreamView):
     page_template = 'feeds/feed_sub_page2.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(StreamViewXML, self).get_context_data(**kwargs)
+        context.update(self.get_context_filter_json(context))
+        return context
+
 stream_view_xml = StreamViewXML.as_view()
 
 
-class BaseTrendView(BasePaperListView):
+class BaseTrendView(FeedPaperListView):
     model = TrendMatches
     template_name = 'feeds/feed.html'
 
-    def get_context_settings(self):
-        self.context_settings = {
-            'time_lapse': self.request.user.settings.trend_time_lapse,
-            'method': self.request.user.settings.trend_method,
-            'model': self.request.user.settings.trend_model,
-        }
-        return self.context_settings
-
-    def get_queryset(self):
-
-        self.parse_ajax_data()
-
-        # get ticked paper
-        papers_ticked = UserTaste.objects\
-            .filter(user=self.request.user,
-                    is_ticked=True)\
-            .values('paper')
-
-        self.original_qs = self.model.objects\
+    def get_original_queryset(self):
+        return self.model.objects\
             .filter(trend__name=self.kwargs.get('name', 'main'),
                     trend__user=self.request.user)\
-            .exclude(paper__in=papers_ticked)\
             .select_related('paper',
                             'paper__journal')
-
-        # filter time span
-        self.original_qs = self.filter_time_span(self.original_qs)
-
-        # filter
-        queryset = self.original_qs
-        if self.journals_filter:
-            queryset = self.filter_journals(queryset)
-
-        if self.authors_filter:
-            queryset = self.filter_authors(queryset)
-
-        if self.like_flag:
-            queryset = self.filter_pin(queryset)
-
-        if self.search_query:
-            queryset = self.filter_search_query(queryset)
-
-        return queryset
 
 
 class TrendView(BaseTrendView):
@@ -137,10 +122,15 @@ class TrendView(BaseTrendView):
 trend_view = TrendView.as_view()
 
 
-class TrendViewFilter(BaseTrendView):
+class TrendViewXML(BaseTrendView):
     page_template = 'feeds/feed_sub_page2.html'
 
-trend_view_xml = TrendViewFilter.as_view()
+    def get_context_data(self, **kwargs):
+        context = super(TrendViewXML, self).get_context_data(**kwargs)
+        context.update(self.get_context_filter_json(context))
+        return context
+
+trend_view_xml = TrendViewXML.as_view()
 
 
 @login_required

@@ -79,9 +79,6 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         self.cluster = None
         self.endless_only = False
 
-    def get_context_settings(self):
-        raise NotImplemented
-
     def filter_journals(self, queryset):
         """filter journals"""
         subset = []
@@ -274,22 +271,6 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
 
         return {'filter': json.dumps(filter_)}
 
-    def get_context_data(self, **kwargs):
-
-        context = self.get_context_endless(**kwargs)
-        context.update(self.get_context_stats())
-        context.update(self.get_context_usertaste())
-        context.update(self.get_context_userlib())
-        context.update(self.get_context_journals_filter())
-        context.update(self.get_context_authors_filter())
-        context.update(self.get_context_time_span())
-        context.update(self.get_context_search_query())
-
-        if self.return_filter:
-            context.update(self.get_context_filter_json(context))
-
-        return context
-
     def parse_ajax_data(self):
         """Get ajax args"""
 
@@ -310,4 +291,10 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
 
                 except ValueError:
                     pass
+
+    def get_context_settings(self):
+        raise NotImplemented
+
+
+
 
