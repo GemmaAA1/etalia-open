@@ -62,7 +62,7 @@ class AltmetricModel(TimeStampedModel):
 
     # images
     image = models.URLField(default='')
-    type = models.CharField(default='', max_length=32)
+    type = models.CharField(default='zzzzzzzz', max_length=8)
 
     class Meta:
         ordering = ['-score']
