@@ -93,7 +93,8 @@ class BaseStreamView(FeedPaperListView):
             .filter(stream__name=self.kwargs.get('name', 'main'),
                     stream__user=self.request.user)\
             .select_related('paper',
-                            'paper__journal')
+                            'paper__journal',
+                            'paper__altmetric')
 
 
 class StreamView(BaseStreamView):
@@ -117,7 +118,8 @@ class BaseTrendView(FeedPaperListView):
             .filter(trend__name=self.kwargs.get('name', 'main'),
                     trend__user=self.request.user)\
             .select_related('paper',
-                            'paper__journal')
+                            'paper__journal',
+                            'paper__altmetric')
 
 
 class TrendView(BaseTrendView):

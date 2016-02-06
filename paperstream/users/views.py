@@ -241,7 +241,10 @@ class UserLibraryView(UserLibraryPaperListView):
     def get_original_queryset(self):
         return UserLibPaper.objects\
             .filter(userlib=self.request.user.lib,
-                    is_trashed=False)
+                    is_trashed=False)\
+            .select_related('paper',
+                            'paper__journal',
+                            'paper__altmetric')
 
 library = UserLibraryView.as_view()
 
@@ -257,7 +260,10 @@ class UserLibraryTrashView(UserLibraryPaperListView):
     def get_original_queryset(self):
         return UserLibPaper.objects\
             .filter(userlib=self.request.user.lib,
-                    is_trashed=True)
+                    is_trashed=True)\
+            .select_related('paper',
+                            'paper__journal',
+                            'paper__altmetric')
 
 library_trash = UserLibraryTrashView.as_view()
 
@@ -273,7 +279,10 @@ class UserLibraryLikesView(UserLibraryPaperListView):
     def get_original_queryset(self):
         return UserTaste.objects\
             .filter(user=self.request.user,
-                    is_liked=True)
+                    is_liked=True)\
+            .select_related('paper',
+                            'paper__journal',
+                            'paper__altmetric')
 
 library_likes = UserLibraryLikesView.as_view()
 

@@ -26,9 +26,7 @@ pubmed_run('pubmed_all')
 arxiv_run('arxiv_all')
 elsevier_run('elsevier_all')
 
-papers = Paper.objects.filter(is_trusted=True,
-                              title__regex=r'^.{5}.*',
-                              abstract__regex=r'^.{10}.*')
+papers = Paper.objects.all()
 
 # Fetch some Altmetric data and fake others (saving time)
 alt_objs = []
