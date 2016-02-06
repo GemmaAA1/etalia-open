@@ -226,6 +226,16 @@ class UserLibraryPaperListView(BasePaperListView):
         raise NotImplemented
 
 
+class XMLLibraryMixin(object):
+    # page_template = 'user/user_library_sub_page2.html'
+    page_template = 'feeds/feed_sub_page2.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(XMLLibraryMixin, self).get_context_data(**kwargs)
+        context.update(self.get_context_filter_json(context))
+        return context
+
+
 class UserLibraryView(UserLibraryPaperListView):
 
     def get_original_queryset(self):
@@ -236,14 +246,8 @@ class UserLibraryView(UserLibraryPaperListView):
 library = UserLibraryView.as_view()
 
 
-class UserLibraryViewXML(UserLibraryView):
-    # page_template = 'user/user_library_sub_page2.html'
-    page_template = 'feeds/feed_sub_page2.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(UserLibraryViewXML, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
+class UserLibraryViewXML(XMLLibraryMixin, UserLibraryView):
+    pass
 
 library_xml = UserLibraryViewXML.as_view()
 
@@ -258,14 +262,8 @@ class UserLibraryTrashView(UserLibraryPaperListView):
 library_trash = UserLibraryTrashView.as_view()
 
 
-class UserLibraryTrashViewXML(UserLibraryTrashView):
-    # page_template = 'user/user_library_sub_page2.html'
-    page_template = 'feeds/feed_sub_page2.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(UserLibraryTrashViewXML, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
+class UserLibraryTrashViewXML(XMLLibraryMixin, UserLibraryTrashView):
+    pass
 
 library_trash_xml = UserLibraryTrashViewXML.as_view()
 
@@ -280,14 +278,8 @@ class UserLibraryLikesView(UserLibraryPaperListView):
 library_likes = UserLibraryLikesView.as_view()
 
 
-class UserLibraryLikesViewXML(UserLibraryLikesView):
-    # page_template = 'user/user_library_sub_page2.html'
-    page_template = 'feeds/feed_sub_page2.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(UserLibraryLikesViewXML, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
+class UserLibraryLikesViewXML(XMLLibraryMixin, UserLibraryLikesView):
+    pass
 
 library_likes_xml = UserLibraryLikesViewXML.as_view()
 

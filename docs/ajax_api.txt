@@ -50,6 +50,7 @@ return: XML
                 'cluster': (int) or null,
                 'pin': (bool),
                 'search_query': (str),
+                'number_of_papers': (int),
             }
        </data>
        <thumb-list>

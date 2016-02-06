@@ -140,7 +140,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         return context
 
     def get_context_stats(self):
-        return {'number_of_papers': self.object_list.count()}
+        return {'number_of_papers': self.original_qs.count()}
 
     def get_context_usertaste(self):
         user_taste = UserTaste.objects\
@@ -243,6 +243,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
             'time_span': self.time_span,
             'cluster': None,
             'search_query': self.search_query,
+            'number_of_papers': context['number_of_papers'],
         }
 
         # add to journal filter context if journal is checked
