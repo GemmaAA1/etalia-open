@@ -76,7 +76,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         self.like_flag = False
         self.context_settings = None
         self.search_query = ''
-        self.cluster = None
+        self.cluster = 0
         self.endless_only = False
 
     def filter_journals(self, queryset):
@@ -278,8 +278,8 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
             if self.request.GET.dict().get('data'):
                 data = json.loads(self.request.GET.dict().get('data'))
                 try:
-                    self.time_span = int(data.get('time_span', self.time_span))
-                    self.cluster = int(data.get('cluster', self.cluster))
+                    self.time_span = int(data.get('time_span', self.time_span) or self.time_span)
+                    self.cluster = int(data.get('cluster', self.cluster) or self.cluster)
                     self.like_flag = data.get('pin', self.like_flag)
                     self.search_query = data.get('search_query', '')
                     filters_ = data.get('filters', [])
