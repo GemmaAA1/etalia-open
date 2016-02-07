@@ -118,7 +118,7 @@ define(
         }
 
         loadThumbsXhr = $.ajax({
-            url: $('#list').data('load-url'),
+            url: $('#list').data('load-url'), // TODO xml
             data: {'data': JSON.stringify(getControlsStates())},
             dataType: 'xml',
             method: 'GET'

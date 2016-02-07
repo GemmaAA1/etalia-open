@@ -44,6 +44,13 @@ if INVITE_MODE:
         }
     }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #
 #      SWITCH TO STAGING DATABASE      #

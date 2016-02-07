@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import operator
-import json
-from functools import reduce
 import logging
-from collections import Counter
 
 
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView, DetailView
 from django.views.generic.edit import DeleteView
@@ -19,26 +14,21 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models.functions import Coalesce
-from django.template.loader import render_to_string, get_template
-from django.core.mail import EmailMessage
+from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 
 from braces.views import LoginRequiredMixin
 
-from endless_pagination.views import AjaxListView
-
-from paperstream.feeds.views import BasePaperListView
-from paperstream.core.mixins import AjaxableResponseMixin, ModalMixin
-from paperstream.library.models import Paper, Author
+from paperstream.core.views import BasePaperListView
+from paperstream.core.mixins import AjaxableResponseMixin
+from paperstream.library.models import Paper
 
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
     UserEmailDigestSettingsForm
-from .models import Affiliation, UserLibPaper, UserTaste, LibraryLayout, \
-    UserSettings
+from .models import Affiliation, UserLibPaper, UserTaste, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
 
@@ -169,75 +159,138 @@ def validation_sent(request):
 
 # User Library
 # ---------------
-class UserLibraryView(BasePaperListView):
+class UserLibraryPaperListView(BasePaperListView):
     model = UserLibPaper
-    template_name = 'user/user_library.html'
-    page_template = 'user/user_library_sub_page.html'
+    # template_name = 'user/user_library.html'
+    # page_template = 'user/user_library_sub_page.html'
+    template_name = 'feeds/feed.html'
+    page_template = 'feeds/feed_sub_page.html'
 
-    def get_queryset(self):
-
-        self.original_qs = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib,
-                    is_trashed=False)
-        return self.filter_queryset(self.original_qs)
-
-    def get_context_data(self, **kwargs):
-        context = super(UserLibraryView, self).get_context_data(**kwargs)
-
+    def get_context_stats(self):
+        context = super(UserLibraryPaperListView, self).get_context_stats()
         # Trash counter
         context['trash_counter'] = UserLibPaper.objects\
             .filter(userlib=self.request.user.lib, is_trashed=True)\
             .count()
-
         # Like counter
         context['likes_counter'] = UserTaste.objects\
             .filter(user=self.request.user, is_liked=True)\
             .count()
-
         # library counter
         context['library_counter'] = UserLibPaper.objects\
             .filter(userlib=self.request.user.lib, is_trashed=False)\
             .count()
+        return context
+
+    def get_context_data(self, **kwargs):
+        context = super(UserLibraryPaperListView, self).get_context_data(**kwargs)
+        context.update(self.get_context_endless(**kwargs))
+        context.update(self.get_context_stats())
+        context.update(self.get_context_usertaste())
+        context.update(self.get_context_userlib())
+        context.update(self.get_context_journals_filter())
+        context.update(self.get_context_authors_filter())
+        context.update(self.get_context_search_query())
 
         return context
+
+    def get_queryset(self):
+
+        # Retrieve get arguments if any
+        self.parse_ajax_data()
+
+        # Get data
+        self.original_qs = self.get_original_queryset()
+
+        # Exclude rejected paper
+        papers_ticked = UserTaste.objects\
+            .filter(user=self.request.user,
+                    is_ticked=True)\
+            .values('paper')
+        self.original_qs = self.original_qs.exclude(paper__in=papers_ticked)
+
+        # filter
+        queryset = self.original_qs
+        if self.journals_filter:
+            queryset = self.filter_journals(queryset)
+
+        if self.authors_filter:
+            queryset = self.filter_authors(queryset)
+
+        if self.search_query:
+            queryset = self.filter_search_query(queryset)
+
+        return queryset
+
+    def get_original_queryset(self):
+        raise NotImplemented
+
+
+class XMLLibraryMixin(object):
+    # page_template = 'user/user_library_sub_page2.html'
+    page_template = 'feeds/feed_sub_page2.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(XMLLibraryMixin, self).get_context_data(**kwargs)
+        context.update(self.get_context_filter_json(context))
+        return context
+
+
+class UserLibraryView(UserLibraryPaperListView):
+
+    def get_original_queryset(self):
+        return UserLibPaper.objects\
+            .filter(userlib=self.request.user.lib,
+                    is_trashed=False)\
+            .select_related('paper',
+                            'paper__journal',
+                            'paper__altmetric')
 
 library = UserLibraryView.as_view()
 
 
-class UserLibraryTrashView(UserLibraryView):
+class UserLibraryViewXML(XMLLibraryMixin, UserLibraryView):
+    pass
 
-    def get_queryset(self):
-        self.original_qs = UserLibPaper.objects\
+library_xml = UserLibraryViewXML.as_view()
+
+
+class UserLibraryTrashView(UserLibraryPaperListView):
+
+    def get_original_queryset(self):
+        return UserLibPaper.objects\
             .filter(userlib=self.request.user.lib,
-                    is_trashed=True)
-        return self.filter_queryset(self.original_qs)
-
-    def get_context_data(self, **kwargs):
-        context = super(UserLibraryTrashView, self).get_context_data(**kwargs)
-        # library tab
-        context['tab'] = 'trash'
-        return context
+                    is_trashed=True)\
+            .select_related('paper',
+                            'paper__journal',
+                            'paper__altmetric')
 
 library_trash = UserLibraryTrashView.as_view()
 
 
-class UserLibraryLikesView(UserLibraryView):
+class UserLibraryTrashViewXML(XMLLibraryMixin, UserLibraryTrashView):
+    pass
 
-    def get_queryset(self):
+library_trash_xml = UserLibraryTrashViewXML.as_view()
 
-        self.original_qs = UserTaste.objects\
+
+class UserLibraryLikesView(UserLibraryPaperListView):
+
+    def get_original_queryset(self):
+        return UserTaste.objects\
             .filter(user=self.request.user,
-                    is_liked=True)
-
-        return self.filter_queryset(self.original_qs)
-
-    def get_context_data(self, **kwargs):
-        context = super(UserLibraryLikesView, self).get_context_data(**kwargs)
-        # library tab
-        context['tab'] = 'likes'
-        return context
+                    is_liked=True)\
+            .select_related('paper',
+                            'paper__journal',
+                            'paper__altmetric')
 
 library_likes = UserLibraryLikesView.as_view()
+
+
+class UserLibraryLikesViewXML(XMLLibraryMixin, UserLibraryLikesView):
+    pass
+
+library_likes_xml = UserLibraryLikesViewXML.as_view()
 
 
 # Profile
