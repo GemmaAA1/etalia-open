@@ -5,6 +5,7 @@ define(
     var detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection,
+        openedFiltersGroups,
         loadThumbsXhr;
 
     function selectCluster(selection) {
@@ -103,7 +104,7 @@ define(
 
         $('.filter-group').each(function(i, group) {
             var $group = $(group);
-            if (i == 0) {
+            if (0 <= openedFiltersGroups.indexOf($group.data('id'))) {
                 $group.find('.filter-toggle').addClass('active');
                 $group.find('.filter-filters').addClass('in');
             }
@@ -117,7 +118,7 @@ define(
         }
 
         loadThumbsXhr = $.ajax({
-            url: '/feed/stream2/filter',
+            url: $('#list').data('load-url'),
             data: {'data': JSON.stringify(getControlsStates())},
             dataType: 'xml',
             method: 'GET'
@@ -136,7 +137,7 @@ define(
             loadThumbsXhr = null;
         });
         loadThumbsXhr.error(function() {
-            console.log('Fail to load thumbs.');
+            console.error('Thumbs request failed');
         });
     }
 
@@ -151,6 +152,10 @@ define(
         $toggleTimespan = $('#toggle-timespan');
         $timespanSelection = $('#timespan-selection');
 
+        openedFiltersGroups = [];
+        $('.filter-group.active').each(function() {
+            openedFiltersGroups.push($(this).data('id'));
+        });
 
         /** ---------------------------------------------------------------------------------------------
          *  SEARCH BAR
@@ -226,12 +231,20 @@ define(
          */
         $('#filter-flap')
             .on('click', '.filter-toggle', function(e) {
-                var $group = $(e.target).parents('.filter-group').eq(0);
+                var $group = $(e.target).parents('.filter-group').eq(0),
+                    groupId = $group.data('id');
                 if (Util.toggleClass($group, 'active')) {
                     $group.find('.filter-filters').collapse('show');
+                    if (0 > openedFiltersGroups.indexOf(groupId)) {
+                        openedFiltersGroups.push(groupId);
+                    }
                 } else {
                     $group.data('gt-index', 10)
                         .find('.filter-filters').collapse('hide');
+                    var index = openedFiltersGroups.indexOf(groupId);
+                    if (0 <= index) {
+                        openedFiltersGroups.splice(index, 1);
+                    }
                     updateFiltersVisibility($group);
                 }
             })
@@ -268,7 +281,7 @@ define(
                     }
                 });
                 pinXhr.fail(function() {
-                    console.log('ERROR');
+                    console.error('Pin request failed');
                 });
 
                 return false;
@@ -289,7 +302,7 @@ define(
                     }
                 });
                 pinXhr.fail(function() {
-                    console.log('ERROR');
+                    console.error('Ban request failed');
                 });
 
                 return false;

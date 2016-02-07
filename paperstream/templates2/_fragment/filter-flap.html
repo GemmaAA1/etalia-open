@@ -28,11 +28,11 @@
             {% endif %}
         </div>
     </div>
-    <div class="filter-group" data-id="authors">
+    <div class="filter-group active" data-id="authors">
         <a href="javascript: void(0)" class="filter-toggle">
             Authors <span class="eai eai-down"></span>
         </a>
-        <div class="filter-filters collapse">
+        <div class="filter-filters collapse in">
             <ul>
                 {% for auth, author_full_name, block in authors %}
                 <li{% if forloop.counter0 > 10 and not auth.pk in authors_filter %} style="display:none;"{% endif %}>
