@@ -1,10 +1,10 @@
 {% spaceless %}
 <div class="thumb" data-id="{{ paper.pk }}">
     <div class="actions">
-        <a href="javascript: void(0)" class="thumb-pin {% if user_taste|get_is_liked:paper.pk %} active {% endif %}">
+        <a href="javascript: void(0)" class="thumb-pin{% if user_taste|get_is_liked:paper.pk %} active{% endif %}">
             <span class="eai eai-pin"></span>
         </a>
-        <a href="javascript: void(0)" class="thumb-remove {% if user_taste|get_is_ticked:paper.pk %} active {% endif %}">
+        <a href="javascript: void(0)" class="thumb-ban{% if user_taste|get_is_ticked:paper.pk %} active{% endif %}">
             <span class="eai eai-remove"></span>
         </a>
     </div>
@@ -29,7 +29,7 @@
                 <span></span>
             </span>
             <span class="metric">
-                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
             </span>
             <span class="comment">
                 <span class="count">16</span>
