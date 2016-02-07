@@ -8,10 +8,10 @@
 {% spaceless %}
 
     <!-- start list -->
-    <div id="list" class="document" data-load-url="{% url 'feeds:stream2_filter' %}">
+    <div id="list" class="document" data-load-url="{% url 'feeds:stream_xml' %}">
         <div class="wrapper">
             <div class="inner">
-                <p class="list-title">{{ number_of_papers }} publications suggested for you</p>
+                <p class="list-title"><span>{{ number_of_papers }}</span> publications suggested for you</p>
 
                 <div class="endless_data">
                     {% include page_template %}

@@ -1,6 +1,6 @@
 define(
-    ['jquery', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
-    function($, Detail, Layout, Util, Templates) {
+    ['jquery', 'app/api', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
+    function($, Api, Detail, Layout, Util, Templates) {
 
     var detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
@@ -35,7 +35,7 @@ define(
     function selectTimespan(selection) {
         var value = (function(s) {
             switch (s) {
-                case 7 : return 'W';
+                case 7 :  return 'W';
                 case 30 : return '1m';
                 case 60 : return '2m';
             }
@@ -81,6 +81,11 @@ define(
     }
 
     function updateControlsStates(data) {
+        console.log(data);
+        // List title
+        if (data.hasOwnProperty('number_of_papers')) {
+            $('.list-title span').html(data['number_of_papers']);
+        }
         // Cluster
         if (data.hasOwnProperty('cluster')) {
             selectCluster(data['cluster'] || 0); // TODO remove 'or zero' (check server side)
@@ -118,7 +123,7 @@ define(
         }
 
         loadThumbsXhr = $.ajax({
-            url: $('#list').data('load-url'), // TODO xml
+            url: $('#list').data('load-url'),
             data: {'data': JSON.stringify(getControlsStates())},
             dataType: 'xml',
             method: 'GET'
@@ -265,46 +270,34 @@ define(
          */
         $('#list, #detail')
             .on('click', '.thumb-pin', function(e) {
+                var $button = $(this),
+                    $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.pin($thumb.data('id'), window.location.pathname)
+                    .done(function(pinned) {
+                        $button.toggleClass('active', pinned);
+                    })
+                    .fail(function(error) {
+                        console.log(error);
+                    });
+
                 e.stopPropagation();
-
-                var $button = $(this);
-                var $thumb = $(e.target).parents('.thumb').eq(0);
-
-                var pinXhr = $.ajax({
-                    type: 'POST',
-                    url: '/user/paper/pin',
-                    data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
-                });
-                pinXhr.success(function(json) {
-                    if (json.hasOwnProperty('is_liked')) {
-                        $button.toggleClass('active', json['is_liked']);
-                    }
-                });
-                pinXhr.fail(function() {
-                    console.error('Pin request failed');
-                });
-
                 return false;
             })
-            .on('click', '.thumb-remove', function(e) {
-                e.stopPropagation();
-
+            .on('click', '.thumb-ban', function(e) {
                 var $thumb = $(e.target).parents('.thumb').eq(0);
 
-                var pinXhr = $.ajax({
-                    type: 'POST',
-                    url: '/user/paper/ban',
-                    data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
-                });
-                pinXhr.success(function(json) {
-                    if (json.hasOwnProperty('is_liked') && json['is_ticked']) {
-                        $thumb.remove();
-                    }
-                });
-                pinXhr.fail(function() {
-                    console.error('Ban request failed');
-                });
+                Api.ban($thumb.data('id'), window.location.pathname)
+                    .done(function(banned) {
+                        if (banned) {
+                            $thumb.remove();
+                        }
+                    })
+                    .fail(function(error) {
+                        console.log(error);
+                    });
 
+                e.stopPropagation();
                 return false;
             });
 
@@ -323,6 +316,9 @@ define(
          *  DETAIL
          */
         detail = new Detail();
+        detail.init();
+
+        // Loading events
         $(detail)
             .on('etalia.detail.loading', function() {
                 Layout.setBusy();
@@ -330,11 +326,11 @@ define(
             .on('etalia.detail.loaded', function() {
                 Layout.setAvailable();
             });
-        $('.document').on('click', '.thumb .title a', function(e) {
-            e.preventDefault();
 
+        $('.document').on('click', '.thumb .title a', function(e) {
             detail.load($(e.target).closest('.thumb'));
 
+            e.preventDefault();
             return false;
         });
 
