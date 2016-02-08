@@ -146,8 +146,8 @@ class BackendLibMixin(object):
                                                          user=user,
                                                          context_source='library')
             if new_ut:
-                ut.is_liked = True
-                ut.is_ticked = True
+                ut.is_liked = False
+                ut.is_ticked = False
                 ut.save()
 
         return new
