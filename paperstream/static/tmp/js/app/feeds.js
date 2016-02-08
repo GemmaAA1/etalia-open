@@ -1,10 +1,11 @@
 define(
-    ['jquery', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
-    function($, Detail, Layout, Util, Templates) {
+    ['jquery', 'app/api', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
+    function($, Api, Detail, Layout, Util, Templates) {
 
     var detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection,
+        openedFiltersGroups,
         loadThumbsXhr;
 
     function selectCluster(selection) {
@@ -34,7 +35,7 @@ define(
     function selectTimespan(selection) {
         var value = (function(s) {
             switch (s) {
-                case 7 : return 'W';
+                case 7 :  return 'W';
                 case 30 : return '1m';
                 case 60 : return '2m';
             }
@@ -80,6 +81,11 @@ define(
     }
 
     function updateControlsStates(data) {
+        console.log(data);
+        // List title
+        if (data.hasOwnProperty('number_of_papers')) {
+            $('.list-title span').html(data['number_of_papers']);
+        }
         // Cluster
         if (data.hasOwnProperty('cluster')) {
             selectCluster(data['cluster'] || 0); // TODO remove 'or zero' (check server side)
@@ -103,7 +109,7 @@ define(
 
         $('.filter-group').each(function(i, group) {
             var $group = $(group);
-            if (i == 0) {
+            if (0 <= openedFiltersGroups.indexOf($group.data('id'))) {
                 $group.find('.filter-toggle').addClass('active');
                 $group.find('.filter-filters').addClass('in');
             }
@@ -117,7 +123,7 @@ define(
         }
 
         loadThumbsXhr = $.ajax({
-            url: window.location.href + 'xml',
+            url: $('#list').data('load-url'),
             data: {'data': JSON.stringify(getControlsStates())},
             dataType: 'xml',
             method: 'GET'
@@ -136,7 +142,7 @@ define(
             loadThumbsXhr = null;
         });
         loadThumbsXhr.error(function() {
-            console.log('Fail to load thumbs.');
+            console.error('Thumbs request failed');
         });
     }
 
@@ -151,6 +157,10 @@ define(
         $toggleTimespan = $('#toggle-timespan');
         $timespanSelection = $('#timespan-selection');
 
+        openedFiltersGroups = [];
+        $('.filter-group.active').each(function() {
+            openedFiltersGroups.push($(this).data('id'));
+        });
 
         /** ---------------------------------------------------------------------------------------------
          *  SEARCH BAR
@@ -226,12 +236,20 @@ define(
          */
         $('#filter-flap')
             .on('click', '.filter-toggle', function(e) {
-                var $group = $(e.target).parents('.filter-group').eq(0);
+                var $group = $(e.target).parents('.filter-group').eq(0),
+                    groupId = $group.data('id');
                 if (Util.toggleClass($group, 'active')) {
                     $group.find('.filter-filters').collapse('show');
+                    if (0 > openedFiltersGroups.indexOf(groupId)) {
+                        openedFiltersGroups.push(groupId);
+                    }
                 } else {
                     $group.data('gt-index', 10)
                         .find('.filter-filters').collapse('hide');
+                    var index = openedFiltersGroups.indexOf(groupId);
+                    if (0 <= index) {
+                        openedFiltersGroups.splice(index, 1);
+                    }
                     updateFiltersVisibility($group);
                 }
             })
@@ -252,46 +270,34 @@ define(
          */
         $('#list, #detail')
             .on('click', '.thumb-pin', function(e) {
+                var $button = $(this),
+                    $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.pin($thumb.data('id'), window.location.pathname)
+                    .done(function(pinned) {
+                        $button.toggleClass('active', pinned);
+                    })
+                    .fail(function(error) {
+                        console.log(error);
+                    });
+
                 e.stopPropagation();
-
-                var $button = $(this);
-                var $thumb = $(e.target).parents('.thumb').eq(0);
-
-                var pinXhr = $.ajax({
-                    type: 'POST',
-                    url: '/user/paper/pin',
-                    data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
-                });
-                pinXhr.success(function(json) {
-                    if (json.hasOwnProperty('is_liked')) {
-                        $button.toggleClass('active', json['is_liked']);
-                    }
-                });
-                pinXhr.fail(function() {
-                    console.log('ERROR');
-                });
-
                 return false;
             })
-            .on('click', '.thumb-remove', function(e) {
-                e.stopPropagation();
-
+            .on('click', '.thumb-ban', function(e) {
                 var $thumb = $(e.target).parents('.thumb').eq(0);
 
-                var pinXhr = $.ajax({
-                    type: 'POST',
-                    url: '/user/paper/ban',
-                    data: {'pk': $thumb.data('id'), 'source': window.location.pathname}
-                });
-                pinXhr.success(function(json) {
-                    if (json.hasOwnProperty('is_liked') && json['is_ticked']) {
-                        $thumb.remove();
-                    }
-                });
-                pinXhr.fail(function() {
-                    console.log('ERROR');
-                });
+                Api.ban($thumb.data('id'), window.location.pathname)
+                    .done(function(banned) {
+                        if (banned) {
+                            $thumb.remove();
+                        }
+                    })
+                    .fail(function(error) {
+                        console.log(error);
+                    });
 
+                e.stopPropagation();
                 return false;
             });
 
@@ -310,6 +316,9 @@ define(
          *  DETAIL
          */
         detail = new Detail();
+        detail.init();
+
+        // Loading events
         $(detail)
             .on('etalia.detail.loading', function() {
                 Layout.setBusy();
@@ -317,11 +326,11 @@ define(
             .on('etalia.detail.loaded', function() {
                 Layout.setAvailable();
             });
-        $('.document').on('click', '.thumb .title a', function(e) {
-            e.preventDefault();
 
+        $('.document').on('click', '.thumb .title a', function(e) {
             detail.load($(e.target).closest('.thumb'));
 
+            e.preventDefault();
             return false;
         });
 

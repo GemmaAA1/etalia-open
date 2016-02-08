@@ -6,12 +6,12 @@
 {% load staticfiles %}
 
 
-<div id="detail-actions" class="actions">
+<div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}">
     {% if user.is_authenticated %}
     <a href="javascript: void(0)" class="detail-pin{% if is_liked %} active {% endif %}">
         <span class="eai eai-pin"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-remove">
+    <a href="javascript: void(0)" class="detail-ban">
         <span class="eai eai-remove"></span>
     </a>
     <a href="javascript: void(0)" class="detail-library-add">
@@ -69,7 +69,7 @@
             </span>
             <!-- TODO -->
             <span class="metric">
-                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
             </span>
             <!-- TODO -->
             <span class="comment">

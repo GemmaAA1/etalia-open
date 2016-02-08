@@ -1,4 +1,4 @@
-define(['jquery', 'app/util/sticky'], function ($, Sticky) {
+define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
 
     var Detail = function (options) {
 
@@ -12,6 +12,8 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
         this.$element = $(this.config.element);
 
         this.$document = this.$element.find(this.config.document);
+        this.paperId = null;
+        this.$actions = null;
         this.actions = null;
 
         this.$nextButton = $('#detail-next');
@@ -25,6 +27,71 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
             that.close();
         });
     };
+
+    Detail.prototype.init = function() {
+        var that = this;
+
+        // Pin button
+        this.$document.on('click', '.detail-pin', function(e) {
+            if (!that.paperId) throw 'Undefined paper id';
+
+            var $button = $(e.target).closest('.detail-pin');
+
+            Api.pin(that.paperId) // TODO source = window.location.pathname ?
+                .done(function(pinned) {
+                    $button.toggleClass('active', pinned);
+                })
+                .fail(function(error) {
+                    console.log(error);
+                });
+
+            e.stopPropagation();
+            return false;
+        });
+
+        // Ban button
+        this.$document.on('click', '.detail-ban', function(e) {
+            if (!that.paperId) throw 'Undefined paper id';
+
+            Api.ban(that.paperId) // TODO source = window.location.pathname ?
+                .done(function(banned) {
+                    if (banned) {
+                        that.close();
+                    }
+                })
+                .fail(function(error) {
+                    console.log(error);
+                });
+
+            e.stopPropagation();
+            return false;
+        });
+
+        // Add to library button
+        this.$document.on('click', '.detail-library-add', function(e) {
+            if (!that.paperId) throw 'Undefined paper id';
+
+            var $button = $(e.target).closest('.detail-library-add');
+            // TODO Don't add twice ?
+            if ($button.hasClass('active')) {
+                return;
+            }
+
+            Api.add(that.paperId)
+                .done(function(added) {
+                    $button.toggleClass('active', added);
+                })
+                .fail(function(error) {
+                    console.log(error);
+                });
+
+            e.stopPropagation();
+            return false;
+        });
+
+        return this;
+    };
+
     Detail.prototype.load = function ($thumb) {
         var that = this,
             $prev = $thumb.prev(),
@@ -34,7 +101,6 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
 
         that.clear();
 
-        that.$document.hide();
         $('body').addClass('detail-opened');
 
         // Previous button
@@ -56,31 +122,40 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
             });
         }
 
+        // Paper async loading
         var uri = $thumb.find('.title a').attr('href');
-        $.get(uri, function(html) {
-            that.$document.find('.inner').html(html);
+        this.loadXhr = $.get(uri)
+            .done(function(html) {
+                that.$document.find('.inner').html(html);
 
-            that.$document.show();
+                that.$actions = that.$element.find(that.config.actions);
+                that.paperId = parseInt(that.$actions.data('paper-id'));
 
-            that.actions = new Sticky({
-                debug: that.config.debug,
-                element: that.$element.find(that.config.actions),
-                parent: that.$document,
-                top: 20,
-                bottom: 20
+                // Sticky action
+                that.actions = new Sticky({
+                    debug: that.config.debug,
+                    element: that.$actions,
+                    parent: that.$document,
+                    top: 20,
+                    bottom: 20
+                });
+                that.actions.enable();
+
+                that.$document.show();
+
+                that.loaded = true;
+                that.loadXhr = null;
+
+                $(that).trigger('etalia.detail.loaded');
             });
-            that.actions.enable();
 
-            that.loaded = true;
-            that.loadXhr = null;
-
-            $(that).trigger('etalia.detail.loaded');
-        });
+        return this;
     };
+
     Detail.prototype.clear = function () {
         this.loaded = false;
         if (this.loadXhr) {
-            clearTimeout(this.loadXhr);
+            this.loadXhr.abort();
             this.loadXhr = null;
         }
 
@@ -89,15 +164,30 @@ define(['jquery', 'app/util/sticky'], function ($, Sticky) {
             this.actions = null;
         }
 
+        if (this.$actions) {
+            this.$actions = null;
+        }
+
+        if (this.paperId) {
+            this.paperId = null;
+        }
+
+        this.$document.hide().find('.inner').html('');
+
         var $navButtons = $('.detail-nav');
         $navButtons.hide().removeAttr('title');
         $navButtons.find('> button').off('click');
         $navButtons.find('> span').empty();
+
+        return this;
     };
+
     Detail.prototype.close = function () {
         this.clear();
 
         $('body').removeClass('detail-opened');
+
+        return this;
     };
 
     return Detail;
