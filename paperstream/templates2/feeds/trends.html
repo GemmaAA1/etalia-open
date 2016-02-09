@@ -11,7 +11,9 @@
     <div id="list" class="document" data-load-url="{% url 'feeds:trend_xml' %}">
         <div class="wrapper">
             <div class="inner">
-                <p class="list-title">{{ number_of_papers }} trending publications suggested for you</p>
+                <p class="list-title">
+                    <span>{{ number_of_papers }}</span> trending publications suggested for you
+                l</p>
 
                 <div class="endless_data">
                     {% include page_template %}
