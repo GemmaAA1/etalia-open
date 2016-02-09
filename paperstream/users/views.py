@@ -161,10 +161,8 @@ def validation_sent(request):
 # ---------------
 class UserLibraryPaperListView(BasePaperListView):
     model = UserLibPaper
-    # template_name = 'user/user_library.html'
-    # page_template = 'user/user_library_sub_page.html'
-    template_name = 'feeds/feed.html'
-    page_template = 'feeds/feed_sub_page.html'
+    template_name = 'user/user_library.html'
+    page_template = 'user/user_library_sub_page.html'
 
     def get_context_stats(self):
         context = super(UserLibraryPaperListView, self).get_context_stats()
@@ -227,8 +225,7 @@ class UserLibraryPaperListView(BasePaperListView):
 
 
 class XMLLibraryMixin(object):
-    # page_template = 'user/user_library_sub_page2.html'
-    page_template = 'feeds/feed_sub_page2.html'
+    page_template = 'user/user_library_sub_page2.html'
 
     def get_context_data(self, **kwargs):
         context = super(XMLLibraryMixin, self).get_context_data(**kwargs)

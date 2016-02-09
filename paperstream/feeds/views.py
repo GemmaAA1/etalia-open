@@ -76,7 +76,6 @@ class FeedPaperListView(BasePaperListView):
 
 
 class XMLFeedMixin(object):
-    page_template = 'feeds/feed_sub_page2.html'
 
     def get_context_data(self, **kwargs):
         context = super(XMLFeedMixin, self).get_context_data(**kwargs)
@@ -104,7 +103,7 @@ stream = StreamView.as_view()
 
 
 class StreamViewXML(XMLFeedMixin, BaseStreamView):
-    pass
+    page_template = 'feeds/feed_sub_page2.html'
 
 stream_xml = StreamViewXML.as_view()
 
@@ -123,13 +122,13 @@ class BaseTrendView(FeedPaperListView):
 
 
 class TrendView(BaseTrendView):
-    page_template = 'feeds/feed_sub_page.html'
+    page_template = 'feeds/trend_sub_page.html'
 
 trend = TrendView.as_view()
 
 
 class TrendViewXML(XMLFeedMixin, BaseTrendView):
-    pass
+    page_template = 'feeds/trend_sub_page2.html'
 
 trend_xml = TrendViewXML.as_view()
 
