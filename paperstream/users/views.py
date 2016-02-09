@@ -157,8 +157,11 @@ def validation_sent(request):
     return render(request, 'user/signup_form.html', context)
 
 
-# User Library
-# ---------------
+# -----------------------------------------------------------------------------
+#  USER LIBRARY
+# -----------------------------------------------------------------------------
+
+
 class UserLibraryPaperListView(BasePaperListView):
     model = UserLibPaper
     template_name = 'user/user_library.html'
@@ -304,9 +307,10 @@ class UserLibraryLikesViewXML(XMLLibraryMixin, UserLibraryLikesView):
 
 library_likes_xml = UserLibraryLikesViewXML.as_view()
 
+# -----------------------------------------------------------------------------
+#  USER PROFILE
+# -----------------------------------------------------------------------------
 
-# Profile
-# -------------------
 class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
     model = User
     template_name = 'user/profile.html'
@@ -714,12 +718,6 @@ def trash_call(request):
             # remove paper locally from user library
             ulp.is_trashed = True
             ulp.save(update_fields=['is_trashed'])
-            # remove from UserTaste
-            ut, _ = UserTaste.objects.get_or_create(user=request.user,
-                                                    paper_id=pk)
-            ut.is_liked = False
-            ut.is_ticked = True
-            ut.save()
             # build json data
             data = {'success': True,
                     'trash_counter':  UserLibPaper.objects\
@@ -767,9 +765,10 @@ def restore_call(request):
         # return JSON data
         if not err:
             # restore paper locally from user library
-            backend.associate_paper(paper, user, {'created': timezone.now().date()},
-                                    paper_provider_id)
-            backend.associate_journal(paper.journal, user)
+            ulp = user.lib.userlib_paper.get(paper_id=pk)
+            ulp.is_trashed = False
+            ulp.save(update_fields=['is_trashed'])
+            # build response
             data = {'success': True,
                     'trash_counter':  UserLibPaper.objects\
                         .filter(userlib=request.user.lib, is_trashed=True)\
