@@ -1,4 +1,4 @@
-define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
+define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, Api, Utils, Sticky) {
 
     var Detail = function (options) {
 
@@ -28,22 +28,26 @@ define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
         });
     };
 
+    function toggleLibraryAddOrTrash($button, added) {
+        if (added) {
+            $button
+                .removeClass('detail-library-add')
+                .addClass('detail-library-trash')
+                .find('.eai')
+                    .removeClass('eai-library-add')
+                    .addClass('eai-library-trash');
+        } else {
+            $button
+                .removeClass('detail-library-trash')
+                .addClass('detail-library-add')
+                .find('.eai')
+                    .removeClass('eai-library-trash')
+                    .addClass('eai-library-add');
+        }
+    }
+
     Detail.prototype.init = function() {
         var that = this;
-
-
-        function toggleLibraryAddOrTrash($button, added) {
-            console.log('toggleLibraryAddOrTrash', added);
-            if (added) {
-                $($button, $button.find('.eai'))
-                    .removeClass('detail-library-add')
-                    .addClass('detail-library-trash');
-            } else {
-                $($button, $button.find('.eai'))
-                    .removeClass('detail-library-trash')
-                    .addClass('detail-library-add');
-            }
-        }
 
         // API events
         $('body')
@@ -62,7 +66,7 @@ define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
             .on('etalia.publication.add', function(e, data) {
                 if (that.paperId == data.id && data.hasOwnProperty('success') && data['success']) {
                     var $button = that.$actions.find('.detail-library-add');
-                    toggleLibraryAddOrTrash($button, data['success']);
+                    toggleLibraryAddOrTrash($button, true);
                 }
             })
             .on('etalia.publication.trash', function(e, data) {

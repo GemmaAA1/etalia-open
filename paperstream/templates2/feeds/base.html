@@ -8,10 +8,13 @@
 {% spaceless %}
 <div class="wrap">
 
+    {% block toggle-pinned %}
     <button id="toggle-pinned" class="btn-circle" type="button">
         <span class="eai eai-pin"></span>
     </button>
+    {% endblock toggle-pinned %}
 
+    {% block cluster-selector %}
     <div id="cluster" class="selector">
         <button id="toggle-cluster" class="btn-circle" type="button">
             <span id="cluster-selection" class="cluster-value" data-value="0"></span>
@@ -49,7 +52,9 @@
             </ul>
         </div>
     </div>
+    {% endblock cluster-selector %}
 
+    {% block timespan-selector %}
     <div id="timespan" class="selector">
         <button id="toggle-timespan" class="btn-circle" type="button">
             <span class="eai eai-clock"></span>
@@ -75,6 +80,7 @@
             </ul>
         </div>
     </div>
+    {% endblock timespan-selector %}
 
     <button id="toggle-search" class="btn-circle" type="button">
         <span class="eai eai-search"></span>
@@ -121,7 +127,7 @@
     <script src="{% static 'tmp/js/require.js' %}"></script>
     <script>
         requirejs(['{% static "tmp/js/common.js" %}'], function () {
-            requirejs(['app/feeds']);
+            requirejs(['app/feed/default']);
         });
     </script>
 {% endblock javascript %}

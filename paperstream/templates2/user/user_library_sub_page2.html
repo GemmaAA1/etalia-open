@@ -1,0 +1,22 @@
+{% spaceless %}
+
+{% load endless %}
+{% load user_taste %}
+
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+   <data>{{ filter|safe }}</data>
+   <thumb-list><![CDATA[
+    {% if object_list %}
+        {% paginate first_page,per_page object_list %}
+
+        {% for ufmp in object_list %}
+            {% include 'feeds/thumb.html' with paper=ufmp.paper %}
+        {% endfor %}
+
+        {% show_more %}
+    {% endif %}
+    ]]></thumb-list>
+</response>
+
+{% endspaceless %}

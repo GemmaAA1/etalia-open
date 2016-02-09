@@ -1,6 +1,14 @@
 define(['jquery'], function($) {
 
-    var api = {}, $body;
+    var $body, api = {
+        debug: false
+    };
+
+    api.log = function() {
+        if (this.debug) {
+            console.log('[API] ' + arguments[0], Array.prototype.splice.call(arguments, 1));
+        }
+    };
 
     /**
      * Toggles the pinned state of the paper.
@@ -16,11 +24,12 @@ define(['jquery'], function($) {
             data: {'pk': id, 'source': source}
         })
         .done(function(data) {
+            api.log('pin success', data);
             data.id = id;
             $body.trigger('etalia.publication.pin', data);
         })
-        .fail(function() {
-            console.log('Pin request failed');
+        .fail(function(xrh, status, error) {
+            api.log('pin failure', xrh, status, error);
         });
     };
 
@@ -38,11 +47,12 @@ define(['jquery'], function($) {
             data: {'pk': id, 'source': source}
         })
         .done(function(data) {
+            api.log('ban success', data);
             data.id = id;
             $body.trigger('etalia.publication.ban', data);
         })
-        .fail(function() {
-            console.log('Ban request failed');
+        .fail(function(xrh, status, error) {
+            api.log('ban failure', xrh, status, error);
         });
     };
 
@@ -58,11 +68,12 @@ define(['jquery'], function($) {
             data: {'pk': id}
         })
         .done(function(data) {
+            api.log('add success', data);
             data.id = id;
             $body.trigger('etalia.publication.add', data);
         })
-        .fail(function() {
-            console.log('Add request failed');
+        .fail(function(xrh, status, error) {
+            api.log('add failure', xrh, status, error);
         });
     };
 
@@ -78,11 +89,12 @@ define(['jquery'], function($) {
             data: {'pk': id}
         })
         .done(function(data) {
+            api.log('trash success', data);
             data.id = id;
             $body.trigger('etalia.publication.trash', data);
         })
-        .fail(function() {
-            console.log('Trash request failed');
+        .fail(function(xrh, status, error) {
+            api.log('trash failure', xrh, status, error);
         });
     };
 
@@ -98,11 +110,12 @@ define(['jquery'], function($) {
             data: {'pk': id}
         })
         .done(function(data) {
+            api.log('restore success', data);
             data.id = id;
             $body.trigger('etalia.publication.restore', data);
         })
-        .fail(function() {
-            console.log('Trash request failed');
+        .fail(function(xrh, status, error) {
+            api.log('restore failure', xrh, status, error);
         });
     };
 

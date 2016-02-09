@@ -1,0 +1,61 @@
+{% extends 'feeds/base.html' %}
+
+{% load staticfiles %}
+{% load disqus_tags %}
+{% load user_taste %}
+
+{% block toggle-pinned %}{% endblock toggle-pinned %}
+{% block cluster-selector %}{% endblock cluster-selector %}
+{% block timespan-selector %}{% endblock timespan-selector %}
+
+{% block content %}
+{% spaceless %}
+
+    <!-- start list -->
+    <div id="list" class="document" data-load-url="{% url 'user:library-xml' %}" data-type="{{ tab }}">
+        <div class="wrapper">
+            <div class="list-tabs">
+                <div class="inner">
+                    <ul>
+                        <li class="user-library">
+                            <a href="{% url 'user:library' %}"{% if tab == 'main' %} class="active"{% endif %}>
+                                <strong>Articles</strong> (<span>{{ library_counter }}</span>)
+                            </a>
+                        </li>
+                        <li class="user-library-pins">
+                            <a href="{% url 'user:library-pins' %}"{% if tab == 'pin' %} class="active"{% endif %}>
+                                <strong>Pin</strong> (<span>{{ likes_counter }}</span>)
+                            </a>
+                        </li>
+                        <li class="user-library-trash">
+                            <a href="{% url 'user:library-trash' %}"{% if tab == 'trash' %} class="active"{% endif %}>
+                                <strong>Trash</strong> (<span>{{ trash_counter }}</span>)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="inner">
+                <div class="endless_data">
+                    {% include page_template %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end list -->
+
+    {% include 'feeds/detail.html' %}
+
+{% endspaceless %}
+{% endblock content %}
+
+
+{% block javascript %}
+<script src="{% static 'tmp/js/require.js' %}"></script>
+<script>
+    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+        requirejs(['app/user/library']);
+    });
+</script>
+{% endblock javascript %}

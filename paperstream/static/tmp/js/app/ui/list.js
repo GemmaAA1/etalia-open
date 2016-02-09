@@ -2,6 +2,8 @@ define(
     ['jquery', 'app/api', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
     function($, Api, Detail, Layout, Util, Templates) {
 
+    Api.debug = true;
+
     var $body, detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection,
@@ -280,6 +282,30 @@ define(
                 var $thumb = $(e.target).parents('.thumb').eq(0);
 
                 Api.ban($thumb.data('id'), window.location.pathname);
+
+                e.stopPropagation();
+                return false;
+            })
+            .on('click', '.thumb-library-add', function(e) {
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.add($thumb.data('id'));
+
+                e.stopPropagation();
+                return false;
+            })
+            .on('click', '.thumb-library-trash', function(e) {
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.trash($thumb.data('id'));
+
+                e.stopPropagation();
+                return false;
+            })
+            .on('click', '.thumb-library-restore', function(e) {
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.restore($thumb.data('id'));
 
                 e.stopPropagation();
                 return false;
