@@ -243,6 +243,11 @@ class UserLibraryView(UserLibraryPaperListView):
                             'paper__journal',
                             'paper__altmetric')
 
+    def get_context_data(self, **kwargs):
+        context = super(UserLibraryView, self).get_context_data(**kwargs)
+        context['tab'] = 'main'
+        return context
+
 library = UserLibraryView.as_view()
 
 
@@ -262,6 +267,11 @@ class UserLibraryTrashView(UserLibraryPaperListView):
                             'paper__journal',
                             'paper__altmetric')
 
+    def get_context_data(self, **kwargs):
+        context = super(UserLibraryTrashView, self).get_context_data(**kwargs)
+        context['tab'] = 'trash'
+        return context
+
 library_trash = UserLibraryTrashView.as_view()
 
 
@@ -280,6 +290,11 @@ class UserLibraryLikesView(UserLibraryPaperListView):
             .select_related('paper',
                             'paper__journal',
                             'paper__altmetric')
+
+    def get_context_data(self, **kwargs):
+        context = super(UserLibraryLikesView, self).get_context_data(**kwargs)
+        context['tab'] = 'pin'
+        return context
 
 library_likes = UserLibraryLikesView.as_view()
 
