@@ -110,7 +110,7 @@ stream_xml = StreamViewXML.as_view()
 
 class BaseTrendView(FeedPaperListView):
     model = TrendMatches
-    template_name = 'feeds/feed.html'
+    template_name = 'feeds/trend.html'
 
     def get_original_queryset(self):
         return self.model.objects\
