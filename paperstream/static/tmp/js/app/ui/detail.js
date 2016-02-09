@@ -1,4 +1,4 @@
-define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
+define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, Api, Utils, Sticky) {
 
     var Detail = function (options) {
 
@@ -28,22 +28,58 @@ define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
         });
     };
 
+    function toggleLibraryAddOrTrash($button, added) {
+        if (added) {
+            $button
+                .removeClass('detail-library-add')
+                .addClass('detail-library-trash')
+                .find('.eai')
+                    .removeClass('eai-library-add')
+                    .addClass('eai-library-trash');
+        } else {
+            $button
+                .removeClass('detail-library-trash')
+                .addClass('detail-library-add')
+                .find('.eai')
+                    .removeClass('eai-library-trash')
+                    .addClass('eai-library-add');
+        }
+    }
+
     Detail.prototype.init = function() {
         var that = this;
+
+        // API events
+        $('body')
+            .on('etalia.publication.pin', function(e, data) {
+                if (that.paperId == data.id && data.hasOwnProperty('is_liked')) {
+                    that.$actions
+                        .find('.detail-pin')
+                        .toggleClass('active', data['is_liked']);
+                }
+            })
+            .on('etalia.publication.ban', function(e, data) {
+                if (that.paperId == data.id && data.hasOwnProperty('is_ticked') && data['is_ticked']) {
+                    that.close();
+                }
+            })
+            .on('etalia.publication.add', function(e, data) {
+                if (that.paperId == data.id && data.hasOwnProperty('success') && data['success']) {
+                    var $button = that.$actions.find('.detail-library-add');
+                    toggleLibraryAddOrTrash($button, true);
+                }
+            })
+            .on('etalia.publication.trash', function(e, data) {
+                if (that.paperId == data.id && data.hasOwnProperty('success') && data['success']) {
+                    that.close();
+                }
+            });
 
         // Pin button
         this.$document.on('click', '.detail-pin', function(e) {
             if (!that.paperId) throw 'Undefined paper id';
 
-            var $button = $(e.target).closest('.detail-pin');
-
-            Api.pin(that.paperId) // TODO source = window.location.pathname ?
-                .done(function(pinned) {
-                    $button.toggleClass('active', pinned);
-                })
-                .fail(function(error) {
-                    console.log(error);
-                });
+            Api.pin(that.paperId);
 
             e.stopPropagation();
             return false;
@@ -53,37 +89,27 @@ define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
         this.$document.on('click', '.detail-ban', function(e) {
             if (!that.paperId) throw 'Undefined paper id';
 
-            Api.ban(that.paperId) // TODO source = window.location.pathname ?
-                .done(function(banned) {
-                    if (banned) {
-                        that.close();
-                    }
-                })
-                .fail(function(error) {
-                    console.log(error);
-                });
+            Api.ban(that.paperId);
 
             e.stopPropagation();
             return false;
         });
 
         // Add to library button
-        this.$document.on('click', '.detail-library-add', function(e) {
+        this.$document.on('click', '.detail-library-add:visible', function(e) {
             if (!that.paperId) throw 'Undefined paper id';
 
-            var $button = $(e.target).closest('.detail-library-add');
-            // TODO Don't add twice ?
-            if ($button.hasClass('active')) {
-                return;
-            }
+            Api.add(that.paperId);
 
-            Api.add(that.paperId)
-                .done(function(added) {
-                    $button.toggleClass('active', added);
-                })
-                .fail(function(error) {
-                    console.log(error);
-                });
+            e.stopPropagation();
+            return false;
+        });
+
+        // Trash from library button
+        this.$document.on('click', '.detail-library-trash:visible', function(e) {
+            if (!that.paperId) throw 'Undefined paper id';
+
+            Api.trash(that.paperId);
 
             e.stopPropagation();
             return false;
@@ -94,14 +120,15 @@ define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
 
     Detail.prototype.load = function ($thumb) {
         var that = this,
+            $body = $('body'),
             $prev = $thumb.prev(),
             $next = $thumb.next();
 
-        $(that).trigger('etalia.detail.loading');
-
         that.clear();
 
-        $('body').addClass('detail-opened');
+        $body
+            .addClass('detail-opened')
+            .trigger('etalia.detail.loading');
 
         // Previous button
         if ($prev.length) {
@@ -146,7 +173,7 @@ define(['jquery', 'app/api', 'app/util/sticky'], function ($, Api, Sticky) {
                 that.loaded = true;
                 that.loadXhr = null;
 
-                $(that).trigger('etalia.detail.loaded');
+                $body.trigger('etalia.detail.loaded');
             });
 
         return this;

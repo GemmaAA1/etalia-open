@@ -1,35 +1,36 @@
 define(['jquery'], function($) {
 
-    var api = {};
+    var $body, api = {
+        debug: false
+    };
+
+    api.log = function() {
+        if (this.debug) {
+            console.log('[API] ' + arguments[0], Array.prototype.splice.call(arguments, 1));
+        }
+    };
 
     /**
      * Toggles the pinned state of the paper.
      *
      * @param id        (int) The paper id/pk
      * @param source    (string) The source page
-     *
-     * @returns Promise(resolve(pinned :bool), reject(error :string))
      */
     api.pin = function(id, source) {
-        var d = $.Deferred();
-
+        source = source || '';
         $.ajax({
             type: 'POST',
             url: '/user/paper/pin',
             data: {'pk': id, 'source': source}
         })
-        .done(function(json) {
-            if (json.hasOwnProperty('is_liked')) {
-                d.resolve(true == json['is_liked']);
-            } else {
-                d.resolve(false);
-            }
+        .done(function(data) {
+            api.log('pin success', data);
+            data.id = id;
+            $body.trigger('etalia.publication.pin', data);
         })
-        .fail(function() {
-            d.reject('Pin request failed');
+        .fail(function(xrh, status, error) {
+            api.log('pin failure', xrh, status, error);
         });
-
-        return d.promise();
     };
 
     /**
@@ -37,117 +38,90 @@ define(['jquery'], function($) {
      *
      * @param id        (int) The paper id/pk
      * @param source    (string) The source page
-     *
-     * @returns Promise(resolve(banned :bool), reject(error :string))
      */
     api.ban = function(id, source) {
-        var d = $.Deferred();
-
+        source = source || '';
         $.ajax({
             type: 'POST',
             url: '/user/paper/ban',
             data: {'pk': id, 'source': source}
         })
-        .done(function(json) {
-            if (json.hasOwnProperty('is_ticked')) {
-                d.resolve(true == json['is_ticked']);
-            } else {
-                d.resolve(false);
-            }
+        .done(function(data) {
+            api.log('ban success', data);
+            data.id = id;
+            $body.trigger('etalia.publication.ban', data);
         })
-        .fail(function() {
-            d.reject('Ban request failed');
+        .fail(function(xrh, status, error) {
+            api.log('ban failure', xrh, status, error);
         });
-
-        return d.promise();
     };
 
     /**
      * Adds the paper to the user library.
      *
-     * @param id    (int) The paper id/pk
-     *
-     * @returns Promise(resolve(added :bool), reject(error :string))
+     * @param id (int) The paper id/pk
      */
     api.add = function(id) {
-        var d = $.Deferred();
-
         $.ajax({
             type: 'POST',
             url: '/user/paper/add',
             data: {'pk': id}
         })
-        .done(function(json) {
-            if (json.hasOwnProperty('success')) {
-                d.resolve(true == json['success']);
-            } else {
-                d.resolve(false);
-            }
+        .done(function(data) {
+            api.log('add success', data);
+            data.id = id;
+            $body.trigger('etalia.publication.add', data);
         })
-        .fail(function() {
-            d.reject('Add request failed');
+        .fail(function(xrh, status, error) {
+            api.log('add failure', xrh, status, error);
         });
-
-        return d.promise();
     };
 
     /**
      * Trashes the paper from the user library.
      *
-     * @param id    (int) The paper id/pk
-     *
-     * @returns Promise(resolve(added :bool), reject(error :string))
+     * @param id (int) The paper id/pk
      */
     api.trash = function(id) {
-        var d = $.Deferred();
-
         $.ajax({
             type: 'POST',
             url: '/user/paper/trash',
             data: {'pk': id}
         })
-        .done(function(json) {
-            if (json.hasOwnProperty('success')) {
-                d.resolve(true == json['success']);
-            } else {
-                d.resolve(false);
-            }
+        .done(function(data) {
+            api.log('trash success', data);
+            data.id = id;
+            $body.trigger('etalia.publication.trash', data);
         })
-        .fail(function() {
-            d.reject('Trash request failed');
+        .fail(function(xrh, status, error) {
+            api.log('trash failure', xrh, status, error);
         });
-
-        return d.promise();
     };
 
     /**
      * Restores the paper into the user library.
      *
-     * @param id    (int) The paper id/pk
-     *
-     * @returns Promise(resolve(added :bool), reject(error :string))
+     * @param id (int) The paper id/pk
      */
     api.restore = function(id) {
-        var d = $.Deferred();
-
         $.ajax({
             type: 'POST',
             url: '/user/paper/restore',
             data: {'pk': id}
         })
-        .done(function(json) {
-            if (json.hasOwnProperty('success')) {
-                d.resolve(true == json['success']);
-            } else {
-                d.resolve(false);
-            }
+        .done(function(data) {
+            api.log('restore success', data);
+            data.id = id;
+            $body.trigger('etalia.publication.restore', data);
         })
-        .fail(function() {
-            d.reject('Trash request failed');
+        .fail(function(xrh, status, error) {
+            api.log('restore failure', xrh, status, error);
         });
-
-        return d.promise();
     };
+
+    $(function() {
+        $body = $('body');
+    });
 
     return api;
 });

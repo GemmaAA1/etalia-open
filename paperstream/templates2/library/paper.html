@@ -14,8 +14,8 @@
     <a href="javascript: void(0)" class="detail-ban">
         <span class="eai eai-remove"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-library-add">
-        <span class="eai eai-library-add"></span>
+    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% else %}add{% endif %}">
+        <span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>
     </a>
 
     <a href="javascript: void(0)" class="detail-comments">

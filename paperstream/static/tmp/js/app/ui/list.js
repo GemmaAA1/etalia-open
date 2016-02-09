@@ -2,7 +2,9 @@ define(
     ['jquery', 'app/api', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
     function($, Api, Detail, Layout, Util, Templates) {
 
-    var detail, $search, $togglePinned,
+    Api.debug = true;
+
+    var $body, detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection,
         openedFiltersGroups,
@@ -81,7 +83,6 @@ define(
     }
 
     function updateControlsStates(data) {
-        console.log(data);
         // List title
         if (data.hasOwnProperty('number_of_papers')) {
             $('.list-title span').html(data['number_of_papers']);
@@ -147,7 +148,7 @@ define(
     }
 
     $(function() {
-
+        $body = $('body');
         $search = $('#search');
         $togglePinned = $('#toggle-pinned');
 
@@ -270,16 +271,9 @@ define(
          */
         $('#list, #detail')
             .on('click', '.thumb-pin', function(e) {
-                var $button = $(this),
-                    $thumb = $(e.target).parents('.thumb').eq(0);
+                var $thumb = $(e.target).parents('.thumb').eq(0);
 
-                Api.pin($thumb.data('id'), window.location.pathname)
-                    .done(function(pinned) {
-                        $button.toggleClass('active', pinned);
-                    })
-                    .fail(function(error) {
-                        console.log(error);
-                    });
+                Api.pin($thumb.data('id'), window.location.pathname);
 
                 e.stopPropagation();
                 return false;
@@ -287,15 +281,31 @@ define(
             .on('click', '.thumb-ban', function(e) {
                 var $thumb = $(e.target).parents('.thumb').eq(0);
 
-                Api.ban($thumb.data('id'), window.location.pathname)
-                    .done(function(banned) {
-                        if (banned) {
-                            $thumb.remove();
-                        }
-                    })
-                    .fail(function(error) {
-                        console.log(error);
-                    });
+                Api.ban($thumb.data('id'), window.location.pathname);
+
+                e.stopPropagation();
+                return false;
+            })
+            .on('click', '.thumb-library-add', function(e) {
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.add($thumb.data('id'));
+
+                e.stopPropagation();
+                return false;
+            })
+            .on('click', '.thumb-library-trash', function(e) {
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.trash($thumb.data('id'));
+
+                e.stopPropagation();
+                return false;
+            })
+            .on('click', '.thumb-library-restore', function(e) {
+                var $thumb = $(e.target).parents('.thumb').eq(0);
+
+                Api.restore($thumb.data('id'));
 
                 e.stopPropagation();
                 return false;
@@ -318,15 +328,6 @@ define(
         detail = new Detail();
         detail.init();
 
-        // Loading events
-        $(detail)
-            .on('etalia.detail.loading', function() {
-                Layout.setBusy();
-            })
-            .on('etalia.detail.loaded', function() {
-                Layout.setAvailable();
-            });
-
         $('.document').on('click', '.thumb .title a', function(e) {
             detail.load($(e.target).closest('.thumb'));
 
@@ -334,6 +335,14 @@ define(
             return false;
         });
 
+        // Events
+        $body
+            .on('etalia.detail.loading', function() {
+                Layout.setBusy();
+            })
+            .on('etalia.detail.loaded', function() {
+                Layout.setAvailable();
+            });
     });
 });
 
