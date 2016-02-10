@@ -225,7 +225,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         # block = 0
         authors = []
         for i, auth in enumerate(authors_ordered):
-            authors.append((auth.pk, auth.print_full, None))
+            authors.append((auth.pk, auth.print_full))
 
         return {'authors': authors}
 

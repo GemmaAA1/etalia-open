@@ -11,7 +11,7 @@
         </a>
         <div class="filter-filters collapse in">
             <ul>
-                {% for jpk, jtitle, count, block in journals %}
+                {% for jpk, jtitle, count in journals %}
                 <li{% if forloop.counter0 > 10 and not jtitle|lower in journals_filter %} style="display:none;"{% endif %}>
                     <a href="javascript: void(0)" data-id="{{ jpk }}" title="{{ jtitle }}"
                        {% if jtitle|lower in journals_filter %} class="active" {% endif %}>
@@ -34,10 +34,10 @@
         </a>
         <div class="filter-filters collapse in">
             <ul>
-                {% for auth, author_full_name, block in authors %}
-                <li{% if forloop.counter0 > 10 and not auth.pk in authors_filter %} style="display:none;"{% endif %}>
-                    <a href="javascript: void(0)" data-id="{{ auth.pk }}" title="{{ author_full_name }}"
-                       {% if auth.pk in authors_filter %} class="active" {% endif %}>
+                {% for auth_pk, author_full_name in authors %}
+                <li{% if forloop.counter0 > 10 and not auth_pk in authors_filter %} style="display:none;"{% endif %}>
+                    <a href="javascript: void(0)" data-id="{{ auth_pk }}" title="{{ author_full_name }}"
+                       {% if auth_pk in authors_filter %} class="active" {% endif %}>
                         <span class="filter-checkbox"></span> {{ author_full_name }}
                     </a>
                 </li>
