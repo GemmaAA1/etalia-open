@@ -2,30 +2,28 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
 
     var listType, countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
 
-    pinHandler = function(e, data) {
-        if (data.hasOwnProperty('is_pinned')) {
-            $('.thumb[data-id=' + data.id + ']')
-                .find('.thumb-pin')
-                .toggleClass('active', data['is_pinned']);
+    pinHandler = function(e, result) {
+        $('.thumb[data-id=' + result.getId() + ']')
+            .find('.thumb-pin')
+            .toggleClass('active', result.isPinned());
+    };
+
+    addHandler = restoreHandler = function(e, result) {
+        if (result.isAdded()) {
+            $('.thumb[data-id=' + result.getId() + ']').remove();
         }
     };
 
-    addHandler = trashHandler = restoreHandler = function(e, data) {
-        if (data.hasOwnProperty('success') && data['success']) {
-            $('.thumb[data-id=' + data.id + ']').remove();
+    trashHandler = function(e, result) {
+        if (result.isTrashed()) {
+            $('.thumb[data-id=' + result.getId() + ']').remove();
         }
     };
 
-    countsHandler = function(e, data) {
-        if (data.hasOwnProperty('library_counter')) {
-            $('.user-library span').text(data['library_counter']);
-        }
-        if (data.hasOwnProperty('likes_counter')) {
-            $('.user-library-pins span').text(data['likes_counter']);
-        }
-        if (data.hasOwnProperty('trash_counter')) {
-            $('.user-library-trash span').text(data['trash_counter']);
-        }
+    countsHandler = function(e, result) {
+        $('.user-library span').text(result.getLibraryCount());
+        $('.user-library-pins span').text(result.getPinCount());
+        $('.user-library-trash span').text(result.getTrashCount());
     };
 
     function toggleLibraryAddOrTrash($button, added) {
@@ -51,20 +49,20 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
         listType = $('#list').data('type');
 
         if (listType == 'pin') {
-            pinHandler = function(e, data) {
-                if (data.hasOwnProperty('is_pinned') && !data['is_pinned']) {
-                    $('.thumb[data-id=' + data.id + ']').remove();
+            pinHandler = function(e, result) {
+                if (!result.isPinned()) {
+                    $('.thumb[data-id=' + result.getId() + ']').remove();
                 }
             };
-            addHandler = function(e, data) {
-                if (data.hasOwnProperty('success') && data['success']) {
-                    var $button = $('.thumb[data-id=' + data.id + '] .thumb-library-add');
+            addHandler = function(e, result) {
+                if (result.isAdded()) {
+                    var $button = $('.thumb[data-id=' + result.getId() + '] .thumb-library-add');
                     toggleLibraryAddOrTrash($button, true);
                 }
             };
-            trashHandler = function(e, data) {
-                if (data.hasOwnProperty('success') && data['success']) {
-                    var $button = $('.thumb[data-id=' + data.id + '] .thumb-library-trash');
+            trashHandler = function(e, result) {
+                if (result.isTrashed()) {
+                    var $button = $('.thumb[data-id=' + result.getId() + '] .thumb-library-trash');
                     toggleLibraryAddOrTrash($button, false);
                 }
             };

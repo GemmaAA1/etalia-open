@@ -2,8 +2,6 @@ define(
     ['jquery', 'app/api', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
     function($, Api, Detail, Layout, Util, Templates) {
 
-    Api.debug = true;
-
     var $body, detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection,
@@ -118,7 +116,6 @@ define(
     function updateFiltersVisibility($group) {
         var $filters = $group.find('ul a'),
             count = groupStatesRegistry.getCount($group.data('id'));
-        console.log(count, $filters.length);
         if (count >= $filters.length) {
             $filters.show();
             $group.find('.filter-more').hide();
