@@ -9,7 +9,7 @@ url: ```[POST] /user/paper/pin```
 
 ```json
 {
-    'pk':     (int),
+    'id':     (int),
     'source': (string),
 }
 ```
@@ -18,9 +18,18 @@ url: ```[POST] /user/paper/pin```
 
 ```json
 {
-    'is_liked':      (bool), # Pinned or not
-    'is_ticked':     (bool), # Banned or not 
-    'likes_counter': (int),  # ?
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 ```
 
@@ -31,9 +40,18 @@ url: ```[POST] /user/paper/pin```
 ```json
 {
     'id':            (int),
-    'is_liked':      (bool), # Pinned or not
-    'is_ticked':     (bool), # Banned or not 
-    'likes_counter': (int),  # ?
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':      (int),
+        'ban':      (int),
+        'trash':    (int),
+        'library':  (int),
+    }
 }
 ```
 
@@ -45,7 +63,7 @@ url: ```[POST] /user/paper/ban```
 
 ```json
 {
-    'pk':     (int),
+    'id':     (int),
     'source': (string),
 }
 ```
@@ -54,9 +72,18 @@ url: ```[POST] /user/paper/ban```
 
 ```json
 {
-    'is_liked':      (bool), # Pinned or not
-    'is_ticked':     (bool), # Banned or not 
-    'likes_counter': (int),  # ?
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 ```
 
@@ -67,9 +94,18 @@ url: ```[POST] /user/paper/ban```
 ```json
 {
     'id':            (int),
-    'is_liked':      (bool), # Pinned or not
-    'is_ticked':     (bool), # Banned or not 
-    'likes_counter': (int),  # ?
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 ```
 
@@ -82,7 +118,7 @@ url: ```[POST] /user/paper/add```
 
 ```json
 {
-    'pk': (int),
+    'id': (int),
 }
 ```
 
@@ -90,11 +126,18 @@ url: ```[POST] /user/paper/add```
 
 ```json
 {
-    'success':         true,
-    'trash_counter':   (int),
-    'library_counter': (int),
-    'likes_counter':   (int),
-    'message':         (string)
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 // OR
 {
@@ -110,10 +153,18 @@ url: ```[POST] /user/paper/add```
 ```json
 {
     'id':              (int),
-    'trash_counter':   (int),
-    'library_counter': (int),
-    'likes_counter':   (int),
-    'message':         (string)
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 ```
 
@@ -126,7 +177,7 @@ url: ```[POST] /user/paper/trash```
 
 ```json
 {
-    'pk': (int),
+    'id': (int),
 }
 ```
 
@@ -134,11 +185,18 @@ url: ```[POST] /user/paper/trash```
 
 ```json
 {
-    'success':         true,
-    'trash_counter':   (int),
-    'library_counter': (int),
-    'likes_counter':   (int),
-    'message':         (string)
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 // OR
 {
@@ -154,10 +212,18 @@ url: ```[POST] /user/paper/trash```
 ```json
 {
     'id':              (int),
-    'trash_counter':   (int),
-    'library_counter': (int),
-    'likes_counter':   (int),
-    'message':         (string)
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 ```
 
@@ -170,7 +236,7 @@ url: ```[POST] /user/paper/restore```
 
 ```json
 {
-    'pk': (int),
+    'id': (int),
 }
 ```
 
@@ -178,11 +244,18 @@ url: ```[POST] /user/paper/restore```
 
 ```json
 {
-    'success':         true,
-    'trash_counter':   (int),
-    'library_counter': (int),
-    'likes_counter':   (int),
-    'message':         (string)
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 // OR
 {
@@ -198,9 +271,17 @@ url: ```[POST] /user/paper/restore```
 ```json
 {
     'id':              (int),
-    'trash_counter':   (int),
-    'library_counter': (int),
-    'likes_counter':   (int),
-    'message':         (string)
+    'state': {
+        'is_pinned':    (bool), # Pinned or not
+        'is_banned':    (bool), # Banned or not
+        'is_trashed':   (bool), # In user trash or not
+        'is_added':     (bool), # In user library or not
+    }
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
 }
 ```

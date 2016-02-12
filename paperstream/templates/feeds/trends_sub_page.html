@@ -11,8 +11,8 @@
 {#                {% elif dfp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ dfp.paper.id_pmi }}"></div>#}
 {#                {% endif %}#}
 {#            </div>#}
-            <div class="row compact {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
-                {% if user_taste|get_is_liked:dfp.paper.pk %}
+            <div class="row compact {% if user_taste|get_is_pinned:dfp.paper.pk %} bg-active {% endif %}">
+                {% if user_taste|get_is_pinned:dfp.paper.pk %}
                 <div class="short">
                 {% else %}
                 <div class="long">
@@ -26,7 +26,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row extended {% if user_taste|get_is_liked:dfp.paper.pk %} bg-active {% endif %}">
+            <div class="row extended {% if user_taste|get_is_pinned:dfp.paper.pk %} bg-active {% endif %}">
                 <div class="row">
                     <div class="col-lg-10 nopadding">
                         <div class="title">{{ dfp.paper.title }}</div>
@@ -68,10 +68,10 @@
                         <a class="open no-toggling" href="{% url 'library:paper' dfp.paper.pk %}" target="_blank" text="Open in new window"></a>
                     </li>
                     <li>
-                        <a class="like no-toggling {% if user_taste|get_is_liked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
+                        <a class="like no-toggling {% if user_taste|get_is_pinned:dfp.paper.pk %} active {% endif %}" href="javascript:void(0)" text="Like"></a>
                     </li>
                     <li>
-                        <a class="tick no-toggling {% if user_taste|get_is_ticked:dfp.paper.pk %} active {% endif %}" href="javascript:void(0) text="Remove from stream"></a>
+                        <a class="tick no-toggling {% if user_taste|get_is_banned:dfp.paper.pk %} active {% endif %}" href="javascript:void(0) text="Remove from stream"></a>
                     </li>
                 </ul>
             </div>

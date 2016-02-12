@@ -141,7 +141,7 @@ class PaperView(ModalMixin, DetailView):
         if not self.request.user.is_anonymous():
             try:
                 ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
-                context['is_liked'] = ut.is_liked
+                context['is_pinned'] = ut.is_pinned
             except UserTaste.DoesNotExist:
                 pass
 

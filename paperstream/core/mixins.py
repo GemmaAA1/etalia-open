@@ -25,12 +25,12 @@ class AjaxableResponseMixin(object):
         # call form.save() for example)
         response = super(AjaxableResponseMixin, self).form_valid(form)
         if self.request.is_ajax():
-            data = self.get_ajax_data()
+            data = self.get_ajax_data(form=form)
             return JsonResponse(data)
         else:
             return response
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, *kwargs):
         raise NotImplementedError
 
 

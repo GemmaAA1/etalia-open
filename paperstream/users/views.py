@@ -27,7 +27,7 @@ from paperstream.library.models import Paper
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
-    UserEmailDigestSettingsForm
+    UserEmailDigestSettingsForm, UserTasteForm, UserLibPaperForm
 from .models import Affiliation, UserLibPaper, UserTaste, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
@@ -66,7 +66,7 @@ class UserLoginView(AjaxableResponseMixin, FormView):
     def get_success_url(self):
         return reverse('feeds:main')
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'email': self.request.user.email,
                 'redirect': self.get_success_url(),
                 }
@@ -107,7 +107,7 @@ class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
             }
         return super(UserBasicInfoSignupView, self).form_valid(form)
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'redirect': self.get_success_url()}
         return data
 
@@ -175,7 +175,7 @@ class UserLibraryPaperListView(BasePaperListView):
             .count()
         # Like counter
         context['likes_counter'] = UserTaste.objects\
-            .filter(user=self.request.user, is_liked=True)\
+            .filter(user=self.request.user, is_pinned=True)\
             .count()
         # library counter
         context['library_counter'] = UserLibPaper.objects\
@@ -206,7 +206,7 @@ class UserLibraryPaperListView(BasePaperListView):
         # Exclude rejected paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user,
-                    is_ticked=True)\
+                    is_banned=True)\
             .values('paper')
         self.original_qs = self.original_qs.exclude(paper__in=papers_ticked)
 
@@ -289,7 +289,7 @@ class UserLibraryLikesView(UserLibraryPaperListView):
     def get_original_queryset(self):
         return UserTaste.objects\
             .filter(user=self.request.user,
-                    is_liked=True)\
+                    is_pinned=True)\
             .select_related('paper',
                             'paper__journal',
                             'paper__altmetric')
@@ -324,7 +324,7 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
             .filter(userlib=self.request.user.lib, is_trashed=False)\
             .count()
         context['likes_counter'] = UserTaste.objects\
-            .filter(user=self.request.user, is_liked=True)\
+            .filter(user=self.request.user, is_pinned=True)\
             .count()
         return context
 
@@ -351,7 +351,7 @@ class UpdateUserNameView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView):
     def get_success_url(self):
         return reverse('core:home')
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'first_name': self.request.user.first_name,
                 'last_name': self.request.user.last_name}
         return data
@@ -368,7 +368,7 @@ class UpdateUserTitleView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView)
     def get_success_url(self):
         return reverse('core:home')
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'title': self.request.user.title}
         return data
 
@@ -384,7 +384,7 @@ class UpdateUserPositionView(LoginRequiredMixin, AjaxableResponseMixin, UpdateVi
     def get_success_url(self):
         return reverse('core:home')
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'position': self.request.user.position}
         return data
 
@@ -416,7 +416,7 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.save()
         return super(UserAffiliationUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'print-affiliation':
                     self.request.user.affiliation.print_affiliation}
         return data
@@ -455,7 +455,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.save()
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'stream_vector_weight': '{0:.2f}'.format(self.request.user.settings.stream_vector_weight),
                 'stream_author_weight': '{0:.2f}'.format(self.request.user.settings.stream_author_weight),
                 'stream_journal_weight': '{0:.2f}'.format(self.request.user.settings.stream_journal_weight),
@@ -484,7 +484,7 @@ class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.save()
         return super(UserTrendSettingsUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'trend_doc_weight': '{0:.2f}'.format(self.request.user.settings.trend_doc_weight),
                 'trend_altmetric_weight': '{0:.2f}'.format(self.request.user.settings.trend_altmetric_weight),
                 }
@@ -512,7 +512,7 @@ class UserEmailDigestSettingsUpdateView(LoginRequiredMixin,
         self.request.user.settings.save()
         return super(UserEmailDigestSettingsUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self):
+    def get_ajax_data(self, **kwargs):
         data = {'email_digest_frequency': self.request.user.settings.get_email_digest_frequency_display(),
                 }
         return data
@@ -580,211 +580,141 @@ def update_library(request):
             return JsonResponse(data, status=409)
 
 
-@login_required
-def pin_call(request):
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        source = request.POST.get('source', '')
-        paper_ = get_object_or_404(Paper, pk=pk)
-        if 'stream' in source:
-            context_source = 'stream'
-        elif 'trend' in source:
-            context_source = 'trend'
-        elif 'library' in source:
-            context_source = 'library'
-        else:
-            context_source = source
-        ut, _ = UserTaste.objects.get_or_create(
-            paper=paper_,
-            user=request.user)
-        if ut.is_liked:
-            ut.is_liked = False
-        else:
-            ut.is_liked = True
-        ut.context_source = context_source
-        ut.save()
-        data = {'is_liked': ut.is_liked,
-                'is_ticked': ut.is_ticked,
-                'likes_counter': UserTaste.objects
-                    .filter(user=request.user, is_liked=True)
-                    .count()}
-        return JsonResponse(data)
-    else:
-        return redirect('feeds:main')
+class UserPaperCallView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
+    """Abstract class to deal with intercation between user and paper"""
+    def get_success_url(self):
+        return reverse('core:home')
 
+    def get_form_kwargs(self):
+        kwargs = super(UserPaperCallView, self).get_form_kwargs()
+        return kwargs
 
-@login_required
-def ban_call(request):
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        source = request.POST.get('source')
-        paper_ = get_object_or_404(Paper, pk=pk)
-        if 'stream' in source:
-            context_source = 'stream'
-        elif 'trend' in source:
-            context_source = 'trend'
-        elif 'library' in source:
-            context_source = 'library'
-        else:
-            context_source = source
-        ut, _ = UserTaste.objects.get_or_create(
-            paper=paper_,
-            user=request.user,
-            context_source=context_source)
-        if ut.is_ticked:
-            ut.is_ticked = False
-        else:
-            ut.is_ticked = True
-        ut.save()
-        data = {'is_liked': ut.is_liked,
-                'is_ticked': ut.is_ticked,
-                'likes_counter': UserTaste.objects
-                    .filter(user=request.user, is_liked=True)
-                    .count()}
-        return JsonResponse(data)
-    else:
-        return redirect('feeds:main')
+    def get_ajax_data(self, **kwargs):
+        return {
+           'state': self.request.user.get_paper_state(
+               kwargs['form'].cleaned_data['paper'].id),
+           'counter': self.request.user.get_counters()
+        }
 
-
-@login_required
-def add_call(request):
-    """Push paper to user reference manager and add to local library"""
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        user = request.user
+    def get_session_backend(self):
+        user = self.request.user
         provider_name = user.social_auth.first().provider
-
         # get social
         social = user.social_auth.get(provider=provider_name)
-
         # get backend
         backend = social.get_backend_instance()
-
         # build session
         session = backend.get_session(social, user)
+        return session, backend
 
-        # Get paper
-        paper = Paper.objects.get(pk=pk)
 
-        # push paper to lib
+class PinCallView(UserPaperCallView):
+
+    form_class = UserTasteForm
+
+    def form_valid(self, form):
+        ut, _ = UserTaste.objects.get_or_create(
+            paper=form.cleaned_data['paper'],
+            user=self.request.user
+        )
+        ut.is_pinned = not ut.is_pinned
+        ut.source = form.cleaned_data['source']
+        ut.save()
+        return super(PinCallView, self).form_valid(form)
+
+pin_call = PinCallView.as_view()
+
+
+class BanCallView(UserPaperCallView):
+
+    form_class = UserTasteForm
+
+    def form_valid(self, form):
+        ut, _ = UserTaste.objects.get_or_create(
+            paper=form.cleaned_data['paper'],
+            user=self.request.user
+        )
+        ut.is_banned = not ut.is_banned
+        ut.source = form.cleaned_data['source']
+        ut.save()
+        return super(BanCallView, self).form_valid(form)
+
+ban_call = BanCallView.as_view()
+
+
+class AddCallView(UserPaperCallView):
+
+    form_class = UserLibPaperForm
+
+    def form_valid(self, form):
+        session, backend = self.get_session_backend()
+        # add paper to user lib
+        paper = form.cleaned_data['paper']
         err, paper_provider_id = backend.add_paper(session, paper)
-
-        # return JSON data
         if not err:
-            # add paper locally
-            backend.associate_paper(paper, user, {'created': timezone.now().date()},
-                                paper_provider_id)
-            backend.associate_journal(paper.journal, user)
-            data = {'success': True,
-                    'trash_counter':  UserLibPaper.objects\
-                        .filter(userlib=request.user.lib, is_trashed=True)\
-                        .count(),
-                    'library_counter': UserLibPaper.objects\
-                        .filter(userlib=request.user.lib, is_trashed=False)\
-                        .count(),
-                    'likes_counter': UserTaste.objects\
-                        .filter(user=request.user, is_liked=True)\
-                        .count(),
-                    'message': ''}
+            backend.associate_paper(paper, self.request.user,
+                                    {'created': timezone.now().date()},
+                                    paper_provider_id)
+            backend.associate_journal(paper.journal, self.request.user)
+            return super(AddCallView, self).form_valid(form)
         else:
             data = {'success': False,
-                    'message': 'Cannot add this paper to your library. Something went wrong'}
-        return JsonResponse(data)
+                    'message': 'Failed to add {title} to y{provider} '
+                               'library'.format(title=paper.title,
+                                                provider=backend.name)}
+            return JsonResponse(data)
+
+add_call = AddCallView.as_view()
 
 
-@login_required
-def trash_call(request):
-    """Trash paper from user library"""
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        user = request.user
+class TrashCallView(UserPaperCallView):
 
-        # get social
-        social = user.social_auth.first()
+    form_class = UserLibPaperForm
 
-        # get backend
-        backend = social.get_backend_instance()
-
-        # build session
-        session = backend.get_session(social, user)
-
-        # Get userlibpaper
-        ulp = user.lib.userlib_paper.get(paper_id=pk)
-
+    def form_valid(self, form):
+        session, backend = self.get_session_backend()
         # remove paper from provider lib
+        ulp = self.request.user.lib.userlib_paper.get(
+            paper=form.cleaned_data['paper'])
         err = backend.trash_paper(session, ulp)
-
         if not err:
             # remove paper locally from user library
             ulp.is_trashed = True
             ulp.save(update_fields=['is_trashed'])
-            # build json data
-            data = {'success': True,
-                    'trash_counter':  UserLibPaper.objects\
-                        .filter(userlib=request.user.lib, is_trashed=True)\
-                        .count(),
-                    'library_counter': UserLibPaper.objects\
-                        .filter(userlib=request.user.lib, is_trashed=False)\
-                        .count(),
-                    'likes_counter': UserTaste.objects\
-                        .filter(user=request.user, is_liked=True)\
-                        .count(),
-                    'message': ''}
+            return super(TrashCallView, self).form_valid(form)
         else:
             data = {'success': False,
-                    'message': 'Cannot remove this paper to your library. Something went wrong'}
-            logger.error('Fail trashing paper {pk} for user {pk_user}'.format(
-                pk=pk,
-                pk_user=user.pk))
-        return JsonResponse(data)
+                    'message': 'Failed to trash {title} from your {provider} '
+                               'library'.format(title=ulp.paper.title,
+                                                provider=backend.name)}
+            return JsonResponse(data)
+
+trash_call = TrashCallView.as_view()
 
 
-@login_required
-def restore_call(request):
-    """Restore paper from trash"""
-    if request.method == 'POST':
-        pk = int(request.POST.get('pk'))
-        user = request.user
-        provider_name = user.social_auth.first().provider
+class RestoreCallView(UserPaperCallView):
 
-        # get social
-        social = user.social_auth.get(provider=provider_name)
+    form_class = UserLibPaperForm
 
-        # get backend
-        backend = social.get_backend_instance()
-
-        # build session
-        session = backend.get_session(social, user)
-
-        # Get paper
-        paper = Paper.objects.get(pk=pk)
-
-        # push paper to lib
+    def form_valid(self, form):
+        session, backend = self.get_session_backend()
+        # trash paper to user lib
+        paper = form.cleaned_data['paper']
         err, paper_provider_id = backend.add_paper(session, paper)
-
-        # return JSON data
         if not err:
-            # restore paper locally from user library
-            ulp = user.lib.userlib_paper.get(paper_id=pk)
+            # remove paper locally from user library
+            ulp = self.request.user.lib.userlib_paper.get(paper=paper)
             ulp.is_trashed = False
             ulp.save(update_fields=['is_trashed'])
-            # build response
-            data = {'success': True,
-                    'trash_counter':  UserLibPaper.objects\
-                        .filter(userlib=request.user.lib, is_trashed=True)\
-                        .count(),
-                    'library_counter': UserLibPaper.objects\
-                        .filter(userlib=request.user.lib, is_trashed=False)\
-                        .count(),
-                    'likes_counter': UserTaste.objects\
-                        .filter(user=request.user, is_liked=True)\
-                        .count(),
-                    'message': ''}
+            return super(RestoreCallView, self).form_valid(form)
         else:
             data = {'success': False,
-                    'message': 'Cannot add this paper to your library. Something went wrong'}
-        return JsonResponse(data)
+                    'message': 'Failed to restore {title} to your {provider} '
+                               'library'.format(title=paper.title,
+                                                provider=backend.name)}
+            return JsonResponse(data)
 
+restore_call = RestoreCallView.as_view()
 
 @login_required
 def send_invite(request):

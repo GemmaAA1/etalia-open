@@ -15,7 +15,7 @@
     {% for ufmp in object_list %}
         <div id="{{ ufmp.paper.pk }}" class="paper-list">
             <div class="row compact">
-                {% if user_taste|get_is_liked:ufmp.paper.pk %}
+                {% if user_taste|get_is_pinned:ufmp.paper.pk %}
                 <div class="short">
                 {% else %}
                 <div class="long">
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row extended {% if user_taste|get_is_liked:ufmp.paper.pk %} bg-active {% endif %}">
+            <div class="row extended {% if user_taste|get_is_pinned:ufmp.paper.pk %} bg-active {% endif %}">
                 <div class="col-lg-10 nopadding">
                     <div class="title">{{ ufmp.paper.title }}</div>
                     <div class="authors">{{ ufmp.paper.print_full_authors}}</div>
@@ -73,10 +73,10 @@
                         <a class="open no-toggling" href="{% url 'library:paper' ufmp.paper.pk %}" target="_blank" title="Open in new window"></a>
                     </li>
                     <li>
-                        <a class="like no-toggling {% if user_taste|get_is_liked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Like"></a>
+                        <a class="like no-toggling {% if user_taste|get_is_pinned:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Like"></a>
                     </li>
                     <li>
-                        <a class="tick no-toggling {% if user_taste|get_is_ticked:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Remove from stream"></a>
+                        <a class="tick no-toggling {% if user_taste|get_is_banned:ufmp.paper.pk %} active {% endif %}" href="javascript:void(0)" title="Remove from stream"></a>
                     </li>
     {#                <li>#}
     {#                    <a class="more" href="javascript:void(0)"></a>#}

@@ -35,7 +35,7 @@ class FeedPaperListView(BasePaperListView):
         # Exclude rejected paper
         papers_ticked = UserTaste.objects\
             .filter(user=self.request.user,
-                    is_ticked=True)\
+                    is_banned=True)\
             .values('paper')
         self.original_qs = self.original_qs.exclude(paper__in=papers_ticked)
 

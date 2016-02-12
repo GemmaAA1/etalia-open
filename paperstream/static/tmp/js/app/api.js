@@ -21,7 +21,7 @@ define(['jquery'], function($) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/pin',
-            data: {'pk': id, 'source': source}
+            data: {'id': id, 'source': source}
         })
         .done(function(data) {
             api.log('pin success', data);
@@ -44,7 +44,7 @@ define(['jquery'], function($) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/ban',
-            data: {'pk': id, 'source': source}
+            data: {'id': id, 'source': source}
         })
         .done(function(data) {
             api.log('ban success', data);
@@ -65,7 +65,7 @@ define(['jquery'], function($) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/add',
-            data: {'pk': id}
+            data: {'id': id}
         })
         .done(function(data) {
             api.log('add success', data);
@@ -86,7 +86,7 @@ define(['jquery'], function($) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/trash',
-            data: {'pk': id}
+            data: {'id': id}
         })
         .done(function(data) {
             api.log('trash success', data);
@@ -107,7 +107,7 @@ define(['jquery'], function($) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/restore',
-            data: {'pk': id}
+            data: {'id': id}
         })
         .done(function(data) {
             api.log('restore success', data);

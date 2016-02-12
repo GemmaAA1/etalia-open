@@ -106,7 +106,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
     def filter_pin(self, queryset):
         like_pks = UserTaste.objects\
             .filter(user=self.request.user,
-                    is_liked=True)\
+                    is_pinned=True)\
             .values('paper__pk')
         queryset = queryset.filter(paper_id__in=like_pks)
 
@@ -145,9 +145,9 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
     def get_context_usertaste(self):
         user_taste = UserTaste.objects\
             .filter(user=self.request.user)\
-            .values_list('paper_id', 'is_liked', 'is_ticked')
+            .values_list('paper_id', 'is_pinned', 'is_banned')
         # reformat to dict
-        user_taste = dict((key, {'liked': v1, 'is_ticked': v2})
+        user_taste = dict((key, {'liked': v1, 'is_banned': v2})
                           for key, v1, v2 in user_taste)
         return {'user_taste': user_taste}
 

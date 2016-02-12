@@ -184,7 +184,7 @@ function tick () {
                'source': window.location.pathname},
         success: function (json) {
             $.each(json, function (key, value) {
-                if (key == 'is_ticked') {
+                if (key == 'is_banned') {
                     $tick.parents('.paper-list').slideUp(250);
                 }
             });
@@ -205,7 +205,7 @@ function like (event) {
                'source': window.location.pathname},
         success: function (json) {
             $.each(json, function (key, value) {
-                if (key == 'is_liked') {
+                if (key == 'is_pinned') {
                     if (value) {
                         $like.removeClass('loading')
                             .addClass('like')

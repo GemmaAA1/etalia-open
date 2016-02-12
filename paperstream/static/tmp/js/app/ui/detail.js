@@ -52,14 +52,14 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, 
         // API events
         $('body')
             .on('etalia.publication.pin', function(e, data) {
-                if (that.paperId == data.id && data.hasOwnProperty('is_liked')) {
+                if (that.paperId == data.id && data.hasOwnProperty('is_pinned')) {
                     that.$actions
                         .find('.detail-pin')
-                        .toggleClass('active', data['is_liked']);
+                        .toggleClass('active', data['is_pinned']);
                 }
             })
             .on('etalia.publication.ban', function(e, data) {
-                if (that.paperId == data.id && data.hasOwnProperty('is_ticked') && data['is_ticked']) {
+                if (that.paperId == data.id && data.hasOwnProperty('is_banned') && data['is_banned']) {
                     that.close();
                 }
             })

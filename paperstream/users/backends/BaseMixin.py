@@ -144,10 +144,10 @@ class BackendLibMixin(object):
         if new:
             ut, new_ut = UserTaste.objects.get_or_create(paper=paper,
                                                          user=user,
-                                                         context_source='library')
+                                                         source='library')
             if new_ut:
-                ut.is_liked = False
-                ut.is_ticked = False
+                ut.is_pinned = False
+                ut.is_banned = False
                 ut.save()
 
         return new

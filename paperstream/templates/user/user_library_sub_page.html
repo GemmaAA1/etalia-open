@@ -12,7 +12,7 @@
                 {% elif ulp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ ulp.paper.id_pmi }}"></div>
                 {% endif %}
             </div>
-            <div class="row compact {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
+            <div class="row compact {% if user_taste|get_is_pinned:ulp.paper.pk %} bg-active {% endif %}">
                 <div class="long">
                     <div class="title">{{ ulp.paper.title }}</div>
                     <div class="authors-journal-date">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row extended  {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
+            <div class="row extended  {% if user_taste|get_is_pinned:ulp.paper.pk %} bg-active {% endif %}">
                 <div class="col-lg-10 nopadding">
                     <div class="title">{{ ulp.paper.title }}</div>
                     <div class="authors">{{ ulp.paper.print_full_authors}}</div>
@@ -66,7 +66,7 @@
                         {% elif tab == 'trash' %}
                             <a class="restore no-toggling" href="javascript:void(0)" title="Restore"></a>
                         {% elif tab == 'likes' %}
-                            <a class="like {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %} no-toggling" href="javascript:void(0)" title="Like"></a>
+                            <a class="like {% if user_taste|get_is_pinned:ulp.paper.pk %} active {% endif %} no-toggling" href="javascript:void(0)" title="Like"></a>
                         {%  endif %}
                     </li>
                 </ul>

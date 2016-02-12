@@ -3,10 +3,10 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
     var listType, countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
 
     pinHandler = function(e, data) {
-        if (data.hasOwnProperty('is_liked')) {
+        if (data.hasOwnProperty('is_pinned')) {
             $('.thumb[data-id=' + data.id + ']')
                 .find('.thumb-pin')
-                .toggleClass('active', data['is_liked']);
+                .toggleClass('active', data['is_pinned']);
         }
     };
 
@@ -52,7 +52,7 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
 
         if (listType == 'pin') {
             pinHandler = function(e, data) {
-                if (data.hasOwnProperty('is_liked') && !data['is_liked']) {
+                if (data.hasOwnProperty('is_pinned') && !data['is_pinned']) {
                     $('.thumb[data-id=' + data.id + ']').remove();
                 }
             };

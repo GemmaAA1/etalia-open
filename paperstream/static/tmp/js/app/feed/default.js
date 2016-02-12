@@ -4,14 +4,14 @@ define(['jquery', 'app/api', 'app/ui/list', 'bootstrap'], function($, Api) {
 
         $('body')
             .on('etalia.publication.pin', function(e, data) {
-                if (data.hasOwnProperty('is_liked')) {
+                if (data.hasOwnProperty('is_pinned')) {
                     $('.thumb[data-id=' + data.id + ']')
                         .find('.thumb-pin')
-                        .toggleClass('active', data['is_liked']);
+                        .toggleClass('active', data['is_pinned']);
                 }
             })
             .on('etalia.publication.ban', function(e, data) {
-                if (data.hasOwnProperty('is_ticked') && data['is_ticked']) {
+                if (data.hasOwnProperty('is_banned') && data['is_banned']) {
                     /*$('.thumb[data-id=' + data.id + ']')
                      .find('.thumb-ban')
                      .toggleClass('active', data['success']);*/
