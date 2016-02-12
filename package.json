@@ -4,8 +4,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "hogan.js": "^3.0.2",
     "gulp": "^3.9.0",
-    "gulp-hogan-compile": "^0.4.1"
+    "gulp-hogan-compile": "^0.4.1",
+    "hogan.js": "^3.0.2",
+    "jquery-mousewheel": "^3.1.13"
   }
 }

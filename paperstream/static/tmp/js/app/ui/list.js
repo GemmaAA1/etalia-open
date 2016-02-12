@@ -2,13 +2,57 @@ define(
     ['jquery', 'app/api', 'app/ui/detail', 'app/ui/layout', 'app/util/utils', 'app/templates', 'endless', 'bootstrap'],
     function($, Api, Detail, Layout, Util, Templates) {
 
-    Api.debug = true;
-
     var $body, detail, $search, $togglePinned,
         $toggleCluster, $clusterSelection, selectedCluster,
         $toggleTimespan, $timespanSelection,
-        openedFiltersGroups,
         loadThumbsXhr;
+
+    var groupStatesRegistry = {
+        id: [],
+        opened: [],
+        count: []
+    };
+    groupStatesRegistry.has = function(id) {
+        return 0 <= this.id.indexOf(id);
+    };
+    groupStatesRegistry.add = function(id, opened, count) {
+        if (this.has(id)) {
+            this.set(id, opened, count);
+        }
+        this.id.push(id);
+        this.opened.push(opened);
+        this.count.push(count);
+    };
+    groupStatesRegistry.set = function(id, opened, count) {
+        if (!this.has(id)) {
+            this.add(id, opened, count);
+        }
+        var index = this.id.indexOf(id);
+        this.opened[index] = opened;
+        this.count[index] = count;
+    };
+    groupStatesRegistry.get = function(id) {
+        if (!this.has(id)) {
+            throw 'Undefined group states "' + id + '"';
+        }
+        var index = this.id.indexOf(id);
+        return {
+            opened: this.opened[index],
+            count: this.count[index]
+        }
+    };
+    groupStatesRegistry.getOpened = function(id) {
+        if (!this.has(id)) {
+            throw 'Undefined group states "' + id + '"';
+        }
+        return this.opened[this.id.indexOf(id)];
+    };
+    groupStatesRegistry.getCount = function(id) {
+        if (!this.has(id)) {
+            throw 'Undefined group states "' + id + '"';
+        }
+        return this.count[this.id.indexOf(id)];
+    };
 
     function selectCluster(selection) {
         selection = parseInt(selection);
@@ -71,13 +115,13 @@ define(
 
     function updateFiltersVisibility($group) {
         var $filters = $group.find('ul a'),
-            index = $group.data('gt-index') || 10;
-        if (index > $filters.length) {
+            count = groupStatesRegistry.getCount($group.data('id'));
+        if (count >= $filters.length) {
             $filters.show();
             $group.find('.filter-more').hide();
         } else {
-            $filters.filter(':lt(' + index + ')').show();
-            $filters.filter(':gt(' + index + ')').hide();
+            $filters.filter(':lt(' + count + ')').show();
+            $filters.filter(':gt(' + count + ')').hide();
             $group.find('.filter-more').show();
         }
     }
@@ -107,12 +151,13 @@ define(
         if (data.hasOwnProperty('filters')) {
             $('#filter-flap').html(Templates.filters.render({groups: data['filters']}));
         }
-
         $('.filter-group').each(function(i, group) {
-            var $group = $(group);
-            if (0 <= openedFiltersGroups.indexOf($group.data('id'))) {
-                $group.find('.filter-toggle').addClass('active');
-                $group.find('.filter-filters').addClass('in');
+            var $group = $(group),
+                opened = groupStatesRegistry.getOpened($group.data('id'));
+
+            if (opened) {
+                $group.addClass('active')
+                    .find('.filter-filters').addClass('in');
             }
             updateFiltersVisibility($group);
         });
@@ -123,8 +168,10 @@ define(
             loadThumbsXhr.abort();
         }
 
+        var $list = $('#list');
+
         loadThumbsXhr = $.ajax({
-            url: $('#list').data('load-url'),
+            url: $list.data('load-url'),
             data: {'data': JSON.stringify(getControlsStates())},
             dataType: 'xml',
             method: 'GET'
@@ -137,7 +184,7 @@ define(
 
             var list = $(xml).find('thumb-list');
             if (list.length) {
-                $('#list .endless_data').html($(list.text()));
+                $list.find('.endless_data').html($(list.text()));
             }
 
             loadThumbsXhr = null;
@@ -158,9 +205,12 @@ define(
         $toggleTimespan = $('#toggle-timespan');
         $timespanSelection = $('#timespan-selection');
 
-        openedFiltersGroups = [];
-        $('.filter-group.active').each(function() {
-            openedFiltersGroups.push($(this).data('id'));
+        // Initial groups states
+        $('.filter-group').each(function() {
+            var $group = $(this),
+                count = $group.find('.filter-filters a:visible').length;
+            $group.data('count', count);
+            groupStatesRegistry.add($group.data('id'), $group.hasClass('active'), count);
         });
 
         /** ---------------------------------------------------------------------------------------------
@@ -237,31 +287,33 @@ define(
          */
         $('#filter-flap')
             .on('click', '.filter-toggle', function(e) {
-                var $group = $(e.target).parents('.filter-group').eq(0),
+                var $group = $(e.target).closest('.filter-group'),
                     groupId = $group.data('id');
+
                 if (Util.toggleClass($group, 'active')) {
                     $group.find('.filter-filters').collapse('show');
-                    if (0 > openedFiltersGroups.indexOf(groupId)) {
-                        openedFiltersGroups.push(groupId);
-                    }
+                    groupStatesRegistry.set(groupId, true, $group.data('count'));
                 } else {
                     $group.data('gt-index', 10)
                         .find('.filter-filters').collapse('hide');
-                    var index = openedFiltersGroups.indexOf(groupId);
-                    if (0 <= index) {
-                        openedFiltersGroups.splice(index, 1);
-                    }
+                    groupStatesRegistry.set(groupId, false, $group.data('count'));
+
                     updateFiltersVisibility($group);
                 }
             })
             .on('click', '.filter-group ul a', function(e) {
-                Util.toggleClass($(e.target), 'active');
+                var $a = $(e.target).closest('a');
+                Util.toggleClass($a, 'active');
                 loadThumbs();
             })
             .on('click', '.filter-more', function(e) {
                 var $group = $(e.target).closest('.filter-group');
-                var index = $group.data('gt-index') || 10;
-                $group.data('gt-index', index + 10);
+                var count = $group.data('count') || 10;
+                count += 10;
+
+                $group.data('count', count);
+                groupStatesRegistry.set($group.data('id'), $group.hasClass('active'), count);
+
                 updateFiltersVisibility($group);
             });
 
@@ -338,9 +390,11 @@ define(
         // Events
         $body
             .on('etalia.detail.loading', function() {
+                //noinspection JSUnresolvedFunction
                 Layout.setBusy();
             })
             .on('etalia.detail.loaded', function() {
+                //noinspection JSUnresolvedFunction
                 Layout.setAvailable();
             });
     });

@@ -51,26 +51,26 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, 
 
         // API events
         $('body')
-            .on('etalia.publication.pin', function(e, data) {
-                if (that.paperId == data.id && data.hasOwnProperty('is_pinned')) {
+            .on('etalia.publication.pin', function(e, result) {
+                if (that.paperId == result.getId()) {
                     that.$actions
                         .find('.detail-pin')
-                        .toggleClass('active', data['is_pinned']);
+                        .toggleClass('active', result.isPinned());
                 }
             })
-            .on('etalia.publication.ban', function(e, data) {
-                if (that.paperId == data.id && data.hasOwnProperty('is_banned') && data['is_banned']) {
+            .on('etalia.publication.ban', function(e, result) {
+                if (that.paperId == result.getId() && result.isBanned()) {
                     that.close();
                 }
             })
-            .on('etalia.publication.add', function(e, data) {
-                if (that.paperId == data.id && data.hasOwnProperty('success') && data['success']) {
+            .on('etalia.publication.add', function(e, result) {
+                if (that.paperId == result.getId() && result.isAdded()) {
                     var $button = that.$actions.find('.detail-library-add');
                     toggleLibraryAddOrTrash($button, true);
                 }
             })
-            .on('etalia.publication.trash', function(e, data) {
-                if (that.paperId == data.id && data.hasOwnProperty('success') && data['success']) {
+            .on('etalia.publication.trash', function(e, result) {
+                if (that.paperId == result.getId() && result.isTrashed()) {
                     that.close();
                 }
             });

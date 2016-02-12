@@ -10,6 +10,58 @@ define(['jquery'], function($) {
         }
     };
 
+    var Result = function (id, data) {
+        this.id = id;
+        this.states = data.hasOwnProperty('state') ? data['state'] : [];
+        this.counts = data.hasOwnProperty('counter') ? data['counter'] : [];
+
+        this.hasState = function(key) {
+            return this.states.hasOwnProperty(key);
+        };
+        this.getState = function(key) {
+            if (this.hasState(key)) {
+                return this.states[key];
+            }
+            throw 'Undefined state "' + key + '"';
+        };
+        this.hasCount = function(key) {
+            return this.counts.hasOwnProperty(key);
+        };
+        this.getCount = function(key) {
+            if (this.hasCount(key)) {
+                return this.counts[key];
+            }
+            throw 'Undefined count "' + key + '"';
+        };
+    };
+    Result.prototype.getId = function() {
+        return this.id;
+    };
+    Result.prototype.isPinned = function() {
+        return this.getState('is_pinned');
+    };
+    Result.prototype.isBanned = function() {
+        return this.getState('is_banned');
+    };
+    Result.prototype.isTrashed = function() {
+        return this.getState('is_trashed');
+    };
+    Result.prototype.isAdded = function() {
+        return this.getState('is_added');
+    };
+    Result.prototype.getPinCount = function() {
+        return this.getCount('pin');
+    };
+    Result.prototype.getBanCount = function() {
+        return this.getCount('ban');
+    };
+    Result.prototype.getTrashCount = function() {
+        return this.getCount('trash');
+    };
+    Result.prototype.getLibraryCount = function() {
+        return this.getCount('library');
+    };
+
     /**
      * Toggles the pinned state of the paper.
      *
@@ -25,8 +77,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('pin success', data);
-            data.id = id;
-            $body.trigger('etalia.publication.pin', data);
+            $body.trigger('etalia.publication.pin', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
             api.log('pin failure', xrh, status, error);
@@ -48,8 +99,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('ban success', data);
-            data.id = id;
-            $body.trigger('etalia.publication.ban', data);
+            $body.trigger('etalia.publication.ban', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
             api.log('ban failure', xrh, status, error);
@@ -69,8 +119,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('add success', data);
-            data.id = id;
-            $body.trigger('etalia.publication.add', data);
+            $body.trigger('etalia.publication.add', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
             api.log('add failure', xrh, status, error);
@@ -90,8 +139,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('trash success', data);
-            data.id = id;
-            $body.trigger('etalia.publication.trash', data);
+            $body.trigger('etalia.publication.trash', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
             api.log('trash failure', xrh, status, error);
@@ -111,8 +159,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('restore success', data);
-            data.id = id;
-            $body.trigger('etalia.publication.restore', data);
+            $body.trigger('etalia.publication.restore', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
             api.log('restore failure', xrh, status, error);
