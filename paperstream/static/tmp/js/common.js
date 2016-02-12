@@ -9,6 +9,9 @@ requirejs.config({
         },
         'jquery-ui': {
             deps: ['jquery']
+        },
+        'jquery.mousewheel': {
+            deps: ['jquery']
         }
     },
     paths: {

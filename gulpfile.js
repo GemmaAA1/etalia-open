@@ -1,7 +1,11 @@
 var gulp = require('gulp'),
     hogan = require('gulp-hogan-compile');
 
-// TODO copy libs
+// Copy libs
+gulp.task('libs', function() {
+    gulp.src('node_modules/jquery-mousewheel/jquery.mousewheel.js', {base: 'node_modules/jquery-mousewheel'})
+        .pipe(gulp.dest('paperstream/static/tmp/js/lib'));
+});
 
 // TODO Bootstrap sass
 

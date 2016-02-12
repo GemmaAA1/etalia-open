@@ -1,4 +1,4 @@
-define(['jquery'], function($) {
+define(['jquery', 'jquery.mousewheel'], function($) {
 
     var Flap = function(options) {
         options = options || {};
@@ -36,12 +36,16 @@ define(['jquery'], function($) {
             that.log('Overlay click handler');
             that.close();
         };
-        this.windowScrollHandler = function() {
+        this.mouseWheelHandler = function(e) {
             that.log('Window scroll handler');
-            that.affix();
+            that.affix(e.deltaY * 50);
+
+            e.preventDefault();
+            return false;
         };
     };
     Flap.prototype.init = function() {
+        this.log('Flap init');
         var mobile = window.innerWidth < this.config.mobileMaxWidth;
         if (mobile != this.mobile) {
             this.close();
@@ -59,6 +63,7 @@ define(['jquery'], function($) {
         if (this.clickHandlersEnabled) {
             return;
         }
+        this.log('enableClickHandlers');
 
         this.$button.on('click', this.buttonClickHandler);
         this.$backdrop.on('click', this.backdropClickHandler);
@@ -69,6 +74,7 @@ define(['jquery'], function($) {
         if (!this.clickHandlersEnabled) {
             return;
         }
+        this.log('disableClickHandlers');
 
         this.$button.off('click', this.buttonClickHandler);
         this.$backdrop.off('click', this.backdropClickHandler);
@@ -79,8 +85,9 @@ define(['jquery'], function($) {
         if (this.scrollHandlersEnabled) {
             return;
         }
+        this.log('enableScrollHandlers');
 
-        $(window).on('scroll', this.windowScrollHandler);
+        $(window).on('mousewheel', this.mouseWheelHandler);
 
         this.scrollHandlersEnabled = true;
     };
@@ -88,8 +95,9 @@ define(['jquery'], function($) {
         if (!this.scrollHandlersEnabled) {
             return;
         }
+        this.log('disableScrollHandlers');
 
-        $(window).off('scroll', this.windowScrollHandler);
+        $(window).off('mousewheel', this.mouseWheelHandler);
 
         this.scrollHandlersEnabled = false;
     };
@@ -121,8 +129,8 @@ define(['jquery'], function($) {
 
         this.opened = false;
     };
-    Flap.prototype.affix = function() {
-        var top = parseInt(this.$flap.css('top')) + this.scrollTop - window.scrollY,
+    Flap.prototype.affix = function(delta) {
+        var top = parseInt(this.$flap.css('top')) + delta,
             min = window.innerHeight - this.$flap.outerHeight();
 
         if (top > 0) {
@@ -130,8 +138,6 @@ define(['jquery'], function($) {
         } else if (top < min) {
             top = min;
         }
-
-        // TODO Fix flap top when to high in page
 
         this.$flap.css({'top': top});
         this.scrollTop = window.scrollY;
