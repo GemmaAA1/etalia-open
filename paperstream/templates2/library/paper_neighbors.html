@@ -4,7 +4,7 @@
    <thumb-list><![CDATA[
     {% if object_list %}
         {% for paper in object_list %}
-            {% include 'feeds/thumb.html' %}
+            {{ paper.title }}
         {% endfor %}
     {% endif %}
     ]]></thumb-list>

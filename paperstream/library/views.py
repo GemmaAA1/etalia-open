@@ -93,50 +93,6 @@ class PaperView(ModalMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
-        time_lapse = self.time_lapse_map[self.request.GET.get('time-span', 'year')]
-        neighbors = []
-
-        if self.request.user.is_authenticated():
-            model = self.request.user.settings.stream_model
-        else:
-            model = Model.objects.first()
-        ms = MostSimilar.objects.filter(is_active=True,
-                                        model=model)
-
-        # Get stored neighbors matches
-        try:
-            neigh_data = paper_.neighbors.get(ms=ms, time_lapse=time_lapse)
-            if not neigh_data.neighbors or not max(neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
-                neigh_data.delete()
-                raise PaperNeighbors.DoesNotExist
-            elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
-                neighbors = neigh_data.neighbors
-            else:
-                raise PaperNeighbors.DoesNotExist
-        except PaperNeighbors.DoesNotExist:   # refresh
-            try:
-                ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
-                    name=model.name)]
-                res = ms_task.apply_async(args=('populate_neighbors',),
-                                          kwargs={'paper_pk': paper_.pk,
-                                                  'time_lapse': time_lapse},
-                                          timeout=10,
-                                          soft_timeout=5)
-                neighbors = res.get()
-            except SoftTimeLimitExceeded:
-                neighbors = []
-            except KeyError:
-                raise
-
-        neigh_pk = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
-        if neigh_pk:
-            neigh_fetched_d = dict(
-                [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
-            context['neighbors'] = \
-                [neigh_fetched_d[key] for key in neigh_pk]
-        else:
-            context['neighbors'] = []
-
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         context['time_lapse'] = self.request.GET.get('time-span', 'year')
 
@@ -170,20 +126,6 @@ class PaperViewPk(RedirectView):
 paper = PaperViewPk.as_view()
 
 
-# class PaperViewPkTime(RedirectView):
-#
-#     permanent = True
-#
-#     def get_redirect_url(self, *args, **kwargs):
-#         paper = Paper.objects.get(pk=kwargs['pk'])
-#         return reverse('library:paper-slug-time',
-#                        kwargs={'pk': paper.pk,
-#                                'slug': slugify(paper.title),
-#                                'time_lapse': kwargs.get('time_lapse')})
-#
-# paper_time = PaperViewPkTime.as_view()
-
-
 class PaperNeighborsView(LoginRequiredMixin, ListView):
 
     model = Paper
@@ -195,46 +137,46 @@ class PaperNeighborsView(LoginRequiredMixin, ListView):
 
         if self.request.is_ajax():
             data = self.request.GET.dict()
-            self.time_span = int(data.get('time_span', self.time_span)
-                                 or self.time_span)
+            self.time_span = int(data.get('time_span', self.time_span)) \
+                             or self.time_span
             self.paper_id = int(data.get('id'))
 
-        paper_ = Paper.objects.get(id=self.paper_id)
+            paper_ = Paper.objects.get(id=self.paper_id)
 
-        # Get active MostSimilar
-        ms = MostSimilar.objects.filter(is_active=True)
+            # Get active MostSimilar
+            ms = MostSimilar.objects.filter(is_active=True)
 
-        # Get stored neighbors matches
-        try:
-            neigh_data = paper_.neighbors.get(ms=ms, time_lapse=self.time_span)
-            if not neigh_data.neighbors or not max(neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
-                neigh_data.delete()
-                raise PaperNeighbors.DoesNotExist
-            elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
-                neighbors = neigh_data.neighbors
-            else:
-                raise PaperNeighbors.DoesNotExist
-        except PaperNeighbors.DoesNotExist:   # refresh
+            # Get stored neighbors matches
             try:
-                ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(name=self.request.user.settings.stream_model.name)]
-                res = ms_task.apply_async(args=('populate_neighbors',),
-                                          kwargs={'paper_pk': self.paper_id,
-                                                  'time_lapse': self.time_span},
-                                          timeout=10,
-                                          soft_timeout=5)
-                neighbors = res.get()
-            except SoftTimeLimitExceeded:
-                neighbors = []
-            except KeyError:
-                raise
+                neigh_data = paper_.neighbors.get(ms=ms, time_lapse=self.time_span)
+                if not neigh_data.neighbors or not max(neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
+                    neigh_data.delete()
+                    raise PaperNeighbors.DoesNotExist
+                elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
+                    neighbors = neigh_data.neighbors
+                else:
+                    raise PaperNeighbors.DoesNotExist
+            except PaperNeighbors.DoesNotExist:   # refresh
+                try:
+                    ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(name=self.request.user.settings.stream_model.name)]
+                    res = ms_task.apply_async(args=('populate_neighbors',),
+                                              kwargs={'paper_pk': self.paper_id,
+                                                      'time_lapse': self.time_span},
+                                              timeout=10,
+                                              soft_timeout=5)
+                    neighbors = res.get()
+                except SoftTimeLimitExceeded:
+                    neighbors = []
+                except KeyError:
+                    raise
 
-        neigh_pk_list = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
+            neigh_pk_list = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
 
-        clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i)
-                            for i, pk in enumerate(neigh_pk_list)])
-        ordering = 'CASE %s END' % clauses
-        return Paper.objects.filter(pk__in=neigh_pk_list).extra(
-           select={'ordering': ordering}, order_by=('ordering',))
+            clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i)
+                                for i, pk in enumerate(neigh_pk_list)])
+            ordering = 'CASE %s END' % clauses
+            return Paper.objects.filter(pk__in=neigh_pk_list).extra(
+               select={'ordering': ordering}, order_by=('ordering',))
 
     def get_context_data(self, **kwargs):
         context = super(PaperNeighborsView, self).get_context_data(**kwargs)
