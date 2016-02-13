@@ -36,10 +36,14 @@ define(['jquery', 'jquery.mousewheel'], function($) {
             that.log('Overlay click handler');
             that.close();
         };
-        this.mouseWheelHandler = function(e) {
+        this.flapMouseWheelHandler = function(e) {
             that.log('Window scroll handler');
             that.affix(e.deltaY * 50);
 
+            e.preventDefault();
+            return false;
+        };
+        this.backdropMouseWheelHandler = function(e) {
             e.preventDefault();
             return false;
         };
@@ -87,7 +91,8 @@ define(['jquery', 'jquery.mousewheel'], function($) {
         }
         this.log('enableScrollHandlers');
 
-        $(window).on('mousewheel', this.mouseWheelHandler);
+        this.$flap.on('mousewheel', this.flapMouseWheelHandler);
+        this.$backdrop.on('mousewheel', this.flapMouseWheelHandler);
 
         this.scrollHandlersEnabled = true;
     };
@@ -97,7 +102,8 @@ define(['jquery', 'jquery.mousewheel'], function($) {
         }
         this.log('disableScrollHandlers');
 
-        $(window).off('mousewheel', this.mouseWheelHandler);
+        this.$flap.off('mousewheel', this.flapMouseWheelHandler);
+        this.$backdrop.off('mousewheel', this.flapMouseWheelHandler);
 
         this.scrollHandlersEnabled = false;
     };

@@ -35,7 +35,7 @@ url: ```[POST] /user/paper/pin```
 
 **Event**
 
-```etalia.publication.pin```
+```etalia.publication.pin``` (with Result object)
 
 
 ## Ban publication
@@ -72,7 +72,7 @@ url: ```[POST] /user/paper/ban```
 
 **Event**
 
-```etalia.publication.ban```       
+```etalia.publication.ban``` (with Result object)       
 
 
 ## Add publication (to library)
@@ -113,7 +113,7 @@ url: ```[POST] /user/paper/add```
            
 **Event**
 
-```etalia.publication.add```
+```etalia.publication.add``` (with Result object)
 
 
 ## Trash publication (from library)
@@ -154,7 +154,7 @@ url: ```[POST] /user/paper/trash```
                
 **Event**
 
-```etalia.publication.trash```
+```etalia.publication.trash``` (with Result object)
 
 
 ## Restore publication (into library)
@@ -195,7 +195,29 @@ url: ```[POST] /user/paper/restore```
                       
 **Event**
 
-```etalia.publication.restore```
+```etalia.publication.restore``` (with Result object)
+
+
+## Clear user trash
+
+url: ```[POST] /user/library/trash/empty```
+
+**Response**
+
+```json
+{
+    'success': true
+}
+// OR
+{
+    'success': false,
+    'message': (str),
+}
+```
+                      
+**Event**
+
+```etalia.publication.trash-clear```
 
 
 ## Event result object

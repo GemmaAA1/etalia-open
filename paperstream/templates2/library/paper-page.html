@@ -1,0 +1,41 @@
+{% extends 'layout.html' %}
+
+
+{% load staticfiles %}
+
+
+{% block content %}
+{% spaceless %}
+<div id="detail">
+    <div id="detail-document" class="document">
+        <div class="wrapper">
+            <div class="inner">
+                {% include "library/paper.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endspaceless %}
+{% endblock content %}
+
+{% block left-flap %}
+{% include '_fragment/nav-flap.html' %}
+{% endblock left-flap %}
+
+
+{% block stylesheets %}
+{{ block.super }}
+<link href="{% static 'tmp/css/app/list.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'tmp/css/app/card.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'tmp/css/app/detail.css' %}" rel="stylesheet" type="text/css">
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+<script src="{% static 'tmp/js/require.js' %}"></script>
+<script>
+    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+        requirejs(['app/feed/paper']);
+    });
+</script>
+{% endblock javascript %}
