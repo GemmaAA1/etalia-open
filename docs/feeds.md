@@ -24,12 +24,20 @@ Url: ```[XHR GET] /feed/stream/```
 
 ```json
 {
-    'journals':     (int)[],
-    'authors':      (int)[],
-    'cluster':      (int) or null,
-    'pin':          (bool),
-    'search_query': (str),
-    // Paging ?
+    'data':
+        'filters': [
+            {
+                'id':   (string),       # Values: journal, author
+                'pk':   (int)[]
+            },
+            ...
+        ],
+        'time_span':    (int),          # Values: 7, 30, 60
+        'cluster':      (int) or null,  # Values: null, 0, 1, 2, 3
+        'pin':          (bool),
+        'search_query': (str),
+    'querystring_key':  (str), # page
+    'page':             (int)
 }
 ```
 
