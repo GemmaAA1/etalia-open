@@ -90,6 +90,12 @@ class PaperView(ModalMixin, DetailView):
                       'month': 30,
                       'week': 7}
 
+    def get_template_names(self):
+        if not self.request.is_ajax():
+            self.template_name = 'library/paper-page.html'
+
+        return super(PaperView, self).get_template_names()
+
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
