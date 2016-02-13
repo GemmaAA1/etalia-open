@@ -37,6 +37,13 @@
             </div>
 
             <div class="inner">
+                {% if tab == 'trash' %}
+                <p style="text-align:right;">
+                    <a id="user-library-trash-clear" href="javascript: void(0)" class="btn btn-default btn-xs"{% if 0 == trash_counter %} style="display:none"{% endif %}>
+                        <span class="glyphicon glyphicon-remove"></span> Clear trash
+                    </a>
+                </p>
+                {% endif %}
                 <div class="endless_data">
                     {% include page_template %}
                 </div>

@@ -1,6 +1,7 @@
-define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
+define(['jquery', 'app/api', 'app/ui/list', 'bootstrap'], function($, Api) {
 
-    var listType, countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
+    var listType, $clearTrashButton,
+        countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
 
     pinHandler = function(e, result) {
         $('.thumb[data-id=' + result.getId() + ']')
@@ -24,6 +25,12 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
         $('.user-library span').text(result.getLibraryCount());
         $('.user-library-pins span').text(result.getPinCount());
         $('.user-library-trash span').text(result.getTrashCount());
+
+        if (0 < result.getTrashCount()) {
+            $clearTrashButton.show();
+        } else {
+            $clearTrashButton.hide();
+        }
     };
 
     function toggleLibraryAddOrTrash($button, added) {
@@ -47,6 +54,7 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
     $(function() {
 
         listType = $('#list').data('type');
+        $clearTrashButton = $('#user-library-trash-clear');
 
         if (listType == 'pin') {
             pinHandler = function(e, result) {
@@ -68,6 +76,10 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
             };
         }
 
+        $clearTrashButton.on('click', function() {
+            Api.clearTrash();
+        });
+
         $('body')
             .on('etalia.publication.pin', pinHandler)
             .on('etalia.publication.add', addHandler)
@@ -78,6 +90,12 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
                 'etalia.publication.add ' +
                 'etalia.publication.trash ' +
                 'etalia.publication.restore',
-                countsHandler);
+                countsHandler)
+
+            .on('etalia.publication.trash-clear', function() {
+                $('.endless_data').empty();
+                $('.user-library-trash span').text(0);
+                $clearTrashButton.hide();
+            });
     });
 });

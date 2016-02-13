@@ -130,7 +130,6 @@ define(
     function updateFiltersVisibility($group) {
         var $filters = $group.find('ul li'),
             states = groupStatesRegistry.get($group.data('id'));
-        console.log(states);
 
         if (states.opened) {
             $group.addClass('active')
