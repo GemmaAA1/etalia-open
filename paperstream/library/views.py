@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import json
 
 from django.shortcuts import render
 from django.views.generic import RedirectView
@@ -234,5 +235,14 @@ class PaperNeighborsView(LoginRequiredMixin, ListView):
         ordering = 'CASE %s END' % clauses
         return Paper.objects.filter(pk__in=neigh_pk_list).extra(
            select={'ordering': ordering}, order_by=('ordering',))
+
+    def get_context_data(self, **kwargs):
+        context = super(PaperNeighborsView, self).get_context_data(**kwargs)
+
+        context['data'] = json.dumps({
+            'id': self.paper_id,
+            'time-span': self.time_span,
+        })
+        return context
 
 paper_neighbors = PaperNeighborsView.as_view()
