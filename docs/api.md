@@ -195,40 +195,12 @@ url: ```[POST] /user/paper/restore```
                       
 **Event**
 
-```etalia.publication.restore``` (with Result object)
+```etalia.publication.restore``` (with Result object)     
 
-
-## Clear user trash
-
-url: ```[POST] /user/library/trash/empty```
-
-**Response**
-
-```json
-{
-    'success': true
-}
-// OR
-{
-    'success': false,
-    'message': (str),
-}
-```
-                      
-**Event**
-
-```etalia.publication.trash-clear```
 
 ## Empty user library trash
 
 url: ```[POST] /user/library/trash/empty```
-
-**Request**
-
-```json
-{
-}
-```
 
 **Response**
 
@@ -242,6 +214,10 @@ url: ```[POST] /user/library/trash/empty```
     }
 }
 ```
+
+**Event**
+
+```etalia.publication.trash-clear```
 
 
 ## Event result object

@@ -694,7 +694,7 @@ trash_call = TrashCallView.as_view()
 
 @login_required
 def empty_trash_call(request):
-    if request.POST:
+    if request.method == 'POST':
         ulps = request.user.lib.userlib_paper.filter(is_trashed=True)
         ulps.delete()
         if request.is_ajax():
