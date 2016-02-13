@@ -43,7 +43,7 @@ Url: ```[XHR GET] /feed/stream/```
 
 (Ajax) Reset the list of publications.
 
-Url: ```[XHR GET] /feed/stream/filter```
+Url: ```[XHR GET] /feed/stream/xml```
 
 **Request**
 
@@ -122,6 +122,6 @@ Url: ```[XHR GET] /feed/trend/```
                                  
 #### Trend filtering
  
-url: ```[XHR GET] /feed/trend/filter```
+url: ```[XHR GET] /feed/trend/xml```
 
 **Request** / **Response** same as [Stream filtering](#stream-filtering)

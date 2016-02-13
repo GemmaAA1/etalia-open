@@ -15,6 +15,7 @@ from django.db.models.expressions import RawSQL
 
 from config.celery import celery_app as app
 from celery.exceptions import SoftTimeLimitExceeded
+from braces.views import LoginRequiredMixin
 
 from paperstream.nlp.models import PaperNeighbors, Model, MostSimilar
 from paperstream.core.mixins import ModalMixin
@@ -180,3 +181,20 @@ paper = PaperViewPk.as_view()
 #                                'time_lapse': kwargs.get('time_lapse')})
 #
 # paper_time = PaperViewPkTime.as_view()
+
+
+class PaperNeighborsView(LoginRequiredMixin, ListView):
+
+    model = Paper
+    template_name = 'library/paper_neighbors.html'
+    paper_seed = None
+    time_span = 30
+
+    def get_queryset(self):
+
+        if self.request.is_ajax():
+            pass
+
+
+
+paper_neighbors = PaperNeighborsView.as_view()

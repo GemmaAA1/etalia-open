@@ -219,6 +219,30 @@ url: ```[POST] /user/library/trash/empty```
 
 ```etalia.publication.trash-clear```
 
+## Empty user library trash
+
+url: ```[POST] /user/library/trash/empty```
+
+**Request**
+
+```json
+{
+}
+```
+
+**Response**
+
+```json
+{
+    'counter': {
+        'pin':          (int),
+        'ban':          (int),
+        'trash':        (int),
+        'library':      (int),
+    }
+}
+```
+
 
 ## Event result object
 

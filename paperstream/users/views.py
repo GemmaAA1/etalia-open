@@ -692,6 +692,18 @@ class TrashCallView(UserPaperCallView):
 trash_call = TrashCallView.as_view()
 
 
+@login_required
+def empty_trash_call(request):
+    if request.POST:
+        ulps = request.user.lib.userlib_paper.filter(is_trashed=True)
+        ulps.delete()
+        if request.is_ajax():
+            data = {'counter': request.user.get_counters()}
+            return JsonResponse(data)
+        else:
+            redirect('user:library')
+
+
 class RestoreCallView(UserPaperCallView):
 
     form_class = UserLibPaperForm
