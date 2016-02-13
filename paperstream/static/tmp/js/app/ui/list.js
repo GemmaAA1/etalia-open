@@ -33,7 +33,7 @@ define(
     };
     groupStatesRegistry.get = function(id) {
         if (!this.has(id)) {
-            throw 'Undefined group states "' + id + '"';
+            throw 'Undefined group "' + id + '"';
         }
         var index = this.id.indexOf(id);
         return {
@@ -41,15 +41,29 @@ define(
             count: this.count[index]
         }
     };
+    groupStatesRegistry.setOpened = function(id, opened) {
+        if (!this.has(id)) {
+            throw 'Undefined group "' + id + '"';
+        }
+        var index = this.id.indexOf(id);
+        this.opened[index] = opened;
+    };
     groupStatesRegistry.getOpened = function(id) {
         if (!this.has(id)) {
-            throw 'Undefined group states "' + id + '"';
+            throw 'Undefined group "' + id + '"';
         }
         return this.opened[this.id.indexOf(id)];
     };
+    groupStatesRegistry.setCount = function(id, count) {
+        if (!this.has(id)) {
+            throw 'Undefined group "' + id + '"';
+        }
+        var index = this.id.indexOf(id);
+        this.count[index] = count;
+    };
     groupStatesRegistry.getCount = function(id) {
         if (!this.has(id)) {
-            throw 'Undefined group states "' + id + '"';
+            throw 'Undefined group "' + id + '"';
         }
         return this.count[this.id.indexOf(id)];
     };
@@ -114,14 +128,24 @@ define(
     }
 
     function updateFiltersVisibility($group) {
-        var $filters = $group.find('ul a'),
-            count = groupStatesRegistry.getCount($group.data('id'));
-        if (count >= $filters.length) {
+        var $filters = $group.find('ul li'),
+            states = groupStatesRegistry.get($group.data('id'));
+        console.log(states);
+
+        if (states.opened) {
+            $group.addClass('active')
+                .find('.filter-filters').addClass('in');
+        } else {
+            $group.removeClass('active')
+                .find('.filter-filters').removeClass('in');
+        }
+
+        if (states.count >= $filters.length) {
             $filters.show();
             $group.find('.filter-more').hide();
         } else {
-            $filters.filter(':lt(' + count + ')').show();
-            $filters.filter(':gt(' + count + ')').hide();
+            $filters.filter(':lt(' + states.count + ')').show();
+            $filters.filter(':gt(' + (states.count-1) + ')').hide();
             $group.find('.filter-more').show();
         }
     }
@@ -152,14 +176,7 @@ define(
             $('#filter-flap').html(Templates.filters.render({groups: data['filters']}));
         }
         $('.filter-group').each(function(i, group) {
-            var $group = $(group),
-                opened = groupStatesRegistry.getOpened($group.data('id'));
-
-            if (opened) {
-                $group.addClass('active')
-                    .find('.filter-filters').addClass('in');
-            }
-            updateFiltersVisibility($group);
+            updateFiltersVisibility($(group));
         });
     }
 
@@ -208,9 +225,9 @@ define(
         // Initial groups states
         $('.filter-group').each(function() {
             var $group = $(this),
-                count = $group.find('.filter-filters a:visible').length;
-            $group.data('count', count);
+                count = $group.find('.filter-filters ul a:visible').length;
             groupStatesRegistry.add($group.data('id'), $group.hasClass('active'), count);
+            updateFiltersVisibility($group);
         });
 
         /** ---------------------------------------------------------------------------------------------
@@ -292,13 +309,12 @@ define(
 
                 if (Util.toggleClass($group, 'active')) {
                     $group.find('.filter-filters').collapse('show');
-                    groupStatesRegistry.set(groupId, true, $group.data('count'));
+                    groupStatesRegistry.setOpened(groupId, true);
                 } else {
-                    $group.data('gt-index', 10)
-                        .find('.filter-filters').collapse('hide');
-                    groupStatesRegistry.set(groupId, false, $group.data('count'));
+                    $group.find('.filter-filters').collapse('hide');
+                    groupStatesRegistry.setOpened(groupId, false);
 
-                    updateFiltersVisibility($group);
+                    //updateFiltersVisibility($group);
                 }
             })
             .on('click', '.filter-group ul a', function(e) {
@@ -307,12 +323,11 @@ define(
                 loadThumbs();
             })
             .on('click', '.filter-more', function(e) {
-                var $group = $(e.target).closest('.filter-group');
-                var count = $group.data('count') || 10;
-                count += 10;
+                var $group = $(e.target).closest('.filter-group'),
+                    groupId = $group.data('id'),
+                    count = groupStatesRegistry.getCount(groupId);
 
-                $group.data('count', count);
-                groupStatesRegistry.set($group.data('id'), $group.hasClass('active'), count);
+                groupStatesRegistry.setCount(groupId, count + 10);
 
                 updateFiltersVisibility($group);
             });

@@ -71,11 +71,11 @@
             <span class="metric">
                 <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
             </span>
-            <!-- TODO -->
-            <span class="comment">
+            <!-- TODO relative questions count -->
+            <!--<span class="comment">
                 <span class="count">16</span>
                 <span class="eai eai-comment"></span>
-            </span>
+            </span>-->
         </p>
     </div>
 
@@ -89,7 +89,7 @@
 
 
     {% if user.is_authenticated %}
-    <h2>Comments</h2>
+    <h2>Related questions</h2>
     <div>
         {% disqus_sso %}
         {% get_disqus_sso request %}
@@ -129,10 +129,11 @@
                 <span class="metric">
                     <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score=&types=mbtttrfg">
                 </span>
-                <span class="comment">
+                <!-- TODO relative questions count -->
+                <!--<span class="comment">
                     <span class="count">16</span>
                     <span class="eai eai-comment"></span>
-                </span>
+                </span>-->
             </p>
         </div>
     </div>

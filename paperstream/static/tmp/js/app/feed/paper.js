@@ -1,8 +1,8 @@
-define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
+define(['jquery', 'bootstrap'], function($) {
 
     $(function() {
 
-        $('body')
+        /*$('body')
             .on('etalia.publication.pin', function(e, result) {
                 $('.thumb[data-id=' + result.getId() + ']')
                     .find('.thumb-pin')
@@ -17,6 +17,6 @@ define(['jquery', 'app/ui/list', 'bootstrap'], function($) {
                 if (result.isTrashed()) {
                     $('.thumb[data-id=' + result.getId() + ']').remove();
                 }
-            });
+            });*/
     });
 });
