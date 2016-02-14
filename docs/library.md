@@ -1,8 +1,17 @@
 ## Paper neighbors publication
 
+**TODO** 
+
+* rewrite to ```[XHR GET] /library/paper/{id}/neighbors``` ('rest' design)
+
 url: ```[XHR GET] /library/paper/neighbors```
 
 **Request**
+
+**TODO** 
+
+* remove 'id'
+* rename 'time-span' to 'time_span' (to match feeds naming convention)
 
 ```json
 {
@@ -12,6 +21,11 @@ url: ```[XHR GET] /library/paper/neighbors```
 ```
 
 **Response**
+
+**TODO** 
+
+* remove 'id'
+* rename 'time-span' to 'time_span' (to match feeds naming convention)
 
 ```xml
 <?xml encoding="UTF-8">

@@ -82,6 +82,8 @@ define(['jquery'], function($) {
         .fail(function(xrh, status, error) {
             api.log('pin failure', xrh, status, error);
         });
+
+        return this;
     };
 
     /**
@@ -104,6 +106,8 @@ define(['jquery'], function($) {
         .fail(function(xrh, status, error) {
             api.log('ban failure', xrh, status, error);
         });
+
+        return this;
     };
 
     /**
@@ -124,6 +128,8 @@ define(['jquery'], function($) {
         .fail(function(xrh, status, error) {
             api.log('add failure', xrh, status, error);
         });
+
+        return this;
     };
 
     /**
@@ -144,6 +150,8 @@ define(['jquery'], function($) {
         .fail(function(xrh, status, error) {
             api.log('trash failure', xrh, status, error);
         });
+
+        return this;
     };
 
     /**
@@ -164,6 +172,8 @@ define(['jquery'], function($) {
         .fail(function(xrh, status, error) {
             api.log('restore failure', xrh, status, error);
         });
+
+        return this;
     };
 
     /**
@@ -183,6 +193,8 @@ define(['jquery'], function($) {
         .fail(function(xrh, status, error) {
             api.log('clear trash failure', xrh, status, error);
         });
+
+        return this;
     };
 
     $(function() {

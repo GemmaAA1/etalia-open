@@ -1,6 +1,20 @@
-define(['jquery', 'app/api', 'app/ui/list', 'bootstrap'], function($, Api) {
+define([
+    'jquery',
+    'app/api',
+    'app/ui/layout',
+    'app/ui/controls',
+    'app/ui/list',
+    'app/ui/detail',
+    'endless',
+    'bootstrap'
+], function($, api, layout, controls, List, Detail) {
 
-    var listType, $clearTrashButton,
+    var $body, $list,
+        list = new List({
+            element: '#list'
+        }),
+        detail = new Detail(),
+        listType, $clearTrashButton,
         countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
 
     pinHandler = function(e, result) {
@@ -53,7 +67,13 @@ define(['jquery', 'app/api', 'app/ui/list', 'bootstrap'], function($, Api) {
 
     $(function() {
 
-        listType = $('#list').data('type');
+        $body = $('body');
+        $list = $('#list');
+
+        list.init();
+        detail.init();
+
+        listType = $list.data('type');
         $clearTrashButton = $('#user-library-trash-clear');
 
         if (listType == 'pin') {
@@ -77,10 +97,25 @@ define(['jquery', 'app/api', 'app/ui/list', 'bootstrap'], function($, Api) {
         }
 
         $clearTrashButton.on('click', function() {
-            Api.clearTrash();
+            api.clearTrash();
         });
 
-        $('body')
+        $body
+            .on(
+                'etalia.control.search.change ' +
+                'etalia.control.timespan.change ' +
+                'etalia.control.cluster.change ' +
+                'etalia.control.pinned.change ' +
+                'etalia.control.filters.change',
+                function() {
+                    list.load(undefined, controls.getStates());
+                })
+            .on('etalia.list.load', function(e, data) {
+                if (data.hasOwnProperty('controlsStates')) {
+                    controls.setStates(data.controlsStates);
+                }
+            })
+
             .on('etalia.publication.pin', pinHandler)
             .on('etalia.publication.add', addHandler)
             .on('etalia.publication.trash', trashHandler)
@@ -96,6 +131,30 @@ define(['jquery', 'app/api', 'app/ui/list', 'bootstrap'], function($, Api) {
                 $('.endless_data').empty();
                 $('.user-library-trash span').text(0);
                 $clearTrashButton.hide();
+            })
+
+            .on('etalia.detail.loading', function() {
+                layout.setBusy();
+            })
+            .on('etalia.detail.loaded', function() {
+                layout.setAvailable();
             });
+
+        $list.on('click', '.thumb .title a', function(e) {
+            detail.load($(e.target).closest('.thumb'));
+
+            e.preventDefault();
+            return false;
+        });
+
+        // Endless scroll
+        $.endlessPaginate({
+            paginateOnScroll: true,
+            paginateOnScrollMargin: 10,
+            onClick: function (context) {
+                context.extraData = JSON.stringify(controls.getStates());
+                context.urlOrigin = window.location.href;
+            }
+        });
     });
 });

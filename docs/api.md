@@ -1,6 +1,12 @@
 Publication API
 ===============
 
+## TODO
+
+* use http code 200 on success.
+* use http code 500 on failure (with error message).
+* remove 'success' and 'message' data.
+
 ## Pin publication
 
 url: ```[POST] /user/paper/pin```
