@@ -717,7 +717,8 @@ class RestoreCallView(UserPaperCallView):
             # remove paper locally from user library
             ulp = self.request.user.lib.userlib_paper.get(paper=paper)
             ulp.is_trashed = False
-            ulp.save(update_fields=['is_trashed'])
+            ulp.paper_provider_id = paper_provider_id
+            ulp.save(update_fields=['is_trashed', 'paper_provider_id'])
             return super(RestoreCallView, self).form_valid(form)
         else:
             data = {'success': False,
