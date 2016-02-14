@@ -139,14 +139,14 @@ class PaperNeighborsView(LoginRequiredMixin, ListView):
     paper_id = None
     time_span = 30
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
 
         if self.request.is_ajax():
             data = self.request.GET.dict()
             self.time_span = int(data.get('time_span', self.time_span)) \
                              or self.time_span
-            self.paper_id = int(data.get('id'))
 
+            self.paper_id = int(self.kwargs['pk'])
             paper_ = Paper.objects.get(id=self.paper_id)
 
             # Get active MostSimilar
@@ -184,12 +184,20 @@ class PaperNeighborsView(LoginRequiredMixin, ListView):
             return Paper.objects.filter(pk__in=neigh_pk_list).extra(
                select={'ordering': ordering}, order_by=('ordering',))
 
+    def get_context_usertaste(self):
+        user_taste = UserTaste.objects\
+            .filter(user=self.request.user)\
+            .values_list('paper_id', 'is_pinned', 'is_banned')
+        # reformat to dict
+        user_taste = dict((key, {'liked': v1, 'is_banned': v2})
+                          for key, v1, v2 in user_taste)
+        return {'user_taste': user_taste}
+
     def get_context_data(self, **kwargs):
         context = super(PaperNeighborsView, self).get_context_data(**kwargs)
-
+        context.update(self.get_context_usertaste())
         context['data'] = json.dumps({
-            'id': self.paper_id,
-            'time-span': self.time_span,
+            'time_span': self.time_span,
         })
         return context
 
