@@ -1,22 +1,15 @@
-define(['jquery', 'bootstrap'], function($) {
+define(['jquery', 'app/ui/paper', 'app/ui/layout', 'bootstrap'], function($, Paper) {
 
     $(function() {
 
-        /*$('body')
-            .on('etalia.publication.pin', function(e, result) {
-                $('.thumb[data-id=' + result.getId() + ']')
-                    .find('.thumb-pin')
-                    .toggleClass('active', result.isPinned());
-            })
+        var paper = new Paper();
+        paper.init();
+
+        $('body')
             .on('etalia.publication.ban', function(e, result) {
                 if (result.isBanned()) {
-                    $('.thumb[data-id=' + result.getId() + ']').remove();
+                    // TODO redirect ?
                 }
-            })
-            .on('etalia.publication.trash', function(e, result) {
-                if (result.isTrashed()) {
-                    $('.thumb[data-id=' + result.getId() + ']').remove();
-                }
-            });*/
+            });
     });
 });

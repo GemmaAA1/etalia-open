@@ -1,11 +1,17 @@
+{% spaceless %}
+
+{% load user_taste %}
+
 <?xml version="1.0" encoding="UTF-8"?>
 <response>
    <data>{{ data|safe }}</data>
    <thumb-list><![CDATA[
     {% if object_list %}
         {% for paper in object_list %}
-            {{ paper.title }}
+            {% include 'feeds/thumb.html' %}
         {% endfor %}
     {% endif %}
     ]]></thumb-list>
 </response>
+
+{% endspaceless %}

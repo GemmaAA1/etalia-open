@@ -1,4 +1,4 @@
-define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, Api, Utils, Sticky) {
+define(['jquery', 'app/ui/paper'], function ($, Paper) {
 
     var Detail = function (options) {
 
@@ -10,11 +10,7 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, 
         }, options);
 
         this.$element = $(this.config.element);
-
         this.$document = this.$element.find(this.config.document);
-        this.paperId = null;
-        this.$actions = null;
-        this.actions = null;
 
         this.$nextButton = $('#detail-next');
         this.$prevButton = $('#detail-prev');
@@ -22,98 +18,35 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, 
         this.loaded = false;
         this.loadXhr = null;
 
+        this.paper = new Paper(options).init();
+
         var that = this;
         $('#detail-close, #backdrop').on('click', function() {
             that.close();
         });
     };
 
-    function toggleLibraryAddOrTrash($button, added) {
-        if (added) {
-            $button
-                .removeClass('detail-library-add')
-                .addClass('detail-library-trash')
-                .find('.eai')
-                    .removeClass('eai-library-add')
-                    .addClass('eai-library-trash');
-        } else {
-            $button
-                .removeClass('detail-library-trash')
-                .addClass('detail-library-add')
-                .find('.eai')
-                    .removeClass('eai-library-trash')
-                    .addClass('eai-library-add');
+    Detail.prototype.log = function() {
+        if (this.config.debug) {
+            console.log('[Detail] ' + arguments[0], Array.prototype.splice.call(arguments, 1));
         }
-    }
+
+        return this;
+    };
 
     Detail.prototype.init = function() {
         var that = this;
 
         // API events
         $('body')
-            .on('etalia.publication.pin', function(e, result) {
-                if (that.paperId == result.getId()) {
-                    that.$actions
-                        .find('.detail-pin')
-                        .toggleClass('active', result.isPinned());
-                }
-            })
             .on('etalia.publication.ban', function(e, result) {
-                if (that.paperId == result.getId() && result.isBanned()) {
+                if (that.id == result.getId() && result.isBanned()) {
                     that.close();
                 }
             })
-            .on('etalia.publication.add', function(e, result) {
-                if (that.paperId == result.getId() && result.isAdded()) {
-                    var $button = that.$actions.find('.detail-library-add');
-                    toggleLibraryAddOrTrash($button, true);
-                }
-            })
-            .on('etalia.publication.trash', function(e, result) {
-                if (that.paperId == result.getId() && result.isTrashed()) {
-                    that.close();
-                }
+            .on('etalia.detail.loaded', function() {
+                that.paper.update();
             });
-
-        // Pin button
-        this.$document.on('click', '.detail-pin', function(e) {
-            if (!that.paperId) throw 'Undefined paper id';
-
-            Api.pin(that.paperId);
-
-            e.stopPropagation();
-            return false;
-        });
-
-        // Ban button
-        this.$document.on('click', '.detail-ban', function(e) {
-            if (!that.paperId) throw 'Undefined paper id';
-
-            Api.ban(that.paperId);
-
-            e.stopPropagation();
-            return false;
-        });
-
-        // Add to library button
-        this.$document.on('click', '.detail-library-add:visible', function(e) {
-            if (!that.paperId) throw 'Undefined paper id';
-
-            Api.add(that.paperId);
-
-            e.stopPropagation();
-            return false;
-        });
-
-        // Trash from library button
-        this.$document.on('click', '.detail-library-trash:visible', function(e) {
-            if (!that.paperId) throw 'Undefined paper id';
-
-            Api.trash(that.paperId);
-
-            e.stopPropagation();
-            return false;
-        });
 
         return this;
     };
@@ -150,31 +83,23 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, 
         }
 
         // Paper async loading
-        var uri = $thumb.find('.title a').attr('href');
-        this.loadXhr = $.get(uri)
-            .done(function(html) {
-                that.$document.find('.inner').html(html);
+        this.loadXhr = $.ajax({
+            method: 'GET',
+            url:    $thumb.find('.title a').attr('href')
+        })
+        .done(function(html) {
+            that.$document.find('.inner').html(html);
 
-                that.$actions = that.$element.find(that.config.actions);
-                that.paperId = parseInt(that.$actions.data('paper-id'));
+            that.$document.show();
 
-                // Sticky action
-                that.actions = new Sticky({
-                    debug: that.config.debug,
-                    element: that.$actions,
-                    parent: that.$document,
-                    top: 20,
-                    bottom: 20
-                });
-                that.actions.enable();
+            that.loaded = true;
+            that.loadXhr = null;
 
-                that.$document.show();
-
-                that.loaded = true;
-                that.loadXhr = null;
-
-                $body.trigger('etalia.detail.loaded');
-            });
+            $body.trigger('etalia.detail.loaded');
+        })
+        .fail(function(xrh, status, error) {
+            that.log('Load failure', xrh, status, error);
+        });
 
         return this;
     };
@@ -186,18 +111,7 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/util/sticky'], function ($, 
             this.loadXhr = null;
         }
 
-        if (this.actions) {
-            this.actions.disable();
-            this.actions = null;
-        }
-
-        if (this.$actions) {
-            this.$actions = null;
-        }
-
-        if (this.paperId) {
-            this.paperId = null;
-        }
+        this.paper.clear();
 
         this.$document.hide().find('.inner').html('');
 
