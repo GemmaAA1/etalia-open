@@ -415,14 +415,15 @@
     width: 100%;
 }
 
-.list-tabs ul li {
+.list-tabs ul > li {
+    position: relative;
     display: inline-block;
     line-height: 36px;
     padding: 0 1px;
     width: 33.33333333%;
 }
 
-.list-tabs ul li a {
+.list-tabs ul > li > a {
     background-color: #f5f5f5;
     border: 1px solid #dfe2e6;
     border-bottom: none;
@@ -434,18 +435,36 @@
     width: 100%;
 }
 
-.list-tabs ul li a:hover {
+.list-tabs ul > li > a:hover {
     color: #313233;
 }
 
-.list-tabs ul li a.active {
+.list-tabs ul > li > a.active {
     background-color: #ffffff;
     color: #00695c;
     height: 37px;
 }
 
-.list-tabs ul li a.active:hover {
+.list-tabs ul > li > a.active:hover {
     color: #004f46;
+}
+
+#user-library-trash-clear {
+    display: block;
+    position: absolute;
+    top:0;
+    right:0;
+    width:36px;
+    text-align: center;
+
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+#user-library-trash-clear span {
+    font-size: 16px;
+    line-height: 36px;
 }
 
 /* ------------------------------------ THUMB ------------------------------------ */

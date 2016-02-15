@@ -96,8 +96,13 @@ define([
             };
         }
 
-        $clearTrashButton.on('click', function() {
-            api.clearTrash();
+        $clearTrashButton.on('click', function(e) {
+            if (confirm("Are you sure you want to clear the trash ?")) {
+                api.clearTrash();
+            }
+
+            e.preventDefault();
+            return false;
         });
 
         $body
@@ -124,12 +129,12 @@ define([
             .on('etalia.publication.pin ' +
                 'etalia.publication.add ' +
                 'etalia.publication.trash ' +
-                'etalia.publication.restore',
+                'etalia.publication.restore ' +
+                'etalia.publication.trash-clear',
                 countsHandler)
 
             .on('etalia.publication.trash-clear', function() {
-                $('.endless_data').empty();
-                $('.user-library-trash span').text(0);
+                $('.thumb-list').empty();
                 $clearTrashButton.hide();
             })
 

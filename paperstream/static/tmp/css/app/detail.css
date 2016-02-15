@@ -110,6 +110,11 @@ body.detail-opened #detail {
     margin-bottom: 40px;
 }
 
+#detail .card .title {
+    font-size: 24px;
+    line-height: 28px;
+}
+
 #detail h2 {
     clear: both;
     color: #cbced1;
@@ -120,7 +125,68 @@ body.detail-opened #detail {
     border-bottom: 1px solid #cbced1;
 }
 
-/* RESPONSIVE */
+/* ------------------------------------ THUMB ------------------------------------ */
+
+#detail .thumb-list .thumb {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+}
+
+#detail .thumb-list .card .title {
+    font-size: 16px;
+    line-height: 20px;
+    margin: 0 0 7px 0;
+}
+
+#detail .thumb-list .card .authors {
+    font-size: 14px;
+    line-height: 16px;
+    margin-bottom: 7px;
+}
+
+#detail .thumb-list .card .journal {
+    font-size: 13px;
+    line-height: 16px;
+    margin-bottom: 7px;
+}
+
+#detail .thumb-list .card .date {
+    font-size: 13px;
+    line-height: 24px;
+}
+
+#detail .thumb-list .card .icons {
+    height: 24px;
+}
+
+#detail .thumb-list .card .icons > span,
+#detail .thumb-list .card .icons img {
+    width: 24px;
+    height: 24px;
+}
+
+#detail .thumb-list .card .cluster-icon span {
+    width: 11px;
+    height: 11px;
+}
+
+#detail .thumb-list .card .cluster-icon span {
+    border-radius: 11px 0 0 0;
+}
+
+#detail .thumb-list .card .cluster-icon span + span {
+    border-radius: 0 11px 0 0;
+}
+
+#detail .thumb-list .card .cluster-icon span + span + span {
+    border-radius: 0 0 11px 0;
+}
+
+#detail .thumb-list .card .cluster-icon span + span + span + span {
+    border-radius: 0 0 0 11px;
+}
+
+/* ---------------------------------- RESPONSIVE --------------------------------- */
 
 @media (min-width: 768px) {
     #detail-prev > span,
@@ -130,5 +196,10 @@ body.detail-opened #detail {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    #detail .card .journal {
+        line-height: 24px;
+        height: 24px;
     }
 }

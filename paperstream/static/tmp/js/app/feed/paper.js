@@ -3,7 +3,7 @@ define(['jquery', 'app/ui/paper', 'app/ui/layout', 'bootstrap'], function($, Pap
     $(function() {
 
         var paper = new Paper();
-        paper.init();
+        paper.init().update();
 
         $('body')
             .on('etalia.publication.ban', function(e, result) {

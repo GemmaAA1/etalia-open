@@ -97,10 +97,10 @@
 
 
     <h2>Suggestions</h2>
-    {# TODO replace by <div class="neighbors-thumbs" data-load-url="{% url 'library:paper-neighbors' paper.pk %}"> #}
-{#    <div class="neighbors-thumbs" data-load-url="{% url 'library:paper-neighbors' %}&id={{ paper.pk }}">#}
     <div class="neighbors-thumbs" data-load-url="{% url 'library:paper-neighbors' paper.pk %}">
-        <span class="eai eai-loading"></span>
+        <div class="thumb-list">
+            <span class="eai eai-loading"></span>
+        </div>
     </div>
 
 </div>
