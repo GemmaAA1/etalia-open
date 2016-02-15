@@ -186,9 +186,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('clear trash success', data);
-            if (data.hasOwnProperty('success') && data['success']) {
-                $body.trigger('etalia.publication.trash-clear');
-            }
+            $body.trigger('etalia.publication.trash-clear');
         })
         .fail(function(xrh, status, error) {
             api.log('clear trash failure', xrh, status, error);

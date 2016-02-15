@@ -4,7 +4,8 @@ define(['jquery', 'app/api'], function($, Api) {
 
         this.config = $.extend({
             debug: false,
-            element: '#list'
+            element: '#list',
+            container: '.thumb-list'
         }, options);
 
         this.$element = $(this.config.element);
@@ -104,7 +105,7 @@ define(['jquery', 'app/api'], function($, Api) {
 
             var list = $(xml).find('thumb-list');
             if (list.length) {
-                that.$element.find('.endless_data').html($(list.text()));
+                that.$element.find(that.config.container).html($(list.text()));
             }
 
             $body.trigger('etalia.list.load', eventData);
