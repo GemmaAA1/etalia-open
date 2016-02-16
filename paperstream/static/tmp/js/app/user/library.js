@@ -1,13 +1,14 @@
 define([
     'jquery',
     'app/api',
+    'app/util/utils',
     'app/ui/layout',
     'app/ui/controls',
     'app/ui/list',
     'app/ui/detail',
     'endless',
     'bootstrap'
-], function($, api, layout, controls, List, Detail) {
+], function($, api, utils, layout, controls, List, Detail) {
 
     var $body, $list,
         list = new List({
@@ -51,17 +52,15 @@ define([
         if (added) {
             $button
                 .removeClass('thumb-library-add')
-                .addClass('thumb-library-trash')
-                .find('.eai')
-                    .removeClass('eai-library-add')
-                    .addClass('eai-library-trash');
+                .addClass('thumb-library-trash');
+
+            utils.restoreLoadingButton($button, 'eai-library-trash');
         } else {
             $button
                 .removeClass('thumb-library-trash')
-                .addClass('thumb-library-restore')
-                .find('.eai')
-                    .removeClass('eai-library-trash')
-                    .addClass('eai-library-add');
+                .addClass('thumb-library-restore');
+
+            utils.restoreLoadingButton($button, 'eai-library-add');
         }
     }
 
@@ -82,7 +81,7 @@ define([
                     $('.thumb[data-id=' + result.getId() + ']').remove();
                 }
             };
-            addHandler = function(e, result) {
+            addHandler = restoreHandler = function(e, result) {
                 if (result.isAdded()) {
                     var $button = $('.thumb[data-id=' + result.getId() + '] .thumb-library-add');
                     toggleLibraryAddOrTrash($button, true);

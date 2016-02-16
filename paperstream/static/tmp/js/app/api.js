@@ -114,18 +114,29 @@ define(['jquery'], function($) {
      * Adds the paper to the user library.
      *
      * @param id (int) The paper id/pk
+     * @param failureCallback (closure)
      */
-    api.add = function(id) {
+    api.add = function(id, failureCallback) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/add',
             data: {'id': id}
         })
         .done(function(data) {
+            if (data.hasOwnProperty('success') && !data['success']) {
+                if (failureCallback) {
+                    failureCallback();
+                }
+                api.log('add failure', data);
+                return;
+            }
             api.log('add success', data);
             $body.trigger('etalia.publication.add', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
+            if (failureCallback) {
+                failureCallback();
+            }
             api.log('add failure', xrh, status, error);
         });
 
@@ -136,18 +147,29 @@ define(['jquery'], function($) {
      * Trashes the paper from the user library.
      *
      * @param id (int) The paper id/pk
+     * @param failureCallback (closure)
      */
-    api.trash = function(id) {
+    api.trash = function(id, failureCallback) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/trash',
             data: {'id': id}
         })
         .done(function(data) {
+            if (data.hasOwnProperty('success') && !data['success']) {
+                if (failureCallback) {
+                    failureCallback();
+                }
+                api.log('trash failure', data);
+                return;
+            }
             api.log('trash success', data);
             $body.trigger('etalia.publication.trash', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
+            if (failureCallback) {
+                failureCallback();
+            }
             api.log('trash failure', xrh, status, error);
         });
 
@@ -158,18 +180,29 @@ define(['jquery'], function($) {
      * Restores the paper into the user library.
      *
      * @param id (int) The paper id/pk
+     * @param failureCallback (closure)
      */
-    api.restore = function(id) {
+    api.restore = function(id, failureCallback) {
         $.ajax({
             type: 'POST',
             url: '/user/paper/restore',
             data: {'id': id}
         })
         .done(function(data) {
+            if (data.hasOwnProperty('success') && !data['success']) {
+                if (failureCallback) {
+                    failureCallback();
+                }
+                api.log('restore failure', data);
+                return;
+            }
             api.log('restore success', data);
             $body.trigger('etalia.publication.restore', new Result(id, data));
         })
         .fail(function(xrh, status, error) {
+            if (failureCallback) {
+                failureCallback();
+            }
             api.log('restore failure', xrh, status, error);
         });
 
@@ -186,7 +219,7 @@ define(['jquery'], function($) {
         })
         .done(function(data) {
             api.log('clear trash success', data);
-            $body.trigger('etalia.publication.trash-clear');
+            $body.trigger('etalia.publication.trash-clear', new Result(undefined, data));
         })
         .fail(function(xrh, status, error) {
             api.log('clear trash failure', xrh, status, error);

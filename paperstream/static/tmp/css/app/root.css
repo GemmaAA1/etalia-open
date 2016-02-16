@@ -40,14 +40,14 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     transition: margin .25s;
 }
 
-.eai-loading {
+.async-content > .eai-loading {
+    color: #00695c;
     display: block;
-    width: 32px;
     height: 32px;
     font-size: 32px;
     line-height: 32px;
-    color: #00695c;
     margin: 20px auto;
+    width: 32px;
 }
 
 #backdrop {
@@ -91,11 +91,13 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
 }
 
 #busy-modal .eai-loading {
-    width: 64px;
-    height: 64px;
+    color: #00695c;
+    display: block;
     font-size: 64px;
+    height: 64px;
     line-height: 64px;
     margin:0 auto 10px auto;
+    width: 64px;
 }
 
 #busy-modal > p {

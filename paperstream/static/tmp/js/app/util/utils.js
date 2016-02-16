@@ -54,6 +54,30 @@ define(['jquery'], function($) {
             if (!results) return null;
             if (!results[2]) return '';
             return decodeURIComponent(results[2].replace(/\+/g, " "));
+        },
+        bindLoadingButtons: function($element) {
+            $element.on('click', '.loading-button', function(e) {
+                var $button = $(e.target).closest('.loading-button');
+
+                if ($button.data('busy')) {
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return;
+                }
+
+                $button.data('busy', true);
+
+                $button.find('.eai')
+                    .removeAttr('class')
+                    .addClass('eai eai-loading');
+            });
+        },
+        restoreLoadingButton: function($button, iconClass) {
+            $button.data('busy', false);
+
+            $button.find('.eai')
+                .removeAttr('class')
+                .addClass('eai ' + iconClass);
         }
     }
 });

@@ -5,27 +5,29 @@
         <a href="javascript: void(0)" class="thumb-pin{% if user_taste|get_is_pinned:paper.pk %} active{% endif %}">
             <span class="eai eai-pin"></span>
         </a>
-        <a href="javascript: void(0)" class="thumb-library-trash">
+        <a href="javascript: void(0)" class="thumb-library-trash loading-button">
             <span class="eai eai-library-trash"></span>
         </a>
     {% elif tab == 'pin' %}
         <a href="javascript: void(0)" class="thumb-pin{% if user_taste|get_is_pinned:paper.pk %} active{% endif %}">
             <span class="eai eai-pin"></span>
         </a>
-        <a href="javascript: void(0)" class="thumb-library-{% if paper.pk in user_lib %}trash{% else %}add{% endif %}">
+        <a href="javascript: void(0)" class="thumb-library-{% if paper.pk in user_lib %}trash{% else %}add{% endif %} loading-button">
             <span class="eai eai-library-{% if paper.pk in user_lib %}trash{% else %}add{% endif %}"></span>
         </a>
     {% elif tab == 'trash' %}
-        <a href="javascript: void(0)" class="thumb-library-restore">
+        <a href="javascript: void(0)" class="thumb-library-restore loading-button">
             <span class="eai eai-library-add"></span>
         </a>
     {% else %}
-        <a href="javascript: void(0)" class="thumb-pin{% if user_taste|get_is_pinned:paper.pk %} active{% endif %}">
+        <a href="javascript: void(0)" class="thumb-pin {% if user_taste|get_is_pinned:paper.pk %} active{% endif %}">
             <span class="eai eai-pin"></span>
         </a>
+        {% if hide_ban_button == true %}
         <a href="javascript: void(0)" class="thumb-ban{% if user_taste|get_is_banned:paper.pk %} active{% endif %}">
             <span class="eai eai-remove"></span>
         </a>
+        {% endif %}
     {% endif %}
     </div>
     <div class="card">
@@ -42,12 +44,14 @@
             {{ paper.print_first_seen }}
         </p>
         <p class="icons">
+            {% if hide_cluster_icon == true %}
             <span class="cluster-icon">
                 <span class="cluster-0"></span>
                 <span></span>
                 <span></span>
                 <span></span>
             </span>
+            {% endif %}
             <span class="metric">
                 <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
             </span>
