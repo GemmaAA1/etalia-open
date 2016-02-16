@@ -81,7 +81,7 @@ define([
                     $('.thumb[data-id=' + result.getId() + ']').remove();
                 }
             };
-            addHandler = function(e, result) {
+            addHandler = restoreHandler = function(e, result) {
                 if (result.isAdded()) {
                     var $button = $('.thumb[data-id=' + result.getId() + '] .thumb-library-add');
                     toggleLibraryAddOrTrash($button, true);

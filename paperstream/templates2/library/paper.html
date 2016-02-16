@@ -18,10 +18,10 @@
         <span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>
     </a>
 
-    <a href="javascript: void(0)" class="detail-comments">
+    <a href="javascript: void(0)" class="detail-questions">
         <span class="eai eai-comments"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-suggestions">
+    <a href="javascript: void(0)" class="detail-neighbors">
         <span class="eai eai-suggestions"></span>
     </a>
     <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
@@ -60,13 +60,12 @@
             {{ paper.print_month_year }}
         </p>
         <p class="icons">
-            <!-- TODO -->
-            <span class="cluster-icon">
+            <!--<span class="cluster-icon">
                 <span></span>
                 <span></span>
                 <span></span>
                 <span class="cluster-3"></span>
-            </span>
+            </span>-->
             <!-- TODO -->
             <span class="metric">
                 <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
@@ -89,16 +88,29 @@
 
 
     {% if user.is_authenticated %}
-    <h2>Related questions</h2>
-    <div class="questions-thumbs async-content">
-        <span class="eai eai-loading"></span>
+    <div class="questions-thumbs">
+        <h2>Related questions</h2>
+        <div class="thumb-list async-content">
+            <span class="eai eai-loading"></span>
+        </div>
     </div>
     {%  endif %}
 
 
-    <h2>Suggestions</h2>
-    <div class="neighbors-thumbs async-content" data-load-url="{% url 'library:paper-neighbors' paper.pk %}">
-        <div class="thumb-list">
+    <div class="neighbors-thumbs" data-load-url="{% url 'library:paper-neighbors' paper.pk %}">
+        <h2>Similar publications</h2>
+        <ul class="neighbors-timespan-selector">
+            <li>
+                <a href="javascript: void(0)" data-value="60">2 months</a>
+            </li>
+            <li class="active">
+                <a href="javascript: void(0)" data-value="30">1 month</a>
+            </li>
+            <li>
+                <a href="javascript: void(0)" data-value="7">Week</a>
+            </li>
+        </ul>
+        <div class="thumb-list async-content">
             <span class="eai eai-loading"></span>
         </div>
     </div>

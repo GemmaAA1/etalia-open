@@ -116,7 +116,8 @@ body.detail-opened #detail {
     line-height: 28px;
 }
 
-#detail h2 {
+#detail h2,
+#detail .h2 {
     clear: both;
     color: #cbced1;
     font-size: 24px;
@@ -124,6 +125,32 @@ body.detail-opened #detail {
     padding-bottom: 8px;
     margin: 40px 0 20px 0;
     border-bottom: 1px solid #cbced1;
+}
+
+#detail .neighbors-thumbs h2 {
+    margin-bottom: 10px;
+}
+
+#detail .neighbors-timespan-selector {
+    list-style: none;
+    margin: 0 0 20px 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#detail .neighbors-timespan-selector > li {
+    display: inline-block;
+    float: right;
+    margin-left: 12px;
+}
+
+#detail .neighbors-timespan-selector > li:last-child {
+    margin-left: 0;
+}
+
+#detail .neighbors-timespan-selector > li.active a {
+    font-weight: bold;
+    text-decoration: underline;
 }
 
 /* ------------------------------------ THUMB ------------------------------------ */

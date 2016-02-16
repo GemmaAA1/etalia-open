@@ -23,9 +23,11 @@
         <a href="javascript: void(0)" class="thumb-pin {% if user_taste|get_is_pinned:paper.pk %} active{% endif %}">
             <span class="eai eai-pin"></span>
         </a>
+        {% if hide_ban_button == true %}
         <a href="javascript: void(0)" class="thumb-ban{% if user_taste|get_is_banned:paper.pk %} active{% endif %}">
             <span class="eai eai-remove"></span>
         </a>
+        {% endif %}
     {% endif %}
     </div>
     <div class="card">
@@ -42,12 +44,14 @@
             {{ paper.print_first_seen }}
         </p>
         <p class="icons">
+            {% if hide_cluster_icon == true %}
             <span class="cluster-icon">
                 <span class="cluster-0"></span>
                 <span></span>
                 <span></span>
                 <span></span>
             </span>
+            {% endif %}
             <span class="metric">
                 <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
             </span>

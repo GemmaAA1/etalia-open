@@ -90,6 +90,9 @@ define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
         var that = this,
             $body = $('body');
 
+
+        that.$element.find(that.config.container).html('<span class="eai eai-loading"></span>');
+
         this.loadXhr = $.ajax({
             method:   'GET',
             url:      that.$element.data('load-url'),

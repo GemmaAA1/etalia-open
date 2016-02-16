@@ -18,6 +18,7 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
         this.actions = null;
 
         this.neighbors = null;
+        this.neighborsTimespanSelector = null;
     };
 
     function toggleLibraryAddOrTrash($button, added) {
@@ -79,6 +80,33 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
             });
 
         this.$document
+            .on('click', '.neighbors-timespan-selector a', function(e) {
+                var $timespan = $(e.target).closest('a');
+
+                $timespan.closest('.neighbors-timespan-selector').find('li').removeClass('active');
+                $timespan.closest('li').addClass('active');
+
+                if (that.neighbors) {
+                    that.neighbors.load({'time_span': $timespan.data('value')});
+                }
+
+                e.preventDefault();
+                return false;
+            })
+            .on('click', '.detail-questions', function(e) {
+                var top = that.$document.find('.questions-thumbs').position().top - 15;
+                that.$document.scrollTop(top);
+
+                e.preventDefault();
+                return false;
+            })
+            .on('click', '.detail-neighbors', function(e) {
+                var top = that.$document.find('.neighbors-thumbs').position().top - 15;
+                that.$document.scrollTop(top);
+
+                e.preventDefault();
+                return false;
+            })
             .on('click', '.detail-pin', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
@@ -150,10 +178,14 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
         });
         this.actions.enable();
 
+        var timespan = $('.neighbors-timespan-selector li.active a').data('value') || 30;
+
         this.neighbors = new List({
-            debug: this.config.debug,
-            element: this.config.element + ' ' + this.config.neighbors
-        }).init().load(controls.getStates());
+                debug: this.config.debug,
+                element: this.config.element + ' ' + this.config.neighbors
+            })
+            .init()
+            .load({'time_span': timespan});
 
         return this;
     };
@@ -167,6 +199,8 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
         if (this.$actions) {
             this.$actions = null;
         }
+
+        this.neighbors = null;
 
         if (this.id) {
             this.id = null;
