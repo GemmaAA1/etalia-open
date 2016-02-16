@@ -1,9 +1,9 @@
-define(['jquery', 'app/api', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'], function ($, api, controls, List, Sticky) {
+define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'], function ($, api, utils, controls, List, Sticky) {
 
     var Paper = function (options) {
 
         this.config = $.extend({
-            debug: true,
+            debug: false,
             element: '#detail',
             document: '.document',
             actions: '.inner > .actions',
@@ -23,19 +23,16 @@ define(['jquery', 'app/api', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'
     function toggleLibraryAddOrTrash($button, added) {
         if (added) {
             $button
-                .removeClass('detail-library-add')
-                .removeClass('detail-library-restore')
-                .addClass('detail-library-trash')
-                .find('.eai')
-                    .removeClass('eai-library-add')
-                    .addClass('eai-library-trash');
+                .removeClass('detail-library-add detail-library-restore')
+                .addClass('detail-library-trash');
+
+            utils.restoreLoadingButton($button, 'eai-library-trash');
         } else {
             $button
                 .removeClass('detail-library-trash')
                 .addClass('detail-library-restore')
-                .find('.eai')
-                    .removeClass('eai-library-trash')
-                    .addClass('eai-library-add');
+
+            utils.restoreLoadingButton($button, 'eai-library-add');
         }
     }
 
@@ -87,7 +84,7 @@ define(['jquery', 'app/api', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'
 
                 api.pin(that.id);
 
-                e.stopPropagation();
+                e.preventDefault();
                 return false;
             })
             .on('click', '.detail-ban', function(e) {
@@ -95,31 +92,40 @@ define(['jquery', 'app/api', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'
 
                 api.ban(that.id);
 
-                e.stopPropagation();
+                e.preventDefault();
                 return false;
             })
             .on('click', '.detail-library-add:visible', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                api.add(that.id);
+                var $button = $(e.target).closest('.detail-library-add');
+                api.add(that.id, function() {
+                    utils.restoreLoadingButton($button, 'eai-library-add');
+                });
 
-                e.stopPropagation();
+                e.preventDefault();
                 return false;
             })
             .on('click', '.detail-library-trash:visible', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                api.trash(that.id);
+                var $button = $(e.target).closest('.detail-library-trash');
+                api.trash(that.id, function() {
+                    utils.restoreLoadingButton($button, 'eai-library-trash');
+                });
 
-                e.stopPropagation();
+                e.preventDefault();
                 return false;
             })
             .on('click', '.detail-library-restore:visible', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                api.restore(that.id);
+                var $button = $(e.target).closest('.detail-library-restore');
+                api.restore(that.id, function() {
+                    utils.restoreLoadingButton($button, 'eai-library-add');
+                });
 
-                e.stopPropagation();
+                e.preventDefault();
                 return false;
             });
 
@@ -130,6 +136,8 @@ define(['jquery', 'app/api', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'
         this.log('update');
 
         this.$actions = this.$element.find(this.config.actions);
+        utils.bindLoadingButtons(this.$actions);
+
         this.id = parseInt(this.$actions.data('paper-id'));
 
         // Sticky action

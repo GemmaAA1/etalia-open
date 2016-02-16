@@ -106,6 +106,7 @@ body.detail-opened #detail {
 
 .actions .detail-library-add,
 .actions .detail-library-trash,
+.actions .detail-library-restore,
 .actions .detail-pdf {
     margin-bottom: 40px;
 }

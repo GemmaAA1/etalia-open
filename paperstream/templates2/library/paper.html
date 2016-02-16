@@ -14,7 +14,7 @@
     <a href="javascript: void(0)" class="detail-ban">
         <span class="eai eai-remove"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% else %}add{% endif %}">
+    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button">
         <span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>
     </a>
 
@@ -90,14 +90,14 @@
 
     {% if user.is_authenticated %}
     <h2>Related questions</h2>
-    <div class="questions-thumbs">
+    <div class="questions-thumbs async-content">
         <span class="eai eai-loading"></span>
     </div>
     {%  endif %}
 
 
     <h2>Suggestions</h2>
-    <div class="neighbors-thumbs" data-load-url="{% url 'library:paper-neighbors' paper.pk %}">
+    <div class="neighbors-thumbs async-content" data-load-url="{% url 'library:paper-neighbors' paper.pk %}">
         <div class="thumb-list">
             <span class="eai eai-loading"></span>
         </div>
