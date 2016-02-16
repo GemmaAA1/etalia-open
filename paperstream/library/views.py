@@ -20,7 +20,7 @@ from braces.views import LoginRequiredMixin
 
 from paperstream.nlp.models import PaperNeighbors, Model, MostSimilar
 from paperstream.core.mixins import ModalMixin
-from paperstream.users.models import UserTaste
+from paperstream.users.models import UserTaste, UserLibPaper
 from .models import Journal, Paper
 from .constants import PAPER_TYPE
 
@@ -109,10 +109,17 @@ class PaperView(ModalMixin, DetailView):
             except UserTaste.DoesNotExist:
                 pass
 
-            if paper_ in self.request.user.lib.papers.all():
+            try:
+                ulp = self.request.user.lib.userlib_paper.get(paper=paper_)
                 context['is_in_lib'] = True
-            else:
+                if ulp.is_trashed:
+                    context['is_in_trash'] = True
+                else:
+                    context['is_in_trash'] = False
+            except UserLibPaper.DoesNotExist:
                 context['is_in_lib'] = False
+                context['is_in_trash'] = False
+                pass
 
         return context
 
