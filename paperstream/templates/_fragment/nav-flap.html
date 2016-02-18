@@ -8,14 +8,14 @@
         <li class="{% active request 'feed/stream.+' %}">
             <a href="{% url 'feeds:stream' %}">My stream</a>
         </li>
-        <li class="{% active request 'feed/trend.+' %}">
-            <a href="{% url 'feeds:trend' %}">Trends</a>
-        </li>
         <li class="{% active request 'user/tocles.+' %}">
             <a href="{% url 'user:tocles' %}">My Tocles</a>
         </li>
+        <li class="{% active request 'feed/trend.+' %}">
+            <a href="{% url 'feeds:trend' %}">Trends</a>
+        </li>
         <li class="{% active request 'user/library.+' %}">
-            <a href="{% url 'user:library' %}">My Library</a>
+            <a href="{% url 'user:library' %}">Library</a>
         </li>
         <li class="separator"></li>
         <li class="{% active request 'user/settings.+' %}">
