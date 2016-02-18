@@ -53,7 +53,7 @@
             </span>
             {% endif %}
             <span class="metric">
-                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score|floatformat:"0" }}&types={{ paper.altmetric.type }}">
             </span>
             <!-- TODO relative questions count -->
             <!--<span class="comment">

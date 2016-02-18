@@ -59,6 +59,10 @@
         <p class="date">
             {{ paper.print_month_year }}
         </p>
+        <p>
+            {{ paper.print_clean_ids }}
+        </p>
+
         <p class="icons">
             <!--<span class="cluster-icon">
                 <span></span>
@@ -68,7 +72,7 @@
             </span>-->
             <!-- TODO -->
             <span class="metric">
-                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score }}&types={{ paper.altmetric.type }}">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score|floatformat:"0"  }}&types={{ paper.altmetric.type }}">
             </span>
             <!-- TODO relative questions count -->
             <!--<span class="comment">
