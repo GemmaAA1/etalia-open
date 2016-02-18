@@ -36,22 +36,22 @@ def home(request):
 
 def about(request):
     context = {}
-    return render(request, 'about.html', context=context)
+    return render(request, 'pages/about.html', context=context)
 
 
 def terms(request):
     context = {}
-    return render(request, 'terms.html', context=context)
+    return render(request, 'pages/terms.html', context=context)
 
 
 def support(request):
     context = {}
-    return render(request, 'support.html', context=context)
+    return render(request, 'pages/support.html', context=context)
 
 
 def help(request):
     context = {}
-    return render(request, 'help.html', context=context)
+    return render(request, 'pages/help.html', context=context)
 
 
 def test(request):

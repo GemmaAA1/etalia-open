@@ -1,82 +1,29 @@
-{% extends 'base.html' %}
+{% extends 'feeds/base.html' %}
 
 {% load staticfiles %}
 {% load disqus_tags %}
 {% load user_taste %}
 
-{% block css %}
-    <link rel="stylesheet" href="{% static 'css/streams.css' %}" type="text/css" >
-    <link rel="stylesheet" href="{% static 'css/paper_list.css' %}" type="text/css" >
-    <link rel="stylesheet" href="{% static 'css/side_panel.css' %}" type="text/css" >
-    {{ block.super }}
-{% endblock css %}
-
-{% block title %}
-    {{ block.super }} My News
-{% endblock title %}
-
 {% block content %}
-    <div class="container">
-        <div class="feed">
-            <div class="row">
-                <div class="col-lg-11 col-lg-offset-1">
-                    <div class="col-md-9">
-                        <div class="userfeed">
-                            <div class="row header">
-                                <div class="col-md-1">
-                                    <div class="header-img-crop">
-                                        <img src="{% static 'img/main_icons_color.svg' %}" class="header-img">
-                                    </div>
-                                </div>
-                                <div class="col-md-7">
-                                    <div class="header-text">
-                                        <h4>{{ number_of_papers }} publications suggested for you</h4>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 text-right">
-                                    <div class="likes">
-                                        <button class="like-img-crop">
-                                            <img src="{% static 'img/like_select.png' %}" class="like-img" title="Show liked publications">
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="endless_data">
-                            {% include page_template %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 hidden-sm">
-                        {% include 'feeds/filter_panel.html' %}
-                    </div>
+{% spaceless %}
+
+    <!-- start list -->
+    <div id="list" class="document" data-load-url="{% url 'feeds:stream_xml' %}">
+        <div class="wrapper">
+            <div class="inner">
+                <p class="list-title">
+                    <span>{{ number_of_papers }}</span> publications suggested for you
+                </p>
+
+                <div class="endless_data thumb-list async-content">
+                    {% include page_template %}
                 </div>
             </div>
         </div>
     </div>
+    <!-- end list -->
+
+    {% include 'feeds/detail.html' %}
+
+{% endspaceless %}
 {% endblock content %}
-
-{% block footer %}
-{% endblock footer %}
-
-{% block js %}
-    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
-{#    <script type="text/javascript" src="{% static 'js/side_panel.js' %}"></script>#}
-    <script type="text/javascript" src="{% static 'js/filter.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
-    <script>$.endlessPaginate({
-        paginateOnScroll: true,
-        paginateOnScrollMargin: 10,
-        onClick: function () {
-            unbind_all();
-        },
-        onCompleted: function () {
-            bind_all();
-        }
-    });
-    </script>
-
-    {{ block.super }}
-{% endblock js %}
-
