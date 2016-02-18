@@ -272,6 +272,11 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
 
         return {'filter': json.dumps(filter_)}
 
+    def get_context_new_objects_since_last_login(self):
+        return {'new_papers': self.object_list.filter(
+            created__gt=self.request.user.last_login)\
+            .values_list('paper_id', flat=True)}
+
     def parse_ajax_data(self):
         """Get ajax args"""
 
