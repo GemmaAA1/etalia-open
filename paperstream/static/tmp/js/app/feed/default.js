@@ -9,9 +9,7 @@ define([
 ], function($, layout, controls, List, Detail) {
 
     var $body,
-        list = new List({
-            element: '#list'
-        }),
+        list = new List(),
         detail = new Detail();
 
     $(function() {
