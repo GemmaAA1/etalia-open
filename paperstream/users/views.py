@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView, DetailView
+from django.template.response import TemplateResponse
 from django.views.generic.edit import DeleteView
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -750,3 +751,7 @@ def send_invite(request):
         return JsonResponse(data={'success': True})
     else:
         redirect('invite:home')
+
+
+def tocles(request):
+    return TemplateResponse(request, 'tocles/tocles.html', {})

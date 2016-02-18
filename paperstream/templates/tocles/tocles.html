@@ -1,10 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends 'tocles/base.html' %}
 
-</body>
-</html>
+{% load staticfiles %}
+
+{% block content %}
+{% spaceless %}
+
+<div style="text-align: center; padding-top: 100px">Coming Soon</div>
+
+{% endspaceless %}
+{% endblock content %}
+
+
+{% block javascript %}
+<script src="{% static 'tmp/js/require.js' %}"></script>
+<script>
+    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+        requirejs(['app/user/library']);
+    });
+</script>
+{% endblock javascript %}

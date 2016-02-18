@@ -1,10 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends 'layout.html' %}
 
-</body>
-</html>
+
+{% load staticfiles %}
+
+
+{% block left-flap %}
+    {% include '_fragment/nav-flap.html' %}
+{% endblock left-flap %}
+
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'tmp/css/app/user.css' %}" type="text/css" >
+{% endblock stylesheets %}
