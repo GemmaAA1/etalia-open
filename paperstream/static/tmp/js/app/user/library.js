@@ -11,9 +11,7 @@ define([
 ], function($, api, utils, layout, controls, List, Detail) {
 
     var $body, $list,
-        list = new List({
-            element: '#list'
-        }),
+        list = new List(),
         detail = new Detail(),
         listType, $clearTrashButton,
         countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
@@ -112,7 +110,7 @@ define([
                 'etalia.control.pinned.change ' +
                 'etalia.control.filters.change',
                 function() {
-                    list.load(undefined, controls.getStates());
+                    list.load(controls.getStates());
                 })
             .on('etalia.list.load', function(e, data) {
                 if (data.hasOwnProperty('controlsStates')) {
