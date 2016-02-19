@@ -51,5 +51,6 @@ PERSISTANT_USER_MESSAGES = (
     (2,
      'trend',
      'You find here a list of publications that are currently receiving the most ' \
-     'attention. A new way to broaden your interests and get aware of potential breakthroughs before other')
+     'attention. A new way to broaden your interests and get aware of potential '
+     'breakthroughs before your peers')
 )
