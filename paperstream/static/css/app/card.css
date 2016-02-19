@@ -17,6 +17,11 @@
     text-decoration: none;
 }
 
+.card .title a span {
+    font-size: 60%;
+    color: #408f85;
+}
+
 .card .authors {
     font-size: 15px;
     line-height: 18px;

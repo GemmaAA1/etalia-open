@@ -40,9 +40,10 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     transition: margin .25s;
 }
 
-.async-content > .eai-loading {
+.async-content > .eai-loading,
+.endless_container > .eai-loading {
     color: #00695c;
-    display: block;
+    display: inline-block;
     height: 32px;
     font-size: 32px;
     line-height: 32px;
@@ -92,7 +93,7 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
 
 #busy-modal .eai-loading {
     color: #00695c;
-    display: block;
+    display: inline-block;
     font-size: 64px;
     height: 64px;
     line-height: 64px;
@@ -491,22 +492,12 @@ a.btn-provider:hover {
 /* ------------------------------------ ANIMATIONS ------------------------------------ */
 
 .eai-loading:before {
-    -webkit-animation-name: spin;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -moz-animation-name: spin;
-    -moz-animation-duration: 1s;
-    -moz-animation-iteration-count: infinite;
-    -moz-animation-timing-function: linear;
-    -ms-animation-name: spin;
-    -ms-animation-duration: 1s;
-    -ms-animation-iteration-count: infinite;
-    -ms-animation-timing-function: linear;
-    animation-name: spin;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
+    display: inline-block;
+    text-align: center;
+    -webkit-animation: spin 1s infinite linear;
+    -moz-animation: spin 1s infinite linear;
+    -ms-animation: spin 1s infinite linear;
+    animation: spin 1s infinite linear;
 }
 
 @-ms-keyframes spin {
