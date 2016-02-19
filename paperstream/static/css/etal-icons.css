@@ -81,7 +81,7 @@
 .eai-suggestions:before {
     content: "\e911";
 }
-.eai-tick:before {
+.eai-ban:before {
     content: "\e912";
 }
 .eai-twitter:before {

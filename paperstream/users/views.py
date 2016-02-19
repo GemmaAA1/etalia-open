@@ -205,11 +205,11 @@ class UserLibraryPaperListView(BasePaperListView):
         self.original_qs = self.get_original_queryset()
 
         # Exclude rejected paper
-        papers_ticked = UserTaste.objects\
+        papers_banned = UserTaste.objects\
             .filter(user=self.request.user,
                     is_banned=True)\
             .values('paper')
-        self.original_qs = self.original_qs.exclude(paper__in=papers_ticked)
+        self.original_qs = self.original_qs.exclude(paper__in=papers_banned)
 
         # filter
         queryset = self.original_qs
