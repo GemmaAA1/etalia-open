@@ -147,7 +147,7 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
             .filter(user=self.request.user)\
             .values_list('paper_id', 'is_pinned', 'is_banned')
         # reformat to dict
-        user_taste = dict((key, {'liked': v1, 'is_banned': v2})
+        user_taste = dict((key, {'is_pinned': v1, 'is_banned': v2})
                           for key, v1, v2 in user_taste)
         return {'user_taste': user_taste}
 
