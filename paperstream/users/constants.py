@@ -46,25 +46,20 @@ INIT_STEPS = (
 PERSISTANT_USER_MESSAGES = (
     (1,
      'stream',
-     'You find here a stream of the most relevant scientific articles we found for ' \
-     'you based on the publications that you stored in your reference manager. You can'
-     'filter them using the right-side panel or using the shortcut icons in the top navigation'
+     'Below the stream of the most relevant scientific articles we found for ' \
+     'you. You can filter them using the right-side panel or using the shortcut icons in the top navigation '
      'bar. Pins (<span class="eai eai-pin"></span>) are used to quickly mark the articles'
-     'you are interested in before adding them to your library. Bans ('
-     '<span class="eai eai-ban"></span>) will remove the article'
+     'you are interested in. Bans (<span class="eai eai-remove"></span>) will remove the article '
      'from your stream. Using <span class="eai eai-pin"></span> and '
-     '<span class="eai eai-ban"></span> allow etalia to better understanding your interests'
-     'and to provide you with ever improving content.'),
+     '<span class="eai eai-remove"></span> allows etalia to better understand your interests '
+     'and improve your stream content.'),
     (2,
      'trend',
-     'You find here a list of publications that are currently receiving the most ' \
-     'attention. A new way to broaden your interests and get aware of potential '
-     'breakthroughs before your peers. You can'
-     'filter them using the right-side panel or using the shortcut icons in the top navigation'
-     'bar. Pins (<span class="eai eai-ban"></span>) are used to quickly mark the articles'
-     'you are interested in before adding them to your library. Bans ('
-     '<span class="eai eai-ban"></span>) will remove the article'
+     'Below a list of publications that are currently receiving the most ' \
+     'attention. You can filter them using the right-side panel or using the shortcut icons in the top navigation '
+     'bar. Pins (<span class="eai eai-pin"></span>) are used to quickly mark the articles'
+     'you are interested in. Bans (<span class="eai eai-remove"></span>) will remove the article '
      'from your stream. Using <span class="eai eai-pin"></span> and '
-     '<span class="eai eai-ban"></span> allow etalia to better understanding your interests'
-     'and to provide you with ever improving content.')
+     '<span class="eai eai-remove"></span> allows etalia to better understand your interests '
+     'and improve your trend content.')
 )

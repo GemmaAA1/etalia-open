@@ -9,7 +9,7 @@ h1, .h1,
 h2, .h2,
 h3, .h3 {
     font-weight: 700;
-    text-shadow: -2px 2px 0 rgba(0, 0, 0, .15);
+    /*text-shadow: -2px 2px 0 rgba(0, 0, 0, .15);*/
     color: #1e232f;
     margin: 0;
 }
