@@ -31,6 +31,7 @@
     {% endif %}
     </div>
     <div class="card">
+        {% if paper.pk in new_papers %} <span>new</span>{% endif %}
         <p class="title">
             <a href="{% url 'library:paper' paper.pk %}">{{ paper.title }}</a>
         </p>
