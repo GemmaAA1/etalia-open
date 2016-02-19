@@ -32,8 +32,8 @@ STATICFILES_DIRS = (
 
 # EMAIL backend
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
-MAILGUN_ACCESS_KEY = 'key-9b74a707d80624254f6d538bc841c439'
-MAILGUN_SERVER_NAME = 'mg.pubstream.io'
+MAILGUN_ACCESS_KEY = env.str('MAILGUN_KEY')
+MAILGUN_SERVER_NAME = 'mg.etalia.io'
 
 # Invite mode switch
 INVITE_MODE = False
