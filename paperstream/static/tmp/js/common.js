@@ -7,6 +7,9 @@ requirejs.config({
         'endless': {
             deps: ['jquery']
         },
+        'close_alerts': {
+            deps: ['jquery']
+        },
         'jquery-ui': {
             deps: ['jquery']
         },
@@ -16,6 +19,7 @@ requirejs.config({
     },
     paths: {
         endless: '/static/tmp/js/lib/endless-pagination',
+        close_alerts: '/static/tmp/js/lib/close-alerts',
         app: '/static/tmp/js/app'
     }
 });

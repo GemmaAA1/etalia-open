@@ -11,11 +11,14 @@ from social.pipeline.partial import partial
 from avatar.models import Avatar
 
 from paperstream.core.utils import get_celery_worker_status
+from messages_extends.models import Message
+from messages_extends import constants as constants_messages
 from .models import Affiliation
 
 from .forms import UserAffiliationForm
 from .tasks import update_lib as async_update_lib
 from .tasks import init_user as async_init_user
+from .constants import PERSISTANT_USER_MESSAGES
 
 @partial
 def require_primary(strategy, details, *args, user=None, **kwargs):
@@ -93,6 +96,20 @@ def update_user_lib(backend, social, user, *args, **kwargs):
                                      serializer='json')
     return {}
 
+
+@partial
+def init_messages(social, user, *args, **kwargs):
+
+    for id, extra_tags, message in PERSISTANT_USER_MESSAGES:
+        mess, new = Message.objects.get_or_create(
+            user=user,
+            level=constants_messages.INFO_PERSISTENT,
+            extra_tags='id{id},{tags}'.format(id=id, tags=extra_tags))
+        if new:
+            mess.message = message
+            mess.save()
+
+    return {}
 
 @partial
 def init_user(social, user, *args, **kwargs):

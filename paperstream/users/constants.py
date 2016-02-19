@@ -39,3 +39,17 @@ INIT_STEPS = (
     ('TRE', 'trends'),
     ('IDL', 'done'),
 )
+
+# MESSAGES
+# User linked persistant message (i.e. that user needs to close)
+# in the form (id, extra_tag (str), message (str))
+PERSISTANT_USER_MESSAGES = (
+    (1,
+     'stream',
+     'You find here the most relevant scientific publications we found for ' \
+     'you based on the publications that you stored in your reference manager.'),
+    (2,
+     'trend',
+     'You find here a list of publications that are currently receiving the most ' \
+     'attention. A new way to broaden your interests and get aware of potential breakthroughs before other')
+)

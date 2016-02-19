@@ -7,6 +7,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
 
+from django.contrib import messages
+from messages_extends import constants as constants_messages
+
 from paperstream.users.models import UserTaste
 from paperstream.core.views import BasePaperListView
 
