@@ -19,7 +19,7 @@
         </button>
 
         <a id="brand" href="{% url 'core:home' %}" title="Et al.">
-            <img src="{% static 'tmp/img/logo.svg' %}" alt="Et al." width="108" height="38">
+            <img src="{% static 'img/logo.svg' %}" alt="Et al." width="108" height="38">
         </a>
 
         <!-- start top-bar-profile -->
@@ -28,7 +28,7 @@
             {% if user.avatar_set.all %}
                 {% avatar user 38 %}
             {% else %}
-                <img src="{% static 'tmp/img/avatar.jpg' %}" alt="Profile" width="38" height="38">
+                <img src="{% static 'img/avatar.jpg' %}" alt="Profile" width="38" height="38">
             {% endif %}
         </button>
         <div id="profile-dropdown">
@@ -46,12 +46,12 @@
             {% if user.avatar_set.all %}
                 {% avatar user 100 %}
             {% else %}
-                <img src="{% static 'tmp/img/avatar.jpg' %}" alt="Avatar" width="100" height="100">
+                <img src="{% static 'img/avatar.jpg' %}" alt="Avatar" width="100" height="100">
             {% endif %}
         </div>
         {% else %}
         <button id="toggle-profile" class="btn-circle" type="button">
-            <img src="{% static 'tmp/img/signin.gif' %}" alt="Profile" width="38" height="38">
+            <img src="{% static 'img/signin.gif' %}" alt="Profile" width="38" height="38">
         </button>
         <div id="profile-dropdown" class="signin">
             <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
@@ -82,9 +82,9 @@
 
 {% block javascript %}
 {% spaceless %}
-    <script src="{% static 'tmp/js/require.js' %}"></script>
+    <script src="{% static 'js/require.js' %}"></script>
     <script>
-        requirejs(['{% static "tmp/js/common.js" %}'], function () {
+        requirejs(['{% static "js/common.js" %}'], function () {
             requirejs(['app/default']);
         });
     </script>

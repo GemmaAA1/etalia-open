@@ -179,7 +179,7 @@ a.btn-provider:hover {
     width: 80px;
     height: 80px;
     margin: 0 auto 20px auto;
-    background: url('/static/tmp/img/landing-focus.gif') no-repeat 0 0 scroll;
+    background: url('/static/img/landing-focus.gif') no-repeat 0 0 scroll;
 }
 
 #focus span#streams {
@@ -254,7 +254,7 @@ a.btn-provider:hover {
     }
 
     #what {
-        background: #83ebdf url('/static/tmp/img/paper_mosaic.png') no-repeat left center scroll;
+        background: #83ebdf url('/static/img/paper_mosaic.png') no-repeat left center scroll;
         background-size: 45% auto;
     }
 

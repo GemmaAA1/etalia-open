@@ -25,9 +25,9 @@
 
 {% block stylesheets %}
 {{ block.super }}
-<link href="{% static 'tmp/css/app/list.css' %}" rel="stylesheet" type="text/css">
-<link href="{% static 'tmp/css/app/card.css' %}" rel="stylesheet" type="text/css">
-<link href="{% static 'tmp/css/app/detail.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/list.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/card.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/detail.css' %}" rel="stylesheet" type="text/css">
 <style type="text/css">
     #detail {
         display: block;
@@ -37,9 +37,9 @@
 
 
 {% block javascript %}
-<script src="{% static 'tmp/js/require.js' %}"></script>
+<script src="{% static 'js/require.js' %}"></script>
 <script>
-    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+    requirejs(['{% static "js/common.js" %}'], function () {
         requirejs(['app/feed/paper']);
     });
 </script>

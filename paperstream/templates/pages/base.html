@@ -25,14 +25,14 @@
 
 
 {% block stylesheets %}
-<link href="{% static 'tmp/css/app/page.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/page.css' %}" rel="stylesheet" type="text/css">
 {% endblock stylesheets %}
 
 
 {% block javascript %}
-<script src="{% static 'tmp/js/require.js' %}"></script>
+<script src="{% static 'js/require.js' %}"></script>
 <script>
-    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+    requirejs(['{% static "js/common.js" %}'], function () {
         requirejs(['app/pages']);
     });
 </script>

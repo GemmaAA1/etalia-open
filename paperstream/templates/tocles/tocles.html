@@ -15,9 +15,9 @@
 
 
 {% block javascript %}
-<script src="{% static 'tmp/js/require.js' %}"></script>
+<script src="{% static 'js/require.js' %}"></script>
 <script>
-    requirejs(['{% static "tmp/js/common.js" %}'], function () {
+    requirejs(['{% static "js/common.js" %}'], function () {
         requirejs(['app/user/library']);
     });
 </script>

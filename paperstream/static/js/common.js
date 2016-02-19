@@ -1,5 +1,5 @@
 requirejs.config({
-    baseUrl: '/static/tmp/js/lib',
+    baseUrl: '/static/js/lib',
     shim: {
         bootstrap: {
             deps: ['jquery']
@@ -18,8 +18,8 @@ requirejs.config({
         }
     },
     paths: {
-        endless: '/static/tmp/js/lib/endless-pagination',
-        close_alerts: '/static/tmp/js/lib/close-alerts',
-        app: '/static/tmp/js/app'
+        endless: '/static/js/lib/endless-pagination',
+        close_alerts: '/static/js/lib/close-alerts',
+        app: '/static/js/app'
     }
 });
