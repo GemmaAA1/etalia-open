@@ -72,6 +72,7 @@ class FeedPaperListView(BasePaperListView):
         context.update(self.get_context_time_span())
         context.update(self.get_context_search_query())
         context.update(self.get_context_new_objects_since_last_login())
+        context.update(self.get_context_counters_since_last_login())
 
         return context
 

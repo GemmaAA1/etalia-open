@@ -16,6 +16,7 @@ from braces.views import LoginRequiredMixin
 
 from paperstream.altmetric.models import AltmetricModel
 from paperstream.users.models import UserTaste, Author
+from paperstream.feeds.models import StreamMatches, TrendMatches
 
 
 def home(request):
@@ -276,6 +277,18 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
         return {'new_papers': self.object_list.filter(
             created__gt=self.request.user.last_login)\
             .values_list('paper_id', flat=True)}
+
+    def get_context_counters_since_last_login(self):
+        return {
+            'stream_counter': StreamMatches.objects.filter(
+                stream__user=self.request.user,
+                stream__name='main',
+                created__gt=self.request.user.last_login).count(),
+            'trend_counter': TrendMatches.objects.filter(
+                trend__user=self.request.user,
+                trend__name='main',
+                created__gt=self.request.user.last_login).count(),
+            'tocles_counter': 0}
 
     def parse_ajax_data(self):
         """Get ajax args"""
