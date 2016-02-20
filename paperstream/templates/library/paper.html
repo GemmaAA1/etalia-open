@@ -4,6 +4,7 @@
 {#{% load disqus_tags %}#}
 {#{% load disqus %}#}
 {% load staticfiles %}
+{% load ui_goodies %}
 
 
 <div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}">
@@ -47,6 +48,9 @@
 
 <div class="content">
     <div class="card">
+        <p class="ids">
+            {{ paper.print_clean_ids }}
+        </p>
         <h1 class="title">
             {{ paper.title }}
         </h1>
@@ -59,10 +63,6 @@
         <p class="date">
             {{ paper.print_month_year }}
         </p>
-        <p>
-            {{ paper.print_clean_ids }}
-        </p>
-
         <p class="icons">
             <!--<span class="cluster-icon">
                 <span></span>
@@ -95,7 +95,7 @@
     <div class="questions-thumbs">
         <h2>Related questions</h2>
         <div class="thumb-list async-content">
-            <span class="eai eai-loading"></span>
+            {% show_loading 'sk-cube-grid' %}
         </div>
     </div>
     {%  endif %}
@@ -115,7 +115,7 @@
             </li>
         </ul>
         <div class="thumb-list async-content">
-            <span class="eai eai-loading"></span>
+            {% show_loading 'sk-cube-grid' %}
         </div>
     </div>
 

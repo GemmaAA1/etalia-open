@@ -91,7 +91,9 @@ define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
             $body = $('body');
 
 
-        that.$element.find(that.config.container).html('<span class="eai eai-loading"></span>');
+        that.$element.find(that.config.container)
+            .empty()
+            .append($('#busy-modal .sk-cube-grid').clone());
 
         this.loadXhr = $.ajax({
             method:   'GET',

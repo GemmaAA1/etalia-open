@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 
 {% load staticfiles %}
+{% load ui_goodies %}
 
 {% with brand="Etalia" %}
 <html lang="en">
@@ -41,7 +42,7 @@
 <div id="backdrop"></div>
 <div id="busy-backdrop">
     <div id="busy-modal">
-        <span class="eai eai-loading"></span>
+        {% show_loading 'sk-cube-grid' %}
         <p>Please&nbsp;wait&hellip;</p>
         <div id="busy-content"></div>
     </div>

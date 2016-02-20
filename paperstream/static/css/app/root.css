@@ -40,24 +40,13 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     transition: margin .25s;
 }
 
-.async-content > .eai-loading,
-.endless_container > .eai-loading {
-    color: #00695c;
-    display: inline-block;
-    height: 32px;
-    font-size: 32px;
-    line-height: 32px;
-    margin: 20px auto;
-    width: 32px;
-}
-
 #backdrop {
     z-index: 6;
     position: fixed;
     top: 0;
-    right:0;
+    right: 0;
     bottom: 0;
-    left:0;
+    left: 0;
 
     background: rgba(255, 255, 255, .9);
     opacity: 0;
@@ -70,9 +59,9 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     z-index: 9999;
     position: fixed;
     top: 0;
-    right:0;
+    right: 0;
     bottom: 0;
-    left:0;
+    left: 0;
 
     background-color: rgba(255, 255, 255, .8);
     opacity: 0;
@@ -91,14 +80,8 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     text-align: center;
 }
 
-#busy-modal .eai-loading {
-    color: #00695c;
-    display: inline-block;
-    font-size: 64px;
-    height: 64px;
-    line-height: 64px;
-    margin:0 auto 10px auto;
-    width: 64px;
+#busy-modal .sk-cube-grid {
+    margin: 0 auto 10px auto;
 }
 
 #busy-modal > p {
@@ -208,7 +191,7 @@ body.flap-opened.right .flap.right {
 }
 
 .bar button .eai {
-    display:inline-block;
+    display: inline-block;
     font-size: 24px;
     height: 36px;
     line-height: 36px;
@@ -430,13 +413,13 @@ a.btn-provider:hover {
     margin-bottom: 30px;
 }
 
-#signup-form ul.errorlist>li {
+#signup-form ul.errorlist > li {
     list-style: none;
 }
 
 #signup-form .error-message {
     padding-bottom: 20px;
-    text-align:center;
+    text-align: center;
 }
 
 #signup-form input {
@@ -501,20 +484,107 @@ a.btn-provider:hover {
 }
 
 @-ms-keyframes spin {
-    from { -ms-transform: rotate(0deg); }
-    to { -ms-transform: rotate(360deg); }
+    from {
+        -ms-transform: rotate(0deg);
+    }
+    to {
+        -ms-transform: rotate(360deg);
+    }
 }
+
 @-moz-keyframes spin {
-    from { -moz-transform: rotate(0deg); }
-    to { -moz-transform: rotate(360deg); }
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(360deg);
+    }
 }
+
 @-webkit-keyframes spin {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(360deg); }
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
 }
+
 @keyframes spin {
-    from { transform:rotate(0deg); }
-    to { transform:rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.sk-cube-grid {
+    width: 40px;
+    height: 40px;
+    margin: 40px auto;
+}
+
+.sk-cube-grid .sk-cube {
+    width: 33%;
+    height: 33%;
+    background-color: #00695c;
+    /*background-color: #408f85;*/
+    float: left;
+    -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+    animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+}
+
+.sk-cube-grid .sk-cube1,
+.sk-cube-grid .sk-cube5,
+.sk-cube-grid .sk-cube9 {
+    -webkit-animation-delay: 0.2s;
+    animation-delay: 0.2s;
+}
+
+.sk-cube-grid .sk-cube2,
+.sk-cube-grid .sk-cube6 {
+    -webkit-animation-delay: 0.3s;
+    animation-delay: 0.3s;
+}
+
+.sk-cube-grid .sk-cube3 {
+    -webkit-animation-delay: 0.4s;
+    animation-delay: 0.4s;
+}
+
+.sk-cube-grid .sk-cube4,
+.sk-cube-grid .sk-cube8{
+    -webkit-animation-delay: 0.1s;
+    animation-delay: 0.1s;
+}
+
+.sk-cube-grid .sk-cube7 {
+    -webkit-animation-delay: 0s;
+    animation-delay: 0s;
+}
+
+
+@-webkit-keyframes sk-cubeGridScaleDelay {
+    0%, 70%, 100% {
+        -webkit-transform: scale3D(1, 1, 1);
+        transform: scale3D(1, 1, 1);
+    }
+    35% {
+        -webkit-transform: scale3D(0, 0, 1);
+        transform: scale3D(0, 0, 1);
+    }
+}
+
+@keyframes sk-cubeGridScaleDelay {
+    0%, 70%, 100% {
+        -webkit-transform: scale3D(1, 1, 1);
+        transform: scale3D(1, 1, 1);
+    }
+    35% {
+        -webkit-transform: scale3D(0, 0, 1);
+        transform: scale3D(0, 0, 1);
+    }
 }
 
 /* ------------------------------------ RESPONSIVE ------------------------------------ */
