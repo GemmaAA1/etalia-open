@@ -1,5 +1,13 @@
 define(['jquery', 'app/util/utils'], function ($, Utils) {
 
+    var values = {
+        0: {label: 'All'},
+        1: {label: 'Purple'},
+        2: {label: 'Red'},
+        3: {label: 'Orange'},
+        4: {label: 'White'}
+    };
+
     var Cluster = function (options) {
         this.config = $.extend({
             debug: false,
@@ -34,11 +42,15 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
 
 
         this.$element.on('click', '.choices a', function(e) {
-            that.setValue($(e.target).closest('a').data('cluster'));
+            var value = $(e.target).closest('a').data('cluster');
+            that.setValue(value);
 
             that.$toggle.trigger('click');
 
-            $body.trigger('etalia.control.timespan.change');
+            $body.trigger('etalia.control.timespan.change', {
+                value: value,
+                label: that.getValueColor(value)
+            });
 
             e.preventDefault();
             return false;
@@ -47,17 +59,24 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
         return this;
     };
 
+    Cluster.prototype.getValueColor = function(value) {
+        if (values.hasOwnProperty(value)) {
+            return values[value].color;
+        }
+        throw 'Unexpected cluster value';
+    };
+
     Cluster.prototype.setValue = function(value) {
         value = parseInt(value);
 
         // Deselect current
         this.$selection.removeClass('cluster-' + this.selected);
 
-        // Select 'none'
+        // Select 'none/all'
         if (value == 0) {
             this.$selection.hide();
             this.$toggle.find('.cluster-icon').show();
-            // Select color
+        // Select color
         } else if (0 < value && value <= 4) {
             this.$selection
                 .css({display: 'inline-block'})
@@ -67,6 +86,7 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
         } else {
             throw 'Unexpected cluster value';
         }
+
         // Store value
         this.$selection.data('value', value);
         this.selected = value;
