@@ -14,9 +14,9 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
             $body = $('body');
 
         this.$element.on('click', function(e) {
-            Utils.toggleClass(that.$element, 'active');
+            var active = Utils.toggleClass(that.$element, 'active');
 
-            $body.trigger('etalia.control.pinned.change');
+            $body.trigger('etalia.control.pinned.change', {active: active});
 
             e.preventDefault();
             return false;

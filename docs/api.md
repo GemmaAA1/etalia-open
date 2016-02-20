@@ -223,7 +223,7 @@ url: ```[POST] /user/library/trash/empty```
 
 **Event**
 
-```etalia.publication.trash-clear```
+```etalia.publication.trash-clear``` (with Result object)
 
 
 ## Event result object

@@ -18,7 +18,6 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
         this.actions = null;
 
         this.neighbors = null;
-        this.neighborsTimespanSelector = null;
     };
 
     function toggleLibraryAddOrTrash($button, added) {
@@ -31,7 +30,7 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
         } else {
             $button
                 .removeClass('detail-library-trash')
-                .addClass('detail-library-restore')
+                .addClass('detail-library-restore');
 
             utils.restoreLoadingButton($button, 'eai-library-add');
         }
@@ -152,6 +151,29 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
                 api.restore(that.id, function() {
                     utils.restoreLoadingButton($button, 'eai-library-add');
                 });
+
+                e.preventDefault();
+                return false;
+            })
+            .on('click', '.detail-twitter:visible', function(e) {
+                var $actions = $('#detail-actions'),
+                    url = 'https://twitter.com/intent/tweet/'
+                        + '?text=' + $actions.data('paper-title')
+                        + '&url=' + $actions.data('paper-url')
+                        + '&via=etalia';
+                        //+ '&hashtags=web,development';
+
+                utils.popup(url, 'share-popup');
+
+                e.preventDefault();
+                return false;
+            })
+            .on('click', '.detail-google-plus:visible', function(e) {
+                var $actions = $('#detail-actions'),
+                    url = 'https://plus.google.com/share'
+                        + '?url=' + $actions.data('paper-url');
+
+                utils.popup(url, 'share-popup');
 
                 e.preventDefault();
                 return false;

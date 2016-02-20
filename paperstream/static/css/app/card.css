@@ -2,6 +2,10 @@
     overflow: hidden;
 }
 
+.card p {
+    margin : 0;
+}
+
 .card .title {
     font-size: 20px;
     line-height: 24px;
@@ -15,6 +19,17 @@
 .card .title a:hover {
     color: #6b6d70;
     text-decoration: none;
+}
+
+.card .title a span {
+    display: inline-block;
+    font-size: 60%;
+    line-height: 0.7;
+    color: #ffffff;
+    background-color: #00695c;
+    padding: 2px 3px 3px 3px;
+    border-radius: 2px;
+    vertical-align: 40%;
 }
 
 .card .authors {
@@ -33,7 +48,6 @@
     line-height: 18px;
     color: #86b5b0;
     font-weight: 700;
-    margin-bottom: 8px;
 }
 
 .card .date {
@@ -110,6 +124,9 @@
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px) {
+    .card .authors {
+        margin-bottom: 4px;
+    }
     .card .journal {
         float:left;
         line-height: 32px;

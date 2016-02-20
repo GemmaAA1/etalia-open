@@ -104,9 +104,16 @@ define(['jquery', 'app/templates', 'app/util/utils'], function ($, Templates, Ut
                 }
             })
             .on('click', '.filter-group ul a', function(e) {
-                Utils.toggleClass($(e.target).closest('a'), 'active');
+                var $a = $(e.target).closest('a'),
+                    $group = $a.closest('.filter-group'),
+                    active = Utils.toggleClass($a, 'active');
 
-                $body.trigger('etalia.control.filters.change');
+                $body.trigger('etalia.control.filters.change', {
+                    value:  $a.data('id'),
+                    label:  $a.attr('title'),
+                    group:  $group.data('id'),
+                    active: active
+                });
             })
             .on('click', '.filter-more', function(e) {
                 var $group = $(e.target).closest('.filter-group'),
