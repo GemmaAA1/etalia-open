@@ -111,6 +111,13 @@ body.detail-opened #detail {
     margin-bottom: 40px;
 }
 
+#detail .card .ids {
+    text-align: left;
+    font-size: 14px;
+    line-height: 14px;
+    color: #6b6d70;
+}
+
 #detail .card .title {
     font-size: 24px;
     line-height: 28px;
@@ -169,13 +176,15 @@ body.detail-opened #detail {
 #detail .thumb-list .card .authors {
     font-size: 14px;
     line-height: 16px;
-    margin-bottom: 7px;
 }
 
 #detail .thumb-list .card .journal {
     font-size: 13px;
-    line-height: 16px;
-    margin-bottom: 7px;
+    line-height: 24px;
+    height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #detail .thumb-list .card .date {
@@ -226,8 +235,8 @@ body.detail-opened #detail {
         text-overflow: ellipsis;
     }
 
-    #detail .card .journal {
+    /*#detail .card .journal {
         line-height: 24px;
         height: 24px;
-    }
+    }*/
 }

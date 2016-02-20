@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 
 {% load staticfiles %}
+{% load ui_goodies %}
 
 {% with brand="Etalia" %}
 <html lang="en">
@@ -23,16 +24,6 @@
     <script src="{% static 'js/html5shiv.min.js' %}"></script>
     <script src="{% static 'js/respond.min.js' %}"></script>
     <![endif]-->
-
-    <script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-        ga('create', 'UA-72708308-1', 'auto');
-        ga('send', 'pageview');
-    </script>
 </head>
 <body>
 
@@ -41,13 +32,23 @@
 <div id="backdrop"></div>
 <div id="busy-backdrop">
     <div id="busy-modal">
-        <span class="eai eai-loading"></span>
+        {% show_loading 'sk-cube-grid' %}
         <p>Please&nbsp;wait&hellip;</p>
         <div id="busy-content"></div>
     </div>
 </div>
+
 {% block javascript %}{% endblock javascript %}
 
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-72708308-1', 'auto');
+    ga('send', 'pageview');
+</script>
 </body>
 </html>
 {% endwith %}

@@ -1,24 +1,27 @@
 {% extends 'tocles/base.html' %}
 
+
 {% load staticfiles %}
+
 
 {% block content %}
 {% spaceless %}
 
-<div style="text-align: center; padding-top: 100px; margin: 0 25% 0 25%;">
-    <p style="font-size: 20px; ">Tocles are a new way to get attention of experts <br>on specific questions and publications.</p>
-    <p style="font-size: 20px; padding: 50px;">Coming soon, stay tuned.</p>
+<div class="document">
+    <div class="wrapper">
+        <div class="inner">
+            <div class="coming-soon">
+                <p>
+                    Tocles are a new way to get attention of experts <br>
+                    on specific questions and publications.
+                </p>
+                <p style="padding-top: 40px;">
+                    Coming soon&hellip; stay tuned !
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endspaceless %}
 {% endblock content %}
-
-
-{% block javascript %}
-<script src="{% static 'js/require.js' %}"></script>
-<script>
-    requirejs(['{% static "js/common.js" %}'], function () {
-        requirejs(['app/user/library']);
-    });
-</script>
-{% endblock javascript %}

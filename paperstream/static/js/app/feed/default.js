@@ -5,7 +5,7 @@ define([
     'app/ui/list',
     'app/ui/detail',
     'endless',
-    'close_alerts',
+    'close-alerts',
     'bootstrap'
 ], function($, layout, controls, List, Detail) {
 

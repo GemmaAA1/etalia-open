@@ -4,9 +4,12 @@
 {#{% load disqus_tags %}#}
 {#{% load disqus %}#}
 {% load staticfiles %}
+{% load ui_goodies %}
 
+{# TODO need the absolute url #}
+{% url 'library:paper' paper.pk as paper_detail_url %}
 
-<div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}">
+<div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}" data-paper-url="{{ request.build_absolute_uri }}" data-paper-title="{{ paper.title }}">
     {% if user.is_authenticated %}
     <a href="javascript: void(0)" class="detail-pin{% if is_pinned %} active {% endif %}">
         <span class="eai eai-pin"></span>
@@ -47,6 +50,9 @@
 
 <div class="content">
     <div class="card">
+        <p class="ids">
+            {{ paper.print_clean_ids }}
+        </p>
         <h1 class="title">
             {{ paper.title }}
         </h1>
@@ -59,10 +65,6 @@
         <p class="date">
             {{ paper.print_month_year }}
         </p>
-        <p>
-            {{ paper.print_clean_ids }}
-        </p>
-
         <p class="icons">
             <!--<span class="cluster-icon">
                 <span></span>
@@ -93,9 +95,9 @@
 
     {% if user.is_authenticated %}
     <div class="questions-thumbs">
-        <h2>Related questions</h2>
+        <h2>Related tocles</h2>
         <div class="thumb-list async-content">
-            <span class="eai eai-loading"></span>
+            {% show_loading 'sk-cube-grid' %}
         </div>
     </div>
     {%  endif %}
@@ -115,7 +117,7 @@
             </li>
         </ul>
         <div class="thumb-list async-content">
-            <span class="eai eai-loading"></span>
+            {% show_loading 'sk-cube-grid' %}
         </div>
     </div>
 

@@ -51,10 +51,10 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
                 }
                 var code = e.keyCode || e.which;
                 if (code == 13) { // Enter pressed
-                    $body.trigger('etalia.control.search.change');
+                    $body.trigger('etalia.control.search.change', {expression: that.getValue()});
                 } else {
                     that.keyUpTimeout = setTimeout(function() {
-                        $body.trigger('etalia.control.search.change');
+                        $body.trigger('etalia.control.search.change', {expression: that.getValue()});
                     }, 1000);
                 }
             });

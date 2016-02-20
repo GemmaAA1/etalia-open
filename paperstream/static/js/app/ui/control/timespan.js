@@ -1,5 +1,11 @@
 define(['jquery', 'app/util/utils'], function ($, Utils) {
 
+    var values = {
+        7: {icon: 'W', label: 'Week'},
+        30: {icon: '1m', label: '1 month'},
+        60: {icon: '2m', label: '2 months'}
+    };
+
     var Timespan = function (options) {
         this.config = $.extend({
             debug: false,
@@ -31,11 +37,15 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
         });
 
         this.$element.on('click', '.choices a', function(e) {
-            that.setValue($(e.target).closest('a').data('timespan'));
+            var value = $(e.target).closest('a').data('timespan');
+            that.setValue(value);
 
             that.$toggle.trigger('click');
 
-            $body.trigger('etalia.control.timespan.change');
+            $body.trigger('etalia.control.timespan.change', {
+                value: value,
+                label: that.getValueLabel(value)
+            });
 
             e.preventDefault();
             return false;
@@ -44,17 +54,24 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
         return this;
     };
 
-    Timespan.prototype.setValue = function(value) {
-        var text = (function(s) {
-            switch (s) {
-                case 7 :  return 'W';
-                case 30 : return '1m';
-                case 60 : return '2m';
-            }
-            throw 'Unexpected timespan value';
-        })(parseInt(value));
+    Timespan.prototype.getValueIcon = function(value) {
+        if (values.hasOwnProperty(value)) {
+            return values[value].icon;
+        }
+        throw 'Unexpected timespan value';
+    };
 
-        this.$selection.html(text).data('value', value);
+    Timespan.prototype.getValueLabel = function(value) {
+        if (values.hasOwnProperty(value)) {
+            return values[value].label;
+        }
+        throw 'Unexpected timespan value';
+    };
+
+    Timespan.prototype.setValue = function(value) {
+        this.$selection
+            .html(this.getValueIcon(value))
+            .data('value', value);
 
         return this;
     };

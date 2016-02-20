@@ -78,6 +78,21 @@ define(['jquery'], function($) {
             $button.find('.eai')
                 .removeAttr('class')
                 .addClass('eai ' + iconClass);
+        },
+        popup: function(url, name, width, height) {
+            name = name || 'etalia-popup';
+            width = width || 520;
+            height = height || 460;
+
+            var left = Math.round((window.innerWidth/ 2) - (width / 2)),
+                top = Math.round((window.innerHeight / 2) - (height / 2)),
+                params = "menubar=no,toolbar=no,resizable=yes,scrollbars=yes," +
+                         "width=" + width + ",height=" + height + "," +
+                         "top=" + top + ",left=" + left;
+
+            console.log(params);
+
+            return window.open(url, name, params);
         }
     }
 });
