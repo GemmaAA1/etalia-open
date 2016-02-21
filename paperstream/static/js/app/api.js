@@ -69,7 +69,7 @@ define(['jquery'], function($) {
      * @param source    (string) The source page
      */
     api.pin = function(id, source) {
-        source = source || '';
+        source = source || window.location.pathname;
         $.ajax({
             type: 'POST',
             url: '/user/paper/pin',
@@ -93,7 +93,7 @@ define(['jquery'], function($) {
      * @param source    (string) The source page
      */
     api.ban = function(id, source) {
-        source = source || '';
+        source = source || window.location.pathname;
         $.ajax({
             type: 'POST',
             url: '/user/paper/ban',

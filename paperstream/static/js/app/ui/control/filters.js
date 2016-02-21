@@ -1,4 +1,4 @@
-define(['jquery', 'app/templates', 'app/util/utils'], function ($, Templates, Utils) {
+define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Templates, Utils) {
 
     var statesRegistry = {
         id: [],

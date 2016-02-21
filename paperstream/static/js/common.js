@@ -1,13 +1,10 @@
 requirejs.config({
-    baseUrl: '/static/js/lib',
+    baseUrl: '/static/js',
     shim: {
         bootstrap: {
             deps: ['jquery']
         },
         'endless': {
-            deps: ['jquery']
-        },
-        'close-alerts': {
             deps: ['jquery']
         },
         'jquery-ui': {
@@ -18,7 +15,11 @@ requirejs.config({
         }
     },
     paths: {
-        endless: '/static/js/lib/endless-pagination',
-        app: '/static/js/app'
+        bootstrap: './lib/bootstrap',
+        endless: './lib/endless-pagination',
+        hogan: './lib/hogan',
+        jquery: './lib/jquery',
+        'jquery.mousewheel': './lib/jquery.mousewheel',
+        'jquery-ui': './lib/jquery-ui'
     }
 });
