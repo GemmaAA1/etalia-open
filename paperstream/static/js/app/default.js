@@ -1,4 +1,4 @@
-define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
+define(['jquery', 'bootstrap', 'app/ui/layout'], function($) {
 
     $(function() {
 

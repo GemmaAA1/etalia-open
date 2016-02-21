@@ -1,4 +1,8 @@
-define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($, layout) {
+define([
+    'jquery',
+    'app/ui/layout',
+    'bootstrap'
+], function($, layout) {
 
     function submitForm(event) {
         event.preventDefault();

@@ -3,9 +3,9 @@
     // Relative to this file's location
     baseUrl: '.',
     // If you got a main config file, this is the palce for it
-    mainConfigFile: 'common.js',
+    mainConfigFile: 'config.js',
     // The destination directory
-    dir: '../../static-dist/js',
+    dir: '../compiled/js',
     // If set to true, any files that were combined into a
     // build bundle will be removed from the output folder.
     removeCombined: true,
@@ -20,23 +20,36 @@
 
     modules: [
         {
-            name: 'app/util/templates'
+            name: 'app/default',
+            exclude: ['jquery', 'bootstrap']
         },
         {
-            name: 'app/util/utils',
-            exclude: ['jquery']
+            name: 'app/pages',
+            exclude: ['jquery', 'bootstrap']
         },
         {
-            name: 'app/ui/controls',
-            exclude: ['jquery', 'app/util/templates', 'app/util/utils']
+            name: 'app/feed/default',
+            exclude: ['jquery', 'bootstrap']
         },
         {
-            name: 'app/ui/layout',
-            exclude: ['jquery', 'app/util/utils']
+            name: 'app/feed/paper',
+            exclude: ['jquery', 'bootstrap']
         },
         {
-            name: 'app/ui/paper',
-            exclude: ['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list']
+            name: 'app/user/profile',
+            exclude: ['jquery', 'bootstrap']
+        },
+        {
+            name: 'app/user/settings',
+            exclude: ['jquery', 'bootstrap']
+        },
+        {
+            name: 'app/user/signup',
+            exclude: ['jquery', 'bootstrap']
+        },
+        {
+            name: 'app/user/library',
+            exclude: ['jquery', 'bootstrap']
         }
     ]
 })

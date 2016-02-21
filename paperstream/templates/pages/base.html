@@ -30,10 +30,5 @@
 
 
 {% block javascript %}
-<script src="{% static 'js/require.js' %}"></script>
-<script>
-    requirejs(['{% static "js/common.js" %}'], function () {
-        requirejs(['app/pages']);
-    });
-</script>
+<script>requirejs(['app/pages']);</script>
 {% endblock javascript %}
