@@ -1,4 +1,11 @@
-define(['jquery', 'app/ui/flap', 'app/util/utils', 'app/ui/interact', 'app/ui/invite'], function ($, Flap, Util) {
+define([
+    'jquery',
+    'app/util/utils',
+    'app/ui/layout/flap',
+    'app/ui/layout/interact',
+    'app/ui/layout/invite',
+    'app/ui/layout/close-alerts'
+], function ($, Util, Flap) {
 
     var Layout = function (config) {
         this.config = $.extend({

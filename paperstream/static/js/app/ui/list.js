@@ -30,7 +30,7 @@ define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
             .on('click', '.thumb-pin', function(e) {
                 var $thumb = $(e.target).closest('.thumb');
 
-                api.pin($thumb.data('id'), window.location.pathname);
+                api.pin($thumb.data('id'));
 
                 e.preventDefault();
                 return false;
@@ -38,7 +38,7 @@ define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
             .on('click', '.thumb-ban', function(e) {
                 var $thumb = $(e.target).closest('.thumb');
 
-                api.ban($thumb.data('id'), window.location.pathname);
+                api.ban($thumb.data('id'));
 
                 e.preventDefault();
                 return false;

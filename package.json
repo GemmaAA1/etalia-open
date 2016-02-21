@@ -1,12 +1,16 @@
 {
   "name": "etalia",
   "version": "1.0.0",
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
     "gulp-hogan-compile": "^0.4.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.2.0",
+    "gulp-shell": "^0.5.2",
+    "gulp-strip-comments": "^2.2.1",
     "hogan.js": "^3.0.2",
-    "jquery-mousewheel": "^3.1.13"
+    "merge-stream": "^1.0.0",
+    "requirejs": "^2.1.22"
   }
 }

@@ -29,6 +29,8 @@ define(['jquery'], function($) {
         }
     });
 
+
+
     return {
         toggleClass: function ($element, cssClass, state) {
             if (typeof state != 'undefined') {

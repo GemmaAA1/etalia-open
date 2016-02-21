@@ -25,6 +25,7 @@ STATIC_URL = '/static/'
 # STATIC_URL = str(ROOT_DIR.path('staticfiles'))
 
 STATICFILES_DIRS = (
+    str(APPS_DIR.path('static-dist')),
     str(APPS_DIR.path('static')),
 )
 

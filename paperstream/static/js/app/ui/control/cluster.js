@@ -40,7 +40,6 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
             }
         });
 
-
         this.$element.on('click', '.choices a', function(e) {
             var value = $(e.target).closest('a').data('cluster');
             that.setValue(value);
@@ -61,7 +60,7 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
 
     Cluster.prototype.getValueColor = function(value) {
         if (values.hasOwnProperty(value)) {
-            return values[value].color;
+            return values[value].label;
         }
         throw 'Unexpected cluster value';
     };
