@@ -12,11 +12,9 @@ from django.utils import timezone
 from django.conf import settings
 
 from endless_pagination.views import AjaxListView
-from braces.views import LoginRequiredMixin
 
 from paperstream.altmetric.models import AltmetricModel
 from paperstream.users.models import UserTaste, Author
-from paperstream.feeds.models import StreamMatches, TrendMatches
 
 
 def home(request):
@@ -59,7 +57,7 @@ def test(request):
     return render(request, 'test.html', {})
 
 
-class BasePaperListView(LoginRequiredMixin, AjaxListView):
+class BasePaperListView(AjaxListView):
     """Abstract View for displaying a feed type instance"""
     first_page = 10
     per_page = 5

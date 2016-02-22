@@ -6,18 +6,15 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
-from django.views.generic.base import ContextMixin
 
-from django.contrib import messages
-from messages_extends import constants as constants_messages
+from braces.views import LoginRequiredMixin
 
 from paperstream.users.models import UserTaste
 from paperstream.core.views import BasePaperListView
-from paperstream.core.mixins import NavFlapMixin
+from paperstream.core.mixins import NavFlapMixin, XMLMixin
 
 from .models import Stream, StreamMatches, TrendMatches
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
-from .mixins import XMLFeedMixin
 
 
 class FeedPaperListView(BasePaperListView):
@@ -95,13 +92,13 @@ class BaseStreamView(FeedPaperListView):
                             'paper__altmetric')
 
 
-class StreamView(BaseStreamView):
+class StreamView(LoginRequiredMixin, NavFlapMixin, BaseStreamView):
     page_template = 'feeds/feed_sub_page.html'
 
 stream = StreamView.as_view()
 
 
-class StreamViewXML(XMLFeedMixin, BaseStreamView):
+class StreamViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin, BaseStreamView):
     page_template = 'feeds/feed_sub_page2.html'
 
 stream_xml = StreamViewXML.as_view()
@@ -120,13 +117,13 @@ class BaseTrendView(FeedPaperListView):
                             'paper__altmetric')
 
 
-class TrendView(BaseTrendView):
+class TrendView(LoginRequiredMixin, NavFlapMixin, BaseTrendView):
     page_template = 'feeds/trend_sub_page.html'
 
 trend = TrendView.as_view()
 
 
-class TrendViewXML(XMLFeedMixin, BaseTrendView):
+class TrendViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin, BaseTrendView):
     page_template = 'feeds/trend_sub_page2.html'
 
 trend_xml = TrendViewXML.as_view()

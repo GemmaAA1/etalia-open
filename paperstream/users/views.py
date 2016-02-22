@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView, DetailView
-from django.template.response import TemplateResponse
 from django.views.generic.edit import DeleteView
+from django.views.generic.base import TemplateView
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -22,8 +22,8 @@ from django.template import Context
 from braces.views import LoginRequiredMixin
 
 from paperstream.core.views import BasePaperListView
-from paperstream.core.mixins import AjaxableResponseMixin
-from paperstream.library.models import Paper
+from paperstream.core.mixins import AjaxableResponseMixin, NavFlapMixin, \
+    XMLMixin
 
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
@@ -228,16 +228,7 @@ class UserLibraryPaperListView(BasePaperListView):
         raise NotImplemented
 
 
-class XMLLibraryMixin(object):
-    page_template = 'user/user_library_sub_page2.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(XMLLibraryMixin, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
-
-
-class UserLibraryView(UserLibraryPaperListView):
+class BaseUserLibraryView(UserLibraryPaperListView):
 
     def get_original_queryset(self):
         return UserLibPaper.objects\
@@ -248,20 +239,25 @@ class UserLibraryView(UserLibraryPaperListView):
                             'paper__altmetric')
 
     def get_context_data(self, **kwargs):
-        context = super(UserLibraryView, self).get_context_data(**kwargs)
+        context = super(BaseUserLibraryView, self).get_context_data(**kwargs)
         context['tab'] = 'main'
         return context
+
+
+class UserLibraryView(LoginRequiredMixin, NavFlapMixin, BaseUserLibraryView):
+    pass
 
 library = UserLibraryView.as_view()
 
 
-class UserLibraryViewXML(XMLLibraryMixin, UserLibraryView):
-    pass
+class UserLibraryViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin,
+                         BaseUserLibraryView):
+    page_template = 'user/user_library_sub_page2.html'
 
 library_xml = UserLibraryViewXML.as_view()
 
 
-class UserLibraryTrashView(UserLibraryPaperListView):
+class BaseUserLibraryTrashView(UserLibraryPaperListView):
 
     def get_original_queryset(self):
         return UserLibPaper.objects\
@@ -272,20 +268,26 @@ class UserLibraryTrashView(UserLibraryPaperListView):
                             'paper__altmetric')
 
     def get_context_data(self, **kwargs):
-        context = super(UserLibraryTrashView, self).get_context_data(**kwargs)
+        context = super(BaseUserLibraryTrashView, self).get_context_data(**kwargs)
         context['tab'] = 'trash'
         return context
+
+
+class UserLibraryTrashView(LoginRequiredMixin, NavFlapMixin,
+                           BaseUserLibraryTrashView):
+    pass
 
 library_trash = UserLibraryTrashView.as_view()
 
 
-class UserLibraryTrashViewXML(XMLLibraryMixin, UserLibraryTrashView):
-    pass
+class UserLibraryTrashViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin,
+                              BaseUserLibraryTrashView):
+    page_template = 'user/user_library_sub_page2.html'
 
 library_trash_xml = UserLibraryTrashViewXML.as_view()
 
 
-class UserLibraryLikesView(UserLibraryPaperListView):
+class BaseUserLibraryPinsView(UserLibraryPaperListView):
 
     def get_original_queryset(self):
         return UserTaste.objects\
@@ -296,23 +298,31 @@ class UserLibraryLikesView(UserLibraryPaperListView):
                             'paper__altmetric')
 
     def get_context_data(self, **kwargs):
-        context = super(UserLibraryLikesView, self).get_context_data(**kwargs)
+        context = super(BaseUserLibraryPinsView, self).get_context_data(**kwargs)
         context['tab'] = 'pin'
         return context
 
-library_likes = UserLibraryLikesView.as_view()
 
-
-class UserLibraryLikesViewXML(XMLLibraryMixin, UserLibraryLikesView):
+class UserLibraryPinsView(LoginRequiredMixin, NavFlapMixin,
+                          BaseUserLibraryPinsView):
     pass
 
-library_likes_xml = UserLibraryLikesViewXML.as_view()
+library_pins = UserLibraryPinsView.as_view()
+
+
+class UserLibraryPinsViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin,
+                             BaseUserLibraryPinsView):
+    page_template = 'user/user_library_sub_page2.html'
+
+library_pins_xml = UserLibraryPinsViewXML.as_view()
 
 # -----------------------------------------------------------------------------
 #  USER PROFILE
 # -----------------------------------------------------------------------------
 
-class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
+
+class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
+                  DetailView):
     model = User
     template_name = 'user/profile.html'
 
@@ -332,7 +342,8 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, DetailView):
 profile = ProfileView.as_view()
 
 
-class SettingsView(LoginRequiredMixin, SettingsModalFormsMixin, DetailView):
+class SettingsView(LoginRequiredMixin, SettingsModalFormsMixin, NavFlapMixin,
+                   DetailView):
 
     model = UserSettings
     template_name = 'user/settings.html'
@@ -753,5 +764,7 @@ def send_invite(request):
         redirect('invite:home')
 
 
-def tocles(request):
-    return TemplateResponse(request, 'tocles/tocles.html', {})
+class ToclesView(LoginRequiredMixin, NavFlapMixin, TemplateView):
+    template_name = 'tocles/tocles.html'
+
+tocles = ToclesView.as_view()
