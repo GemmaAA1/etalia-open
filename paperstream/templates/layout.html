@@ -78,15 +78,3 @@
 
 {% endspaceless %}
 {% endblock body %}
-
-
-{% block javascript %}
-{% spaceless %}
-    <script src="{% static 'js/require.js' %}"></script>
-    <script>
-        requirejs(['{% static "js/common.js" %}'], function () {
-            requirejs(['app/default']);
-        });
-    </script>
-{% endspaceless %}
-{% endblock javascript %}

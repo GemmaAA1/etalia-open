@@ -16,10 +16,5 @@
 
 
 {% block javascript %}
-<script src="{% static 'js/require.js' %}"></script>
-<script>
-    requirejs(['{% static "js/common.js" %}'], function () {
-        requirejs(['app/default']);
-    });
-</script>
+<script>requirejs(['app/default']);</script>
 {% endblock javascript %}

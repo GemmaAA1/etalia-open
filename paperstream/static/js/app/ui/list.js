@@ -1,4 +1,4 @@
-define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
+define(['jquery', 'app/ui/api', 'app/util/utils'], function($, api, utils) {
 
     var List = function(options) {
 
@@ -26,11 +26,18 @@ define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
 
         utils.bindLoadingButtons(this.$element);
 
+        function extraData($thumb) {
+            return {
+                source: 'thumb',
+                title: $thumb.data('paper-title')
+            }
+        }
+
         this.$element
             .on('click', '.thumb-pin', function(e) {
                 var $thumb = $(e.target).closest('.thumb');
 
-                api.pin($thumb.data('id'));
+                api.pin($thumb.data('paper-id'), extraData($thumb));
 
                 e.preventDefault();
                 return false;
@@ -38,40 +45,49 @@ define(['jquery', 'app/api', 'app/util/utils'], function($, api, utils) {
             .on('click', '.thumb-ban', function(e) {
                 var $thumb = $(e.target).closest('.thumb');
 
-                api.ban($thumb.data('id'));
+                api.ban($thumb.data('paper-id'), extraData($thumb));
 
                 e.preventDefault();
                 return false;
             })
             .on('click', '.thumb-library-add', function(e) {
                 var $button = $(e.target).closest('.thumb-library-add'),
-                    $thumb = $(e.target).closest('.thumb');
+                    $thumb = $(e.target).closest('.thumb'),
+                    data = extraData($thumb);
 
-                api.add($thumb.data('id'), function() {
+                data.failureCallback = function() {
                     utils.restoreLoadingButton($button, 'eai-library-add');
-                });
+                };
+
+                api.add($thumb.data('paper-id'), data);
 
                 e.preventDefault();
                 return false;
             })
             .on('click', '.thumb-library-trash', function(e) {
                 var $button = $(e.target).closest('.thumb-library-trash'),
-                    $thumb = $(e.target).closest('.thumb');
+                    $thumb = $(e.target).closest('.thumb'),
+                    data = extraData($thumb);
 
-                api.trash($thumb.data('id'), function() {
+                data.failureCallback = function() {
                     utils.restoreLoadingButton($button, 'eai-library-trash');
-                });
+                };
+
+                api.trash($thumb.data('paper-id'), data);
 
                 e.preventDefault();
                 return false;
             })
             .on('click', '.thumb-library-restore', function(e) {
                 var $button = $(e.target).closest('.thumb-library-restore'),
-                    $thumb = $(e.target).closest('.thumb');
+                    $thumb = $(e.target).closest('.thumb'),
+                    data = extraData($thumb);
 
-                api.restore($thumb.data('id'), function() {
+                data.failureCallback = function() {
                     utils.restoreLoadingButton($button, 'eai-library-add');
-                });
+                };
+
+                api.restore($thumb.data('paper-id'), data);
 
                 e.preventDefault();
                 return false;

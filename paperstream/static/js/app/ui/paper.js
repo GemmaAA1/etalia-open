@@ -1,4 +1,12 @@
-define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list', 'app/util/sticky'], function ($, api, utils, controls, List, Sticky) {
+define([
+    'jquery',
+    'app/ui/api',
+    'app/util/utils',
+    'app/ui/controls',
+    'app/ui/control/timespan',
+    'app/ui/list',
+    'app/util/sticky'
+], function ($, api, utils, controls, Timespan, List, Sticky) {
 
     var Paper = function (options) {
 
@@ -49,9 +57,11 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
     Paper.prototype.init = function() {
         this.log('init');
 
+        var that = this,
+            $body = $('body');
+
         // API events
-        var that = this;
-        $('body')
+        $body
             .on('etalia.publication.pin', function(e, result) {
                 if (that.id == result.getId()) {
                     that.$actions
@@ -78,16 +88,29 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
                 }
             });
 
+        function extraData() {
+            return {
+                source: 'detail',
+                title: that.$actions.data('paper-title')
+            }
+        }
+
         this.$document
             .on('click', '.neighbors-timespan-selector a', function(e) {
-                var $timespan = $(e.target).closest('a');
+                var $timespan = $(e.target).closest('a'),
+                    value = $timespan.data('value');
 
                 $timespan.closest('.neighbors-timespan-selector').find('li').removeClass('active');
                 $timespan.closest('li').addClass('active');
 
                 if (that.neighbors) {
-                    that.neighbors.load({'time_span': $timespan.data('value')});
+                    that.neighbors.load({'time_span': value});
                 }
+
+                $body.trigger('etalia.detail.similar_timespan.change', {
+                    value: value,
+                    label: Timespan.getValueLabel(value)
+                });
 
                 e.preventDefault();
                 return false;
@@ -109,7 +132,7 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
             .on('click', '.detail-pin', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                api.pin(that.id);
+                api.pin(that.id, extraData());
 
                 e.preventDefault();
                 return false;
@@ -117,7 +140,7 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
             .on('click', '.detail-ban', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                api.ban(that.id);
+                api.ban(that.id, extraData());
 
                 e.preventDefault();
                 return false;
@@ -125,10 +148,14 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
             .on('click', '.detail-library-add:visible', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                var $button = $(e.target).closest('.detail-library-add');
-                api.add(that.id, function() {
+                var $button = $(e.target).closest('.detail-library-add'),
+                    data = extraData();
+
+                data.failureCallback = function() {
                     utils.restoreLoadingButton($button, 'eai-library-add');
-                });
+                };
+
+                api.add(that.id, data);
 
                 e.preventDefault();
                 return false;
@@ -136,10 +163,14 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
             .on('click', '.detail-library-trash:visible', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                var $button = $(e.target).closest('.detail-library-trash');
-                api.trash(that.id, function() {
+                var $button = $(e.target).closest('.detail-library-trash'),
+                    data = extraData();
+
+                data.failureCallback = function() {
                     utils.restoreLoadingButton($button, 'eai-library-trash');
-                });
+                };
+
+                api.trash(that.id, data);
 
                 e.preventDefault();
                 return false;
@@ -147,10 +178,14 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
             .on('click', '.detail-library-restore:visible', function(e) {
                 if (!that.id) throw 'Undefined paper id';
 
-                var $button = $(e.target).closest('.detail-library-restore');
-                api.restore(that.id, function() {
+                var $button = $(e.target).closest('.detail-library-restore'),
+                    data = extraData();
+
+                data.failureCallback = function() {
                     utils.restoreLoadingButton($button, 'eai-library-add');
-                });
+                };
+
+                api.restore(that.id, data);
 
                 e.preventDefault();
                 return false;
@@ -165,6 +200,11 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
 
                 utils.popup(url, 'share-popup');
 
+                var data = extraData();
+                data.id = that.id;
+                data.support = 'twitter';
+                $body.trigger('etalia.publication.share', data);
+
                 e.preventDefault();
                 return false;
             })
@@ -175,8 +215,19 @@ define(['jquery', 'app/api', 'app/util/utils', 'app/ui/controls', 'app/ui/list',
 
                 utils.popup(url, 'share-popup');
 
+                var data = extraData();
+                data.id = that.id;
+                data.support = 'google-plus';
+                $body.trigger('etalia.publication.share', data);
+
                 e.preventDefault();
                 return false;
+            })
+            .on('click', '.detail-mail:visible', function() {
+                var data = extraData();
+                data.id = that.id;
+                data.support = 'email';
+                $body.trigger('etalia.publication.share', data);
             });
 
         return this;

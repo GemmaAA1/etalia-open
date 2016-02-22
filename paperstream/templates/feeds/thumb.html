@@ -1,5 +1,5 @@
 {% spaceless %}
-<div class="thumb" data-id="{{ paper.pk }}">
+<div class="thumb" data-paper-id="{{ paper.pk }}" data-paper-title="{{ paper.title }}">
     <div class="actions">
     {% if tab == 'main' %}
         <a href="javascript: void(0)" class="thumb-pin{% if user_taste|get_is_pinned:paper.pk %} active{% endif %}">

@@ -37,10 +37,5 @@
 
 
 {% block javascript %}
-<script src="{% static 'js/require.js' %}"></script>
-<script>
-    requirejs(['{% static "js/common.js" %}'], function () {
-        requirejs(['app/feed/paper']);
-    });
-</script>
+<script>requirejs(['app/feed/paper']);</script>
 {% endblock javascript %}

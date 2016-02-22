@@ -245,6 +245,9 @@ $('body').on('etalia.publication.pin', function(e, result) {
     result.getBanCount();     // (int)
     result.getTrashCount();   // (int)
     result.getLibraryCount(); // (int)
+
+    // Extra
+    result.getExtra(key);     // (object) extra data, or extra data [key] entry
 });
 
 ```

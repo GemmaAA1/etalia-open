@@ -92,8 +92,6 @@ define(['jquery'], function($) {
                          "width=" + width + ",height=" + height + "," +
                          "top=" + top + ",left=" + left;
 
-            console.log(params);
-
             return window.open(url, name, params);
         }
     }

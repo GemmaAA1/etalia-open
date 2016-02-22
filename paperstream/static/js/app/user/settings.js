@@ -1,4 +1,9 @@
-define(['jquery', 'app/ui/layout', 'jquery-ui', 'bootstrap'], function($, layout) {
+define([
+    'jquery',
+    'app/ui/layout',
+    'jquery-ui/slider',
+    'bootstrap'
+], function($, layout) {
 
     function submitForm(e) {
         var $form = $(this);
