@@ -1,6 +1,6 @@
 define([
     'jquery',
-    'app/api',
+    'app/ui/api',
     'app/util/utils',
     'app/ui/layout',
     'app/ui/controls',
@@ -17,20 +17,29 @@ define([
         countsHandler, pinHandler, addHandler, trashHandler, restoreHandler;
 
     pinHandler = function(e, result) {
-        $('.thumb[data-id=' + result.getId() + ']')
+        $('.thumb[data-paper-id=' + result.getId() + ']')
             .find('.thumb-pin')
             .toggleClass('active', result.isPinned());
     };
 
     addHandler = restoreHandler = function(e, result) {
         if (result.isAdded()) {
-            $('.thumb[data-id=' + result.getId() + ']').remove();
+            $('.thumb[data-paper-id=' + result.getId() + ']').remove();
+        } else {
+            var $button = $(
+                '.thumb[data-paper-id=' + result.getId() + '] .thumb-library-add, ' +
+                '.thumb[data-paper-id=' + result.getId() + '] .thumb-library-restore '
+            ).eq(0);
+            toggleLibraryAddOrTrash($button, false);
         }
     };
 
     trashHandler = function(e, result) {
         if (result.isTrashed()) {
-            $('.thumb[data-id=' + result.getId() + ']').remove();
+            $('.thumb[data-paper-id=' + result.getId() + ']').remove();
+        } else {
+            var $button = $('.thumb[data-paper-id=' + result.getId() + '] .thumb-library-trash');
+            toggleLibraryAddOrTrash($button, true);
         }
     };
 
@@ -49,7 +58,7 @@ define([
     function toggleLibraryAddOrTrash($button, added) {
         if (added) {
             $button
-                .removeClass('thumb-library-add')
+                .removeClass('thumb-library-add thumb-library-restore')
                 .addClass('thumb-library-trash');
 
             utils.restoreLoadingButton($button, 'eai-library-trash');
@@ -76,19 +85,26 @@ define([
         if (listType == 'pin') {
             pinHandler = function(e, result) {
                 if (!result.isPinned()) {
-                    $('.thumb[data-id=' + result.getId() + ']').remove();
+                    $('.thumb[data-paper-id=' + result.getId() + ']').remove();
                 }
             };
             addHandler = restoreHandler = function(e, result) {
+                var $button = $(
+                    '.thumb[data-paper-id=' + result.getId() + '] .thumb-library-add, ' +
+                    '.thumb[data-paper-id=' + result.getId() + '] .thumb-library-restore '
+                ).eq(0);
                 if (result.isAdded()) {
-                    var $button = $('.thumb[data-id=' + result.getId() + '] .thumb-library-add');
                     toggleLibraryAddOrTrash($button, true);
+                } else {
+                    toggleLibraryAddOrTrash($button, false);
                 }
             };
             trashHandler = function(e, result) {
+                var $button = $('.thumb[data-paper-id=' + result.getId() + '] .thumb-library-trash');
                 if (result.isTrashed()) {
-                    var $button = $('.thumb[data-id=' + result.getId() + '] .thumb-library-trash');
                     toggleLibraryAddOrTrash($button, false);
+                } else {
+                    toggleLibraryAddOrTrash($button, true);
                 }
             };
         }

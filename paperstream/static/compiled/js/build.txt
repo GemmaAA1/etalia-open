@@ -38,7 +38,7 @@ lib/hogan.js
 app/util/templates.js
 app/ui/control/filters.js
 app/ui/controls.js
-app/api.js
+app/ui/api.js
 app/ui/list.js
 app/util/sticky.js
 app/ui/paper.js
@@ -48,7 +48,7 @@ app/feed/default.js
 
 app/feed/paper.js
 ----------------
-app/api.js
+app/ui/api.js
 app/util/utils.js
 app/ui/control/search.js
 app/ui/control/timespan.js
@@ -108,7 +108,7 @@ app/user/signup.js
 
 app/user/library.js
 ----------------
-app/api.js
+app/ui/api.js
 app/util/utils.js
 lib/jquery.mousewheel.js
 app/ui/layout/flap.js

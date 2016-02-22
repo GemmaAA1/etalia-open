@@ -40,7 +40,7 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
         // API events
         $('body')
             .on('etalia.publication.ban', function(e, result) {
-                if (that.id == result.getId() && result.isBanned()) {
+                if (that.paper.getId() == result.getId() && result.isBanned()) {
                     that.close();
                 }
             })

@@ -26,7 +26,6 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
-    str(APPS_DIR.path('static')),
 )
 
 # AWS S3 Buckets

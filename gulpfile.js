@@ -11,7 +11,7 @@ var gulp = require('gulp'),
 /**
  * (build) and copy libraries
  */
-gulp.task('libs', function() {
+gulp.task('libraries', function() {
     /**
      * Require JS
      */
@@ -114,14 +114,14 @@ gulp.task('libs', function() {
 /**
  * Mustache templates compilation
  */
-gulp.task('hogan', function() {
+gulp.task('templates', function() {
     return gulp
         .src('paperstream/static/templates/*.mustache')
         .pipe(hogan('templates.js', {
             wrapper: 'amd',
             hoganModule: 'hogan'
         }))
-        .pipe(gulp.dest('paperstream/static/js/app'));
+        .pipe(gulp.dest('paperstream/static/js/app/util'));
 });
 
 
@@ -129,7 +129,7 @@ gulp.task('hogan', function() {
 /**
  * RequireJs optimisation
  */
-gulp.task('rjs', shell.task([
+gulp.task('scripts', shell.task([
     'node_modules/requirejs/bin/r.js -o paperstream/static/js/build.js'
 ]));
 
@@ -137,4 +137,5 @@ gulp.task('rjs', shell.task([
 /**
  * Tasks
  */
-gulp.task('default', ['hogan', 'rjs']);
+gulp.task('build', ['libraries', 'templates', 'scripts']);
+gulp.task('default', ['build']);

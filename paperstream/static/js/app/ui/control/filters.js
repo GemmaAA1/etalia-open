@@ -123,6 +123,11 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
                 statesRegistry.setCount(groupId, count + 10);
 
                 that.applyUserSelection($group);
+
+                $body.trigger('etalia.control.filters.more', {
+                    group:  $group.data('id'),
+                    count:  count
+                });
             });
 
         return this;

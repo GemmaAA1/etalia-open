@@ -19,6 +19,24 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
         this.$selection = $(this.config.selection);
     };
 
+    Timespan.getValues = function() {
+        return values;
+    };
+
+    Timespan.getValueIcon = function(value) {
+        if (values.hasOwnProperty(value)) {
+            return values[value].icon;
+        }
+        throw 'Unexpected timespan value';
+    };
+
+    Timespan.getValueLabel = function(value) {
+        if (values.hasOwnProperty(value)) {
+            return values[value].label;
+        }
+        throw 'Unexpected timespan value';
+    };
+
     Timespan.prototype.init = function() {
         var that = this,
             $body = $('body');
@@ -44,7 +62,7 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
 
             $body.trigger('etalia.control.timespan.change', {
                 value: value,
-                label: that.getValueLabel(value)
+                label: Timespan.getValueLabel(value)
             });
 
             e.preventDefault();
@@ -54,23 +72,9 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
         return this;
     };
 
-    Timespan.prototype.getValueIcon = function(value) {
-        if (values.hasOwnProperty(value)) {
-            return values[value].icon;
-        }
-        throw 'Unexpected timespan value';
-    };
-
-    Timespan.prototype.getValueLabel = function(value) {
-        if (values.hasOwnProperty(value)) {
-            return values[value].label;
-        }
-        throw 'Unexpected timespan value';
-    };
-
     Timespan.prototype.setValue = function(value) {
         this.$selection
-            .html(this.getValueIcon(value))
+            .html(Timespan.getValueIcon(value))
             .data('value', value);
 
         return this;
