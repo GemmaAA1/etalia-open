@@ -9,13 +9,13 @@
 <div class="wrap">
 
     {% block toggle-pinned %}
-    <button id="toggle-pinned" class="btn-circle" type="button">
+    <button id="toggle-pinned" class="btn-circle" type="button" title="Filter pinned items">
         <span class="eai eai-pin"></span>
     </button>
     {% endblock toggle-pinned %}
 
     {% block cluster-selector %}
-    <div id="cluster" class="selector">
+    <div id="cluster" class="selector" title="Filter items by color">
         <button id="toggle-cluster" class="btn-circle" type="button">
             <span id="cluster-selection" class="cluster-value" data-value="0"></span>
             <span class="cluster-icon">
@@ -55,7 +55,7 @@
     {% endblock cluster-selector %}
 
     {% block timespan-selector %}
-    <div id="timespan" class="selector">
+    <div id="timespan" class="selector" title="Filter items by time span">
         <button id="toggle-timespan" class="btn-circle" type="button">
             <span class="eai eai-clock"></span>
             <span id="timespan-selection" class="timespan-value" data-value="{{ time_span }}">1m</span>

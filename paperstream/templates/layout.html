@@ -24,7 +24,8 @@
 
         <!-- start top-bar-profile -->
         {% if user.is_authenticated %}
-        <button id="toggle-profile" class="btn-circle" type="button">
+        <button id="toggle-profile" class="btn-circle" type="button" title="etalia account: {{ user.first_name }} {{ user.last_name }}
+({{ user.email }})">
             {% if user.avatar_set.all %}
                 {% avatar user 38 %}
             {% else %}
@@ -37,7 +38,7 @@
                     <a href="{% url 'user:profile' %}">My Profile</a>
                 </li>
                 <li>
-                    <a href="javascript: void(0)" id="open-invite">Invite</a>
+                    <a href="javascript: void(0)" id="open-invite" title="Invite someone to join etalia">Invite</a>
                 </li>
                 <li>
                     <a href="{% url 'user:logout' %}">Logout</a>
