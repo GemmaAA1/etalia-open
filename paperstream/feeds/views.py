@@ -7,11 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
 
-from django.contrib import messages
-from messages_extends import constants as constants_messages
+from braces.views import LoginRequiredMixin
 
 from paperstream.users.models import UserTaste
 from paperstream.core.views import BasePaperListView
+from paperstream.core.mixins import NavFlapMixin, XMLMixin
 
 from .models import Stream, StreamMatches, TrendMatches
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
@@ -72,20 +72,11 @@ class FeedPaperListView(BasePaperListView):
         context.update(self.get_context_time_span())
         context.update(self.get_context_search_query())
         context.update(self.get_context_new_objects_since_last_login())
-        context.update(self.get_context_counters_since_last_login())
 
         return context
 
     def get_original_queryset(self):
         raise NotImplemented
-
-
-class XMLFeedMixin(object):
-
-    def get_context_data(self, **kwargs):
-        context = super(XMLFeedMixin, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
 
 
 class BaseStreamView(FeedPaperListView):
@@ -101,13 +92,13 @@ class BaseStreamView(FeedPaperListView):
                             'paper__altmetric')
 
 
-class StreamView(BaseStreamView):
+class StreamView(LoginRequiredMixin, NavFlapMixin, BaseStreamView):
     page_template = 'feeds/feed_sub_page.html'
 
 stream = StreamView.as_view()
 
 
-class StreamViewXML(XMLFeedMixin, BaseStreamView):
+class StreamViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin, BaseStreamView):
     page_template = 'feeds/feed_sub_page2.html'
 
 stream_xml = StreamViewXML.as_view()
@@ -126,13 +117,13 @@ class BaseTrendView(FeedPaperListView):
                             'paper__altmetric')
 
 
-class TrendView(BaseTrendView):
+class TrendView(LoginRequiredMixin, NavFlapMixin, BaseTrendView):
     page_template = 'feeds/trend_sub_page.html'
 
 trend = TrendView.as_view()
 
 
-class TrendViewXML(XMLFeedMixin, BaseTrendView):
+class TrendViewXML(LoginRequiredMixin, NavFlapMixin, XMLMixin, BaseTrendView):
     page_template = 'feeds/trend_sub_page2.html'
 
 trend_xml = TrendViewXML.as_view()
