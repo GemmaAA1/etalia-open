@@ -46,7 +46,7 @@ INIT_STEPS = (
 PERSISTANT_USER_MESSAGES = (
     (1,
      'stream',
-     'Below the stream of the most relevant scientific articles we found for ' \
+     '"My Stream" is where you find the most relevant scientific articles we found for ' \
      'you. You can filter them using the right-side panel or using the shortcut icons in the top navigation '
      'bar. Pins (<span class="eai eai-pin"></span>) are used to quickly mark the articles'
      'you are interested in. Bans (<span class="eai eai-remove"></span>) will remove the article '
@@ -55,7 +55,7 @@ PERSISTANT_USER_MESSAGES = (
      'and improve your stream content.'),
     (2,
      'trend',
-     'Below a list of publications that are currently receiving the most ' \
+     '"Trends" is where you find the publications that are currently receiving the most ' \
      'attention. You can filter them using the right-side panel or using the shortcut icons in the top navigation '
      'bar. Pins (<span class="eai eai-pin"></span>) are used to quickly mark the articles'
      'you are interested in. Bans (<span class="eai eai-remove"></span>) will remove the article '

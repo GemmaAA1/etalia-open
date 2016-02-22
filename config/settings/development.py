@@ -2,6 +2,8 @@
 
 from .common import *
 
+CONFIG_FILE = __file__
+
 # DEBUG
 # ------------------------------------------------------------------------------
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
