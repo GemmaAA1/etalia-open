@@ -227,7 +227,11 @@
 
 {% block stylesheets %}
 {% spaceless %}
-    {{ block.super }}
-    <link href="{% static 'css/app/landing.css' %}" rel="stylesheet" type="text/css">
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/landing.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/landing.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
 {% endspaceless %}
 {% endblock stylesheets %}

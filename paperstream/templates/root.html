@@ -14,10 +14,16 @@
     <title>{% block title %}{{ brand }}{% endblock %}</title>
 
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+
+    {% if environment == 'production' %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css">
+    {% else %}
     <link href="{% static 'css/etal-icons.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/lib/bootstrap.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/lib/jquery-ui.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/app/root.css' %}" rel="stylesheet" type="text/css">
+    {% endif %}
+
     {% block stylesheets %}{% endblock stylesheets %}
 
     <!--[if lt IE 9]>

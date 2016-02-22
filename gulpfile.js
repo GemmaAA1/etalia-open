@@ -4,7 +4,8 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     strip = require('gulp-strip-comments'),
     shell = require('gulp-shell'),
-    hogan = require('gulp-hogan-compile');
+    hogan = require('gulp-hogan-compile'),
+    minify = require('gulp-minify-css');
 
 
 
@@ -104,14 +105,6 @@ gulp.task('libraries', function() {
 
 
 /**
- * Bootstrap SASS
- */
-// TODO Bootstrap sass
-// http://david-barreto.com/working-with-sass-bootstrap-and-gulp/
-
-
-
-/**
  * Mustache templates compilation
  */
 gulp.task('templates', function() {
@@ -133,9 +126,61 @@ gulp.task('scripts', shell.task([
     'node_modules/requirejs/bin/r.js -o paperstream/static/js/build.js'
 ]));
 
+/**
+ * Bootstrap SASS
+ */
+// TODO Bootstrap sass
+// http://david-barreto.com/working-with-sass-bootstrap-and-gulp/
+
+
+
+/**
+ * Minify css
+ */
+gulp.task('styles', function() {
+    var main = gulp
+        .src([
+            'paperstream/static/css/*.css',
+            'paperstream/static/css/lib/*.css',
+            'paperstream/static/css/app/root.css'
+        ])
+        .pipe(concat('main.css'))
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest('paperstream/static/compiled/css'));
+
+    var page = gulp
+        .src('paperstream/static/css/app/page.css')
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest('paperstream/static/compiled/css'));
+
+    var landing = gulp
+        .src('paperstream/static/css/app/landing.css')
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest('paperstream/static/compiled/css'));
+
+    var elements = gulp
+        .src([
+            'paperstream/static/css/app/list.css',
+            'paperstream/static/css/app/card.css',
+            'paperstream/static/css/app/detail.css',
+            'paperstream/static/css/app/tocles.css'
+        ])
+        .pipe(concat('elements.css'))
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest('paperstream/static/compiled/css'));
+
+    var user = gulp
+        .src('paperstream/static/css/app/user.css')
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest('paperstream/static/compiled/css'));
+
+    return merge(main, page, landing, elements, user);
+});
+
+
 
 /**
  * Tasks
  */
-gulp.task('build', ['libraries', 'templates', 'scripts']);
+gulp.task('build', ['libraries', 'templates', 'scripts', 'styles']);
 gulp.task('default', ['build']);

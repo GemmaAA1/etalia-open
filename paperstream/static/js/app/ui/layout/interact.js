@@ -3,7 +3,7 @@ define(['jquery'], function($) {
 
     var Interact = function(options) {
         this.config = $.extend({
-            debug: true
+            debug: false
         }, options);
     };
 

@@ -8,7 +8,7 @@ define(['jquery', 'app/ui/paper', 'app/ui/layout', 'bootstrap'], function($, Pap
         $('body')
             .on('etalia.publication.ban', function(e, result) {
                 if (result.isBanned()) {
-                    // TODO redirect ?
+                    window.location.href = '/feed/stream';
                 }
             });
     });
