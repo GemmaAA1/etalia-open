@@ -25,9 +25,13 @@
 
 {% block stylesheets %}
 {{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/elements.css' %}" rel="stylesheet" type="text/css">
+{% else %}
 <link href="{% static 'css/app/list.css' %}" rel="stylesheet" type="text/css">
 <link href="{% static 'css/app/card.css' %}" rel="stylesheet" type="text/css">
 <link href="{% static 'css/app/detail.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
 <style type="text/css">
     #detail {
         display: block;
