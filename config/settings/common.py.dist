@@ -116,6 +116,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     # Your stuff: custom template context processors go here
     'social.apps.django_app.context_processors.backends',
     'django.core.context_processors.request',
+    'paperstream.core.context_processors.admin_context',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
