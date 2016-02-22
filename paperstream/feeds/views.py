@@ -6,15 +6,18 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
+from django.views.generic.base import ContextMixin
 
 from django.contrib import messages
 from messages_extends import constants as constants_messages
 
 from paperstream.users.models import UserTaste
 from paperstream.core.views import BasePaperListView
+from paperstream.core.mixins import NavFlapMixin
 
 from .models import Stream, StreamMatches, TrendMatches
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
+from .mixins import XMLFeedMixin
 
 
 class FeedPaperListView(BasePaperListView):
@@ -72,20 +75,11 @@ class FeedPaperListView(BasePaperListView):
         context.update(self.get_context_time_span())
         context.update(self.get_context_search_query())
         context.update(self.get_context_new_objects_since_last_login())
-        context.update(self.get_context_counters_since_last_login())
 
         return context
 
     def get_original_queryset(self):
         raise NotImplemented
-
-
-class XMLFeedMixin(object):
-
-    def get_context_data(self, **kwargs):
-        context = super(XMLFeedMixin, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
 
 
 class BaseStreamView(FeedPaperListView):

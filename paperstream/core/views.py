@@ -236,59 +236,10 @@ class BasePaperListView(LoginRequiredMixin, AjaxListView):
     def get_context_time_span(self):
         return {'time_span': self.time_span}
 
-    def get_context_filter_json(self, context):
-        # build JSON object
-        filter_ = {
-            'filters': [],
-            'pin': self.like_flag,
-            'time_span': self.time_span,
-            'cluster': None,
-            'search_query': self.search_query,
-            'number_of_papers': context['number_of_papers'],
-        }
-
-        # add to journal filter context if journal is checked
-        entries = []
-        for j in context['journals']:
-            is_checked = j[0] in self.journals_filter
-            entries.append({
-                'pk': j[0],
-                'name': j[1],
-                'count': j[2],
-                'is_checked': is_checked
-            })
-        filter_['filters'].append({'id': 'journal', 'entries': entries})
-
-        # add to author filter context if author is checked
-        entries = []
-        for a in context['authors']:
-            is_checked = a[0] in self.authors_filter
-            entries.append({
-                'pk': a[0],
-                'name': a[1],
-                'count': None,
-                'is_checked': is_checked
-            })
-        filter_['filters'].append({'id': 'author', 'entries': entries})
-
-        return {'filter': json.dumps(filter_)}
-
     def get_context_new_objects_since_last_login(self):
         return {'new_papers': self.object_list.filter(
             created__gt=self.request.user.last_login)\
             .values_list('paper_id', flat=True)}
-
-    def get_context_counters_since_last_login(self):
-        return {
-            'stream_counter': StreamMatches.objects.filter(
-                stream__user=self.request.user,
-                stream__name='main',
-                created__gt=self.request.user.last_login).count(),
-            'trend_counter': TrendMatches.objects.filter(
-                trend__user=self.request.user,
-                trend__name='main',
-                created__gt=self.request.user.last_login).count(),
-            'tocles_counter': 0}
 
     def parse_ajax_data(self):
         """Get ajax args"""
