@@ -52,7 +52,6 @@ THIRD_PARTY_APPS = (
     'endless_pagination',
     'avatar',
     'messages_extends',
-    'last_seen',
 )
 
 LOCAL_APPS = (
@@ -65,6 +64,7 @@ LOCAL_APPS = (
     'paperstream.feeds',
     'paperstream.altmetric',
     'paperstream.invite',
+    'paperstream.last_seen'
     # 'functional_tests',
 )
 
@@ -81,7 +81,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'last_seen.middleware.LastSeenMiddleware',
+    'paperstream.last_seen.middleware.LastSeenMiddleware',
 )
 
 
@@ -240,9 +240,10 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details',
     'social.pipeline.debug.debug',
     'paperstream.users.pipeline.create_details',
+    'paperstream.users.pipeline.init_messages',
     'paperstream.users.pipeline.init_user',
+
     # 'paperstream.users.pipeline.require_affiliation',
-\
 )
 
 # Mendeley Keys
@@ -256,6 +257,12 @@ SOCIAL_AUTH_ZOTERO_KEY = env('SOCIAL_AUTH_ZOTERO_KEY')
 SOCIAL_AUTH_ZOTERO_SECRET = env('SOCIAL_AUTH_ZOTERO_SECRET')
 
 SOCIAL_AUTH_ZOTERO_AUTH_EXTRA_ARGUMENTS = {'write_access': '1'}
+
+# LAST SEEN
+# ------------------------------------------------------------------------------
+LAST_SEEN_DEFAULT_MODULE = 'default'
+LAST_SEEN_INTERVAL = 2 * 60 * 60
+
 
 # DISQUS
 # ------------------------------------------------------------------------------
@@ -312,6 +319,8 @@ FEED_MAX_TARGETS = 200000
 
 # Number of Clusters
 FEED_NB_CLUSTERS = 5
+
+HIDE_CLUSTER_ICON = False
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
@@ -461,3 +470,7 @@ LOGGING = {
 }
 
 # CACHES
+
+
+# MESSAGES
+MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'
