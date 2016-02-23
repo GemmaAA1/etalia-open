@@ -9,6 +9,14 @@ CONFIG_FILE = __file__
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATE_DEBUG = DEBUG
 
+# DEBUG TOOLBAR
+# ------------------------------------------------------------------------------
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+INSTALLED_APPS += ('debug_toolbar', )
+MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware', ) + \
+                     MIDDLEWARE_CLASSES
+INTERNAL_IPS = ['127.0.0.1']
+
 # CONSUMER
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database

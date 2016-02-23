@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.conf.urls import include, url
+from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.conf import settings
 
@@ -20,3 +20,10 @@ else:
         url(r'^admin/', include(admin.site.urls)),
         url(r'^messages/', include('messages_extends.urls', namespace='message_extends')),
     ]
+
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += patterns('',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )
