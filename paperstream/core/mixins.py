@@ -46,21 +46,22 @@ class NavFlapMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(NavFlapMixin, self).get_context_data(**kwargs)
-        context.update(self.get_context_counters_since_last_login())
+        context.update(self.get_context_counters_since_last_seen())
         return context
 
-    def get_context_counters_since_last_login(self):
+    def get_context_counters_since_last_seen(self):
 
         return {
             'stream_counter': StreamMatches.objects.filter(
                 stream__user=self.request.user,
                 stream__name='main',
-                created__gt=self.request.user.last_login).count(),
+                new=True).count(),
             'trend_counter': TrendMatches.objects.filter(
                 trend__user=self.request.user,
                 trend__name='main',
-                created__gt=self.request.user.last_login).count(),
-            'tocles_counter': 0}
+                new=True).count(),
+            'tocles_counter': 0
+        }
 
 
 class XMLMixin(object):

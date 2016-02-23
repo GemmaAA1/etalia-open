@@ -33,10 +33,6 @@ CELERY_DEFAULT_ROUTING_KEY = 'default'
 CELERY_ROUTES = ('config.routers.MyRouter', )
 
 CELERYBEAT_SCHEDULE = {
-    'update-library-stats': {
-        'task': 'paperstream.library.tasks.update_stats',
-        'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
-    },
     'update-altmetric': {
         'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
         'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0

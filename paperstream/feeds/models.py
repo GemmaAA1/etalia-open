@@ -3,23 +3,15 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-from django.db import connection
-from django.utils import timezone
 from django.db import models
-from django.conf import settings
+
 from django.contrib.auth.models import BaseUserManager
 from django.db.models import Q
 from django.contrib.postgres.fields import ArrayField
-from django.db.models.expressions import RawSQL
-
-from gensim import matutils
 
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
-from paperstream.altmetric.models import AltmetricModel
-from paperstream.nlp.models import Model, MostSimilar
-from paperstream.library.models import Paper
-from config.celery import celery_app as app
+from paperstream.nlp.models import MostSimilar
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
 from .scoring import *
 
@@ -135,6 +127,7 @@ class Stream(TimeStampedModel):
             .filter(Q(stream=self) & Q(date__lt=from_date))\
             .delete()
 
+
     def clear_all(self):
         """Delete all matched matches"""
         StreamMatches.objects.filter(stream=self).delete()
@@ -175,7 +168,11 @@ class Stream(TimeStampedModel):
         self.log('info', 'Updating', 'starting...')
         self.set_message('Cleaning')
 
+        # clear out-dated papers
         self.clear_old_papers()
+
+        # get current paper_id
+        current_paper_list = self.streammatches_set.all().values_list('pk', flat=True)
 
         # Instantiate Score
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
@@ -195,15 +192,28 @@ class Stream(TimeStampedModel):
         # create/update UserFeedPaper
         objs_list = []
         for pk, val in results:
-            objs_list.append(StreamMatches(
-                stream=self,
-                paper_id=pk,
-                score=val,
-                date=date[pk],
-                is_score_computed=True))
+            if pk in current_paper_list:
+                # TODO: user django-bulk-update ?
+                sm = StreamMatches.object.get(
+                    stream=self,
+                    paper_id=pk)
+                sm.score = val
+                sm.update()
+            else:
+                objs_list.append(StreamMatches(
+                    stream=self,
+                    paper_id=pk,
+                    score=val,
+                    date=date[pk],
+                    is_score_computed=True))
+
         # bulk create
         StreamMatches.objects.bulk_create(objs_list)
         self.set_state('IDL')
+
+        # bulk update of new flag based on user last visit
+        last_seen = LastSeen.object.when(user=self.user)
+        StreamMatches.objects.filter(created__lt=last_seen).update(new=False)
 
         self.log('info', 'Updating', 'DONE')
 
@@ -236,6 +246,8 @@ class StreamMatches(TimeStampedModel):
     date = models.DateField()
 
     is_score_computed = models.BooleanField(default=False)
+
+    new = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-score']
@@ -318,16 +330,32 @@ class Trend(TimeStampedModel):
         self.state = state
         self.save()
 
-    def clear(self):
-        """Remove all paper relations"""
-        TrendMatches.objects.filter(trend=self).all().delete()
+    def clear_old_papers(self):
+        """Remove outdating matches based on user settings"""
+
+        # get time lapse corresponding to user settings
+        from_date = (timezone.now() -
+                     timezone.timedelta(
+                         days=self.user.settings.stream_time_lapse)).date()
+
+        # clean old matches
+        TrendMatches.objects\
+            .filter(Q(trend=self) & Q(date__lt=from_date))\
+            .delete()
+
+    def clear_all(self):
+        """Delete all matched matches"""
+        StreamMatches.objects.filter(stream=self).all().delete()
 
     def update(self):
 
         self.set_state('ING')
 
-        # clear stream
-        self.clear()
+        # clear out-dated paper
+        self.clear_old_papers()
+
+        # get current paper_id
+        current_paper_list = self.trendmatches_set.all().values_list('pk', flat=True)
 
         # Instantiate Score
         Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
@@ -348,15 +376,27 @@ class Trend(TimeStampedModel):
         # create/update UserFeedPaper
         objs_list = []
         for pk, val in results:
-            objs_list.append(TrendMatches(
-                trend=self,
-                paper_id=pk,
-                score=val,
-                date=date[pk]))
+            if pk in current_paper_list:
+                tm = TrendMatches.objects.get(
+                    trend=self,
+                    paper_id=pk)
+                tm.score = val,
+                tm.save()
+            else:
+                objs_list.append(TrendMatches(
+                    trend=self,
+                    paper_id=pk,
+                    score=val,
+                    date=date[pk]))
         # bulk create
         TrendMatches.objects.bulk_create(objs_list)
 
+        # bulk update of new flag based on user last visit
+        last_seen = LastSeen.object.when(user=self.user)
+        TrendMatches.objects.filter(created__lt=last_seen).update(new=False)
+
         self.set_state('IDL')
+
 
 class TrendMatches(TimeStampedModel):
 
@@ -367,6 +407,8 @@ class TrendMatches(TimeStampedModel):
     score = models.FloatField(default=0.0)
 
     date = models.DateField()
+
+    new = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-score']

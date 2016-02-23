@@ -51,6 +51,8 @@ THIRD_PARTY_APPS = (
     'disqus',
     'endless_pagination',
     'avatar',
+    'messages_extends',
+    'last_seen',
 )
 
 LOCAL_APPS = (
@@ -79,6 +81,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'last_seen.middleware.LastSeenMiddleware',
 )
 
 
