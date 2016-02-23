@@ -1,3 +1,6 @@
+__version__ = '0.1'
+VERSION = __version__
+
 # -*- coding: utf-8 -*-
 from django.db import connection
 from django.db.utils import ProgrammingError, OperationalError
