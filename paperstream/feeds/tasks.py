@@ -41,6 +41,20 @@ def update_all_main_trends():
 
 
 @app.task()
+def update_stream(user_pk, stream_name='main', restrict_journal=False):
+    """Async task / Update user feed"""
+    # create/update main feed
+    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
+    user = User.objects.get(pk=user_pk)
+    if stream_name == 'main':
+        # add all seeds
+        feed.add_papers_seed(user.lib.papers.all())
+    # update
+    feed.update(restrict_journal=restrict_journal)
+    return user_pk
+
+
+@app.task()
 def reset_stream(user_pk, stream_name='main', restrict_journal=False):
     """Async task / Reset user feed"""
     # create/update main feed
@@ -53,20 +67,6 @@ def reset_stream(user_pk, stream_name='main', restrict_journal=False):
     feed.clear_all()
     if hasattr(user, 'streamlayout'):
         user.streamlayout.delete()
-    # update
-    feed.update(restrict_journal=restrict_journal)
-    return user_pk
-
-
-@app.task()
-def update_stream(user_pk, stream_name='main', restrict_journal=False):
-    """Async task / Update user feed"""
-    # create/update main feed
-    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
-    user = User.objects.get(pk=user_pk)
-    if stream_name == 'main':
-        # add all seeds
-        feed.add_papers_seed(user.lib.papers.all())
     # update
     feed.update(restrict_journal=restrict_journal)
     return user_pk

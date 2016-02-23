@@ -12,6 +12,7 @@ from django.contrib.postgres.fields import ArrayField
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
 from paperstream.nlp.models import MostSimilar
+from paperstream.last_seen.models import LastSeen
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
 from .scoring import *
 
@@ -127,7 +128,6 @@ class Stream(TimeStampedModel):
             .filter(Q(stream=self) & Q(date__lt=from_date))\
             .delete()
 
-
     def clear_all(self):
         """Delete all matched matches"""
         StreamMatches.objects.filter(stream=self).delete()
@@ -212,8 +212,11 @@ class Stream(TimeStampedModel):
         self.set_state('IDL')
 
         # bulk update of new flag based on user last visit
-        last_seen = LastSeen.object.when(user=self.user)
-        StreamMatches.objects.filter(created__lt=last_seen).update(new=False)
+        try:
+            last_seen = LastSeen.objects.when(user=self.user)
+            StreamMatches.objects.filter(created__lt=last_seen).update(new=False)
+        except LastSeen.DoesNotExist:
+            pass
 
         self.log('info', 'Updating', 'DONE')
 
@@ -392,8 +395,11 @@ class Trend(TimeStampedModel):
         TrendMatches.objects.bulk_create(objs_list)
 
         # bulk update of new flag based on user last visit
-        last_seen = LastSeen.object.when(user=self.user)
-        TrendMatches.objects.filter(created__lt=last_seen).update(new=False)
+        try:
+            last_seen = LastSeen.objects.when(user=self.user)
+            TrendMatches.objects.filter(created__lt=last_seen).update(new=False)
+        except LastSeen.DoesNotExist:
+            pass
 
         self.set_state('IDL')
 

@@ -11,11 +11,10 @@ from django.contrib.auth.models import AbstractBaseUser, \
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db import transaction
 
 from paperstream.library.models import Paper, Journal, Author
 from paperstream.nlp.models import Model
-from paperstream.feeds.models import Stream
+from paperstream.feeds.models import Stream, Trend
 from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES, \
     NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
@@ -87,6 +86,8 @@ class UserManager(BaseUserManager):
         UserSettings.objects.create(user=user)
         # create user default (main) feed
         Stream.objects.create_main(user=user)
+        # create user default (main) feed
+        Trend.objects.create(user=user, name='main')
         return user
 
     def create_superuser(self, **kwargs):
