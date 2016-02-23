@@ -1,0 +1,242 @@
+#detail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 0;
+    display: none;
+}
+
+/* OPENED STATE */
+
+body.detail-opened {
+    overflow: hidden;
+}
+
+body.detail-opened #backdrop {
+    display: block;
+    opacity: .9;
+}
+
+body.detail-opened #detail {
+    display: block;
+    z-index: 10;
+}
+
+/* TOP BAR */
+
+#detail > .bar > .wrapper > .inner {
+    background-color: transparent !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    text-align: center;
+}
+
+#detail > .bar button {
+    display: inline-block;
+}
+
+#detail > .bar .eai {
+    font-size: 16px;
+}
+
+#detail-close {
+    position: absolute;
+    left: 50%;
+    margin-left: -20px;
+}
+
+.detail-nav > span {
+    height: 40px;
+    line-height: 40px;
+    font-style: italic;
+}
+
+/* Prev button */
+#detail-prev {
+    float: left;
+    text-align: left;
+}
+#detail-prev > span {
+    display: none;
+    float: left;
+    margin-left: 10px;
+}
+#detail-prev > button {
+    float: left;
+}
+
+/* Next button */
+#detail-next {
+    float: right;
+    text-align: right;
+}
+#detail-next > span {
+    display: none;
+    float: right;
+    margin-right: 10px;
+}
+#detail-next > button {
+    float: right;
+}
+
+/* DOCUMENT */
+
+#detail > .document {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    padding-top: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#detail > .document > .wrapper > .inner > .actions {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+}
+
+#detail .document .content {
+    padding-right: 45px;
+}
+
+.actions .detail-library-add,
+.actions .detail-library-trash,
+.actions .detail-library-restore,
+.actions .detail-pdf {
+    margin-bottom: 40px;
+}
+
+#detail .card .ids {
+    text-align: left;
+    font-size: 14px;
+    line-height: 14px;
+    color: #6b6d70;
+}
+
+#detail .card .title {
+    font-size: 24px;
+    line-height: 28px;
+}
+
+#detail h2,
+#detail .h2 {
+    clear: both;
+    color: #cbced1;
+    font-size: 24px;
+    line-height: 24px;
+    padding-bottom: 8px;
+    margin: 40px 0 20px 0;
+    border-bottom: 1px solid #cbced1;
+}
+
+#detail .neighbors-thumbs h2 {
+    margin-bottom: 10px;
+}
+
+#detail .neighbors-timespan-selector {
+    list-style: none;
+    margin: 0 0 20px 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#detail .neighbors-timespan-selector > li {
+    display: inline-block;
+    float: right;
+    margin-left: 12px;
+}
+
+#detail .neighbors-timespan-selector > li:last-child {
+    margin-left: 0;
+}
+
+#detail .neighbors-timespan-selector > li.active a {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* ------------------------------------ THUMB ------------------------------------ */
+
+#detail .thumb-list .thumb {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+}
+
+#detail .thumb-list .card .title {
+    font-size: 16px;
+    line-height: 20px;
+    margin: 0 0 7px 0;
+}
+
+#detail .thumb-list .card .authors {
+    font-size: 14px;
+    line-height: 16px;
+}
+
+#detail .thumb-list .card .journal {
+    font-size: 13px;
+    line-height: 24px;
+    height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#detail .thumb-list .card .date {
+    font-size: 13px;
+    line-height: 24px;
+}
+
+#detail .thumb-list .card .icons {
+    height: 24px;
+}
+
+#detail .thumb-list .card .icons > span,
+#detail .thumb-list .card .icons img {
+    width: 24px;
+    height: 24px;
+}
+
+#detail .thumb-list .card .cluster-icon span {
+    width: 11px;
+    height: 11px;
+}
+
+#detail .thumb-list .card .cluster-icon span {
+    border-radius: 11px 0 0 0;
+}
+
+#detail .thumb-list .card .cluster-icon span + span {
+    border-radius: 0 11px 0 0;
+}
+
+#detail .thumb-list .card .cluster-icon span + span + span {
+    border-radius: 0 0 11px 0;
+}
+
+#detail .thumb-list .card .cluster-icon span + span + span + span {
+    border-radius: 0 0 0 11px;
+}
+
+/* ---------------------------------- RESPONSIVE --------------------------------- */
+
+@media (min-width: 768px) {
+    #detail-prev > span,
+    #detail-next > span {
+        display: inline-block;
+        max-width: 240px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /*#detail .card .journal {
+        line-height: 24px;
+        height: 24px;
+    }*/
+}

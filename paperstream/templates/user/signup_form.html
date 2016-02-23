@@ -1,58 +1,51 @@
-{% extends 'landing.html' %}
+{% extends 'layout.html' %}
+
 
 {% load staticfiles %}
 
-{% block css %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
-{% endblock css %}
 
-{% block navbar %}
-    {% include "nav_bar_anonymous.html" %}
-{% endblock navbar %}
-
-{% block title %} {{ block.super }} Sign-Up {% endblock %}
+{% block title %}{{ block.super }} - Sign-Up{% endblock %}
 
 
 {% block content %}
-
-
-<div class="container signup-forms">
-    <div class="row">
-        <div class="col-md-4 col-md-offset-4">
-            {% if has_email  %}
-                <div class="text-center title">
-                    <h3>Please, edit this info if incorrect</h3>
-                </div>
+{% spaceless %}
+<div class="document">
+    <div id="signup-form">
+        <h3>
+            {% if has_email %}
+                Please, edit this info if incorrect
             {% else %}
-                <div class="text-center title">
-                    <h3>Please, fill up this short form</h3>
-                </div>
+                Please, fill up this short form
             {% endif %}
-            <form role="form" method="POST" id="signup-form" data-async action="{% url "user:require-basic-info" %}">
-                {% csrf_token %}
-                <span id="id_errors"></span>
+        </h3>
+
+        <form role="form" method="POST" data-async action="{% url 'user:require-basic-info' %}">
+            {% csrf_token %}
+            <span id="id_errors"></span>
+
+            <div class="form-inner">
                 {% for field in form %}
-                    <div class="form-group">
-{#                        {{ field.label_tag }}#}
-                        {{ field }}
-                    </div>
-                {% endfor %}
-                <div class="text-center submit">
-                    <button id="signup" type="submit" class="btn btn-primary btn-lg">Done</button>
+                <div class="form-group">
+                    {{ field }}
                 </div>
-            </form>
-            <div class="blurb">
-                By clicking on the done button, your are allowing Etalia to access the data that you store in your reference software manager.
-                This information will not be shared with any other entity without your consent.
+                {% endfor %}
             </div>
+
+            <div class="text-center submit">
+                <button id="signup" type="submit" class="btn btn-primary btn-lg">Done</button>
+            </div>
+        </form>
+
+        <div class="form-footer">
+            By clicking on the done button, your are allowing Etalia to access the data that you store in your reference software manager.
+            This information will not be shared with any other entity without your consent.
         </div>
     </div>
 </div>
-
+{% endspaceless %}
 {% endblock content %}
 
-{% block js %}
-    {{ block.super }}
-     <script type="text/javascript" src="{% static 'js/user.js' %}"></script>
-{% endblock js %}
+
+{% block javascript %}
+<script>requirejs(['app/user/signup']);</script>
+{% endblock javascript %}

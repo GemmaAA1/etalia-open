@@ -20,11 +20,13 @@ __pycache__/
 env/
 build/
 develop-eggs/
+/node_modules
+/bower_components
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -67,7 +69,6 @@ docs/_build/
 target/
 
 # PaperStream
-config/settings/common.py
 nlp_data/
 nlp_data_test/
 paperstream/trash
@@ -77,3 +78,4 @@ deploy/.envs
 deploy/.ssh
 deploy/notes.txt
 scripts/heroku_cheats
+scripts/routines/tmp.py

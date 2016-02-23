@@ -2,6 +2,8 @@
 
 from .common import *
 
+CONFIG_FILE = __file__
+
 # DEBUG
 # ------------------------------------------------------------------------------
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
@@ -43,6 +45,13 @@ if INVITE_MODE:
             'NAME': str((ROOT_DIR - 1).path('db').path('invite.sqlite3')),
         }
     }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #

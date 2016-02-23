@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from .common import *
 
+CONFIG_FILE = __file__
+
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['alpha-u6VcayvtcI.pubstream.io']
@@ -32,8 +34,8 @@ STATICFILES_DIRS = (
 
 # EMAIL backend
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
-MAILGUN_ACCESS_KEY = 'key-9b74a707d80624254f6d538bc841c439'
-MAILGUN_SERVER_NAME = 'mg.pubstream.io'
+MAILGUN_ACCESS_KEY = env.str('MAILGUN_KEY')
+MAILGUN_SERVER_NAME = 'mg.etalia.io'
 
 # Invite mode switch
 INVITE_MODE = False

@@ -1,105 +1,61 @@
-{% extends 'base.html' %}
+{% extends 'feeds/base.html' %}
 
 {% load staticfiles %}
+{% load disqus_tags %}
+{% load user_taste %}
 
-{% block css %}
-    {{ block.super }}
-    <link href="{% static 'css/user_library.css' %}" rel="stylesheet">
-    <link href="{% static 'css/paper_list.css' %}" rel="stylesheet">
-    <link href="{% static 'css/side_panel.css' %}" rel="stylesheet">
-{% endblock css %}
-
-{% block title %}
-    {{ block.super }} My Library
-{% endblock title %}
-
+{% block toggle-pinned %}{% endblock toggle-pinned %}
+{% block cluster-selector %}{% endblock cluster-selector %}
+{% block timespan-selector %}{% endblock timespan-selector %}
 
 {% block content %}
+{% spaceless %}
 
-    <div class="container">
-        <div class="library">
-            <div class="row">
-                <div class="col-lg-11 col-lg-offset-1">
-                    <div class="col-md-9">
-                        <div class="userlib">
-                            <div class="row">
-                                <div class="col-md-1">
-                                    <div class="header-img-crop">
-                                        <img src="{% static 'img/main_icons_color.svg' %}" class="header-img">
-                                    </div>
-                                </div>
-                                <div class="col-md-11">
-                                    <div class="header-text">
-                                        <h3>My library</h3>
-                                        <h5><em>In sync with {{ user.social_auth.first.provider|capfirst }}</em></h5>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="endless_data">
-                            {% include page_template %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 hidden-sm">
-                        <div class="side-panel">
-                            <div class="side-panel-section tab-link">
-                                <div {% if tab == 'library' %} class="active" {% endif %}>
-                                    <a href="{% url 'user:library' %}">
-                                        <div class="side-panel-title library-icon">
-                                            Publications (<span id="library_counter">{{ library_counter }}</span>)
-                                        </div>
-                                    </a>
-                                </div>
-
-                                <div {% if tab == 'likes' %} class="active" {% endif %}>
-                                    <a href="{% url 'user:library-likes' %}">
-                                        <div class="side-panel-title like-icon">
-                                            Pins (<span id="likes_counter">{{ likes_counter }}</span>)
-                                        </div>
-                                    </a>
-                                </div>
-                                <div {% if tab == 'trash' %} class="active" {% endif %}>
-                                    <a href="{% url 'user:library-trash' %}">
-                                        <div class="side-panel-title trash-icon">
-                                            Trash (<span id="trash_counter">{{ trash_counter }}</span>)
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <hr class="divider">
-                            {% include 'user/filter_panel.html' %}
-                        </div>
-                    </div>
+    <!-- start list -->
+    <div id="list" class="document" data-load-url="{% url 'user:library-xml' %}" data-type="{{ tab }}">
+        <div class="wrapper">
+            <div class="list-tabs">
+                <div class="inner">
+                    <ul>
+                        <li>
+                            <a href="{% url 'user:library' %}" class="user-library{% if tab == 'main' %} active{% endif %}">
+                                <strong>Articles</strong> (<span>{{ library_counter }}</span>)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'user:library-pins' %}" class="user-library-pins{% if tab == 'pin' %} active{% endif %}">
+                                <strong>Pins</strong> (<span>{{ likes_counter }}</span>)
+                            </a>
+                        </li>
+                        <li>
+                            {% if tab == 'trash' %}
+                            <a id="user-library-trash-clear" href="javascript: void(0)" title="Empty trash"
+                               class="btn btn-default btn-xs"{% if 0 == trash_counter %} style="display:none"{% endif %}>
+                                <span class="eai eai-close"></span>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'user:library-trash' %}" class="user-library-trash{% if tab == 'trash' %} active{% endif %}">
+                                <strong>Trash</strong> (<span>{{ trash_counter }}</span>)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="inner">
+                <div class="endless_data thumb-list async-content">
+                    {% include page_template %}
                 </div>
             </div>
         </div>
     </div>
+    <!-- end list -->
+
+    {% include 'feeds/detail.html' %}
+
+{% endspaceless %}
 {% endblock content %}
 
-{% block footer %}
-{% endblock footer %}
 
-{% block js %}
-    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="{{ STATIC_URL }}endless_pagination/js/endless-pagination.js"></script>
-    <script type="text/javascript" src="{% static 'js/paper_list.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/filter.js' %}"></script>
-    <script>$.endlessPaginate({
-        paginateOnScroll: true,
-        paginateOnScrollMargin: 10,
-        onClick: function () {
-            unbind_all();
-        },
-        onCompleted: function () {
-            bind_all();
-            $.getScript( "https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js", function( data, textStatus, jqxhr ) {
-                console.log('load performed');
-            });
-        }
-    });
-    </script>
-
-    {{ block.super }}
-{% endblock js %}
+{% block javascript %}
+<script>requirejs(['app/user/library']);</script>
+{% endblock javascript %}

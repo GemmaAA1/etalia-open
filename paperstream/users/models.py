@@ -11,11 +11,10 @@ from django.contrib.auth.models import AbstractBaseUser, \
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db import transaction
 
 from paperstream.library.models import Paper, Journal, Author
 from paperstream.nlp.models import Model
-from paperstream.feeds.models import Stream
+from paperstream.feeds.models import Stream, Trend
 from paperstream.feeds.constants import STREAM_METHODS, TREND_METHODS
 from paperstream.core.constants import NLP_TIME_LAPSE_CHOICES, \
     NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
@@ -87,6 +86,8 @@ class UserManager(BaseUserManager):
         UserSettings.objects.create(user=user)
         # create user default (main) feed
         Stream.objects.create_main(user=user)
+        # create user default (main) feed
+        Trend.objects.create(user=user, name='main')
         return user
 
     def create_superuser(self, **kwargs):
@@ -195,6 +196,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
+    def get_paper_state(self, paper_id):
+        return dict(UserTaste.get_state(paper_id, self.id),
+                    **UserLibPaper.get_state(paper_id, self.id))
+
+    def get_counters(self):
+        return dict(UserTaste.get_counters(self.id),
+                    **UserLibPaper.get_counters(self.id))
+
 
 class UserLib(TimeStampedModel):
     """Table - User Library"""
@@ -289,14 +298,34 @@ class UserLibPaper(TimeStampedModel):
         ordering = ['-date_created']
         unique_together = [('userlib', 'paper')]
 
-    def __str__(self):
-        return '{0}@{1}'.format(self.paper.short_title,
-                                self.userlib.user.email)
-
     def print_created(self):
         return '{0:02d}-{1:02d}-{2:d}'.format(self.date_created.day,
                          self.date_created.month,
                          self.date_created.year)
+
+    @classmethod
+    def get_state(cls, paper_id, user_id):
+        try:
+            ulp = cls.objects.get(paper_id=paper_id, userlib__user_id=user_id)
+            return {'is_added': True, 'is_trashed': ulp.is_trashed}
+        except cls.DoesNotExist:
+            return {'is_added': False, 'is_trashed': False}
+
+    @classmethod
+    def get_counters(cls, user_id):
+        try:
+            objs = cls.objects.filter(userlib__user_id=user_id)\
+                .values('is_trashed')
+            return {
+                'trash': len([obj for obj in objs if obj['is_trashed']]),
+                'library': len([obj for obj in objs if not obj['is_trashed']]),
+            }
+        except cls.DoesNotExist:
+            return {'trash': None, 'library': None}
+
+    def __str__(self):
+        return '{0}@{1}'.format(self.paper.short_title,
+                                self.userlib.user.email)
 
 
 class UserLibJournalManager(models.Manager):
@@ -519,31 +548,51 @@ class UserTaste(TimeStampedModel):
 
     paper = models.ForeignKey(Paper)
 
-    context_source = models.CharField(max_length=128)
+    source = models.CharField(max_length=128)
 
-    is_ticked = models.BooleanField(default=False)
+    is_banned = models.BooleanField(default=False)
 
-    is_liked = models.BooleanField(default=False)
+    is_pinned = models.BooleanField(default=False)
 
     class Meta:
         unique_together = [('user', 'paper'), ]
 
     def __str__(self):
-        if self.is_liked:
-            return '{user} liked {pk} from {context}'.format(
+        if self.is_pinned:
+            return '{user} pinned {pk} from {context}'.format(
                 user=self.user,
                 pk=self.paper.id,
-                context=self.context_source)
-        elif self.is_ticked:
-            return '{user} disliked {pk} with {context}'.format(
+                context=self.source)
+        elif self.is_banned:
+            return '{user} banned {pk} with {context}'.format(
                 user=self.user,
                 pk=self.paper.id,
-                context=self.context_source)
+                context=self.source)
         else:
             return '{user}/{pk}/{context} has an issue'.format(
                 user=self.user,
                 pk=self.paper.id,
-                context=self.context_source)
+                context=self.source)
+
+    @classmethod
+    def get_state(cls, paper_id, user_id):
+        try:
+            ut = cls.objects.get(paper_id=paper_id, user_id=user_id)
+            return {'is_pinned': ut.is_pinned, 'is_banned': ut.is_banned}
+        except cls.DoesNotExist:
+            return {'is_pinned': False, 'is_banned': False}
+
+    @classmethod
+    def get_counters(cls, user_id):
+        try:
+            objs = cls.objects.filter(user_id=user_id)\
+                .values('is_pinned', 'is_banned')
+            return {
+                'pin': len([obj for obj in objs if obj['is_pinned']]),
+                'ban': len([obj for obj in objs if obj['is_banned']])
+            }
+        except cls.DoesNotExist:
+            return {'pin': None, 'ban': None}
 
 
 class StreamLayout(TimeStampedModel):

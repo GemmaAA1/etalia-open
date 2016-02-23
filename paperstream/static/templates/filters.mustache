@@ -1,0 +1,23 @@
+{{#groups}}
+<div class="filter-group" data-id="{{id}}">
+    <a href="javascript: void(0)" class="filter-toggle">
+        {{id}} <span class="eai eai-down"></span>
+    </a>
+    <div class="filter-filters collapse">
+        <ul>
+            {{#entries}}
+            <li>
+                <a href="javascript: void(0)" data-id="{{pk}}" title="{{name}}"
+                    {{#is_checked}} class="active" {{/is_checked}}>
+                    {{#count}}<span class="filter-count">({{count}})</span>{{/count}}
+                    <span class="filter-checkbox"></span> {{name}}
+                </a>
+            </li>
+            {{/entries}}
+        </ul>
+        <a href="javascript: void(0)" class="filter-more">
+            More filters&hellip;
+        </a>
+    </div>
+</div>
+{{/groups}}

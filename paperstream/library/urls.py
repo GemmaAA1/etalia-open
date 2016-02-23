@@ -13,4 +13,5 @@ urlpatterns = [
     # url(r'^paper/(?P<pk>[0-9]+)\\?time=(?P<time_lapse>[\w]+)$', views.paper_time, name='paper-time'),
     url(r'^paper/(?P<slug>[a-zA-Z0-9-]+)-(?P<pk>[0-9]+)/$', views.paper_slug, name='paper-slug'),
     # url(r'^paper/(?P<slug>[a-zA-Z0-9-]+)-(?P<pk>[0-9]+)\\?time=(?P<time_lapse>[\w]+)$', views.paper_slug, name='paper-slug-time'),
+    url(r'^paper/(?P<pk>[0-9]+)/neighbors$', views.paper_neighbors, name='paper-neighbors')
 ]

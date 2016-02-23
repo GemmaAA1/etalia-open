@@ -4,7 +4,6 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from django.contrib.auth import get_user_model
-from django.shortcuts import redirect
 from celery.canvas import chain
 
 from config.celery import celery_app as app

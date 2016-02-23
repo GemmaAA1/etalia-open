@@ -1,0 +1,38 @@
+{% extends 'feeds/base.html' %}
+
+{% load staticfiles %}
+{% load disqus_tags %}
+{% load user_taste %}
+
+{% block content %}
+{% spaceless %}
+
+    <!-- start list -->
+    <div id="list" class="document" data-load-url="{% url 'feeds:trend_xml' %}">
+        <div class="wrapper">
+            <div class="inner">
+                {% for message in messages %}
+                    {% if 'trend' in message.extra_tags%}
+                    <div class="alert alert-info">
+                        {# close-href is used because href is used by bootstrap to closing other divs #}
+                        <a class="close" data-dismiss="alert"{% if message.pk %} close-href="{% url 'message_extends:message_mark_read' message.pk %}"{% endif %}>×</a>
+                        {{ message|safe }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                <p class="list-title">
+                    <span>{{ number_of_papers }}</span> trending publications suggested for you
+                </p>
+
+                <div class="endless_data thumb-list async-content">
+                    {% include page_template %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end list -->
+
+    {% include 'feeds/detail.html' %}
+
+{% endspaceless %}
+{% endblock content %}
