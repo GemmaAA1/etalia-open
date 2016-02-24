@@ -1,0 +1,39 @@
+{% extends 'layout.html' %}
+
+{% load staticfiles %}
+
+
+{% block content %}
+<div class="document">
+    <div class="wrap-container">
+        <div class="container" style="position: relative">
+            <div class="row">
+                <div class="col-md-9">
+                    <div id="page-content">
+                        {% block page_content %}{% endblock page_content %}
+                    </div>
+                </div>
+                <div class="col-md-3 hidden-xs hidden-sm">
+                    {% include '_fragment/page-nav.html' %}
+                </div>
+                <div id="side-background" class="hidden-xs hidden-sm"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block stylesheets %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/page.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/page.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+<script>requirejs(['app/pages']);</script>
+{% endblock javascript %}

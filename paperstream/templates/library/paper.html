@@ -1,142 +1,125 @@
-{% extends 'base.html' %}
+{% spaceless %}
 
-{% load disqus_tags %}
-{% load disqus %}
+
+{#{% load disqus_tags %}#}
+{#{% load disqus %}#}
 {% load staticfiles %}
+{% load ui_goodies %}
 
-{% block css %}
-    {{ block.super }}
-    <link href="{% static 'css/library.css' %}" rel="stylesheet">
-{% endblock css %}
+{# TODO need the absolute url #}
+{% url 'library:paper' paper.pk as paper_detail_url %}
 
-{% block title %}
-    | {{ paper.title }}
-{% endblock title %}
+<div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}" data-paper-url="{{ request.build_absolute_uri }}" data-paper-title="{{ paper.title }}">
+    {% if user.is_authenticated %}
+    <a href="javascript: void(0)" class="detail-pin{% if is_pinned %} active {% endif %}">
+        <span class="eai eai-pin"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-ban">
+        <span class="eai eai-remove"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button">
+        <span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>
+    </a>
 
-{% block content %}
-    <div class="container-fluid">
-        <div class="library">
-            <div class="row">
-                <div class="col-lg-11 col-lg-offset-1">
-                    <div class="col-md-8">
-                        <div class="paper" data-url="{{ paper.url }}"  data-title="{{ paper.title }}" data-first-compact="{{ paper.print_compact_first_author }}">
-                            <div class="title" data-title="">{{ paper.title }}</div>
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <div class="authors">{{ paper.print_full_authors }}</div>
-                                    <div class="journal-date">{{ paper.print_journal_title }}
-                                        <span class="date">{{ paper.print_month_year }}</span>
-                                    </div>
-                                    {% if paper.print_clean_ids %}
-                                    <div class="ids">{{ paper.print_clean_ids }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-2 hidden-xs hidden-md">
-                                    <div class="altmetric">
-                                        {% if paper.id_doi %}<div class='altmetric-embed' data-badge-type='donut' data-doi="{{ paper.id_doi }}"></div>
-                                        {% elif paper.id_arx %}<div class='altmetric-embed' data-badge-type='donut' data-arxiv="{{ paper.id_arx }}"></div>
-                                        {% elif paper.id_pmi %}<div class='altmetric-embed' data-badge-type='donut' data-pmid="{{ paper.id_pmi }}"></div>
-                                        {% endif %}
-                                        <div class="altmetric-no" title="No Altmetric data for this publication"></div>
-                                    </div>
+    <a href="javascript: void(0)" class="detail-questions">
+        <span class="eai eai-comments"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-neighbors">
+        <span class="eai eai-suggestions"></span>
+    </a>
+    <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
+        <span class="eai eai-pdf"></span>
+    </a>
 
-                                </div>
-                            </div>
+    <a href="mailto:?subject=&body={{ paper.title }}%0D%0A{{ paper.print_compact_authors }}%0D%0A{{ paper.journal.title }}.%20{{ paper.print_date }}%0D%0A{{ paper.url }}"
+       class="detail-mail">
+        <span class="eai eai-mail"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-twitter">
+        <span class="eai eai-twitter"></span>
+    </a>
+    <a href="javascript: void(0)" class="detail-google-plus">
+        <span class="eai eai-google-plus"></span>
+    </a>
+    {% else %}
+    <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
+        <span class="eai eai-pdf"></span>
+    </a>
+    {% endif %}
+</div>
 
-                            {% if paper.abstract %}
-                            <div class="abstract-title">Abstract:</div>
-                            <div class="abstract-body">
-                                {{ paper.abstract }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="comment">
-                            <div id="disqus_thread">
-                            </div>
-                                <!-- use sso for disqus -->
+<div class="content">
+    <div class="card">
+        <p class="ids">
+            {{ paper.print_clean_ids }}
+        </p>
+        <h1 class="title">
+            {{ paper.title }}
+        </h1>
+        <p class="authors">
+            {{ paper.print_full_authors }}
+        </p>
+        <p class="journal">
+            {{ paper.print_journal_title }}
+        </p>
+        <p class="date">
+            {{ paper.print_month_year }}
+        </p>
+        <p class="icons">
+            <!--<span class="cluster-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span class="cluster-3"></span>
+            </span>-->
+            <!-- TODO -->
+            <span class="metric">
+                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score|floatformat:"0"  }}&types={{ paper.altmetric.type }}">
+            </span>
+            <!-- TODO relative questions count -->
+            <!--<span class="comment">
+                <span class="count">16</span>
+                <span class="eai eai-comment"></span>
+            </span>-->
+        </p>
+    </div>
 
-                                {% if user.is_authenticated %}
-                                    {% disqus_sso %}
-                                    {% get_disqus_sso request %}
-                                    <!-- comments -->
-                                    {% disqus_show_comments %}
-                                {%  endif %}
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <ul class="stamps" id="{{ paper.pk }}">
-                            {% if user.is_authenticated %}
-                                <li>
-                                    <a class="like {% if is_liked %} active {% endif %}" href="javascript:void(0)" title="Like"></a>
-                                </li>
-                                <li>
-                                    <a class="{% if is_in_lib %} trash {% else %} add-to-library {% endif %}" href="javascript:void(0)"></a>
-                                </li>
-                                <li>
-                                    <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
-                                </li>
-                                </br>
-                                <li>
-                                    <a class="email" href="mailto:?subject=&body={{ paper.title }}%0D%0A{{ paper.print_compact_authors }}%0D%0A{{ paper.journal.title }}.%20{{ paper.print_date }}%0D%0A{{ paper.url }}" title="Email"></a>
-                                </li>
-                                <li>
-                                    <a class="tweet" href="javascript:void(0)" title="Tweet"></a>
-                                </li>
-                                <li>
-                                    <a class="google-plus" href="javascript:void(0)" title="Google+"></a>
-                                </li>
-                            {% else %}
-                                <li>
-                                    <a class="go-to-pdf" href="{{ paper.url }}" target="_blank" title="Go to journal page"></a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                        <div class="neighbors">
-                            <div class="title">Similar Papers</div>
-                            <span>
-                                <a href="{% url 'library:paper' paper.id %}?time-span=year" {% if time_lapse == 'year' %} style="text-decoration: underline;" {%  endif %}>year</a>
-                                <a href="{% url 'library:paper' paper.id %}?time-span=month" {% if time_lapse == 'month' %} style="text-decoration: underline;" {%  endif %}>month</a>
-                                <a href="{% url 'library:paper' paper.id %}?time-span=week" {% if time_lapse == 'week' %} style="text-decoration: underline;" {%  endif %}>week</a>
-                            <span>
-                            {% if neighbors %}
-                            <div class="neighbors-list" title="">
-                                {% for neighbor in neighbors %}
-                                <a href="{% url 'library:paper' neighbor.pk %}">
-                                    <div class="neighbor">
-                                        {{ neighbor.title|truncatechars:80 }}<br>
-                                        <span class="authors">{{ neighbor.print_compact_authors|truncatechars:40 }}</span><br>
 
-                                        {% with neighbor.print_journal_title|add:neighbor.print_month_year as str %}
-                                        {% if str|length > 40 %}
-                                            {{ neighbor.print_journal_title|truncatechars:23}}
-                                            {{ neighbor.print_month_year }}
-                                        {% else %}
-                                            {{ neighbor.print_journal_title}}
-                                            {{ neighbor.print_month_year }}
-                                        {% endif %}
-                                        {% endwith %}
-                                    </div>
-                                </a>
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                <div class="neighbor">No publications found</div>
-                            {% endif %}
-                        </div>
-                        <hr class="divider">
-                        {% include 'footer_side.html' %}
-                    </div>
-                </div>
-            </div>
+    {% if paper.abstract %}
+    <h2>Abstract</h2>
+    <div>
+        {{ paper.abstract }}
+    </div>
+    {% endif %}
+
+
+    {% if user.is_authenticated %}
+    <div class="questions-thumbs">
+        <h2>Related tocles</h2>
+        <div class="thumb-list async-content">
+            {% show_loading 'sk-cube-grid' %}
         </div>
     </div>
-{% endblock content %}
+    {%  endif %}
 
-{% block footer %}
-{% endblock footer %}
 
-{% block js %}
-    {{ block.super }}
-    <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
-    <script type="text/javascript" src="{% static 'js/library.js' %}"></script>
-{% endblock js %}
+    <div class="neighbors-thumbs" data-load-url="{% url 'library:paper-neighbors' paper.pk %}">
+        <h2>Similar publications</h2>
+        <ul class="neighbors-timespan-selector">
+            <li>
+                <a href="javascript: void(0)" data-value="60">2 months</a>
+            </li>
+            <li class="active">
+                <a href="javascript: void(0)" data-value="30">1 month</a>
+            </li>
+            <li>
+                <a href="javascript: void(0)" data-value="7">Week</a>
+            </li>
+        </ul>
+        <div class="thumb-list async-content">
+            {% show_loading 'sk-cube-grid' %}
+        </div>
+    </div>
+
+</div>
+{% endspaceless %}

@@ -1,0 +1,51 @@
+{% spaceless %}
+<!-- start filter-flap -->
+<a id="toggle-filter" href="javascript: void(0)">
+    <span class="eai eai-left"></span>
+</a>
+
+<div id="filter-flap" class="flap right">
+    <div class="filter-group active" data-id="journal">
+        <a href="javascript: void(0)" class="filter-toggle">
+            Journals <span class="eai eai-down"></span>
+        </a>
+        <div class="filter-filters collapse in">
+            <ul>
+                {% for jpk, jtitle, count in journals %}
+                <li{% if forloop.counter0 > 9 and not jtitle|lower in journals_filter %} style="display:none;"{% endif %}>
+                    <a href="javascript: void(0)" data-id="{{ jpk }}" title="{{ jtitle }}"
+                       {% if jtitle|lower in journals_filter %} class="active" {% endif %}>
+                        <span class="filter-count">({{ count }})</span>
+                        <span class="filter-checkbox"></span> {{ jtitle }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="javascript: void(0)" class="filter-more">
+                More filters&hellip;
+            </a>
+        </div>
+    </div>
+    <div class="filter-group active" data-id="author">
+        <a href="javascript: void(0)" class="filter-toggle">
+            Author <span class="eai eai-down"></span>
+        </a>
+        <div class="filter-filters collapse in">
+            <ul>
+                {% for auth_pk, author_full_name in authors %}
+                <li{% if forloop.counter0 > 9 and not auth_pk in authors_filter %} style="display:none;"{% endif %}>
+                    <a href="javascript: void(0)" data-id="{{ auth_pk }}" title="{{ author_full_name }}"
+                       {% if auth_pk in authors_filter %} class="active" {% endif %}>
+                        <span class="filter-checkbox"></span> {{ author_full_name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="javascript: void(0)" class="filter-more">
+                More filters&hellip;
+            </a>
+        </div>
+    </div>
+</div>
+<!-- end filter-flap -->
+{% endspaceless %}

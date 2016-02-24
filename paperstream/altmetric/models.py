@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import re
+
 from django.db import models
 
 from altmetric import Altmetric
@@ -57,6 +59,10 @@ class AltmetricModel(TimeStampedModel):
 
     readers_citeulike = models.IntegerField(default=0)
     readers_mendeley = models.IntegerField(default=0)
+
+    # images
+    image = models.URLField(default='')
+    type = models.CharField(default='zzzzzzzz', max_length=8)
 
     class Meta:
         ordering = ['-score']
@@ -134,6 +140,8 @@ class AltmetricModel(TimeStampedModel):
             if isinstance(rsp.get('readers'), dict):
                 self.readers_citeulike = rsp.get('readers').get('citeulike')
                 self.readers_mendeley = rsp.get('readers').get('mendeley')
+            self.image = rsp.get('images').get('small')
+            self.type = re.findall(r'types=(P?[\w]+)', self.image)[0]
 
         # save
         self.save()

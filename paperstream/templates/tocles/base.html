@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+
+{% load staticfiles %}
+
+
+{% block left-flap %}
+    {% include '_fragment/nav-flap.html' %}
+{% endblock left-flap %}
+
+
+{% block stylesheets %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/elements.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/list.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/card.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/detail.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/tocles.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+<script>requirejs(['app/default']);</script>
+{% endblock javascript %}

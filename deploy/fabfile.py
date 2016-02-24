@@ -43,8 +43,8 @@ from fabtools.utils import run_as_root
 import fabtools
 
 STACK = 'staging'
-STACK_SITE_MAPPING = {'staging': 'alpha-u6VcayvtcI.pubstream.io',
-                      'production': 'www.pubstream.io'}
+STACK_SITE_MAPPING = {'staging': '',
+                      'production': 'www.etalia.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'
@@ -344,8 +344,6 @@ def pull_latest_source():
     current_commit = local("git log -n 1 --format=%H", capture=True)
     run('cd {0} && sudo git reset --hard {1}'.format(env.source_dir,
                                                      current_commit))
-    # Copy common.py
-    run('cp {0}/config/settings/common.py.dist {0}/config/settings/common.py'.format(env.source_dir))
 
 @task
 def pip_install():

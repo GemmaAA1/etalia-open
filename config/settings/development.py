@@ -2,10 +2,20 @@
 
 from .common import *
 
+CONFIG_FILE = __file__
+
 # DEBUG
 # ------------------------------------------------------------------------------
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATE_DEBUG = DEBUG
+
+# DEBUG TOOLBAR
+# ------------------------------------------------------------------------------
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+INSTALLED_APPS += ('debug_toolbar', )
+MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware', ) + \
+                     MIDDLEWARE_CLASSES
+INTERNAL_IPS = ['127.0.0.1']
 
 # CONSUMER
 # ------------------------------------------------------------------------------
@@ -29,9 +39,9 @@ STATICFILES_DIRS = (
 )
 
 # AWS S3 Buckets
-NLP_DATA_BUCKET_NAME = 'pubstream-development-nlp-data'
-NLP_MODELS_BUCKET_NAME = 'pubstream-development-nlp-models'
-NLP_MS_BUCKET_NAME = 'pubstream-development-nlp-ms'
+NLP_DATA_BUCKET_NAME = 'etalia-development-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'etalia-development-nlp-models'
+NLP_MS_BUCKET_NAME = 'etalia-development-nlp-ms'
 AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
 
 
@@ -43,6 +53,13 @@ if INVITE_MODE:
             'NAME': str((ROOT_DIR - 1).path('db').path('invite.sqlite3')),
         }
     }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #

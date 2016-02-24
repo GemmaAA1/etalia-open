@@ -1,244 +1,237 @@
-{% extends 'base.html' %}
+{% extends "root.html" %}
+
 
 {% load staticfiles %}
 
-{% block css %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/landing.css' %}" type="text/css" >
-{% endblock %}
 
-{% block head %}
-{% endblock head %}
-
-{% block title %}
-    {{ block.super }}
-    Your Guide to Scientific News
-{% endblock %}
+{% block title %}{{ block.super }} - Your Portal to Discovery{% endblock %}
 
 
-{% block content %}
-
-{% if not user.is_authenticated %}
-<div class="landing">
-    <div class="intro-header">
-        <div class="container">
-            <div class="row">
-                <div class="intro-message">
-                    <h1>Your Guide to Scientific News</h1>
-                    <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1">
-                        <h3>Scientific information discovery
-{#                            search & exchange#}
-{#                            Scientific information filtered#}
-                        </br>
-                            Fully automated and personalized based on your reference library</h3>
-                        <h4><em>No search queries. No journal browsing. No alert setup.</em></h4>
-
-                        <hr class="intro-divider">
-                        <h4>Sign-in with:</h4>
-                        <ul class="list-inline intro-social-buttons">
-                            <li>
-                                <a id="mendeley-link" href="{% url "social:begin" backend="mendeley" %}" class="btn btn-default btn-lg provider-button">
-                                    <img src="{% static 'img/mendeley_logo_small.png' %}" class="provider-logo">
-                                    Mendeley
-                                </a>
-                            </li>
-                            <li>
-                                <a id="zotero-link" href="{% url "social:begin" backend="zotero" %}" class="btn btn-default btn-lg provider-button">
-                                     <img src="{% static 'img/zotero_logo_small.png' %}" class="provider-logo">
-                                     Zotero
-                                </a>
-                            </li>
-                        </ul>
-                        <a  href="#" class="learn-more" title="Learn more">Learn more</a>
-                    </div>
-                </div>
+{% block body %}
+{% spaceless %}
+<div id="hero" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h1>
+                    <img alt="Etalia" src="{% static 'img/logo.svg' %}">
+                </h1>
             </div>
-            <!-- /.intro-header -->
-            <a name="learn-more"></a>
-            <div class="row text-left">
-                <div class="col-lg-5 col-sm-push-6 col-sm-6  what-is-pubstream">
-                    <h1 class="section-heading">What is <span class="etalia">etalia</span>?</h1>
-                    <p class="lead">
-                        <span class="etalia">etalia</span> is an intelligent platform that streams
-                        the most relevant scientific information to you.
-                    </p>
-                </div>
-                <div class="col-sm-pull-6 col-sm-6 hidden-sm">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="how">
-        <h1>How it works?</h1>
-        <div class="content-section-a">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5 col-lg-offset-1 col-sm-6 vcenter">
-                        <hr class="section-heading-spacer">
-                        <div class="clearfix"></div>
-                        <h2 class="section-heading">Connecting to your library</h2>
-                        <p class="lead">
-                            <span class="etalia">etalia</span> works in sync with your reference software manager to identify your interests.
-                        </p>
-                        <p class="lead">
-                            <a href="www.zotero.org">Zotero</a> or
-                            <a href="www.mendeley.com">Mendeley</a> are currently supported.
-                        </p>
-                    </div>
-                    <div class="col-lg-5 col-sm-6 vcenter">
-                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_2.png' %}" alt="reference manager software hook to paperstream">
-                    </div>
-                </div>
-
-            </div>
-            <!-- /.container -->
-        </div>
-        <!-- /.content-section-a -->
-
-        <div class="content-section-b">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5 col-sm-push-6 col-sm-6 vcenter">
-                        <hr class="section-heading-spacer">
-                        <div class="clearfix"></div>
-    {#                    <h2 class="section-heading">How your personalized stream is built</h2>#}
-                            <h2 class="section-heading">Building personalized streams</h2>
-                            <p class="lead">Based on your interests, <span class="etalia">etalia</span> builds personalized streams of relevant information.</p>
-                        <p class="lead">Changing interests or exploring a new field?<br> <span class="etalia">etalia</span> dynamically adapts.</p>
-                    </div>
-                    <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6 col-sm-6 vcenter">
-{#                        <span class="vertical-helper"></span>#}
-                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_1.png' %}" alt="Cloud of publications">
-                    </div>
-                </div>
-            </div>
-            <!-- /.container -->
-        </div>
-        <!-- /.content-section-b -->
-
-        <div class="content-section-a">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5 col-lg-offset-1 col-sm-6 vcenter">
-                        <hr class="section-heading-spacer">
-                        <div class="clearfix"></div>
-                        <h2 class="section-heading">Leveraging multiple tools</h2>
-                            <p class="lead"><span class="etalia">etalia</span> text-mining technology is based on state-of-the-art natural language processing and machine learning.</p>
-                    </div>
-                    <div class="col-lg-5 col-sm-6 vcenter">
-                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_4.png' %}" alt="Metrics at work">
-                    </div>
-                </div>
-            </div>
-            <div class="row"></div>
-        </div>
-
-        <div class="content-section-b">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5 col-sm-push-6 col-sm-6 vcenter">
-                        <hr class="section-heading-spacer">
-                        <div class="clearfix"></div>
-    {#                    <h2 class="section-heading">How your personalized stream is built</h2>#}
-                            <h2 class="section-heading">Engaging in collaborative science</h2>
-                            <p class="lead"></p>
-                        <p class="lead"><span class="etalia">etalia</span> lets you connect with other researchers who share your interests.</p>
-                    </div>
-                    <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6 vcenter">
-                        <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_3.png' %}" alt="Cloud of publications">
-                    </div>
-                </div>
-            </div>
-            <!-- /.container -->
-        </div>
-        <!-- /.content-section-b -->
-
-
-    </div>
-
-
-{#    <div class="content-section-b">#}
-{#        <div class="container">#}
-{#            <div class="row">#}
-{#                <div class="col-lg-5 col-sm-push-6  col-sm-6">#}
-{#                    <hr class="section-heading-spacer no-border">#}
-{#                    <div class="clearfix"></div>#}
-{#                    <h2 class="section-heading">Get engaged in your field</h2>#}
-{#                    <p class="lead">Comment on publications. Start discussions.</p>#}
-{#                    <p class="lead">PubStream will notify you and other researchers of new relevant comments.</p>#}
-{#                </div>#}
-{#                <div class="col-lg-4 col-lg-offset-2 col-sm-pull-6  col-sm-6">#}
-{#                    <img class="img-responsive center-block bubble" src="{% static '/static/img/bubble_comment.png' %}" alt="Comment">#}
-{#                </div>#}
-{#            </div>#}
-{##}
-{#        </div>#}
-{#        <!-- /.container -->#}
-{#    </div>#}
-    <!-- /.content-section-b -->
-
-    <div class="what">
-{#        <h1>A new way to scientific publications</h1>#}
-{#        <h1 style="">What is PubStream?</h1>#}
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="what-img-crop">
-                        <img class="what-img-library" src="{% static 'img/main_icons_color.svg' %}" alt="Library">
-                    </div>
-                    <div class="text-what text-center">
-                        <h2 class="section-heading">Sync</h2>
-                        <p class="lead">Your reference library</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="what-img-crop">
-                        <img class="what-img-streams" src="{% static 'img/main_icons_color.svg' %}" alt="Streams">
-                    </div>
-                    <div class="text-what text-center">
-                        <h2 class="section-heading">Get focus</h2>
-                        <p class="lead">On what matters to you</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="what-img-crop">
-                        <img class="what-img-trends" src="{% static 'img/main_icons_color.svg' %}" alt="Trends">
-                    </div>
-                    <div class="text-what text-center">
-                        <h2 class="section-heading">Engage</h2>
-                        <p class="lead">In scientific discourse</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
-    <div class="banner">
-        <div class="container">
-            <div class="row text-center">
-                <h3>Try it:</h3>
-                <ul class="list-inline intro-social-buttons">
-                    <li>
-                        <a id="mendeley-link" href="{% url "social:begin" backend="mendeley" %}" class="btn btn-default btn-lg provider-button">
-                            <img src="{% static 'img/mendeley_logo_small.png' %}" class="provider-logo">
-                            Mendeley
-                        </a>
-                    </li>
-                    <li>
-                        <a id="zotero-link" href="{% url "social:begin" backend="zotero" %}" class="btn btn-default btn-lg provider-button">
-                             <img src="{% static 'img/zotero_logo_small.png' %}" class="provider-logo">
-                             Zotero
-                        </a>
-                    </li>
+            <div class="col-md-6">
+{#                <h2>Bring your knowlewdge to life</h2>#}
+                <h2>Your Portal to Discovery</h2>
+                <ul>
+                    <li>Browse new publications</li>
+                    <li>Connect with scholars</li>
+                    <li>Expand your knowledge</li>
+{#                    <li>Based on your reference library</li>#}
                 </ul>
+{#                <p class="alt">No search queries. No journal browsing. No alert setup.</p>#}
             </div>
         </div>
     </div>
 </div>
-{% else %}
 
+<div class="wrap-container providers">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="h3">Sign-in with</p>
+                <p>
+                    <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                        <span class="eai eai-mendeley"></span>
+                        Mendeley
+                    </a>
+                    <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                        <span class="eai eai-zotero"></span>
+                        Zotero
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="what" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-push-6">
+                <p class="h2">What is etalia ?</p>
+                <p>
+                    etalia is an intelligent platform for scholarly communication. Based on
+                    your reference library, etalia builds your text-based fingerprint and let
+                    you focus on what matters to you.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="how" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="h2">How it works ?</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Connecting to your library</h2>
+                <p>
+                    etalia works in sync with your reference
+                    software manager to identify your interests.
+                </p>
+                <p class="alt">
+                    <a href="https://www.zotero.org/">Zotero</a> or
+                    <a href="https://www.mendeley.com/">Mendeley</a> are currently supported.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_2.png' %}" alt="reference manager software hook to paperstream">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how alt">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-push-6">
+                <h2>Building personalized streams</h2>
+                <p>
+                    Based on your interests, etalia builds personalized
+                    streams of relevant publications and discussions.
+                </p>
+                <p class="alt">
+                    Changing interests or exploring a new field?
+                    etalia dynamically adapts.
+                </p>
+            </div>
+            <div class="col-md-6 col-md-pull-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_1.png' %}" alt="Cloud of publications">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Leveraging multiple tools</h2>
+                <p>
+                    etalia text-mining technology is based on
+                    state-of-the-art natural language processing
+                    and machine learning.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_4.png' %}" alt="Metrics at work">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how alt">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-push-6">
+                <h2>Engaging in collaborative science</h2>
+                <p>
+                    etalia lets you connect with other researchers
+                    who share your interests.
+                </p>
+                <p class="alt">
+                    Stuck in your research? Post your issue and etalia targets experts to look at it.
+                </p>
+            </div>
+            <div class="col-md-6 col-md-pull-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_3.png' %}" alt="Cloud of publications">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="focus" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <span id="sync"></span>
+                <p class="h2">Sync</p>
+                <p>Your reference library</p>
+            </div>
+            <div class="col-md-4">
+                <span id="streams"></span>
+                <p class="h2">Get focus</p>
+                <p>On what matters to you</p>
+            </div>
+            <div class="col-md-4">
+                <span id="trends"></span>
+                <p class="h2">Engage</p>
+                <p>In scholarly exchange</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container providers">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="h3">Try it !</p>
+            </div>
+            <p>
+                <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                    <span class="eai eai-mendeley"></span>
+                    Mendeley
+                </a>
+                <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                    <span class="eai eai-zotero"></span>
+                    Zotero
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div id="footer" class="wrap-container">
+    <div class="container">
+        <ul>
+            <li>
+                <a href="{% url 'core:about' %}">About</a>
+            </li>
+            <li>
+                <a href="http://blog.pubstream.io">Blog</a>
+            </li>
+            <li>
+                <a href="{% url 'core:about' %}#contact">Contact</a>
+            </li>
+            <li>
+                <a href="{% url 'core:support' %}">Support</a>
+            </li>
+            <li>
+                <a href="{% url 'core:terms' %}">Terms</a>
+            </li>
+        </ul>
+        <p>&copy; 2015 etalia All rights reserved.</p>
+    </div>
+</div>
+{% endspaceless %}
+{% endblock body %}
+
+
+{% block stylesheets %}
+{% spaceless %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/landing.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/landing.css' %}" rel="stylesheet" type="text/css">
 {% endif %}
-{% endblock %}
+{% endspaceless %}
+{% endblock stylesheets %}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import json
 
 from django.shortcuts import render
 from django.views.generic import RedirectView
@@ -15,10 +16,11 @@ from django.db.models.expressions import RawSQL
 
 from config.celery import celery_app as app
 from celery.exceptions import SoftTimeLimitExceeded
+from braces.views import LoginRequiredMixin
 
 from paperstream.nlp.models import PaperNeighbors, Model, MostSimilar
 from paperstream.core.mixins import ModalMixin
-from paperstream.users.models import UserTaste
+from paperstream.users.models import UserTaste, UserLibPaper
 from .models import Journal, Paper
 from .constants import PAPER_TYPE
 
@@ -88,67 +90,36 @@ class PaperView(ModalMixin, DetailView):
                       'month': 30,
                       'week': 7}
 
+    def get_template_names(self):
+        if not self.request.is_ajax():
+            self.template_name = 'library/paper-page.html'
+
+        return super(PaperView, self).get_template_names()
+
     def get_context_data(self, **kwargs):
         context = super(PaperView, self).get_context_data(**kwargs)
         paper_ = kwargs['object']
-        time_lapse = self.time_lapse_map[self.request.GET.get('time-span', 'year')]
-        neighbors = []
-
-        if self.request.user.is_authenticated():
-            model = self.request.user.settings.stream_model
-        else:
-            model = Model.objects.first()
-        ms = MostSimilar.objects.filter(is_active=True,
-                                        model=model)
-
-        # Get stored neighbors matches
-        try:
-            neigh_data = paper_.neighbors.get(ms=ms, time_lapse=time_lapse)
-            if not neigh_data.neighbors or not max(neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
-                neigh_data.delete()
-                raise PaperNeighbors.DoesNotExist
-            elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
-                neighbors = neigh_data.neighbors
-            else:
-                raise PaperNeighbors.DoesNotExist
-        except PaperNeighbors.DoesNotExist:   # refresh
-            try:
-                ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(
-                    name=model.name)]
-                res = ms_task.apply_async(args=('populate_neighbors',),
-                                          kwargs={'paper_pk': paper_.pk,
-                                                  'time_lapse': time_lapse},
-                                          timeout=10,
-                                          soft_timeout=5)
-                neighbors = res.get()
-            except SoftTimeLimitExceeded:
-                neighbors = []
-            except KeyError:
-                raise
-
-        neigh_pk = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
-        if neigh_pk:
-            neigh_fetched_d = dict(
-                [(p.pk, p) for p in Paper.objects.filter(pk__in=neigh_pk)])
-            context['neighbors'] = \
-                [neigh_fetched_d[key] for key in neigh_pk]
-        else:
-            context['neighbors'] = []
-
         context['paper_type'] = dict(PAPER_TYPE)[kwargs['object'].type]
         context['time_lapse'] = self.request.GET.get('time-span', 'year')
 
         if not self.request.user.is_anonymous():
             try:
                 ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
-                context['is_liked'] = ut.is_liked
+                context['is_pinned'] = ut.is_pinned
             except UserTaste.DoesNotExist:
                 pass
 
-            if paper_ in self.request.user.lib.papers.all():
+            try:
+                ulp = self.request.user.lib.userlib_paper.get(paper=paper_)
                 context['is_in_lib'] = True
-            else:
+                if ulp.is_trashed:
+                    context['is_in_trash'] = True
+                else:
+                    context['is_in_trash'] = False
+            except UserLibPaper.DoesNotExist:
                 context['is_in_lib'] = False
+                context['is_in_trash'] = False
+                pass
 
         return context
 
@@ -168,15 +139,73 @@ class PaperViewPk(RedirectView):
 paper = PaperViewPk.as_view()
 
 
-# class PaperViewPkTime(RedirectView):
-#
-#     permanent = True
-#
-#     def get_redirect_url(self, *args, **kwargs):
-#         paper = Paper.objects.get(pk=kwargs['pk'])
-#         return reverse('library:paper-slug-time',
-#                        kwargs={'pk': paper.pk,
-#                                'slug': slugify(paper.title),
-#                                'time_lapse': kwargs.get('time_lapse')})
-#
-# paper_time = PaperViewPkTime.as_view()
+class PaperNeighborsView(LoginRequiredMixin, ListView):
+
+    model = Paper
+    template_name = 'library/paper_neighbors.html'
+    paper_id = None
+    time_span = 30
+
+    def get_queryset(self, **kwargs):
+
+        if self.request.is_ajax():
+            data = self.request.GET.dict()
+            self.time_span = int(data.get('time_span', self.time_span)) \
+                             or self.time_span
+
+            self.paper_id = int(self.kwargs['pk'])
+            paper_ = Paper.objects.get(id=self.paper_id)
+
+            # Get active MostSimilar
+            ms = MostSimilar.objects.filter(is_active=True)
+
+            # Get stored neighbors matches
+            try:
+                neigh_data = paper_.neighbors.get(ms=ms, time_lapse=self.time_span)
+                if not neigh_data.neighbors or not max(neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
+                    neigh_data.delete()
+                    raise PaperNeighbors.DoesNotExist
+                elif neigh_data.modified > (timezone.now() - timezone.timedelta(days=settings.NLP_NEIGHBORS_REFRESH_TIME_LAPSE)):
+                    neighbors = neigh_data.neighbors
+                else:
+                    raise PaperNeighbors.DoesNotExist
+            except PaperNeighbors.DoesNotExist:   # refresh
+                try:
+                    ms_task = app.tasks['paperstream.nlp.tasks.mostsimilar_{name}'.format(name=self.request.user.settings.stream_model.name)]
+                    res = ms_task.apply_async(args=('populate_neighbors',),
+                                              kwargs={'paper_pk': self.paper_id,
+                                                      'time_lapse': self.time_span},
+                                              timeout=10,
+                                              soft_timeout=5)
+                    neighbors = res.get()
+                except SoftTimeLimitExceeded:
+                    neighbors = []
+                except KeyError:
+                    raise
+
+            neigh_pk_list = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
+
+            clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i)
+                                for i, pk in enumerate(neigh_pk_list)])
+            ordering = 'CASE %s END' % clauses
+            return Paper.objects.filter(pk__in=neigh_pk_list).extra(
+               select={'ordering': ordering}, order_by=('ordering',))
+
+    def get_context_usertaste(self):
+        user_taste = UserTaste.objects\
+            .filter(user=self.request.user)\
+            .values_list('paper_id', 'is_pinned', 'is_banned')
+        # reformat to dict
+        user_taste = dict((key, {'liked': v1, 'is_banned': v2})
+                          for key, v1, v2 in user_taste)
+        return {'user_taste': user_taste}
+
+    def get_context_data(self, **kwargs):
+        context = super(PaperNeighborsView, self).get_context_data(**kwargs)
+        context.update(self.get_context_usertaste())
+        context['data'] = json.dumps({
+            'time_span': self.time_span,
+        })
+        return context
+
+paper_neighbors = PaperNeighborsView.as_view()

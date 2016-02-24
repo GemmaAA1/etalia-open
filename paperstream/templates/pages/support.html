@@ -1,0 +1,85 @@
+{% extends 'pages/base.html' %}
+
+{% load staticfiles %}
+
+{% block page_content %}
+{% with brand='<strong>Etalia</strong>' %}
+
+    <h1>{{ brand }} Support</h1>
+    <p>
+        You’ve got a question, problem or just want some more information?<br>
+        Have a peek below at our knowledge base.<br>
+        Not answering your question? <a href="mailto:contact@pubstream.io" target="_top">contact us</a>.
+    </p>
+
+    <h1>Frequently Asked Questions</h1>
+
+    <div id="faq">
+        <h2><a href="#faqOne">How does {{ brand }} work?</a></h2>
+        <div id="faqOne" class="collapse">
+            <p>
+                {{ brand }} checks what you are reading in your Reference Library.
+                {{ brand }} leverages the content of your library using recent advances
+                in natural language processing, machine learning, and statistics
+                to understand your interests. {{ brand }} builds news streams that
+                match your personal interests based on your library text content.
+                Reading a new paper or extending your research interests?
+                {{ brand }} will automatically adapt.
+            </p>
+        </div>
+
+        <h2><a href="#faqTwo">How can I use {{ brand }}?</a></h2>
+        <div id="faqTwo" class="collapse">
+            <p>
+                To use {{ brand }} you need access to the internet and an account with a reference
+                library (e.g. <a href="www.zotero.org">Zotero</a> or <a href="www.mendeley.com">Mendeley</a>).
+                Use your reference library credentials to sign in to {{ brand }}
+                and start browsing your personal stream of recommended publications.
+            </p>
+        </div>
+
+        <h2><a href="#faqThree">Why {{ brand }} only supports Zotero and Mendeley?</a></h2>
+        <div id="faqThree" class="collapse">
+            <p>
+                <a href="www.zotero.org">Zotero</a> and <a href="www.mendeley.com">Mendeley</a> are the
+                only two reference software managers that are cloud-based and provide
+                the ability for third party application, like {{ brand }}, to access your library content
+                through authentication. Both use the <a href="https://en.wikipedia.org/wiki/OAuth">
+                OAuth protocol</a>, which is a widely adopted, open protocol for users to delegate
+                authorization in a secure manner. OAuth is used to authorize requests between {{ brand }}
+                and your reference managers.<br> {{ brand }} will serve other reference managers as
+                support for OAuth is added.
+            </p>
+        </div>
+
+        <h2><a href="#faqFour">What makes {{ brand }} and Google Scholar different?</a></h2>
+        <div id="faqFour" class="collapse">
+            <p>
+                {{ brand }} recommends publications based on the content of your reference
+                library unlike Google Scholar, which makes suggestions based on your publication
+                and citation records only.
+            </p>
+        </div>
+
+        <h2><a href="#faqFive">How often are recommendations updated?</a></h2>
+        <div id="faqFive" class="collapse">
+            <p>
+                {{ brand }} updates recommendations daily.
+                You can also subscribe to receive notifications via email on a regular basis.
+            </p>
+        </div>
+
+        <h2><a href="#faqSix">Which publications sources are fetched by {{ brand }}?</a></h2>
+        <div id="faqSix" class="collapse">
+            <p>
+                Currently, {{ brand }} fetches publications available on
+                <a href="http://www.ncbi.nlm.nih.gov/pubmed">PubMed</a>, the <a href="http://http://arxiv.org/">
+                Arxiv.org</a> and articles published in <a href="https://www.elsevier.com/journals/title/all">
+                Elsevier journals</a>. That corresponds to about 1,000,000 unique scientific publications per year.
+                Additional sources will follow.
+            </p>
+        </div>
+    </div>
+{% endwith %}
+{% endblock page_content %}
+

@@ -123,7 +123,7 @@ class Scoring(object):
         """Get altmetric data"""
         data = list(
             AltmetricModel.objects\
-                .filter(paper_id__in=pks, score__gt=1.0)\
+                .filter(paper_id__in=pks)\
                 .values('paper__pk', 'score'))
         # sort
         data.sort(key=lambda d: pks.index(d['paper__pk']))

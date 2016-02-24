@@ -1,0 +1,81 @@
+{% extends 'root.html' %}
+
+
+{% load staticfiles %}
+{% load avatar_tags %}
+
+
+{% block body %}
+{% spaceless %}
+    {% block content %}{% endblock content %}
+
+    <!-- start top-bar -->
+    <div id="top-bar" class="bar">
+        <button id="toggle-nav" class="btn-square" type="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+
+        <a id="brand" href="{% url 'core:home' %}" title="Et al.">
+            <img src="{% static 'img/logo.svg' %}" alt="Et al." width="108" height="38">
+        </a>
+
+        <!-- start top-bar-profile -->
+        {% if user.is_authenticated %}
+        <button id="toggle-profile" class="btn-circle" type="button" title="etalia account: {{ user.first_name }} {{ user.last_name }}
+({{ user.email }})">
+            {% if user.avatar_set.all %}
+                {% avatar user 38 %}
+            {% else %}
+                <img src="{% static 'img/avatar.jpg' %}" alt="Profile" width="38" height="38">
+            {% endif %}
+        </button>
+        <div id="profile-dropdown">
+            <ul>
+                <li>
+                    <a href="{% url 'user:profile' %}">My Profile</a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" id="open-invite" title="Invite someone to join etalia">Invite</a>
+                </li>
+                <li>
+                    <a href="{% url 'user:logout' %}">Logout</a>
+                </li>
+            </ul>
+            {% if user.avatar_set.all %}
+                {% avatar user 100 %}
+            {% else %}
+                <img src="{% static 'img/avatar.jpg' %}" alt="Avatar" width="100" height="100">
+            {% endif %}
+        </div>
+        {% else %}
+        <button id="toggle-profile" class="btn-circle" type="button">
+            <img src="{% static 'img/signin.gif' %}" alt="Profile" width="38" height="38">
+        </button>
+        <div id="profile-dropdown" class="signin">
+            <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                <span class="eai eai-mendeley"></span>
+                Mendeley
+            </a>
+            <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                <span class="eai eai-zotero"></span>
+                Zotero
+            </a>
+        </div>
+        {% endif %}
+        <!-- end top-bar-profile -->
+
+        {% block top-bar_controls %}{% endblock top-bar_controls %}
+    </div>
+    <!-- end top-bar -->
+
+    {% block left-flap %}{% endblock left-flap %}
+
+    {% block right-flap %}{% endblock right-flap %}
+
+    {% include "_fragment/invite_modal.html" %}
+
+{% endspaceless %}
+{% endblock body %}

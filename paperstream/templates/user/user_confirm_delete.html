@@ -1,24 +1,23 @@
-{% extends 'base.html' %}
+{% extends 'user/base.html' %}
 
-{% load avatar_tags %}
 {% load staticfiles %}
 
-{% block css %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/users.css' %}" type="text/css" >
-{% endblock css %}
 
-{% block title %} {{ block.super }} Profile {% endblock %}
+{% block title %}{{ block.super }} - Profile{% endblock %}
 
 
 {% block content %}
-<div class="container profile">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2 text-center">
-            <form action="" method="post">{% csrf_token %}
-                <p>Are you sure you want to delete "{{ object }}"?</p>
-                <input type="submit" value="Confirm" />
-            </form>
+<div id="user-confirm-delete" class="document">
+    <div class="wrapper">
+        <div class="inner">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 text-center">
+                    <form action="" method="post">{% csrf_token %}
+                        <p>Are you sure you want to delete "{{ object }}"?</p>
+                        <input class="btn btn-danger" type="submit" value="Confirm" />
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

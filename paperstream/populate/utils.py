@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import, print_function
 
 import csv
+import json
 import logging
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from django.db.models import Q

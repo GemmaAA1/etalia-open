@@ -1,77 +1,16 @@
+{% spaceless %}
+
 {% load endless %}
 {% load user_taste %}
 
-
 {% if object_list %}
     {% paginate first_page,per_page object_list %}
-    {% for ulp in object_list %}
-        <div id="{{ ulp.paper.pk }}" class="paper-list">
-            <div class="altmetric">
-                {% if ulp.paper.id_doi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-doi="{{ ulp.paper.id_doi }}"></div>
-                {% elif ulp.paper.id_arx %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-arxiv="{{ ulp.paper.id_arx }}"></div>
-                {% elif ulp.paper.id_pmi %}<div class='altmetric-embed' data-hide-less-than="50" data-badge-type='donut' data-pmid="{{ ulp.paper.id_pmi }}"></div>
-                {% endif %}
-            </div>
-            <div class="row compact {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
-                <div class="long">
-                    <div class="title">{{ ulp.paper.title }}</div>
-                    <div class="authors-journal-date">
-                        <span class="authors">{{ ulp.paper.print_full_authors|truncatechars:70 }}</span>
-                        {{ ulp.paper.print_journal_title }}
-                        {{ ulp.paper.print_date }}
-                    </div>
-                </div>
-            </div>
-            <div class="row extended  {% if user_taste|get_is_liked:ulp.paper.pk %} bg-active {% endif %}">
-                <div class="col-lg-10 nopadding">
-                    <div class="title">{{ ulp.paper.title }}</div>
-                    <div class="authors">{{ ulp.paper.print_full_authors}}</div>
-                    <div class="journal-date">
-                        {{ ulp.paper.print_journal_title}}
-                        {{ ulp.paper.print_date }}
-                    </div>
-                    <div class="abstract">{{ ulp.paper.abstract }}</div>
-                </div>
-                <div class="col-lg-2 nopadding">
-                    <ul class="stamps-ext no-toggling">
-                        <li>
-                            <a class="go-to-pdf" href="{{ ulp.paper.url }}" target="_blank">Pdf</a>
-                        </li>
-    {#                        <li>#}
-    {#                            <a class="comment" href="javascript:void(0)">Comment</a>#}
-    {#                        </li>#}
-                        <li>
 
-                            <a  class="email" href="mailto:?subject=&body={{ ulp.paper.title }}%0D%0A{{ ulp.paper.print_compact_authors }}%0D%0A{{ ulp.paper.journal.title }}.%20{{ ulp.paper.print_date }}%0D%0A{{ ulp.paper.url }}">Email</a>
-
-                        </li>
-                        <li>
-                            <a class="tweet" href="javascript:void(0)">Tweet</a>
-                        </li>
-                        <li>
-                            <a class="google-plus" href="javascript:void(0)">Google+</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <span class="stamps">
-                <ul>
-
-                    <li>
-                        <a class="open no-toggling" href="{% url 'library:paper' ulp.paper.pk %}" target="_blank" title="Open in new window"></a>
-                    </li>
-                    <li>
-                        {% if tab == 'library' %}
-                            <a class="trash no-toggling" href="javascript:void(0)" title="Move to trash"></a>
-                        {% elif tab == 'trash' %}
-                            <a class="restore no-toggling" href="javascript:void(0)" title="Restore"></a>
-                        {% elif tab == 'likes' %}
-                            <a class="like {% if user_taste|get_is_liked:ulp.paper.pk %} active {% endif %} no-toggling" href="javascript:void(0)" title="Like"></a>
-                        {%  endif %}
-                    </li>
-                </ul>
-            </span>
-        </div>
+    {% for ufmp in object_list %}
+        {% include 'feeds/thumb.html' with paper=ufmp.paper %}
     {% endfor %}
+
     {% show_more %}
 {% endif %}
+
+{% endspaceless %}

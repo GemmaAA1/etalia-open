@@ -1,0 +1,86 @@
+{% extends 'pages/base.html' %}
+
+{% load staticfiles %}
+
+{% block page_content %}
+{% with brand='<strong>Etalia</strong>' %}
+    <h1>About</h1>
+
+    <h2>The Story</h2>
+    <p>
+        {{ brand }} was conceived by two scientists at the University
+        of California, San Francisco in 2015, who felt a need for
+        automated literature searches that save time, are personalized,
+        and never miss an important publication from an ever increasing
+        variety of news sources. {{ brand }}
+        came to life as a web application.
+    </p>
+
+    <h2>A new way of searches</h2>
+    <p>
+        With {{ brand }},
+        you don’t have to setup keywords for searches or
+        manually browse journal websites and blogs. You also don’t have
+        to maintain automated searches by topics or authors that quickly
+        become outdated. Nor do you need to sort through search results
+        to find the most relevant publications in your fields of interest.<br>
+    </p>
+    <p>
+        {{ brand }}
+        delivers scientific news that matches your personalized interest,
+        completely automated and ranked by relevance, saving you time and
+        ensuring no relevant paper is missed.
+    </p>
+
+    <h2>How it works</h2>
+    <p>
+        {{ brand }} checks what you are reading in your Reference Library
+        (e.g. <a href="www.zotero.org">Zotero</a> or <a href="www.mendeley.com">Mendeley</a>).
+        {{ brand }} leverages the content of your library using recent advances in natural
+        language processing, machine learning, and statistics to understand your interests.
+        {{ brand }} builds news streams that match your personal interests based on
+        your library text content. Reading a new paper or extending your research interests?
+        {{ brand }} will automatically adapt.
+    </p>
+
+    <h2>Many tools in one place</h2>
+    <p>
+        With {{ brand }}, you can retrieve new publications from journals,
+        upload them to your library, share them with friends and collaborators
+        via social media, and more.
+    </p>
+
+    <h2>Discover</h2>
+    <p>
+        {{ brand }} lets you discover trending publications and hot topics
+        in your area of interest and beyond based on the
+        <a href="http://www.altmetric.com/">Altmetric</a> score.
+    </p>
+
+    <h2>The Team</h2>
+    <p>
+        Norbert Schuff, Co-founder, Professor of Radiology, UCSF<br>
+        Nicolas Pannetier, Co-founder, Physicist, Developer
+    </p>
+
+    <h2>Contact Us</h2>
+    <a name="contact"></a>
+    <p>
+        <a href="mailto:contact@pubstream.io" target="_top">contact@pubstream.io</a>
+    </p>
+
+    <h2>We are social</h2>
+    <p id="about-networks">
+        <a href="https://twitter.com/pubstreamio" class="twitter">
+            <span class="eai eai-twitter"></span>
+        </a>
+        <a href="javascript:void(0)" class="facebook">
+            <span class="eai eai-facebook"></span>
+        </a>
+        <a href="javascript:void(0)" class="google">
+            <span class="eai eai-google-plus"></span>
+        </a>
+    </p>
+{% endwith %}
+{% endblock page_content %}
+

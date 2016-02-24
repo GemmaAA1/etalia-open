@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Affiliation, UserSettings
+from .models import Affiliation, UserSettings, UserTaste, UserLibPaper
 from .validators import validate_first_name, validate_last_name
 
 from paperstream.nlp.models import Model
@@ -215,3 +215,32 @@ class UserEmailDigestSettingsForm(forms.ModelForm):
         widgets = {
             'email_digest_frequency': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+class UserTasteForm(forms.ModelForm):
+
+    class Meta:
+        model = UserTaste
+        fields = ('paper', 'source')
+
+    def __init__(self, **kwargs):
+        # reformat ajax call to match UserTaste model (id -> paper)
+        data = kwargs.pop('data').copy()
+        data['paper'] = data.pop('id')[0]
+        super(UserTasteForm, self).__init__(data=data, **kwargs)
+
+
+class UserLibPaperForm(forms.ModelForm):
+
+    class Meta:
+        model = UserLibPaper
+        fields = ('paper', )
+
+    def __init__(self, **kwargs):
+        # reformat ajax call to match UserTaste model (id -> paper)
+        data = kwargs.pop('data').copy()
+        data['paper'] = data.pop('id')[0]
+        super(UserLibPaperForm, self).__init__(data=data, **kwargs)
+
+
+
