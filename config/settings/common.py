@@ -27,7 +27,7 @@ SITE_ID = 1
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DJANGO_DEBUG', default=False)
+DEBUG = env.bool('DJANGO_DEBUG', default=False)
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost']
 
