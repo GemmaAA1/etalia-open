@@ -46,7 +46,7 @@ EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = env.str('MAILGUN_KEY')
 MAILGUN_SERVER_NAME = 'mg.etalia.io'
 
-INVITE_MODE = True
+INVITE_MODE = False
 if INVITE_MODE:
     DATABASES = {
         'default': {
