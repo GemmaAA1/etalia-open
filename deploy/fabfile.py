@@ -44,7 +44,7 @@ import fabtools
 
 STACK = 'production'
 STACK_SITE_MAPPING = {'staging': '',
-                      'production': 'www.etalia.io'}
+                      'production': 'alpha.etalia.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'
