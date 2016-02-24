@@ -42,7 +42,7 @@ from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
 
-STACK = 'staging'
+STACK = 'production'
 STACK_SITE_MAPPING = {'staging': '',
                       'production': 'www.etalia.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
@@ -614,3 +614,9 @@ def restart_all():
 def clear_nlp_data():
     run('rm -f /home/ubuntu/staging/source/nlp_data/mods/*')
     run('rm -f /home/ubuntu/staging/source/nlp_data/ms/*')
+
+@task
+def remove_env(stack):
+    run('rmvirtualenv staging')
+
+
