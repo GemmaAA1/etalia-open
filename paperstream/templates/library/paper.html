@@ -11,38 +11,38 @@
 
 <div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}" data-paper-url="{{ request.build_absolute_uri }}" data-paper-title="{{ paper.title }}">
     {% if user.is_authenticated %}
-    <a href="javascript: void(0)" class="detail-pin{% if is_pinned %} active {% endif %}">
+    <a href="javascript: void(0)" class="detail-pin{% if is_pinned %} active {% endif %}" title="Pin/Unpin">
         <span class="eai eai-pin"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-ban">
+    <a href="javascript: void(0)" class="detail-ban" title="Remove from feed">
         <span class="eai eai-remove"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button">
+    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button" title="{% if is_in_lib %}Move to trash{% else %}Add to library{% endif %}"">
         <span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>
     </a>
 
-    <a href="javascript: void(0)" class="detail-questions">
+    <a href="javascript: void(0)" class="detail-questions" title="Related tocles">
         <span class="eai eai-comments"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-neighbors">
+    <a href="javascript: void(0)" class="detail-neighbors" title="Similar publications">
         <span class="eai eai-suggestions"></span>
     </a>
-    <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
+    <a href="{{ paper.url }}" target="_blank" class="detail-pdf" title="Go to PDF">
         <span class="eai eai-pdf"></span>
     </a>
 
     <a href="mailto:?subject=&body={{ paper.title }}%0D%0A{{ paper.print_compact_authors }}%0D%0A{{ paper.journal.title }}.%20{{ paper.print_date }}%0D%0A{{ paper.url }}"
-       class="detail-mail">
+       class="detail-mail" title="Email">
         <span class="eai eai-mail"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-twitter">
+    <a href="javascript: void(0)" class="detail-twitter" title="Share on twitter">
         <span class="eai eai-twitter"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-google-plus">
+    <a href="javascript: void(0)" class="detail-google-plus" title="Share on Google+">
         <span class="eai eai-google-plus"></span>
     </a>
     {% else %}
-    <a href="{{ paper.url }}" target="_blank" class="detail-pdf">
+    <a href="{{ paper.url }}" target="_blank" class="detail-pdf" title="Go to PDF">
         <span class="eai eai-pdf"></span>
     </a>
     {% endif %}
@@ -96,9 +96,10 @@
     {% if user.is_authenticated %}
     <div class="questions-thumbs">
         <h2>Related tocles</h2>
-        <div class="thumb-list async-content">
-            {% show_loading 'sk-cube-grid' %}
-        </div>
+            <h4>Comming soon...</h4>
+{#        <div class="thumb-list async-content">#}
+{#            {% show_loading 'sk-cube-grid' %}#}
+{#        </div>#}
     </div>
     {%  endif %}
 

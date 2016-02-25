@@ -97,7 +97,7 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
-        'ATOMIC_REQUESTS': False,
+        'ATOMIC_REQUESTS': True,
         # NB: True conflicts with the use of python-social-auth (whose entire
         # pipeline is atomic while celery needs to know user during the pipeline
         # authentication process TODO: find a fix ?
@@ -320,7 +320,7 @@ FEED_MAX_TARGETS = 200000
 # Number of Clusters
 FEED_NB_CLUSTERS = 5
 
-HIDE_CLUSTER_ICON = False
+HIDE_CLUSTER_ICON = True
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
