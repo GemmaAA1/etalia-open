@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import connection
 
 
+
 def get_env_variable(var_name, default=None):
     """
     Get the environment variable
@@ -86,3 +87,4 @@ def makedirs_p(path):
 
 def db_table_exists(table_name):
     return table_name in connection.introspection.table_names()
+
