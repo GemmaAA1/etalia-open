@@ -320,7 +320,7 @@ FEED_MAX_TARGETS = 200000
 # Number of Clusters
 FEED_NB_CLUSTERS = 5
 
-HIDE_CLUSTER_ICON = False
+HIDE_CLUSTER_ICON = True
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
