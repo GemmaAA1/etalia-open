@@ -1,11 +1,19 @@
 var gulp = require('gulp'),
+    clean = require('gulp-clean'),
     merge = require('merge-stream'),
     concat = require('gulp-concat'),
     rename = require('gulp-rename'),
+    replace = require('gulp-replace'),
     strip = require('gulp-strip-comments'),
     shell = require('gulp-shell'),
     hogan = require('gulp-hogan-compile'),
-    minify = require('gulp-minify-css');
+    minify = require('gulp-minify-css'),
+    runSequence = require('run-sequence');
+
+var config = {
+    src: 'paperstream/static',
+    dest: 'paperstream/static/compiled'
+};
 
 
 
@@ -21,7 +29,7 @@ gulp.task('libraries', function() {
             base: 'node_modules/requirejs'
         })
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js'));
+        .pipe(gulp.dest(config.src + '/js'));
 
     /**
      * ie9 (html5shiv + respond)
@@ -33,7 +41,7 @@ gulp.task('libraries', function() {
         ])
         .pipe(concat('ie9.js'))
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js/lib'));
+        .pipe(gulp.dest(config.src + '/js/lib'));
 
     /**
      * jQuery
@@ -43,7 +51,7 @@ gulp.task('libraries', function() {
             base: 'bower_components/jquery/dist'
         })
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js/lib'));
+        .pipe(gulp.dest(config.src + '/js/lib'));
 
     /**
      * jQuery Ui (custom build)
@@ -60,7 +68,7 @@ gulp.task('libraries', function() {
             base: 'bower_components/jquery-ui/ui'
         })
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js/lib/jquery-ui'));
+        .pipe(gulp.dest(config.src + '/js/lib/jquery-ui'));
 
     /**
      * jQuery mouse wheel
@@ -70,7 +78,7 @@ gulp.task('libraries', function() {
             base: 'bower_components/jquery-mousewheel'
         })
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js/lib'));
+        .pipe(gulp.dest(config.src + '/js/lib'));
 
     /**
      * Bootstrap (custom build)
@@ -86,7 +94,7 @@ gulp.task('libraries', function() {
         ])
         .pipe(concat('bootstrap.js'))
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js/lib'));
+        .pipe(gulp.dest(config.src + '/js/lib'));
 
     /**
      * Hogan.js
@@ -97,7 +105,7 @@ gulp.task('libraries', function() {
         })
         .pipe(rename('hogan.js'))
         .pipe(strip())
-        .pipe(gulp.dest('paperstream/static/js/lib'));
+        .pipe(gulp.dest(config.src + '/js/lib'));
 
     return merge(requireJs, ie9, jquery, jqueryUi, jqueryMouseWheel, bootstrap, hogan);
 });
@@ -109,12 +117,12 @@ gulp.task('libraries', function() {
  */
 gulp.task('templates', function() {
     return gulp
-        .src('paperstream/static/templates/*.mustache')
+        .src(config.src + '/templates/*.mustache')
         .pipe(hogan('templates.js', {
             wrapper: 'amd',
             hoganModule: 'hogan'
         }))
-        .pipe(gulp.dest('paperstream/static/js/app/util'));
+        .pipe(gulp.dest(config.src + '/js/app/util'));
 });
 
 
@@ -125,6 +133,8 @@ gulp.task('templates', function() {
 gulp.task('scripts', shell.task([
     'node_modules/requirejs/bin/r.js -o paperstream/static/js/build.js'
 ]));
+
+
 
 /**
  * Bootstrap SASS
@@ -140,39 +150,40 @@ gulp.task('scripts', shell.task([
 gulp.task('styles', function() {
     var main = gulp
         .src([
-            'paperstream/static/css/*.css',
-            'paperstream/static/css/lib/*.css',
-            'paperstream/static/css/app/root.css'
+            config.src + '/css/*.css',
+            config.src + '/css/lib/*.css',
+            config.src + '/css/app/root.css'
         ])
         .pipe(concat('main.css'))
+        .pipe(replace(/..\/..\/([a-z]+)/g, '../$1')) // Fix bootstrap and jquery-ui fonts/img paths
         .pipe(minify({compatibility: 'ie8'}))
-        .pipe(gulp.dest('paperstream/static/compiled/css'));
+        .pipe(gulp.dest(config.dest + '/css'));
 
     var page = gulp
-        .src('paperstream/static/css/app/page.css')
+        .src(config.src + '/css/app/page.css')
         .pipe(minify({compatibility: 'ie8'}))
-        .pipe(gulp.dest('paperstream/static/compiled/css'));
+        .pipe(gulp.dest(config.dest + '/css'));
 
     var landing = gulp
-        .src('paperstream/static/css/app/landing.css')
+        .src(config.src + '/css/app/landing.css')
         .pipe(minify({compatibility: 'ie8'}))
-        .pipe(gulp.dest('paperstream/static/compiled/css'));
+        .pipe(gulp.dest(config.dest + '/css'));
 
     var elements = gulp
         .src([
-            'paperstream/static/css/app/list.css',
-            'paperstream/static/css/app/card.css',
-            'paperstream/static/css/app/detail.css',
-            'paperstream/static/css/app/tocles.css'
+            config.src + '/css/app/list.css',
+            config.src + '/css/app/card.css',
+            config.src + '/css/app/detail.css',
+            config.src + '/css/app/tocles.css'
         ])
         .pipe(concat('elements.css'))
         .pipe(minify({compatibility: 'ie8'}))
-        .pipe(gulp.dest('paperstream/static/compiled/css'));
+        .pipe(gulp.dest(config.dest + '/css'));
 
     var user = gulp
-        .src('paperstream/static/css/app/user.css')
+        .src(config.src + '/css/app/user.css')
         .pipe(minify({compatibility: 'ie8'}))
-        .pipe(gulp.dest('paperstream/static/compiled/css'));
+        .pipe(gulp.dest(config.dest + '/css'));
 
     return merge(main, page, landing, elements, user);
 });
@@ -180,7 +191,40 @@ gulp.task('styles', function() {
 
 
 /**
+ * Images and fonts
+ */
+gulp.task('images', function() {
+    return gulp
+        .src(config.src + '/img/**')
+        .pipe(gulp.dest(config.dest + '/img'));
+});
+gulp.task('fonts', function() {
+    return gulp
+        .src(config.src + '/fonts/**')
+        .pipe(gulp.dest(config.dest + '/fonts'));
+});
+
+
+
+/**
+ * Clean compiled directory.
+ */
+gulp.task('clean', function () {
+    return gulp
+        .src(config.dest, {read: false})
+        .pipe(clean());
+});
+
+
+
+/**
  * Tasks
  */
-gulp.task('build', ['libraries', 'templates', 'scripts', 'styles']);
+gulp.task('build', function(cb) {
+    runSequence(
+        'clean',
+        ['libraries', 'templates'],
+        ['scripts', 'styles', 'images', 'fonts']
+    );
+});
 gulp.task('default', ['build']);

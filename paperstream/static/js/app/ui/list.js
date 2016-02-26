@@ -122,12 +122,14 @@ define(['jquery', 'app/ui/api', 'app/util/utils', 'altmetric'], function($, api,
 
             var data = $(xml).find('data');
             if (data.length) {
-                eventData.controlsStates = JSON.parse(data.text());
+                data = JSON.parse(data.text());
 
                 // List title
                 if (data.hasOwnProperty('number_of_papers')) {
                     that.$element.find('.list-title span').html(data['number_of_papers']);
                 }
+
+                eventData.controlsStates = data;
             }
 
             var list = $(xml).find('thumb-list');

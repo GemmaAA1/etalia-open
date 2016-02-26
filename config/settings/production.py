@@ -38,7 +38,6 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static/compiled')),
-    str(APPS_DIR.path('static')),
 )
 
 # EMAIL backend
