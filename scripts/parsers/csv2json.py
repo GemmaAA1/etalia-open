@@ -18,35 +18,44 @@ template = {
     'scope':        ''    #
 }
 
-# input_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned_light.csv'
-# output_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned_light.json'
-# input_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned.csv'
-# output_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned.json'
-# input_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned.csv'
-# output_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned.json'
-input_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned.csv'
-output_file = '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned.json'
+in_out_files = [
+ ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned_light.csv',
+  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned_light.json'),
+ ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned.csv',
+  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned.json'),
+ ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned.csv',
+  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned.json'),
+ ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned.csv',
+  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned.json'),
+ ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned_light.csv',
+  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned_light.json'),
+ ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned_light.csv',
+  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned_light.json'),
+]
 
-# read csv file
-with open(input_file, 'r') as infile:
-    reader = csv.reader(infile, delimiter='\n')
-    lines = []
-    for row in reader:
-        lines.append(row[0])
+for input_file, output_file in in_out_files:
 
-# process
-data = []
-keys = lines[0].split(';')
-for j, line in enumerate(lines[1:]):
-    tmp = template.copy()
-    row_data = line.split(';')
-    for i, key in enumerate(keys):
-        tmp[key] = row_data[i]
-    data.append(tmp)
+    # read csv file
+    with open(input_file, 'r') as infile:
+        reader = csv.reader(infile, delimiter='\n')
+        lines = []
+        for row in reader:
+            lines.append(row[0])
 
-    if not j % 100:
-        print('# of entry processed: {0}'.format(j))
+    # process
+    data = []
+    keys = lines[0].split(';')
+    for j, line in enumerate(lines[1:]):
+        tmp = template.copy()
+        row_data = line.split(';')
+        for i, key in enumerate(keys):
+            if key in template.keys():
+                tmp[key] = row_data[i]
+        data.append(tmp)
 
-# Dump to json output_file
-json.dump(data, open(output_file, 'w'), indent=2, sort_keys=True)
+        if not j % 100:
+            print('# of entry processed: {0}'.format(j))
+
+    # Dump to json output_file
+    json.dump(data, open(output_file, 'w'), indent=2, sort_keys=True)
 
