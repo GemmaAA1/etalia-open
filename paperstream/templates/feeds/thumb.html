@@ -55,9 +55,9 @@
                 <span></span>
             </span>
             {% endif %}
-            <span class="metric" title="Altmetric score">
-                <img src="http://altmetric-badges.a.ssl.fastly.net/?size=32&score={{ paper.altmetric.score|floatformat:'0' }}&types={{ paper.altmetric.type }}">
-            </span>
+
+            {% include "library/paper-altmetric-badge.html" with paper=paper %}
+
             <!-- TODO relative questions count -->
             <!--<span class="comment">
                 <span class="count">16</span>

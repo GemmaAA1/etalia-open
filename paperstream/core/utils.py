@@ -10,6 +10,12 @@ from django.conf import settings
 from django.db import connection
 
 
+class AttrDict(dict):
+    """To access dictionary (key,value) as attribute"""
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
 
 def get_env_variable(var_name, default=None):
     """

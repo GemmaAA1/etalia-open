@@ -1,3 +1,4 @@
+/config/settings/common.py
 .idea
 */__pychache__
 __pycache__
@@ -79,3 +80,4 @@ deploy/.ssh
 deploy/notes.txt
 scripts/heroku_cheats
 scripts/routines/tmp.py
+config/settings/common.py

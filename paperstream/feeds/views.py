@@ -72,6 +72,7 @@ class FeedPaperListView(BasePaperListView):
         context.update(self.get_context_time_span())
         context.update(self.get_context_search_query())
         context.update(self.get_context_new_objects_since_last_login())
+        context.update(self.get_context_control_session())
 
         return context
 
@@ -82,6 +83,7 @@ class FeedPaperListView(BasePaperListView):
 class BaseStreamView(FeedPaperListView):
     model = StreamMatches
     template_name = 'feeds/feed.html'
+    control_session = 'control_stream'
 
     def get_original_queryset(self):
         return self.model.objects\
@@ -107,6 +109,7 @@ stream_xml = StreamViewXML.as_view()
 class BaseTrendView(FeedPaperListView):
     model = TrendMatches
     template_name = 'feeds/trend.html'
+    control_session = 'control_trend'
 
     def get_original_queryset(self):
         return self.model.objects\

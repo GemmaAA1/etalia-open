@@ -13,6 +13,8 @@ define(['jquery'], function ($) {
             url: $form.attr('action'),
             data: $form.serialize(),
             success: function (json) {
+                // Clear errors
+                $inviteModal.find('.form-errors').empty();
 
                 // Clear controls
                 $form.hide().find('input, textarea').val('');
@@ -50,5 +52,10 @@ define(['jquery'], function ($) {
         });
 
         $inviteModal.find('form[data-async]').on('submit', submitForm);
+        $inviteModal.find('.form-errors').empty();
+        $inviteModal.on('hidden.bs.modal', function() {
+            $inviteModal.find('.modal-form').show();
+            $inviteModal.find('.modal-result').hide();
+        });
     });
 });
