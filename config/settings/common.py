@@ -15,6 +15,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from __future__ import absolute_import, unicode_literals
 import environ
+from . import get_version
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.path('paperstream')
@@ -22,6 +23,9 @@ APPS_DIR = ROOT_DIR.path('paperstream')
 env = environ.Env()
 
 SITE_ID = 1
+
+# Get app version from root __init__
+VERSION = get_version(str(ROOT_DIR.path()))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -474,3 +478,4 @@ LOGGING = {
 
 # MESSAGES
 MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'
+
