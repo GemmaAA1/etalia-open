@@ -7,6 +7,10 @@ CONFIG_FILE = __file__
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['www.etalia.io', 'etalia.io', 'alpha.etalia.io']
 
+# Admins received email of the full exception information when DEGUB=False
+ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
+          ]
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
