@@ -1,4 +1,4 @@
-define(['jquery', 'app/ui/api', 'app/util/utils'], function($, api, utils) {
+define(['jquery', 'app/ui/api', 'app/util/utils', 'altmetric'], function($, api, utils) {
 
     var List = function(options) {
 
@@ -122,18 +122,23 @@ define(['jquery', 'app/ui/api', 'app/util/utils'], function($, api, utils) {
 
             var data = $(xml).find('data');
             if (data.length) {
-                eventData.controlsStates = JSON.parse(data.text());
+                data = JSON.parse(data.text());
 
                 // List title
                 if (data.hasOwnProperty('number_of_papers')) {
                     that.$element.find('.list-title span').html(data['number_of_papers']);
                 }
+
+                eventData.controlsStates = data;
             }
 
             var list = $(xml).find('thumb-list');
             if (list.length) {
                 that.$element.find(that.config.container).html($(list.text()));
             }
+
+            // Build altmetric badges
+            _altmetric_embed_init();
 
             $body.trigger('etalia.list.load', eventData);
         })

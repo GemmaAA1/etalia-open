@@ -96,9 +96,9 @@ MIDDLEWARE_CLASSES = (
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'paperstream',
-        'USER': 'postgres',
-        'PASSWORD': 'mammouth',
+        'NAME': 'pubstream',
+        'USER': 'nicolaspannetier',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
         'ATOMIC_REQUESTS': True,

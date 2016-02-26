@@ -20,6 +20,7 @@ requirejs.config({
         hogan: './lib/hogan',
         jquery: './lib/jquery',
         'jquery.mousewheel': './lib/jquery.mousewheel',
-        'jquery-ui': './lib/jquery-ui'
+        'jquery-ui': './lib/jquery-ui',
+        altmetric: 'https://d1bxh8uas1mnw7.cloudfront.net/assets/embed'
     }
 });

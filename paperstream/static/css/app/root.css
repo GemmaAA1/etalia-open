@@ -89,6 +89,11 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     font-style: italic;
 }
 
+.endless_more {
+    display: block;
+    overflow: hidden;
+}
+
 .bar {
     position: fixed;
     top: 0;
@@ -572,7 +577,6 @@ a.btn-provider:hover {
     -webkit-animation-delay: 0s;
     animation-delay: 0s;
 }
-
 
 @-webkit-keyframes sk-cubeGridScaleDelay {
     0%, 70%, 100% {
