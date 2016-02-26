@@ -21,9 +21,11 @@ ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.path('paperstream')
 
 env = environ.Env()
-VERSION = get_version(str(ROOT_DIR.path()))
 
 SITE_ID = 1
+
+# Get app version from root __init__
+VERSION = get_version(str(ROOT_DIR.path()))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
