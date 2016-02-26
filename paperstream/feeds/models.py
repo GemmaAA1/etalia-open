@@ -399,7 +399,7 @@ class Trend(TimeStampedModel):
                 tm = TrendMatches.objects.get(
                     trend=self,
                     paper_id=pk)
-                tm.score = val,
+                tm.score = val
                 save_objs.append(tm)
             else:
                 create_objs.append(TrendMatches(
