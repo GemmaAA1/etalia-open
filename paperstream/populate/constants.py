@@ -7,7 +7,7 @@ from django.conf import settings
 PUBLISHER_OPTIONS = [
     {'source': 'all',
      'file_path': os.path.join(str(settings.ROOT_DIR), 'data',
-                 'populate/publishers/publisher_list.csv')},
+                 'populate/publishers/publisher_list.json')},
 ]
 
 JOURNAL_OPTIONS = [
@@ -41,9 +41,9 @@ CONSUMER_OPTIONS = [
     {'source': 'pubmed',
      'local': False,
      'file_path': os.path.join(str(settings.ROOT_DIR), 'data',
-                 'populate/journals/20150510_medline_cleaned.csv')},
+                 'populate/journals/20160225_Entrez_parse.json')},
     {'source': 'pubmed',
      'local': True,
      'file_path': os.path.join(str(settings.ROOT_DIR), 'data',
-                 'populate/journals/20150510_medline_cleaned_light.csv')},
+                 'populate/journals/20150510_medline_cleaned_light.json')},
 ]
