@@ -162,6 +162,7 @@ def deploy():
     create_directory_structure_if_necessary()
     pull_latest_source()
     pip_install()
+    copy_common_py()
     update_database()
     update_static_files()
     # app related
@@ -332,6 +333,10 @@ def create_directory_structure_if_necessary():
         if not files.exists('{0}/{1}'.format(env.stack_dir, sub_dir)):
             run('mkdir -p {0}/{1}'.format(env.stack_dir, sub_dir))
 
+
+@task
+def copy_common_py():
+    run('cp {0}/source/config/settings/common.py.dist {0}/source/config/settings/common.py'.format(env.stack_dir))
 
 @task
 def pull_latest_source():
