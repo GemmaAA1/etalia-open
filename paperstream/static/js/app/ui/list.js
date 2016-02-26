@@ -1,4 +1,4 @@
-define(['jquery', 'app/ui/api', 'app/util/utils'], function($, api, utils) {
+define(['jquery', 'app/ui/api', 'app/util/utils', 'altmetric'], function($, api, utils) {
 
     var List = function(options) {
 
@@ -134,6 +134,9 @@ define(['jquery', 'app/ui/api', 'app/util/utils'], function($, api, utils) {
             if (list.length) {
                 that.$element.find(that.config.container).html($(list.text()));
             }
+
+            // Build altmetric badges
+            _altmetric_embed_init();
 
             $body.trigger('etalia.list.load', eventData);
         })

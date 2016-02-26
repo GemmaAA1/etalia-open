@@ -1,4 +1,9 @@
-define(['jquery', 'app/ui/paper', 'app/ui/layout', 'bootstrap'], function($, Paper) {
+define([
+    'jquery',
+    'app/ui/paper',
+    'app/ui/layout',
+    'bootstrap'
+], function($, Paper) {
 
     $(function() {
 

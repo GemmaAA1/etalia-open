@@ -75,6 +75,16 @@
     margin-left: 0;
 }
 
+.card .altmetric-embed,
+.card .altmetric-embed a,
+.card .altmetric-embed img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: 100% 100%;
+
+}
+
 .card .comment {
     background-color: #ffffff;
     border: 1px solid #cbced1;

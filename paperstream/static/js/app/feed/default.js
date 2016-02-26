@@ -66,10 +66,14 @@ define([
         // Endless scroll
         $.endlessPaginate({
             paginateOnScroll: true,
-            paginateOnScrollMargin: 10,
+            paginateOnScrollMargin: 90,
             onClick: function (context) {
                 context.extraData = JSON.stringify(controls.getStates());
                 context.urlOrigin = window.location.href;
+            },
+            onCompleted: function () {
+                // Build altmetric badges
+                _altmetric_embed_init();
             }
         });
     });

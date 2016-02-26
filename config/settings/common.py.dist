@@ -195,7 +195,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
-EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/pubstream-email-static/'
+EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
 INVITE_EMAIL_TEMPLATE = 'emails/alpha_invite_template_email_process.html'
 
 # AUTHENTICATION CONFIGURATION
