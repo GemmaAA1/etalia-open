@@ -50,5 +50,70 @@
     "short_title": "J Comput Phys",
     "title": "Journal Of Computational Physics",
     "url": ""
-  }
+  },
+  {
+    "id_arx": "",
+    "id_eissn": "",
+    "id_issn": "0150-9861",
+    "id_oth": "",
+    "language": "",
+    "period": "BIM",
+    "publisher": "",
+    "scope": "",
+    "short_title": "J Neuroradiol",
+    "title": "Journal Of Neuroradiology",
+    "url": ""
+  },
+  {
+    "id_arx": "",
+    "id_eissn": "1528-8447",
+    "id_issn": "1526-5900",
+    "id_oth": "",
+    "language": "",
+    "period": "MON",
+    "publisher": "",
+    "scope": "",
+    "short_title": "J Pain",
+    "title": "Journal Of Pain",
+    "url": ""
+  },
+  {
+    "id_arx": "",
+    "id_eissn": "1877-718X",
+    "id_issn": "1877-7171",
+    "id_oth": "",
+    "language": "",
+    "period": "QUA",
+    "publisher": "",
+    "scope": "",
+    "short_title": "J Parkinsons Dis",
+    "title": "Journal Of Parkinsons Disease",
+    "url": ""
+  },
+  {
+    "id_arx": "",
+    "id_eissn": "1096-9896",
+    "id_issn": "0022-3417",
+    "id_oth": "",
+    "language": "",
+    "period": "MON",
+    "publisher": "Wiley",
+    "scope": "",
+    "short_title": "J Pathol",
+    "title": "Journal Of Pathology",
+    "url": ""
+  },
+  {
+    "id_arx": "",
+    "id_eissn": "",
+    "id_issn": "1558-884X",
+    "id_oth": "",
+    "language": "",
+    "period": "SEM",
+    "publisher": "",
+    "scope": "",
+    "short_title": "",
+    "title": "Journal Of Pattern Recognition Research",
+    "url": ""
+  },
 ]
