@@ -421,7 +421,8 @@ class ConsumerPubmed(Consumer):
         except Exception as e:
             ok = False
             entries = []
-            logger.warning('consuming {0}: FAILED'.format(journal.title))
+            logger.error('consuming {0} from {1}: FAILED'.format(journal.title,
+                                                     self.name))
 
         return entries, ok
 
@@ -527,7 +528,8 @@ class ConsumerElsevier(Consumer):
         except Exception as e:
             ok = False
             entries = []
-            logger.warning('consuming {0}: FAILED'.format(journal.title))
+            logger.error('consuming {0} from {1}: FAILED'.format(journal.title,
+                                                     self.name))
 
         return entries, ok
 
@@ -603,7 +605,8 @@ class ConsumerArxiv(Consumer):
         except Exception as e:
             ok = False
             entries = []
-            logger.warning('consuming {0}: FAILED'.format(journal.title))
+            logger.error('consuming {0} from {1}: FAILED'.format(journal.title,
+                                                                 self.name))
 
         return entries, ok
 

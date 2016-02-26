@@ -434,39 +434,49 @@ LOGGING = {
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
     },
     'loggers': {
-        # 'django': {
-        #     'handlers': ['null'],
-        #     'propagate': True,
-        #     'level': 'INFO',
-        # },
-        # 'paperstream': {
-        #     'handlers': ['console', 'file'],
-        #     'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
-        # },
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'paperstream': {
+            'handlers': ['console', 'file'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+        },
         'paperstream.populate': {
             'handlers': ['console', 'populate'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'paperstream.consumers': {
-            'handlers': ['console', 'consumers'],
+            'handlers': ['console', 'consumers', 'mail_admins'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'paperstream.nlp': {
-            'handlers': ['console', 'nlp'],
+            'handlers': ['console', 'nlp', 'mail_admins'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'paperstream.feeds': {
-            'handlers': ['console', 'feeds'],
+            'handlers': ['console', 'feeds', 'mail_admins'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'paperstream.users': {
-            'handlers': ['console', 'users'],
+            'handlers': ['console', 'users', 'mail_admins'],
             'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
