@@ -80,3 +80,4 @@ deploy/.ssh
 deploy/notes.txt
 scripts/heroku_cheats
 scripts/routines/tmp.py
+config/settings/common.py
