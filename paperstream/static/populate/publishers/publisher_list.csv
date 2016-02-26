@@ -1,9 +1,34 @@
-name;url
-Elsevier;http://www.elsevier.com
-Arxiv;http://arxiv.org
-Wiley;http://onlinelibrary.wiley.com/
-Public Library Science;http://www.plos.org/
-Springer;http://link.springer.com/
-IEEE;http://ieeexplore.ieee.org/
-Nature Publishing Group;http://www.nature.com
-JSTOR;http://www.jstor.org
+[
+  {
+    "name": "Elsevier",
+    "url": "http://www.elsevier.com",
+  },
+  {
+    "name": "Arxiv",
+    "url": "http://arxiv.org",
+  },
+  {
+    "name": "Wiley",
+    "url": "http://onlinelibrary.wiley.com/",
+  },
+  {
+    "name": "Public Library Science",
+    "url": "http://www.plos.org/",
+  },
+  {
+    "name": "Springer",
+    "url": "http://link.springer.com/",
+  },
+  {
+    "name": "IEEE",
+    "url": "http://ieeexplore.ieee.org/",
+  },
+  {
+    "name": "Nature Publishing Group",
+    "url": "hhttp://www.nature.com",
+  },
+  {
+    "name": "JSTOR",
+    "url": "http://www.jstor.org",
+  }
+]

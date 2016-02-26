@@ -1,0 +1,93 @@
+[
+  {
+    "id_arx": "arxiv.common",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv Common",
+    "url": "http://arxiv.org/"
+  },
+  {
+    "id_arx": "arxiv.stat.ML",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv Statistics - Machine Learning",
+    "url": "http://arxiv.org/list/stat.ML/recent"
+  },
+  {
+    "id_arx": "arxiv.astro-ph",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv Astrophysics",
+    "url": "http://arxiv.org/list/astro-ph/recent"
+  },
+  {
+    "id_arx": "arxiv.cond-mat.soft",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv Physics - Soft Condensed Matter",
+    "url": "http://arxiv.org/list/cond-mat.soft/recent"
+  },
+  {
+    "id_arx": "arxiv.cond-mat.str-el",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv Physics - Strongly Correlated Electrons",
+    "url": "http://arxiv.org/list/cond-mat.str-el/recent"
+  },
+  {
+    "id_arx": "arxiv.hep-ex",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv High Energy Physics - Experiment",
+    "url": "http://arxiv.org/list/hep-ex/recent"
+  },
+  {
+    "id_arx": "arxiv.physics.med-ph",
+    "id_eissn": "",
+    "id_issn": "",
+    "id_oth": "",
+    "language": "English",
+    "period": "IRR",
+    "publisher": "Arxiv",
+    "scope": "",
+    "short_title": "",
+    "title": "Arxiv Physics - Medical Physics",
+    "url": "http://arxiv.org/list/physics.med-ph/recent"
+  }
+]

@@ -8,6 +8,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.db.models import Q
 from django.contrib.postgres.fields import ArrayField
+from django.db.transaction import atomic
 
 from paperstream.core.models import TimeStampedModel
 from paperstream.core.utils import pad_vector
@@ -115,7 +116,7 @@ class Stream(TimeStampedModel):
             ufv, _ = self.vectors.get_or_create(model_id=model_pk)
             ufv.update_vector()
 
-    def clear_old_papers(self):
+    def get_old_streammatches(self):
         """Remove outdating matches based on user settings"""
 
         # get time lapse corresponding to user settings
@@ -124,9 +125,7 @@ class Stream(TimeStampedModel):
                          days=self.user.settings.stream_time_lapse)).date()
 
         # clean old matches
-        StreamMatches.objects\
-            .filter(Q(stream=self) & Q(date__lt=from_date))\
-            .delete()
+        return StreamMatches.objects.filter(stream=self, date__lt=from_date)
 
     def clear_all(self):
         """Delete all matched matches"""
@@ -168,11 +167,13 @@ class Stream(TimeStampedModel):
         self.log('info', 'Updating', 'starting...')
         self.set_message('Cleaning')
 
-        # clear out-dated papers
-        self.clear_old_papers()
+        # get out-dated StreamMatches
+        del_objs = self.get_old_streammatches()
 
-        # get current paper_id
-        current_paper_list = self.streammatches_set.all().values_list('pk', flat=True)
+        # get paper_id list for StreamMatches that remain
+        current_paper_list = self.streammatches_set\
+            .exclude(id__in=del_objs)\
+            .values_list('paper_id', flat=True)
 
         # Instantiate Score
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
@@ -190,35 +191,48 @@ class Stream(TimeStampedModel):
         results, date = scoring.score()
 
         # create/update UserFeedPaper
-        objs_list = []
+        create_objs = []
+        save_objs = []
         for pk, val in results:
             if pk in current_paper_list:
-                # TODO: user django-bulk-update ?
-                sm = StreamMatches.object.get(
+                sm = StreamMatches.objects.get(
                     stream=self,
                     paper_id=pk)
                 sm.score = val
-                sm.update()
+                save_objs.append(sm)
             else:
-                objs_list.append(StreamMatches(
+                create_objs.append(StreamMatches(
                     stream=self,
                     paper_id=pk,
                     score=val,
                     date=date[pk],
                     is_score_computed=True))
 
-        # bulk create
-        StreamMatches.objects.bulk_create(objs_list)
-        self.set_state('IDL')
-
-        # bulk update of new flag based on user last visit
+        # Get last user visit
         try:
             last_seen = LastSeen.objects.when(user=self.user)
-            StreamMatches.objects.filter(created__lt=last_seen).update(new=False)
         except LastSeen.DoesNotExist:
+            last_seen = None
             pass
 
+        # atomic update
+        self.atomic_update(del_objs, save_objs, create_objs, last_seen=last_seen)
+
+        self.set_state('IDL')
         self.log('info', 'Updating', 'DONE')
+
+    @atomic
+    def atomic_update(self, delete_objs, save_objs, create_objs, last_seen=None):
+        if delete_objs:
+            delete_objs.delete()
+        if save_objs:
+            for obj in save_objs:
+                obj.save()
+        if create_objs:
+            StreamMatches.objects.bulk_create(create_objs)
+        if last_seen:
+            StreamMatches.objects.filter(created__lt=last_seen)\
+                .update(new=False)
 
 
 class StreamSeeds(TimeStampedModel):
@@ -333,7 +347,7 @@ class Trend(TimeStampedModel):
         self.state = state
         self.save()
 
-    def clear_old_papers(self):
+    def get_old_trendmatches(self):
         """Remove outdating matches based on user settings"""
 
         # get time lapse corresponding to user settings
@@ -342,9 +356,8 @@ class Trend(TimeStampedModel):
                          days=self.user.settings.stream_time_lapse)).date()
 
         # clean old matches
-        TrendMatches.objects\
-            .filter(Q(trend=self) & Q(date__lt=from_date))\
-            .delete()
+        return TrendMatches.objects\
+            .filter(trend=self, date__lt=from_date)
 
     def clear_all(self):
         """Delete all matched matches"""
@@ -354,11 +367,13 @@ class Trend(TimeStampedModel):
 
         self.set_state('ING')
 
-        # clear out-dated paper
-        self.clear_old_papers()
+        # get out-dated StreamMatches
+        del_objs = self.get_old_trendmatches()
 
-        # get current paper_id
-        current_paper_list = self.trendmatches_set.all().values_list('pk', flat=True)
+        # get paper_id list for StreamMatches that remain
+        current_paper_list = self.trendmatches_set\
+            .exclude(id__in=del_objs)\
+            .values_list('paper_id', flat=True)
 
         # Instantiate Score
         Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
@@ -377,31 +392,46 @@ class Trend(TimeStampedModel):
         results, date = scoring.score()
 
         # create/update UserFeedPaper
-        objs_list = []
+        save_objs = []
+        create_objs = []
         for pk, val in results:
             if pk in current_paper_list:
                 tm = TrendMatches.objects.get(
                     trend=self,
                     paper_id=pk)
                 tm.score = val,
-                tm.save()
+                save_objs.append(tm)
             else:
-                objs_list.append(TrendMatches(
+                create_objs.append(TrendMatches(
                     trend=self,
                     paper_id=pk,
                     score=val,
                     date=date[pk]))
-        # bulk create
-        TrendMatches.objects.bulk_create(objs_list)
 
-        # bulk update of new flag based on user last visit
+        # Get last user visit
         try:
             last_seen = LastSeen.objects.when(user=self.user)
-            TrendMatches.objects.filter(created__lt=last_seen).update(new=False)
         except LastSeen.DoesNotExist:
+            last_seen = None
             pass
 
+        # atomic update
+        self.atomic_update(del_objs, save_objs, create_objs, last_seen=last_seen)
+
         self.set_state('IDL')
+
+    @atomic
+    def atomic_update(self, delete_objs, save_objs, create_objs, last_seen=None):
+        if delete_objs:
+            delete_objs.delete()
+        if save_objs:
+            for obj in save_objs:
+                obj.save()
+        if create_objs:
+            TrendMatches.objects.bulk_create(create_objs)
+        if last_seen:
+            TrendMatches.objects.filter(created__lt=last_seen)\
+                .update(new=False)
 
 
 class TrendMatches(TimeStampedModel):

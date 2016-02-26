@@ -15,6 +15,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from __future__ import absolute_import, unicode_literals
 import environ
+from . import get_version
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.path('paperstream')
@@ -22,6 +23,9 @@ APPS_DIR = ROOT_DIR.path('paperstream')
 env = environ.Env()
 
 SITE_ID = 1
+
+# Get app version from root __init__
+VERSION = get_version(str(ROOT_DIR.path()))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -97,7 +101,7 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
-        'ATOMIC_REQUESTS': False,
+        'ATOMIC_REQUESTS': True,
         # NB: True conflicts with the use of python-social-auth (whose entire
         # pipeline is atomic while celery needs to know user during the pipeline
         # authentication process TODO: find a fix ?
@@ -320,7 +324,7 @@ FEED_MAX_TARGETS = 200000
 # Number of Clusters
 FEED_NB_CLUSTERS = 5
 
-HIDE_CLUSTER_ICON = False
+HIDE_CLUSTER_ICON = True
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
@@ -474,3 +478,4 @@ LOGGING = {
 
 # MESSAGES
 MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'
+
