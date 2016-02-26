@@ -15,6 +15,7 @@ from endless_pagination.views import AjaxListView
 
 from paperstream.altmetric.models import AltmetricModel
 from paperstream.users.models import UserTaste, Author
+from paperstream.core.utils import AttrDict
 
 
 def home(request):
@@ -64,8 +65,11 @@ class BasePaperListView(AjaxListView):
     context_object_name = 'object_list'
     size_max_journal_filter = 40
     size_max_author_filter = 40
-    original_qs = None
     return_filter = True
+    original_qs = None
+    template_name = None
+    model = None
+    control_session_name = ''
 
     def __init__(self, *args, **kwargs):
         super(BasePaperListView, self).__init__(*args, **kwargs)
@@ -139,7 +143,10 @@ class BasePaperListView(AjaxListView):
         return context
 
     def get_context_stats(self):
-        return {'number_of_papers': self.original_qs.count()}
+        if self.object_list:
+            return {'number_of_papers': self.object_list.count()}
+        else:
+            return {'number_of_papers': 0}
 
     def get_context_usertaste(self):
         user_taste = UserTaste.objects\
@@ -240,6 +247,17 @@ class BasePaperListView(AjaxListView):
                 self.object_list.filter(new=True).values_list('paper_id', flat=True)
         }
 
+    def get_context_control_session(self):
+        if self.request.session.get(self.control_session_name):
+            return {
+                'control_session':
+                    AttrDict(self.request.session[self.control_session_name])
+            }
+        else:
+            return {
+                'control_session': None
+            }
+
     def parse_ajax_data(self):
         """Get ajax args"""
 
@@ -257,9 +275,15 @@ class BasePaperListView(AjaxListView):
                             self.journals_filter = filter_.get('pk')
                         if filter_.get('id') == 'author':
                             self.authors_filter = filter_.get('pk')
+                    # store controls data in session
+                    self.store_controls_in_session(data)
 
                 except ValueError:
                     pass
+
+    def store_controls_in_session(self, data):
+        """Store controls (filter, pin, time-span to session) in session"""
+        self.request.session[self.control_session_name] = data
 
     def get_context_settings(self):
         raise NotImplemented
