@@ -141,7 +141,9 @@ class AltmetricModel(TimeStampedModel):
                 self.readers_citeulike = rsp.get('readers').get('citeulike')
                 self.readers_mendeley = rsp.get('readers').get('mendeley')
             self.image = rsp.get('images').get('small')
-            self.type = re.findall(r'types=(P?[\w]+)', self.image)[0]
+            match = re.findall(r'types=(P?[\w]+)', self.image)
+            if match:
+                self.type = match[0]
 
         # save
         self.save()
