@@ -193,6 +193,7 @@ class UserLibraryPaperListView(BasePaperListView):
         context.update(self.get_context_journals_filter())
         context.update(self.get_context_authors_filter())
         context.update(self.get_context_search_query())
+        context.update(self.get_context_control_session())
 
         return context
 
@@ -230,6 +231,8 @@ class UserLibraryPaperListView(BasePaperListView):
 
 class BaseUserLibraryView(UserLibraryPaperListView):
 
+    control_session = 'control_library'
+
     def get_original_queryset(self):
         return UserLibPaper.objects\
             .filter(userlib=self.request.user.lib,
@@ -258,6 +261,8 @@ library_xml = UserLibraryViewXML.as_view()
 
 
 class BaseUserLibraryTrashView(UserLibraryPaperListView):
+
+    control_session = 'control_trash'
 
     def get_original_queryset(self):
         return UserLibPaper.objects\
@@ -288,6 +293,8 @@ library_trash_xml = UserLibraryTrashViewXML.as_view()
 
 
 class BaseUserLibraryPinsView(UserLibraryPaperListView):
+
+    control_session = 'control_pins'
 
     def get_original_queryset(self):
         return UserTaste.objects\
