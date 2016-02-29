@@ -65,18 +65,22 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
 
         // Previous button
         if ($prev.length) {
-            var prevTitle = $prev.find('.title').text();
-            that.$prevButton.show().attr('title', prevTitle);
-            that.$prevButton.find('> span').html(prevTitle);
+            var $prevTitle = $prev.find('.title').clone();
+            $prevTitle.find('span').remove();
+
+            that.$prevButton.show().attr('title', $prevTitle.text());
+            that.$prevButton.find('> span').html($prevTitle.text());
             that.$prevButton.find('> button').on('click', function() {
                 that.load($prev);
             });
         }
         // Next button
         if ($next.length) {
-            var nextTitle = $next.find('.title').text();
-            that.$nextButton.show().attr('title', nextTitle);
-            that.$nextButton.find('> span').html(nextTitle);
+            var $nextTitle = $next.find('.title').clone();
+            $nextTitle.find('span').remove();
+
+            that.$nextButton.show().attr('title', $nextTitle.text());
+            that.$nextButton.find('> span').html($nextTitle.text());
             that.$nextButton.find('> button').on('click', function() {
                 that.load($next);
             });
