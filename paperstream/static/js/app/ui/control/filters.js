@@ -182,9 +182,7 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
             $group.find('li a.active').each(function() {
                 keys.push($(this).data('id'));
             });
-            if (keys.length) {
-                value.push({id: $group.data('id'), pk: keys});
-            }
+            value.push({id: $group.data('id'), pk: keys});
         });
         return value;
     };
