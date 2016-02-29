@@ -34,7 +34,7 @@ import os
 import re
 import string
 import random
-import environ
+
 from boto.ec2 import connect_to_region
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
@@ -42,7 +42,7 @@ from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
 from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
-from fabric_slack_tools import *
+
 
 STACK = 'production'
 STACK_SITE_MAPPING = {'staging': '',
@@ -68,8 +68,6 @@ ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'feed': 't2.medium',
                           'nlp': 't2.large',
                           'spot': 'm4.large'}
-
-SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -147,15 +145,6 @@ def check_integrity():
 
 def get_host_roles():
     return [k for k, v in env.roledefs.items() if env.host_string in v]
-
-@task
-def checkout_master_and_push_recompiled_assets():
-    # Git checkout master
-    local('git checkout master', capture=False)
-    # Recompiled assets and push to repo
-    local('gulp')
-    local('git commit -am "recompiled assets prior deployment"')
-    local('git push')
 
 @task
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
@@ -642,19 +631,4 @@ def clear_nlp_data():
 def remove_env(stack):
     run('rmvirtualenv staging')
 
-@runs_once
-def send_deploy_version_message():
-    ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
-    # Get app version from root __init__
-    version = get_version(str(ROOT_DIR.path()))
-    send_slack_message("Deploying Etalia {0}...".format(version),
-                       channel="#general",
-                       username="deployment-bot",
-                       web_hook_url=SLACK_WEB_HOOK)
 
-def get_version(package):
-    """
-    Return package version as listed in `__version__` in `init.py`.
-    """
-    init_py = open(os.path.join(package, '__init__.py')).read()
-    return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
