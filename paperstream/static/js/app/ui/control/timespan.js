@@ -3,7 +3,8 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
     var values = {
         7: {icon: 'W', label: 'Week'},
         30: {icon: '1m', label: '1 month'},
-        60: {icon: '2m', label: '2 months'}
+        60: {icon: '2m', label: '2 months'},
+        365: {icon: '1y', label: '1 year'}
     };
 
     var Timespan = function (options) {

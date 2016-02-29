@@ -140,7 +140,7 @@ define(['jquery', 'app/ui/api', 'app/util/utils', 'altmetric'], function($, api,
             // Build altmetric badges
             _altmetric_embed_init();
 
-            $body.trigger('etalia.list.load', eventData);
+            $(that).trigger('etalia.list.load', eventData);
         })
         .fail(function(xrh, status, error) {
             that.log('Load failure', xrh, status, error);

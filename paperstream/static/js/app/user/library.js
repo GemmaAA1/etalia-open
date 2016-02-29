@@ -118,6 +118,13 @@ define([
             return false;
         });
 
+        $(list)
+            .on('etalia.list.load', function(e, data) {
+                if (data.hasOwnProperty('controlsStates')) {
+                    controls.setStates(data.controlsStates);
+                }
+            });
+
         $body
             .on(
                 'etalia.control.search.change ' +
@@ -128,11 +135,6 @@ define([
                 function() {
                     list.load(controls.getStates());
                 })
-            .on('etalia.list.load', function(e, data) {
-                if (data.hasOwnProperty('controlsStates')) {
-                    controls.setStates(data.controlsStates);
-                }
-            })
 
             .on('etalia.publication.pin', pinHandler)
             .on('etalia.publication.add', addHandler)
