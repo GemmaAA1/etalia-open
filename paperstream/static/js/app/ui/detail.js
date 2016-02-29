@@ -48,6 +48,21 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
                 that.paper.update();
             });
 
+        // Close on click out
+        this.$document
+            .on('click', function(e) {
+                if (0 < $(e.target).closest('.inner').length) {
+                    return;
+                }
+                that.close();
+            })
+            .on('click', '.neighbors-thumbs .thumb .title a', function(e) {
+                that.load($(e.target).closest('.thumb'));
+
+                e.preventDefault();
+                return false;
+            });
+
         return this;
     };
 
