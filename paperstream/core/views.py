@@ -280,7 +280,7 @@ class BasePaperListView(AjaxListView):
                 'cluster': self.cluster,
                 'pin': self.like_flag,
                 'search_query': self.search_query,
-                'filters': []
+                'filters': [{'id': 'journal', 'pk': []}, {'id': 'author', 'pk': []}],
             }
             # store controls data in session
             self.store_controls_in_session(data)
