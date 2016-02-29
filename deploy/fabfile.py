@@ -42,6 +42,7 @@ from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
 from fabric.contrib import files
 from fabtools.utils import run_as_root
 import fabtools
+from fabric_slack_tools import *
 
 
 STACK = 'production'
