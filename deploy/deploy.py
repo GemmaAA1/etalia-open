@@ -15,10 +15,10 @@ def send_deploy_version_message():
     ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
     # Get app version from root __init__
     version = get_version(str(ROOT_DIR.path()))
-    # send_slack_message("Deploying Etalia {0}...".format(version),
-    #                    channel="#general",
-    #                    username="deployment-bot",
-    #                    web_hook_url=SLACK_WEB_HOOK)
+    send_slack_message("Deploying Etalia {0}...".format(version),
+                       channel="#general",
+                       username="deployment-bot",
+                       web_hook_url=SLACK_WEB_HOOK)
 
 
 def get_version(package):
@@ -42,7 +42,7 @@ def deploy(stack='production'):
 
     send_deploy_version_message()
     checkout_master_and_push_recompiled_assets()
-    # call(['fab', 'set_hosts:{stack},*,* -P deploy'.format(stack=stack)])
+    call(['fab', 'set_hosts:{stack},*,*'.format(stack=stack), '-P',  'deploy'])
 
 if __name__ == '__main__':
     deploy()
