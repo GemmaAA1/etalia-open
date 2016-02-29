@@ -69,6 +69,7 @@ ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'feed': 't2.medium',
                           'nlp': 't2.large',
                           'spot': 'm4.large'}
+SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -76,6 +77,8 @@ env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
 env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
+
+init_slack(SLACK_WEB_HOOK)
 
 @task
 def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
