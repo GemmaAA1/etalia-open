@@ -183,6 +183,7 @@ body.flap-opened.right .flap.right {
     color: #7a7d80;
     text-align: center;
     overflow: hidden;
+    padding: 1px 0;
 }
 
 .bar button:hover {
