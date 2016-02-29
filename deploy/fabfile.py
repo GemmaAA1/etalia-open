@@ -166,7 +166,6 @@ def deploy():
         raise ValueError('No hosts defined')
     # Checkout master and recompile assets
     checkout_master_and_push_recompiled_assets()
-
     # run
     update_and_require_libraries()
     create_virtual_env_if_necessary()
