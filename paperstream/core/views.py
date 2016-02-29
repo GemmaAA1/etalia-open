@@ -261,15 +261,31 @@ class BasePaperListView(AjaxListView):
     def get_input_data(self):
         """Get ajax args"""
 
-        data = None
-        if self.request.is_ajax():  # Get data from ajax call
+        # Get data from ajax call
+        if self.request.is_ajax():
             if self.request.GET.dict().get('data'):
                 data = json.loads(self.request.GET.dict().get('data'))
+                #
+                self.populate_attr(data)
                 # store controls data in session
                 self.store_controls_in_session(data)
-        elif self.request.session.get(self.control_session_name): # Or get data from sesssion
+        # Get data from session
+        elif self.request.session.get(self.control_session_name):
             data = self.request.session[self.control_session_name]
+            self.populate_attr(data)
+        # Get default data
+        else:
+            data = {
+                'time_span': self.time_span,
+                'cluster': self.cluster,
+                'pin': self.like_flag,
+                'search_query': self.search_query,
+                'filters': []
+            }
+            # store controls data in session
+            self.store_controls_in_session(data)
 
+    def populate_attr(self, data):
         try:
             self.time_span = int(data.get('time_span', self.time_span) or self.time_span)
             self.cluster = int(data.get('cluster', self.cluster) or self.cluster)
@@ -281,7 +297,6 @@ class BasePaperListView(AjaxListView):
                     self.journals_filter = filter_.get('pk')
                 if filter_.get('id') == 'author':
                     self.authors_filter = filter_.get('pk')
-
         except ValueError:
             pass
 
