@@ -151,6 +151,8 @@ def get_host_roles():
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
     """Deploy paperstream on hosts"""
+    # Go on maintenance
+    go_on_maintenance()
     if not env.hosts:
         raise ValueError('No hosts defined')
     # run
@@ -176,6 +178,8 @@ def deploy():
     reb = update_hosts_file(env.stack_string)
     if reb:
         reboot_instance()
+    # Go off maintenance
+    go_off_maintenance()
 
 
 def create_virtual_env_hooks_if_necessary():
@@ -629,4 +633,14 @@ def clear_nlp_data():
 def remove_env(stack):
     run('rmvirtualenv staging')
 
+@task
+@roles('apps')
+def go_on_maintenance():
+    run('mv /home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html '
+        '/home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html'.format(stack=env.stack))
 
+@task
+@roles('apps')
+def go_off_maintenance():
+    run('mv /home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html '
+        '/home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html'.format(stack=env.stack))
