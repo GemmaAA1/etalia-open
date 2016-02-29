@@ -19,6 +19,13 @@ define([
         list.init();
         detail.init();
 
+        $(list)
+            .on('etalia.list.load', function(e, data) {
+                if (data.hasOwnProperty('controlsStates')) {
+                    controls.setStates(data.controlsStates);
+                }
+            });
+
         $body
             .on(
                 'etalia.control.search.change ' +
@@ -28,11 +35,6 @@ define([
                 'etalia.control.filters.change',
             function() {
                 list.load(controls.getStates());
-            })
-            .on('etalia.list.load', function(e, data) {
-                if (data.hasOwnProperty('controlsStates')) {
-                    controls.setStates(data.controlsStates);
-                }
             })
             .on('etalia.publication.pin', function(e, result) {
                 $('.thumb[data-paper-id=' + result.getId() + ']')

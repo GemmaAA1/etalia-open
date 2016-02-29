@@ -149,12 +149,24 @@ def get_host_roles():
     return [k for k, v in env.roledefs.items() if env.host_string in v]
 
 @task
+def checkout_master_and_push_recompiled_assets():
+    # Git checkout master
+    local('git checkout master', capture=False)
+    # Recompiled assets and push to repo
+    local('gulp')
+    local('git commit -am "recompiled assets prior deployment"')
+    local('git push')
+
+@task
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
     """Deploy paperstream on hosts"""
     send_deploy_version_message()
     if not env.hosts:
         raise ValueError('No hosts defined')
+    # Checkout master and recompile assets
+    checkout_master_and_push_recompiled_assets()
+
     # run
     update_and_require_libraries()
     create_virtual_env_if_necessary()

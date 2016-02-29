@@ -30,7 +30,7 @@ class FeedPaperListView(BasePaperListView):
     def get_queryset(self):
 
         # Retrieve get arguments if any
-        self.parse_ajax_data()
+        self.get_input_data()
 
         # Get data
         self.original_qs = self.get_original_queryset()

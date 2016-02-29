@@ -48,7 +48,7 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
     bottom: 0;
     left: 0;
 
-    background: rgba(255, 255, 255, .9);
+    background: rgba(255, 255, 255, .94);
     opacity: 0;
     transition: opacity .25s;
 
@@ -183,6 +183,7 @@ body.flap-opened.right .flap.right {
     color: #7a7d80;
     text-align: center;
     overflow: hidden;
+    padding: 1px 0;
 }
 
 .bar button:hover {

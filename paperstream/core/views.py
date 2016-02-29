@@ -258,28 +258,47 @@ class BasePaperListView(AjaxListView):
                 'control_session': None
             }
 
-    def parse_ajax_data(self):
+    def get_input_data(self):
         """Get ajax args"""
 
+        # Get data from ajax call
         if self.request.is_ajax():
             if self.request.GET.dict().get('data'):
                 data = json.loads(self.request.GET.dict().get('data'))
-                try:
-                    self.time_span = int(data.get('time_span', self.time_span) or self.time_span)
-                    self.cluster = int(data.get('cluster', self.cluster) or self.cluster)
-                    self.like_flag = data.get('pin', self.like_flag)
-                    self.search_query = data.get('search_query', '')
-                    filters_ = data.get('filters', [])
-                    for filter_ in filters_:
-                        if filter_.get('id') == 'journal':
-                            self.journals_filter = filter_.get('pk')
-                        if filter_.get('id') == 'author':
-                            self.authors_filter = filter_.get('pk')
-                    # store controls data in session
-                    self.store_controls_in_session(data)
+                #
+                self.populate_attr(data)
+                # store controls data in session
+                self.store_controls_in_session(data)
+        # Get data from session
+        elif self.request.session.get(self.control_session_name):
+            data = self.request.session[self.control_session_name]
+            self.populate_attr(data)
+        # Get default data
+        else:
+            data = {
+                'time_span': self.time_span,
+                'cluster': self.cluster,
+                'pin': self.like_flag,
+                'search_query': self.search_query,
+                'filters': [{'id': 'journal', 'pk': []}, {'id': 'author', 'pk': []}],
+            }
+            # store controls data in session
+            self.store_controls_in_session(data)
 
-                except ValueError:
-                    pass
+    def populate_attr(self, data):
+        try:
+            self.time_span = int(data.get('time_span', self.time_span) or self.time_span)
+            self.cluster = int(data.get('cluster', self.cluster) or self.cluster)
+            self.like_flag = data.get('pin', self.like_flag)
+            self.search_query = data.get('search_query', '')
+            filters_ = data.get('filters', [])
+            for filter_ in filters_:
+                if filter_.get('id') == 'journal':
+                    self.journals_filter = filter_.get('pk')
+                if filter_.get('id') == 'author':
+                    self.authors_filter = filter_.get('pk')
+        except ValueError:
+            pass
 
     def store_controls_in_session(self, data):
         """Store controls (filter, pin, time-span to session) in session"""

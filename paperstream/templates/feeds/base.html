@@ -9,18 +9,21 @@
 <div class="wrap">
 
     {% block toggle-pinned %}
-    <button id="toggle-pinned" class="btn-circle" type="button" title="Filter pinned items">
+    <button id="toggle-pinned" class="btn-circle{% if control_session.pin %} active{% endif %}" type="button" title="Filter pinned items">
         <span class="eai eai-pin"></span>
     </button>
     {% endblock toggle-pinned %}
 
     {% block cluster-selector %}
-    {% if hide_cluster_icon %}
-    {% else %}
+    {% if not hide_cluster_icon %}
     <div id="cluster" class="selector" title="Filter items by color">
         <button id="toggle-cluster" class="btn-circle" type="button">
-            <span id="cluster-selection" class="cluster-value" data-value="0"></span>
-            <span class="cluster-icon">
+            {# {% if 0 < control_session.cluster %} #}
+            {# <span id="cluster-selection" class="cluster-value cluster-{{ control_session.cluster - 1 }}" data-value="{{ control_session.cluster }}"></span> #}
+            {# {% else %} #}
+            <span id="cluster-selection" class="cluster-value" style="display:none"></span>
+            {# {% endif %} #}
+            <span class="cluster-icon"{% if not 0 < control_session.cluster %} style="display: none"{% endif %}>
                 <span class="cluster-0"></span>
                 <span class="cluster-1"></span>
                 <span class="cluster-2"></span>
@@ -61,7 +64,17 @@
     <div id="timespan" class="selector" title="Filter items by time span">
         <button id="toggle-timespan" class="btn-circle" type="button">
             <span class="eai eai-clock"></span>
-            <span id="timespan-selection" class="timespan-value" data-value="{{ time_span }}">1m</span>
+            <span id="timespan-selection" class="timespan-value" data-value="{{ control_session.time_span }}">
+                {% if control_session.time_span == 7 %}
+                    W
+                {% elif control_session.time_span == 30 %}
+                    1m
+                {% elif control_session.time_span == 60 %}
+                    2m
+                {% else %}
+                    1m
+                {% endif %}
+            </span>
         </button>
         <div class="choices">
             <ul>
@@ -98,7 +111,7 @@
                 <span class="eai eai-search"></span>
             </button>
             <label for="search-input">
-                <input type="text" id="search-input" name="search" placeholder="Search...">
+                <input type="text" id="search-input" name="search" placeholder="Search..." value="{{ control_session.search_query }}">
             </label>
         </form>
     </div>
