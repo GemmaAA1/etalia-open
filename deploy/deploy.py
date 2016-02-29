@@ -12,6 +12,8 @@ SLACK_WEB_HOOK = "https://hooks.slack.com/services/T0LGELAD8/B0P5G9XLL/qzoOHkE7N
 
 
 def send_deploy_version_message():
+    # init slack web hook
+    init_slack(SLACK_WEB_HOOK)
     ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
     # Get app version from root __init__
     version = get_version(str(ROOT_DIR.path()))

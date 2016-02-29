@@ -76,9 +76,6 @@ env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
 
-# init slack web hook
-init_slack(SLACK_WEB_HOOK)
-
 @task
 def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
@@ -150,11 +147,8 @@ def get_host_roles():
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
     """Deploy paperstream on hosts"""
-    send_deploy_version_message()
     if not env.hosts:
         raise ValueError('No hosts defined')
-    # Checkout master and recompile assets
-    checkout_master_and_push_recompiled_assets()
     # run
     update_and_require_libraries()
     create_virtual_env_if_necessary()
