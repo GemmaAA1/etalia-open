@@ -634,9 +634,9 @@ def remove_env(stack):
 def go_on_maintenance():
     template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
     template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
-    if not files.exists(template_on):  # maintenance is already on
+    if not files.exists(template_on):  # maintenance is not already on
         if files.exists(template_off):
-            run('mv {off} {on}'.format(off=template_off, on=template_on))
+            run_as_root('mv {off} {on}'.format(off=template_off, on=template_on))
         else:
             raise IOError('maintenance_off.html does not exist')
 
@@ -645,8 +645,8 @@ def go_on_maintenance():
 def go_off_maintenance():
     template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
     template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
-    if not files.exists(template_off):  # maintenance is already off
-        if files.exists(template_on):
-            run('mv {on} {off}'.format(off=template_off, on=template_on))
-        else:
-            raise IOError('maintenance_on.html does not exist')
+    if files.exists(template_on):
+        run_as_root('cp {on} {off}'.format(off=template_off, on=template_on))
+        run_as_root('rm {on}'.format(off=template_off, on=template_on))
+    else:
+        raise IOError('maintenance_on.html does not exist')
