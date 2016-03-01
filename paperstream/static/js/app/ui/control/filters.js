@@ -89,6 +89,9 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
         });
 
         this.$element
+            .on('hidden.bs.collapse shown.bs.collapse', '.filter-filters', function() {
+                that.$element.trigger('redraw');
+            })
             .on('click', '.filter-toggle', function(e) {
                 var $group = $(e.target).closest('.filter-group'),
                     groupId = $group.data('id');
@@ -99,8 +102,6 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
                 } else {
                     $group.find('.filter-filters').collapse('hide');
                     statesRegistry.setOpened(groupId, false);
-
-                    //updateFiltersVisibility($group);
                 }
             })
             .on('click', '.filter-group ul a', function(e) {
@@ -128,6 +129,8 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
                     group:  $group.data('id'),
                     count:  count
                 });
+
+                that.$element.trigger('redraw');
             });
 
         return this;
@@ -161,11 +164,14 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
         var that = this;
 
         this.$element
+            .find('.flap-inner')
             .html(Templates.filters.render({groups: groups}))
             .find('.filter-group')
                 .each(function(i, group) {
                     that.applyUserSelection($(group));
                 });
+
+        this.$element.trigger('redraw');
 
         return this;
     };

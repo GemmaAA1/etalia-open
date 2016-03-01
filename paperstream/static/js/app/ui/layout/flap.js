@@ -1,10 +1,10 @@
-define(['jquery', 'jquery.mousewheel'], function($) {
+define(['jquery', 'iscroll'], function($, IScroll) {
 
     var Flap = function(options) {
         options = options || {};
 
         this.config = $.extend({
-            debug: true,
+            debug: false,
             flap: null,
             side: null,
             button: null,
@@ -16,11 +16,11 @@ define(['jquery', 'jquery.mousewheel'], function($) {
         this.$button = $(this.config.button);
         this.$backdrop = $(this.config.backdrop);
 
+        this.iscroll = null;
         this.mobile = null;
         this.clickHandlersEnabled = false;
         this.scrollHandlersEnabled = false;
         this.opened = false;
-        this.scrollTop = 0;
 
         var that = this;
         this.log = function(msg) {
@@ -36,17 +36,10 @@ define(['jquery', 'jquery.mousewheel'], function($) {
             that.log('Overlay click handler');
             that.close();
         };
-        this.flapMouseWheelHandler = function(e) {
-            that.log('Window scroll handler');
-            that.affix(e.deltaY * 50);
 
-            e.preventDefault();
-            return false;
-        };
-        this.backdropMouseWheelHandler = function(e) {
-            e.preventDefault();
-            return false;
-        };
+        this.$flap.on('redraw', function() {
+            that.init();
+        });
     };
     Flap.prototype.init = function() {
         this.log('Flap init');
@@ -62,6 +55,9 @@ define(['jquery', 'jquery.mousewheel'], function($) {
             }
         }
         this.mobile = mobile;
+        if (this.iscroll) {
+            this.iscroll.refresh();
+        }
     };
     Flap.prototype.enableClickHandlers = function() {
         if (this.clickHandlersEnabled) {
@@ -91,8 +87,7 @@ define(['jquery', 'jquery.mousewheel'], function($) {
         }
         this.log('enableScrollHandlers');
 
-        this.$flap.on('mousewheel', this.flapMouseWheelHandler);
-        this.$backdrop.on('mousewheel', this.flapMouseWheelHandler);
+        this.iscroll = new IScroll(this.config.flap, {mouseWheel: true, tap: true});
 
         this.scrollHandlersEnabled = true;
     };
@@ -102,8 +97,8 @@ define(['jquery', 'jquery.mousewheel'], function($) {
         }
         this.log('disableScrollHandlers');
 
-        this.$flap.off('mousewheel', this.flapMouseWheelHandler);
-        this.$backdrop.off('mousewheel', this.flapMouseWheelHandler);
+        this.iscroll.destroy();
+        this.iscroll = null;
 
         this.scrollHandlersEnabled = false;
     };
@@ -134,19 +129,6 @@ define(['jquery', 'jquery.mousewheel'], function($) {
         this.disableScrollHandlers();
 
         this.opened = false;
-    };
-    Flap.prototype.affix = function(delta) {
-        var top = parseInt(this.$flap.css('top')) + delta,
-            min = window.innerHeight - this.$flap.outerHeight();
-
-        if (top > 0) {
-            top = 0;
-        } else if (top < min) {
-            top = min;
-        }
-
-        this.$flap.css({'top': top});
-        this.scrollTop = window.scrollY;
     };
 
     return Flap;

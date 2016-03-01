@@ -55,9 +55,9 @@ define([
             this.log('Left flap found');
             this.leftFlap = new Flap({
                 debug: this.config.debug,
-                flap: $leftFlap,
+                flap: this.config.leftFlap,
                 side: 'left',
-                button: $leftFlapButton,
+                button: this.config.leftFlapButton,
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 992
             });
@@ -71,7 +71,7 @@ define([
             this.log('Right flap found');
             this.rightFlap = new Flap({
                 debug: this.config.debug,
-                flap: $rightFlap,
+                flap: this.config.rightFlap,
                 side: 'right',
                 button: this.config.rightFlapButton,
                 backdrop: this.config.backdrop,
