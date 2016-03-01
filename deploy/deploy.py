@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+To deploy etalia on AWS.
+
+>> ./deploy.py
+
+"""
+
 from __future__ import unicode_literals, absolute_import
 
 import re
