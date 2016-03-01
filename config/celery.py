@@ -7,8 +7,8 @@ located in a app/task.py files are auto detected and available to workers
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
-from paperstream.nlp.models import Model
-from paperstream.nlp.tasks_class import EmbedPaperTask, MostSimilarTask
+from etalia.nlp.models import Model
+from etalia.nlp.tasks_class import EmbedPaperTask, MostSimilarTask
 from django.conf import settings
 from celery import bootsteps
 from celery.bin import Option
@@ -16,7 +16,7 @@ from celery.bin import Option
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 
-celery_app = Celery('paperstream')
+celery_app = Celery('etalia')
 
 # If celery_app.conf  has a broker it has been configured at launch, otherwise
 # load development settings
@@ -62,7 +62,7 @@ def register_model_tasks(init=False):
         .values_list('name', flat=True)
     for model_name in model_names:
         cls = EmbedPaperTask(model_name=model_name, init=init)
-        celery_app.task(cls, name='paperstream.nlp.tasks.{model_name}'.format(
+        celery_app.task(cls, name='etalia.nlp.tasks.{model_name}'.format(
             model_name=model_name))
 
 
@@ -75,7 +75,7 @@ def register_mostsimilar_tasks(init=False):
     for model_name in model_names:
         cls = MostSimilarTask(model_name=model_name,
                               init=init)
-        celery_app.task(cls, name='paperstream.nlp.tasks.mostsimilar_{model_name}'.format(
+        celery_app.task(cls, name='etalia.nlp.tasks.mostsimilar_{model_name}'.format(
             model_name=model_name))
 
 

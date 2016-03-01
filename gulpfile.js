@@ -11,8 +11,8 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence');
 
 var config = {
-    src: 'paperstream/static',
-    dest: 'paperstream/static/compiled'
+    src: 'etalia/static',
+    dest: 'etalia/static/compiled'
 };
 
 
@@ -71,11 +71,11 @@ gulp.task('libraries', function() {
         .pipe(gulp.dest(config.src + '/js/lib/jquery-ui'));
 
     /**
-     * jQuery mouse wheel
+     * iScroll
      */
-    var jqueryMouseWheel = gulp
-        .src('bower_components/jquery-mousewheel/jquery.mousewheel.js', {
-            base: 'bower_components/jquery-mousewheel'
+    var iScroll = gulp
+        .src('bower_components/iscroll/build/iscroll.js', {
+            base: 'bower_components/iscroll/build'
         })
         .pipe(strip())
         .pipe(gulp.dest(config.src + '/js/lib'));
@@ -107,7 +107,7 @@ gulp.task('libraries', function() {
         .pipe(strip())
         .pipe(gulp.dest(config.src + '/js/lib'));
 
-    return merge(requireJs, ie9, jquery, jqueryUi, jqueryMouseWheel, bootstrap, hogan);
+    return merge(requireJs, ie9, jquery, jqueryUi, iScroll, bootstrap, hogan);
 });
 
 
@@ -131,7 +131,7 @@ gulp.task('templates', function() {
  * RequireJs optimisation
  */
 gulp.task('scripts', shell.task([
-    'node_modules/requirejs/bin/r.js -o paperstream/static/js/build.js'
+    'node_modules/requirejs/bin/r.js -o etalia/static/js/build.js'
 ]));
 
 

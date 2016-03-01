@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from paperstream.feeds.tasks import reset_stream, reset_trend
+from etalia.feeds.tasks import reset_stream, reset_trend
 from django.contrib.auth import get_user_model
 
 

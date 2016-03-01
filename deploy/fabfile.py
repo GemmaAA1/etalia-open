@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Fabfile for paperstream deployment on AWS.
+Fabfile for etalia deployment on AWS.
 
 Current Configuration is as follow:
-Two stacks are defined:
-    - staging (at staging-stack.paperstream.io)
-    - production (at www.paperstream.io)
+Stacks defined by STACK_SITE_MAPPING
 Each stack has has 3 layers:
     - a Postgres db (host on AWS RDS)
     - apps
@@ -50,7 +48,7 @@ STACK_SITE_MAPPING = {'staging': '',
                       'production': 'alpha.etalia.io'}
 REGION = os.environ.get("DJANGO_AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
-REPO_URL = 'git@bitbucket.org:NPann/paperstream.git'
+REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
@@ -150,7 +148,7 @@ def get_host_roles():
 @task
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
-    """Deploy paperstream on hosts"""
+    """Deploy etalia on hosts"""
     if not env.hosts:
         raise ValueError('No hosts defined')
     # run
@@ -632,8 +630,8 @@ def remove_env(stack):
 @task
 @roles('apps')
 def go_on_maintenance():
-    template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
-    template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
+    template_off = '{source}/etalia/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
     if not files.exists(template_on):  # maintenance is not already on
         if files.exists(template_off):
             run_as_root('mv {off} {on}'.format(off=template_off, on=template_on))
@@ -643,8 +641,8 @@ def go_on_maintenance():
 @task
 @roles('apps')
 def go_off_maintenance():
-    template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
-    template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
+    template_off = '{source}/etalia/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
     if files.exists(template_on):
         run_as_root('cp {on} {off}'.format(off=template_off, on=template_on))
         run_as_root('rm {on}'.format(off=template_off, on=template_on))

@@ -1,0 +1,89 @@
+{% extends 'pages/base.html' %}
+
+{% load staticfiles %}
+
+{% block page_content %}
+    {% with brand='<strong>Etalia</strong>' %}
+        <h1>About</h1>
+
+        <h2>The Story</h2>
+        <p>
+            {{ brand }} was conceived by two scientists who felt the need for
+            new ways in scholarly communication. The idea of an intelligent
+            platform was born to discover new publications, connect with experts
+            for
+            discussions, comments and reviews, and disseminate one’s own
+            writings.
+        </p>
+
+        <h2>How it works</h2>
+        <p>
+            {{ brand }} checks what you are reading in your personal reference
+            library (e.g. <a href="www.zotero.org">Zotero</a> or <a
+                href="www.mendeley.com">Mendeley</a>) and - based on the library
+            content - generates a personal text fingerprint (PTF) as a
+            representation of your areas of interests. To understand your
+            interests, {{ brand }} uses recent advances in natural language
+            processing, machine learning, and statistics. By matching your PTF
+            with the text fingerprints of publications and other public texts,
+            {{ brand }} provides you with a personalized news stream and lets
+            you
+            engage in content-driven scholarly exchanges.
+            Reading/publishing a new article or extending your research
+            interests? Etalia will automatically adapt.
+        </p>
+
+        <h2>Keep up with new publications</h2>
+        <p>
+            With {{ brand }}, you automatically receive a personalized listing
+            of new
+            scientific publications within your areas of interests. You can
+            upload the publications to your personal library, share them with
+            friends and collaborators via social media, as well as dismiss
+            publications that are less relevant to you. Based on your activity,
+            {{ brand }} learns and refines your literature searches.
+        </p>
+
+        <h2>Discover</h2>
+        <p>
+            {{ brand }} lets you discover trending publications and hot topics
+            in your area of interest and beyond based on the
+            <a href="http://www.altmetric.com/">Altmetric</a>&trade; score.
+        </p>
+
+        <h2>Communicate</h2>
+        <p>
+            With {{ brand }}, you have the possibility of a new text-driven way to
+            communicate with experts on specific topics, such as ask questions,
+            initiate discussions, and invite comments and reviews on your
+            publications. <em>(under development)</em>
+        </p>
+
+        <h2>The Team</h2>
+        <p>
+            Etienne Dauvergne, Developer<br>
+            Nicolas Pannetier, Co-founder, Developer<br>
+            Norbert Schuff, Co-founder, Professor at UCSF<br>
+        </p>
+
+        <h2>Contact Us</h2>
+        <a name="contact"></a>
+        <p>
+            <a href="mailto:contact@etalia.io" target="_top">contact@etalia.io</a>
+        </p>
+
+        <h2>We are social</h2>
+        <p id="about-networks">
+            <a href="https://twitter.com/etaliaio" class="twitter">
+                <span class="eai eai-twitter"></span>
+            </a>
+            <a href="javascript:void(0)" class="facebook">
+                <span class="eai eai-facebook"></span>
+            </a>
+            <a href="javascript:void(0)" class="google">
+                <span class="eai eai-google-plus"></span>
+            </a>
+        </p>
+    {% endwith %}
+{% endblock page_content %}
+

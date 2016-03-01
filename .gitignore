@@ -69,10 +69,10 @@ docs/_build/
 # PyBuilder
 target/
 
-# PaperStream
+# etalia
 nlp_data/
 nlp_data_test/
-paperstream/trash
+etalia/trash
 fabfile/
 staticfiles/
 deploy/.envs

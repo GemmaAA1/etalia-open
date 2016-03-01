@@ -5,8 +5,8 @@ import csv
 import os
 import numpy as np
 from django.contrib.auth import get_user_model
-from paperstream.library.models import Paper
-from paperstream.nlp.models import PaperVectors
+from etalia.library.models import Paper
+from etalia.nlp.models import PaperVectors
 
 # email = 'norbert.schuff@gmail.com'
 email = 'nicolas.pannetier@gmail.com'

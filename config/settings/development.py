@@ -63,14 +63,14 @@ CACHES = {
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #
-#      SWITCH TO STAGING DATABASE      #
+#      SWITCH TO PRODUCTION DATABASE   #
 #                                      #
 ########################################
 
 #
-# NLP_DATA_BUCKET_NAME = 'pubstream-staging-nlp-data'
-# NLP_MODELS_BUCKET_NAME = 'pubstream-staging-nlp-models'
-# NLP_MS_BUCKET_NAME = 'pubstream-staging-nlp-ms'
+# NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
+# NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
+# NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',

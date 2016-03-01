@@ -1,0 +1,53 @@
+{% spaceless %}
+
+{% load navbar_extra %}
+
+<!-- start nav-flap -->
+<div id="nav-flap" class="flap left">
+    <div class="flap-inner">
+        <ul id="main-nav">
+            <li class="{% active request 'feed/stream.+' %}">
+                <a href="{% url 'feeds:stream' %}">My stream {% if stream_counter > 0 %}<span>({{ stream_counter }})</span>{% endif %}</a>
+            </li>
+            <li class="{% active request 'user/tocles.+' %}">
+                <a href="{% url 'user:tocles' %}">My Tocles  {% if tocles_counter > 0 %}<span>({{ tocles_counter }})</span>{% endif %}</a>
+            </li>
+            <li class="{% active request 'feed/trend.+' %}">
+                <a href="{% url 'feeds:trend' %}">Trends  {% if trend_counter > 0 %}<span>({{ trend_counter }})</span>{% endif %}</a>
+            </li>
+            <li class="{% active request 'user/library.+' %}">
+                <a href="{% url 'user:library' %}">Library</a>
+            </li>
+            <li class="separator"></li>
+            <li class="{% active request 'user/settings.+' %}">
+                <a href="{% url 'user:settings' %}">Settings</a>
+            </li>
+            <li class="{% active request 'help.+' %}">
+                <a href="{% url 'core:help' %}">Help</a>
+            </li>
+        </ul>
+        <div id="sub-nav">
+            <ul>
+                <li>
+                    <a href="{% url 'core:support' %}">Support</a>
+                </li>
+                <li>
+                    <a href="http://blog.etalia.io" target="_blank">Blog</a>
+                </li>
+                <li>
+                    <a href="{% url 'core:terms' %}">Terms</a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="{% url 'core:about' %}">About</a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- end nav-flap -->
+{% endspaceless %}

@@ -19,18 +19,18 @@ template = {
 }
 
 in_out_files = [
- ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned_light.csv',
-  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned_light.json'),
- ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned.csv',
-  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_thomsonreuters_cleaned.json'),
- ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned.csv',
-  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned.json'),
- ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned.csv',
-  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned.json'),
- ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned_light.csv',
-  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_arxiv_cleaned_light.json'),
- ('/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned_light.csv',
-  '/Users/nicolaspannetier/Projects/paperstream/paperstream_project/paperstream/static/populate/journals/20150510_medline_cleaned_light.json'),
+ ('/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_thomsonreuters_cleaned_light.csv',
+  '/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_thomsonreuters_cleaned_light.json'),
+ ('/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_thomsonreuters_cleaned.csv',
+  '/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_thomsonreuters_cleaned.json'),
+ ('/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_arxiv_cleaned.csv',
+  '/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_arxiv_cleaned.json'),
+ ('/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_medline_cleaned.csv',
+  '/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_medline_cleaned.json'),
+ ('/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_arxiv_cleaned_light.csv',
+  '/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_arxiv_cleaned_light.json'),
+ ('/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_medline_cleaned_light.csv',
+  '/Users/nicolaspannetier/Projects/etalia/etalia_project/etalia/static/populate/journals/20150510_medline_cleaned_light.json'),
 ]
 
 for input_file, output_file in in_out_files:

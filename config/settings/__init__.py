@@ -2,7 +2,7 @@
 
 import os
 import re
-from paperstream.core.utils import makedirs_p
+from etalia.core.utils import makedirs_p
 
 # creating logs directory if not exist
 if not(os.path.isdir('logs')):
