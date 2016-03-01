@@ -595,25 +595,4 @@ class UserTaste(TimeStampedModel):
             return {'pin': None, 'ban': None}
 
 
-class StreamLayout(TimeStampedModel):
-    """Store settings for stream display"""
-
-    user = models.OneToOneField(User)
-    stream_filter = JSONField(null=True)
-
-
-class TrendLayout(TimeStampedModel):
-    """Store settings for trend display"""
-
-    user = models.OneToOneField(User)
-    trend_filter = JSONField(null=True)
-
-
-class LibraryLayout(TimeStampedModel):
-    """Store settings for library display"""
-
-    user = models.OneToOneField(User)
-    library_filter = JSONField(null=True)
-
-
 
