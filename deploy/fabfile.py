@@ -151,8 +151,6 @@ def get_host_roles():
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
     """Deploy paperstream on hosts"""
-    # Go on maintenance
-    go_on_maintenance()
     if not env.hosts:
         raise ValueError('No hosts defined')
     # run
@@ -178,8 +176,6 @@ def deploy():
     reb = update_hosts_file(env.stack_string)
     if reb:
         reboot_instance()
-    # Go off maintenance
-    go_off_maintenance()
 
 
 def create_virtual_env_hooks_if_necessary():
@@ -636,11 +632,21 @@ def remove_env(stack):
 @task
 @roles('apps')
 def go_on_maintenance():
-    run('mv /home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html '
-        '/home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html'.format(stack=env.stack))
+    template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
+    if not files.exists(template_on):  # maintenance is not already on
+        if files.exists(template_off):
+            run_as_root('mv {off} {on}'.format(off=template_off, on=template_on))
+        else:
+            raise IOError('maintenance_off.html does not exist')
 
 @task
 @roles('apps')
 def go_off_maintenance():
-    run('mv /home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html '
-        '/home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html'.format(stack=env.stack))
+    template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
+    if files.exists(template_on):
+        run_as_root('cp {on} {off}'.format(off=template_off, on=template_on))
+        run_as_root('rm {on}'.format(off=template_off, on=template_on))
+    else:
+        raise IOError('maintenance_on.html does not exist')

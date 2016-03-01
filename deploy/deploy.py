@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+To deploy etalia on AWS.
+
+>> ./deploy.py
+
+"""
+
 from __future__ import unicode_literals, absolute_import
 
 import re
@@ -40,11 +47,14 @@ def checkout_master_and_push_recompiled_assets():
     call(['git', 'push'])
 
 
-def deploy(stack='production'):
-
+if __name__ == '__main__':
+    stack = 'production'
     send_deploy_version_message()
     checkout_master_and_push_recompiled_assets()
+    # Go on maintenance
+    call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_on_maintenance'])
+    # parrallel deploy
     call(['fab', 'set_hosts:{stack},*,*'.format(stack=stack), '-P',  'deploy'])
+    # Go off maintenance
+    call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_off_maintenance'])
 
-if __name__ == '__main__':
-    deploy()
