@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from paperstream.users.models import UserLibPaper
+from etalia.users.models import UserLibPaper
 from django.contrib.auth import get_user_model
-from paperstream.nlp.models import PaperVectors, JournalVectors, Model
-from paperstream.library.models import Paper
+from etalia.nlp.models import PaperVectors, JournalVectors, Model
+from etalia.library.models import Paper
 from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.cluster import AffinityPropagation, DBSCAN
 import numpy as np
@@ -142,7 +142,7 @@ plt.show()
 
 
 from django.contrib.auth import get_user_model
-from paperstream.feeds.scoring import ContentBasedScoring
+from etalia.feeds.scoring import ContentBasedScoring
 from sklearn import manifold, datasets
 
 import  matplotlib.pylab as plt

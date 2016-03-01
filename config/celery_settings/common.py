@@ -6,7 +6,7 @@ from kombu import Queue, Exchange
 from celery.schedules import crontab
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
-APPS_DIR = ROOT_DIR.path('paperstream')
+APPS_DIR = ROOT_DIR.path('etalia')
 
 env = environ.Env()
 
@@ -34,31 +34,31 @@ CELERY_ROUTES = ('config.routers.MyRouter', )
 
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
-        'task': 'paperstream.altmetric.tasks.update_altmetric_periodic',
+        'task': 'etalia.altmetric.tasks.update_altmetric_periodic',
         'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0
     },
     'update-ms-all': {
-        'task': 'paperstream.nlp.tasks.mostsimilar_update_all',
+        'task': 'etalia.nlp.tasks.mostsimilar_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
     },
     'update-all-main-streams': {
-        'task': 'paperstream.feeds.tasks.update_all_main_streams',
+        'task': 'etalia.feeds.tasks.update_all_main_streams',
         'schedule': crontab(minute=0, hour=1),  # every day at UTC+1
     },
     'update-all-main-trends': {
-        'task': 'paperstream.feeds.tasks.update_all_main_trends',
+        'task': 'etalia.feeds.tasks.update_all_main_trends',
         'schedule': crontab(minute=0, hour=2),  # every day at UTC+2
     },
     'pubmed-once-a-day': {
-        'task': 'paperstream.consumers.tasks.pubmed_run_all',
+        'task': 'etalia.consumers.tasks.pubmed_run_all',
         'schedule': crontab(minute=0, hour=6),  # daily at UCT+6
     },
     'arxiv-once-a-day': {
-        'task': 'paperstream.consumers.tasks.arxiv_run_all',
+        'task': 'etalia.consumers.tasks.arxiv_run_all',
         'schedule': crontab(minute=0, hour=12),  # daily at UTC+12
     },
     'elsevier-once-a-day': {
-        'task': 'paperstream.consumers.tasks.elsevier_run_all',
+        'task': 'etalia.consumers.tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
     },
 }
