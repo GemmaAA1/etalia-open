@@ -632,19 +632,21 @@ def remove_env(stack):
 @task
 @roles('apps')
 def go_on_maintenance():
-    if not files.exists('/home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html'):
-        if files.exists('/home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html'):
-            run('mv /home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html '
-                '/home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html'.format(stack=env.stack))
+    template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
+    if not files.exists(template_on):  # maintenance is already on
+        if files.exists(template_off):
+            run('mv {off} {on}'.format(off=template_off, on=template_on))
         else:
             raise IOError('maintenance_off.html does not exist')
 
 @task
 @roles('apps')
 def go_off_maintenance():
-    if not files.exists('/home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html'):
-        if files.exists('/home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html'):
-            run('mv /home/ubuntu/{stack}/source/paperstream/templates/maintenance_on.html '
-                '/home/ubuntu/{stack}/source/paperstream/templates/maintenance_off.html'.format(stack=env.stack))
+    template_off = '{source}/paperstream/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/paperstream/templates/maintenance_on.html'.format(source=env.source_dir)
+    if not files.exists(template_off):  # maintenance is already off
+        if files.exists(template_on):
+            run('mv {on} {off}'.format(off=template_off, on=template_on))
         else:
             raise IOError('maintenance_on.html does not exist')
