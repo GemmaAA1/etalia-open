@@ -7,10 +7,10 @@ requirejs.config({
         'endless': {
             deps: ['jquery']
         },
-        'jquery-ui': {
-            deps: ['jquery']
+        'iscroll': {
+            exports: 'IScroll'
         },
-        'jquery.mousewheel': {
+        'jquery-ui': {
             deps: ['jquery']
         }
     },
@@ -18,8 +18,8 @@ requirejs.config({
         bootstrap: './lib/bootstrap',
         endless: './lib/endless-pagination',
         hogan: './lib/hogan',
+        iscroll: './lib/iscroll',
         jquery: './lib/jquery',
-        'jquery.mousewheel': './lib/jquery.mousewheel',
         'jquery-ui': './lib/jquery-ui',
         altmetric: 'https://d1bxh8uas1mnw7.cloudfront.net/assets/embed'
     }

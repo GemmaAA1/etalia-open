@@ -296,6 +296,10 @@
     padding-right: 20px;
 }
 
+#filter-flap .flap-inner {
+    width: 224px;
+}
+
 .filter-group {
 
 }
