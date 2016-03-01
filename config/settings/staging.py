@@ -5,7 +5,7 @@ CONFIG_FILE = __file__
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['alpha-u6VcayvtcI.pubstream.io']
+ALLOWED_HOSTS = ['staging.etalia.io']
 
 DATABASES = {
     'default': {
@@ -19,9 +19,9 @@ DATABASES = {
 }
 
 # S3 NLP buckets
-NLP_DATA_BUCKET_NAME = 'pubstream-staging-nlp-data'
-NLP_MODELS_BUCKET_NAME = 'pubstream-staging-nlp-models'
-NLP_MS_BUCKET_NAME = 'pubstream-staging-nlp-ms'
+NLP_DATA_BUCKET_NAME = 'etalia-staging-nlp-data'
+NLP_MODELS_BUCKET_NAME = 'etalia-staging-nlp-models'
+NLP_MS_BUCKET_NAME = 'etalia-staging-nlp-ms'
 
 # Static asset configuration
 ROOT_DIR_m1 = ROOT_DIR.path() - 1

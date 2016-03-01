@@ -7,12 +7,12 @@ from __future__ import unicode_literals, absolute_import
 import copy
 import random
 
-from paperstream.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
-from paperstream.library.models import Paper
-from paperstream.altmetric.tasks import update_altmetric
-from paperstream.altmetric.models import AltmetricModel
-from paperstream.feeds.tasks import reset_stream, reset_trend
-from paperstream.nlp.tasks import mostsimilar_update_all
+from etalia.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
+from etalia.library.models import Paper
+from etalia.altmetric.tasks import update_altmetric
+from etalia.altmetric.models import AltmetricModel
+from etalia.feeds.tasks import reset_stream, reset_trend
+from etalia.nlp.tasks import mostsimilar_update_all
 
 from django.contrib.auth import get_user_model
 

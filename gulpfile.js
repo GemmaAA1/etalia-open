@@ -11,8 +11,8 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence');
 
 var config = {
-    src: 'paperstream/static',
-    dest: 'paperstream/static/compiled'
+    src: 'etalia/static',
+    dest: 'etalia/static/compiled'
 };
 
 
@@ -131,7 +131,7 @@ gulp.task('templates', function() {
  * RequireJs optimisation
  */
 gulp.task('scripts', shell.task([
-    'node_modules/requirejs/bin/r.js -o paperstream/static/js/build.js'
+    'node_modules/requirejs/bin/r.js -o etalia/static/js/build.js'
 ]));
 
 

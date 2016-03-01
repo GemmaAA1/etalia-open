@@ -3,9 +3,9 @@ from __future__ import unicode_literals, absolute_import
 import re
 import json
 
-input_file = '/Users/nicolaspannetier/Projects/paperstream/docs/J_Entrez.txt'
-# input_file = '/Users/nicolaspannetier/Projects/paperstream/docs/test.txt'
-output_file = '/Users/nicolaspannetier/Projects/paperstream/docs/J_Entrez_parse.json'
+input_file = '/Users/nicolaspannetier/Projects/etalia/docs/J_Entrez.txt'
+# input_file = '/Users/nicolaspannetier/Projects/etalia/docs/test.txt'
+output_file = '/Users/nicolaspannetier/Projects/etalia/docs/J_Entrez_parse.json'
 
 template = {
     'title':        '',

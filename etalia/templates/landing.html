@@ -1,0 +1,237 @@
+{% extends "root.html" %}
+
+
+{% load staticfiles %}
+
+
+{% block title %}{{ block.super }} - Your Portal to Discovery{% endblock %}
+
+
+{% block body %}
+{% spaceless %}
+<div id="hero" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h1>
+                    <img alt="Etalia" src="{% static 'img/logo.svg' %}">
+                </h1>
+            </div>
+            <div class="col-md-6">
+{#                <h2>Bring your knowlewdge to life</h2>#}
+                <h2>Your Portal to Discovery</h2>
+                <ul>
+                    <li>Browse new publications</li>
+                    <li>Connect with scholars</li>
+                    <li>Expand your knowledge</li>
+{#                    <li>Based on your reference library</li>#}
+                </ul>
+{#                <p class="alt">No search queries. No journal browsing. No alert setup.</p>#}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container providers">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="h3">Sign-in with</p>
+                <p>
+                    <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                        <span class="eai eai-mendeley"></span>
+                        Mendeley
+                    </a>
+                    <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                        <span class="eai eai-zotero"></span>
+                        Zotero
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="what" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-push-6">
+                <p class="h2">What is etalia ?</p>
+                <p>
+                    etalia is an intelligent platform for scholarly communication. Based on
+                    your reference library, etalia builds your text-based fingerprint and let
+                    you focus on what matters to you.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="how" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="h2">How it works ?</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Connecting to your library</h2>
+                <p>
+                    etalia works in sync with your reference
+                    software manager to identify your interests.
+                </p>
+                <p class="alt">
+                    <a href="https://www.zotero.org/">Zotero</a> or
+                    <a href="https://www.mendeley.com/">Mendeley</a> are currently supported.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_2.png' %}" alt="reference manager software hook to etalia">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how alt">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-push-6">
+                <h2>Building personalized streams</h2>
+                <p>
+                    Based on your interests, etalia builds personalized
+                    streams of relevant publications and discussions.
+                </p>
+                <p class="alt">
+                    Changing interests or exploring a new field?
+                    etalia dynamically adapts.
+                </p>
+            </div>
+            <div class="col-md-6 col-md-pull-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_1.png' %}" alt="Cloud of publications">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Leveraging multiple tools</h2>
+                <p>
+                    etalia text-mining technology is based on
+                    state-of-the-art natural language processing
+                    and machine learning.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_4.png' %}" alt="Metrics at work">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container how alt">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-push-6">
+                <h2>Engaging in collaborative science</h2>
+                <p>
+                    etalia lets you connect with other researchers
+                    who share your interests.
+                </p>
+                <p class="alt">
+                    Stuck in your research? Post your issue and etalia targets experts to look at it.
+                </p>
+            </div>
+            <div class="col-md-6 col-md-pull-6">
+                <img class="img-responsive" src="{% static '/static/img/bubble_3.png' %}" alt="Cloud of publications">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="focus" class="wrap-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <span id="sync"></span>
+                <p class="h2">Sync</p>
+                <p>Your reference library</p>
+            </div>
+            <div class="col-md-4">
+                <span id="streams"></span>
+                <p class="h2">Get focus</p>
+                <p>On what matters to you</p>
+            </div>
+            <div class="col-md-4">
+                <span id="trends"></span>
+                <p class="h2">Engage</p>
+                <p>In scholarly exchange</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrap-container providers">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="h3">Try it !</p>
+            </div>
+            <p>
+                <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                    <span class="eai eai-mendeley"></span>
+                    Mendeley
+                </a>
+                <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                    <span class="eai eai-zotero"></span>
+                    Zotero
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div id="footer" class="wrap-container">
+    <div class="container">
+        <ul>
+            <li>
+                <a href="{% url 'core:about' %}">About</a>
+            </li>
+            <li>
+                <a href="http://blog.etalia.io">Blog</a>
+            </li>
+            <li>
+                <a href="{% url 'core:about' %}#contact">Contact</a>
+            </li>
+            <li>
+                <a href="{% url 'core:support' %}">Support</a>
+            </li>
+            <li>
+                <a href="{% url 'core:terms' %}">Terms</a>
+            </li>
+        </ul>
+        <p>&copy; 2015 etalia All rights reserved.</p>
+    </div>
+</div>
+{% endspaceless %}
+{% endblock body %}
+
+
+{% block stylesheets %}
+{% spaceless %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/landing.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/landing.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
+{% endspaceless %}
+{% endblock stylesheets %}

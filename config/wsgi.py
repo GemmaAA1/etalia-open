@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 """
-WSGI config for paperstream project.
+WSGI config for etalia project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

@@ -2,8 +2,8 @@
 from __future__ import unicode_literals, absolute_import
 
 import yaml
-from paperstream.nlp.models import Model
-from paperstream.library.models import Paper
+from etalia.nlp.models import Model
+from etalia.library.models import Paper
 
 path_to_model_file = 'models.yaml'
 with open(path_to_model_file) as stream:

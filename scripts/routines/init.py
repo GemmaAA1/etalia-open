@@ -5,11 +5,11 @@ import yaml
 import copy
 import random
 
-from paperstream.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
-from paperstream.nlp.models import Model, MostSimilar
-from paperstream.library.models import Paper
-from paperstream.altmetric.tasks import update_altmetric
-from paperstream.altmetric.models import AltmetricModel
+from etalia.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
+from etalia.nlp.models import Model, MostSimilar
+from etalia.library.models import Paper
+from etalia.altmetric.tasks import update_altmetric
+from etalia.altmetric.models import AltmetricModel
 
 # Inputs
 MODEL_FILE = './routines/models.yaml'
