@@ -176,8 +176,6 @@ def deploy():
     reb = update_hosts_file(env.stack_string)
     if reb:
         reboot_instance()
-    # Go off maintenance
-    go_off_maintenance()
 
 
 def create_virtual_env_hooks_if_necessary():
