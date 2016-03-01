@@ -151,8 +151,6 @@ def get_host_roles():
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
     """Deploy paperstream on hosts"""
-    # Go on maintenance
-    go_on_maintenance()
     if not env.hosts:
         raise ValueError('No hosts defined')
     # run
