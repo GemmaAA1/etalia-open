@@ -11,7 +11,7 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
 
         this.$element = $(this.config.element);
 
-        this.$toggle = this.$element.find(this.config.toggle);
+        this.$toggle = $(this.config.toggle);
         this.$close  = this.$element.find(this.config.close);
         this.$input  = this.$element.find(this.config.input);
 
@@ -23,14 +23,15 @@ define(['jquery', 'app/util/utils'], function ($, Utils) {
             $body = $('body');
 
         this.$toggle.on('click', function(e) {
-            Utils.toggleClass($search, 'opened');
+            console.log('test');
+            Utils.toggleClass(that.$element, 'opened');
 
             e.preventDefault();
             return false;
         });
 
         this.$close.on('click', function(e) {
-            Utils.toggleClass($search, 'opened');
+            Utils.toggleClass(that.$element, 'opened');
 
             e.preventDefault();
             return false;
