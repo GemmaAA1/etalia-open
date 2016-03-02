@@ -5,21 +5,26 @@ text-driven technology
 
 ### How do I get set up locally? ###
 
-Etalia stack is based on: Django, PostgreSQL, RabbitMQ, Celery
+Etalia stack is based on: 
 
-Pre-requisites are: 
+* Django 
+* PostgreSQL
+* RabbitMQ
+* Celery
 
-* pip (the python package management system)
+Requirements are: 
+
+* pip (the python package manager)
 * virtualenv
 * PostgreSQL
-* RabbitMQ.
+* RabbitMQ
 
-Once you get the pre-requisites installed, follow these steps to get started:
+Once you get the requirements installed, follow these steps to get started:
 
 1. Create you virtual environment and export environment variables from the 
 development configuration file to your virtual environment. 
 (Request one if you don't have one already)
-2. Clone Etalia at: 
+2. Clone Etalia repository
 ```
 #!bash
 
@@ -28,22 +33,26 @@ git clone https://NPann@bitbucket.org/NPann/etalia.git
 
 3. Create a local Postgres database (e.g. "CREATE DATABASE etalia;" from psql on mac)
 4. Copy etalia/config/settings/common.py.dist to etalia/config/settings/common.py
-4. Update database configuration in etalia/config/settings/common.py with your 
+4. Update database settings in etalia/config/settings/common.py with your 
 username and database name. Example:
  
-   ```DATABASES = {
-      'default': {
-          ...
-          'NAME': 'database_name',
-          'USER': 'your_username',
-          'PASSWORD': '',
-          ...
-      }
-   }
-   ```
+```
+DATABASES = {
+  'default': {
+      ...
+      'NAME': 'database_name',
+      'USER': 'your_username',
+      'PASSWORD': '',
+      ...
+  }
+}
+```
    
-3. Go to etalia/scripts directory and run ```./install_local.sh``` script to
-initiate database with some dummy data.
+3. Go to scripts directory and run the install_local script:
+```
+cd scripts/
+./install_local.sh
+``` 
 
 
 * Launching the app:
@@ -56,7 +65,7 @@ $ ./manage.py runserver
 
 ### Etalia team ###
 
-* Nicolas Pannetier (nicolas.pannetier@gmail.com)
 * Etienne Dauvergne
+* Nicolas Pannetier (nicolas.pannetier@gmail.com)
 * Norbert Schuff
 

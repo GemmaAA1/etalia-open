@@ -53,7 +53,7 @@ if __name__ == '__main__':
     checkout_master_and_push_recompiled_assets()
     # Go on maintenance
     call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_on_maintenance'])
-    # parrallel deploy
+    # parallel deploy
     call(['fab', 'set_hosts:{stack},*,*'.format(stack=stack), '-P',  'deploy'])
     # Go off maintenance
     call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_off_maintenance'])
