@@ -484,6 +484,10 @@ class UserSettings(TimeStampedModel):
     stream_vector_weight = models.FloatField(default=1.0,
                                              verbose_name='Content weight')
 
+    # date added vector weight
+    stream_reactivity = models.FloatField(default=1.0,
+                                          verbose_name='Reactivity (higher reactivity focuses your stream on recent papers added to your library)')
+
     # DEPRECATED
     # in days
     stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],

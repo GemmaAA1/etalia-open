@@ -471,6 +471,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.stream_vector_weight = form.cleaned_data['stream_vector_weight']
         self.request.user.settings.stream_author_weight = form.cleaned_data['stream_author_weight']
         self.request.user.settings.stream_journal_weight = form.cleaned_data['stream_journal_weight']
+        self.request.user.settings.stream_reactivity = form.cleaned_data['stream_reactivity']
         self.request.user.settings.save()
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
@@ -478,6 +479,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         data = {'stream_vector_weight': '{0:.2f}'.format(self.request.user.settings.stream_vector_weight),
                 'stream_author_weight': '{0:.2f}'.format(self.request.user.settings.stream_author_weight),
                 'stream_journal_weight': '{0:.2f}'.format(self.request.user.settings.stream_journal_weight),
+                'stream_reactivity': '{0:.2f}'.format(self.request.user.settings.stream_reactivity),
                 }
         return data
 

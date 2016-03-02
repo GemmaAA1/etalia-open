@@ -143,7 +143,9 @@ class UserStreamSettingsForm(forms.ModelForm):
 
     class Meta:
         model = UserSettings
-        fields = ('stream_vector_weight',
+        fields = (
+                  'stream_reactivity',
+                  'stream_vector_weight',
                   'stream_author_weight',
                   'stream_journal_weight',
                   )
@@ -163,6 +165,13 @@ class UserStreamSettingsForm(forms.ModelForm):
                 'data-slider-step': '.01',
                 'data-slider-value': '1'}),
             'stream_journal_weight': forms.TextInput(attrs={
+                'data-slider-id': 'stream_journal_weight_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '1',
+                'data-slider-step': '.01',
+                'data-slider-value': '1'}),
+            'stream_reactivity': forms.TextInput(attrs={
                 'data-slider-id': 'stream_journal_weight_slider',
                 'type': 'text',
                 'data-slider-min': '0',
