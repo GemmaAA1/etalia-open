@@ -338,11 +338,13 @@ def copy_common_py():
 def pull_latest_source():
     """Pull source from bitbucket"""
     # Test if private key has been uploaded
-    if not files.exists('/home/{}/.ssh/id_rsa'.format(env.user)):
+    if not files.exists('/home/{}/.ssh/bitbucket_id_rsa'.format(env.user)):
         if not files.exists('/home/{}/.ssh'.format(env.user)):
             run('mkdir /home/{}/.ssh'.format(env.user))
-        put('.ssh/id_rsa', '/home/{}/.ssh/id_rsa'.format(env.user))
-        run('chmod 400 /home/{}/.ssh/id_rsa'.format(env.user))
+        put('.ssh/bitbucket_id_rsa', '/home/{}/.ssh/bitbucket_id_rsa'.format(env.user))
+        run('chmod 400 /home/{}/.ssh/bitbucket_id_rsa'.format(env.user))
+        if not files.exists('/home/{}/.ssh/config'):
+            put('.ssh/config', '/home/{}/.ssh/config'.format(env.user))
     # pull git
     if files.exists(env.source_dir + '/.git'):
         run('cd {0} && git fetch'.format(env.source_dir))
@@ -352,6 +354,19 @@ def pull_latest_source():
     current_commit = local("git log -n 1 --format=%H", capture=True)
     run('cd {0} && sudo git reset --hard {1}'.format(env.source_dir,
                                                      current_commit))
+
+@task
+def rm_bitbucket_key_config():
+    if files.exists('/home/{}/.ssh/bitbucket_id_rsa'.format(env.user)):
+        run_as_root('rm /home/{}/.ssh/bitbucket_id_rsa'.format(env.user))
+    if files.exists('/home/{}/.ssh/config'.format(env.user)):
+        run_as_root('rm /home/{}/.ssh/config'.format(env.user))
+
+@task
+def update_remote_origin():
+    run_as_root('cd {0} && git remote remove origin'.format(env.source_dir))
+    run('cd {source} && git remote add origin {url}'.format(source=env.source_dir,
+                                                            url=REPO_URL))
 
 @task
 def pip_install():
