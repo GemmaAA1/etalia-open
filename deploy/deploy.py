@@ -5,6 +5,10 @@ To deploy etalia on AWS.
 
 >> ./deploy.py
 
+Requirements:
+- python 2.7    (fabric is python 2.7 only)
+- pip install -r deploy_requirements.txt
+
 """
 
 from __future__ import unicode_literals, absolute_import

@@ -20,14 +20,11 @@ from etalia.altmetric.models import AltmetricModel
 class Scoring(object):
     """Scoring abstract class"""
 
-    TIME_WEIGHT_CUTOFF = -180
     cache = caches['default']
 
     def __init__(self, stream, **kwargs):
         self.stream = stream
         self.journal_ratio = kwargs.get('journal_ratio', 0.)
-        self.time_weight_cutoff = kwargs.get('time_weight_cutoff',
-                                             self.TIME_WEIGHT_CUTOFF)
 
         self.is_ready = False
         self.model = Model.objects.get(is_active=True)
@@ -162,7 +159,7 @@ class Scoring(object):
         return (date - timezone.datetime.today().date()).days
 
     @staticmethod
-    def logist_weight(day_lapse, baseline=0.3, k=0.1, delay=TIME_WEIGHT_CUTOFF):
+    def logist_weight(day_lapse, baseline=0.3, k=0.1, delay=-180):
         """Logistic function with constant baseline term
 
         Args:
@@ -210,12 +207,35 @@ class Scoring(object):
                              'userlib_paper__date_created')
 
         # Convert date into integer number of days from now
-        created_date_int = {k: self.convert_date(v) for k, v in created_date}
+        created_date_int = [(pk, self.convert_date(v)) for pk, v in created_date]
 
         self.created_date_vec = []
+        # reactivity
+        react = self.stream.user.settings.stream_reactivity
+        # get useful date
+        created_date_s = sorted(created_date_int, key=lambda x: x[1])
+        # how many papers in last 2 months
+        nb_30 = len([1 for k, v in created_date_int if v > -30])
+        if nb_30 > 5:  # keep 1 month as a baseline delay
+            d0 = -30
+        else:  # get date of when last 5th paper was added
+            try:
+                d0 = created_date_s[-5][1]
+            except IndexError:
+                d0 = created_date_s[0][1]
+        # get date of first paper added
+        dinf = created_date_s[0][1]
+
+        # logist parameter
+        delay = (d0 - dinf) * react + dinf
+        k = np.float(((np.exp(react) - 1)/(np.exp(1)-1)) ** 2 * 0.1)
+        baseline = 1. - react
+        created_date_int_d = dict(created_date_int)
         for pk in self.seed_pks:
-            w = self.logist_weight(created_date_int[pk],
-                                   delay=self.time_weight_cutoff)
+            w = self.logist_weight(created_date_int_d[pk],
+                                   delay=delay,
+                                   k=k,
+                                   baseline=baseline)
             self.created_date_vec.append(w)
 
         return self.created_date_vec
@@ -276,7 +296,8 @@ class ContentBasedScoring(Scoring):
         auth1, ... authP are most cited authors in seeds
         jour1, ... jourQ are most cited journal in seeds
 
-      User profile array is defined as the average of the seed feature array
+      User profile array is defined as the weighted average of the seed feature
+      array
 
     """
 
