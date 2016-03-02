@@ -16,19 +16,20 @@ from __future__ import unicode_literals, absolute_import
 import re
 import os
 import environ
+import argparse
 from subprocess import call
 from fabric_slack_tools import *
 
 SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
 
 
-def send_deploy_version_message():
+def send_deploy_version_message(stack):
     # init slack web hook
     init_slack(SLACK_WEB_HOOK)
     ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
     # Get app version from root __init__
     version = get_version(str(ROOT_DIR.path()))
-    send_slack_message("Deploying Etalia {0}...".format(version),
+    send_slack_message("Deploying Etalia {vers} on {stack} stack...".format(vers=version, stack=stack),
                        channel="#general",
                        username="deployment-bot",
                        web_hook_url=SLACK_WEB_HOOK)
@@ -52,13 +53,25 @@ def checkout_master_and_push_recompiled_assets():
 
 
 if __name__ == '__main__':
-    stack = 'production'
-    # send_deploy_version_message()
-    checkout_master_and_push_recompiled_assets()
-    # Go on maintenance
-    call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_on_maintenance'])
-    # parallel deploy
-    call(['fab', 'set_hosts:{stack},*,*'.format(stack=stack), '-P',  'deploy'])
-    # Go off maintenance
-    call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_off_maintenance'])
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("stack", help="(str) stack name to be deploy", type=str)
+    parser.add_argument("-p", "--parallel", help="deploy in parallel", action="store_true")
+    args = parser.parse_args()
+
+    send_deploy_version_message(args.stack)
+    checkout_master_and_push_recompiled_assets()
+    if args.parallel:
+        # Go on maintenance
+        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_on_maintenance'])
+        # parallel deploy
+        call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy'])
+        # Go off maintenance
+        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_off_maintenance'])
+    else:
+        # Go on maintenance
+        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_on_maintenance'])
+        # parallel deploy
+        call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
+        # Go off maintenance
+        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
