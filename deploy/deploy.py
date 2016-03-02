@@ -49,7 +49,7 @@ def checkout_master_and_push_recompiled_assets():
 
 if __name__ == '__main__':
     stack = 'production'
-    send_deploy_version_message()
+    # send_deploy_version_message()
     checkout_master_and_push_recompiled_assets()
     # Go on maintenance
     call(['fab', 'set_hosts:{stack},apps,*'.format(stack=stack), '-P',  'go_on_maintenance'])
