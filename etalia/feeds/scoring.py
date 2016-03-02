@@ -229,7 +229,8 @@ class Scoring(object):
         # logist parameter
         delay = (d0 - dinf) * react + dinf
         k = np.float(((np.exp(react) - 1)/(np.exp(1)-1)) ** 2 * 0.1)
-        baseline = 1. - react
+        # baseline = 1. - react
+        baseline = 0
         created_date_int_d = dict(created_date_int)
         for pk in self.seed_pks:
             w = self.logist_weight(created_date_int_d[pk],
