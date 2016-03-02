@@ -65,7 +65,7 @@ $ ./manage.py runserver
 
 ### Etalia team ###
 
-* Nicolas Pannetier (nicolas.pannetier@gmail.com)
 * Etienne Dauvergne
+* Nicolas Pannetier (nicolas.pannetier@gmail.com)
 * Norbert Schuff
 
