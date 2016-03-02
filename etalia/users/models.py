@@ -473,11 +473,11 @@ class UserSettings(TimeStampedModel):
                                         choices=STREAM_METHODS)
 
     # author weight
-    stream_author_weight = models.FloatField(default=1.0,
+    stream_author_weight = models.FloatField(default=0.1,
                                              verbose_name='Author weight')
 
     # journal weight
-    stream_journal_weight = models.FloatField(default=1.0,
+    stream_journal_weight = models.FloatField(default=0.1,
                                               verbose_name='Journal weight')
 
     # vector weight
@@ -485,7 +485,7 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Content weight')
 
     # date added vector weight
-    stream_reactivity = models.FloatField(default=1.0,
+    stream_reactivity = models.FloatField(default=0.9,
                                           verbose_name='Reactivity (higher reactivity focuses your stream on recent papers added to your library)')
 
     # DEPRECATED
