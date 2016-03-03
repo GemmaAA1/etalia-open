@@ -80,4 +80,4 @@ if __name__ == '__main__':
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
 
-    send_deploy_version_message(arg.stack, done=True)
+    send_deploy_version_message(args.stack, done=True)
