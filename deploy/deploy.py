@@ -21,15 +21,19 @@ from subprocess import call
 from fabric_slack_tools import *
 
 SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
+init_slack(SLACK_WEB_HOOK)
 
 
-def send_deploy_version_message(stack):
-    # init slack web hook
-    init_slack(SLACK_WEB_HOOK)
+def send_deploy_version_message(stack, done=False):
     ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
     # Get app version from root __init__
     version = get_version(str(ROOT_DIR.path()))
-    send_slack_message("Deploying Etalia {vers} on {stack} stack...".format(vers=version, stack=stack),
+    if done:
+        mess = "Deploying Etalia {vers} on {stack} stack is done".format(vers=version, stack=stack)
+    else:
+        mess = "Deploying Etalia {vers} on {stack} stack...".format(vers=version, stack=stack)
+
+    send_slack_message(mess,
                        channel="#general",
                        username="deployment-bot",
                        web_hook_url=SLACK_WEB_HOOK)
@@ -76,7 +80,4 @@ if __name__ == '__main__':
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
 
-    send_slack_message("Deploying Etalia {vers} on {stack} stack is done.".format(vers=version, stack=stack),
-                       channel="#general",
-                       username="deployment-bot",
-                       web_hook_url=SLACK_WEB_HOOK)
+    send_deploy_version_message(arg.stack, done=True)
