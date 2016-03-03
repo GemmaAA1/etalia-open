@@ -146,7 +146,7 @@ def get_host_roles():
     return [k for k, v in env.roledefs.items() if env.host_string in v]
 
 @task
-# @announce_deploy("Etalia", channel="#general", username="deployment-bot")
+@announce_deploy("Etalia", channel="#general", username="deployment-bot")
 def deploy():
     """Deploy etalia on hosts"""
     if not env.hosts:
