@@ -15,8 +15,8 @@
     <h1>Frequently Asked Questions</h1>
 
     <div id="faq">
-        <h2><a href="#faqOne">How does {{ brand }} work?</a></h2>
-        <div id="faqOne" class="collapse">
+        <h2><a href="#faq1">How does {{ brand }} work?</a></h2>
+        <div id="faq1" class="collapse">
             <p>
                 {{ brand }} checks what you are reading in your Reference Library.
                 {{ brand }} leverages the content of your library using recent advances
@@ -28,57 +28,103 @@
             </p>
         </div>
 
-        <h2><a href="#faqTwo">How can I use {{ brand }}?</a></h2>
-        <div id="faqTwo" class="collapse">
+        <h2><a href="#faq2">How can I sign in to {{ brand }}?</a></h2>
+        <div id="faq2" class="collapse">
             <p>
-                To use {{ brand }} you need access to the internet and an account with a reference
+                To use {{ brand }} you need access to the internet and the {{ brand }} homepage, that you
+                probably have already if you are reading this. You also need an account with a reference
                 library (e.g. <a href="www.zotero.org">Zotero</a> or <a href="www.mendeley.com">Mendeley</a>).
-                Use your reference library credentials to sign in to {{ brand }}
-                and start browsing your personal stream of recommended publications.
+                Use your reference library credentials to sign in to {{ brand }} from the homepage.
             </p>
         </div>
 
-        <h2><a href="#faqThree">Why {{ brand }} only supports Zotero and Mendeley?</a></h2>
-        <div id="faqThree" class="collapse">
+        <h2><a href="#faq3">Why {{ brand }} only supports Zotero and Mendeley?</a></h2>
+        <div id="faq3" class="collapse">
             <p>
                 <a href="www.zotero.org">Zotero</a> and <a href="www.mendeley.com">Mendeley</a> are the
-                only two reference software managers that are cloud-based and provide
+                currently two reference software managers that provide
                 the ability for third party application, like {{ brand }}, to access your library content
                 through authentication. Both use the <a href="https://en.wikipedia.org/wiki/OAuth">
                 OAuth protocol</a>, which is a widely adopted, open protocol for users to delegate
                 authorization in a secure manner. OAuth is used to authorize requests between {{ brand }}
                 and your reference managers.<br> {{ brand }} will serve other reference managers as
-                support for OAuth is added.
+                support for OAuth is implemented.
+            </p>
+        </div>
+        <h2><a href="#faq4">What  personal information does  Etalia ask me to provide and why?</a></h2>
+        <div id="faq4" class="collapse">
+            <p>
+                {{ brand }} needs your email address when you sign in with your reference manager account
+                and asks for your first name and last name. By granting access to your reference software
+                manager, you also allows {{ brand }} to get in sync with the publications you save in
+                your library. Etalia does not share any of this information with third parties.
             </p>
         </div>
 
-        <h2><a href="#faqFour">What makes {{ brand }} and Google Scholar different?</a></h2>
-        <div id="faqFour" class="collapse">
+        <h2><a href="#faq5">How  can I delete my account with  Etalia?</a></h2>
+        <div id="faq5" class="collapse">
+            <p>
+                Under Settings, you find the option to delete your account.
+            </p>
+        </div>
+
+        <h2><a href="#faq6">The Etalia website does not work</a></h2>
+        <div id="faq6" class="collapse">
+            <p>
+                {{ brand }} might on maintenance and we apologize for any inconvenience. If {{ brand }}
+                is up and running and you cannot access your account, most likely cookies are disabled
+                in your web browser and you have to enable them. Cookies are used to make sign-in to
+                {{ brand }} seamless, that is you will not have to sign-in again if you go back to etalia
+                the next day.
+            </p>
+        </div>
+
+        <h2><a href="#faq7">What makes {{ brand }} different from Google Scholar or ResearchGate?</a></h2>
+        <div id="faq7" class="collapse">
             <p>
                 {{ brand }} recommends publications based on the content of your reference
-                library unlike Google Scholar, which makes suggestions based on your publication
-                and citation records only.
+                library unlike Google Scholar or ResearchGate, which makes suggestions based on
+                your own publication only or static keywords.
             </p>
         </div>
 
-        <h2><a href="#faqFive">How often are recommendations updated?</a></h2>
-        <div id="faqFive" class="collapse">
+        <h2><a href="#faq8">How often are recommendations updated?</a></h2>
+        <div id="faq8" class="collapse">
             <p>
                 {{ brand }} updates recommendations daily.
-                You can also subscribe to receive notifications via email on a regular basis.
+                You can also subscribe to receive notifications via email.
             </p>
         </div>
 
-        <h2><a href="#faqSix">Which publications sources are fetched by {{ brand }}?</a></h2>
-        <div id="faqSix" class="collapse">
+        <h2><a href="#faq9">When to select "My Stream"?</a></h2>
+        <div id="faq9" class="collapse">
             <p>
-                Currently, {{ brand }} fetches publications available on
-                <a href="http://www.ncbi.nlm.nih.gov/pubmed">PubMed</a>, the <a href="http://http://arxiv.org/">
-                Arxiv.org</a> and articles published in <a href="https://www.elsevier.com/journals/title/all">
-                Elsevier journals</a>. That corresponds to about 1,000,000 unique scientific publications per year.
-                Additional sources will follow.
+                Select “My Stream” for a listing of new publications that match your interests profile.
+                From the listing, you can directly link to individual publications, upload them to your
+                reference library, share them with collaborators, and much more.
             </p>
         </div>
+
+        <h2><a href="#faq10">When to select "Trends"?</a></h2>
+        <div id="faq10" class="collapse">
+            <p>
+                Select “Trend” for a listing of new publications that have reached high general attention
+                according to the <a href="http://www.altmetric.com">Altmetric</a> score and may be of interest
+                to you based on your profile.
+            </p>
+        </div>
+
+        <h2><a href="#faq11">What means “My Tocles” and when to select it?</a></h2>
+        <div id="faq11" class="collapse">
+            <p>
+                “My Tocles” is a new text-driven way to communicate with experts on specific topics,
+                such as comments on a pre-print you may have uploaded.  Select “My Tocles” to monitor
+                your communications with a circle of experts who started with you discussion.
+                <b>This service is not yet released and we will roll it out soon. stay tuned.</b>
+                The word “Tocles” is a fusion between “topics” and “circles”, like a circle of experts.
+            </p>
+        </div>
+
     </div>
 {% endwith %}
 {% endblock page_content %}
