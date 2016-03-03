@@ -75,3 +75,8 @@ if __name__ == '__main__':
         call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
+
+    send_slack_message("Deploying Etalia {vers} on {stack} stack is done.".format(vers=version, stack=stack),
+                       channel="#general",
+                       username="deployment-bot",
+                       web_hook_url=SLACK_WEB_HOOK)
