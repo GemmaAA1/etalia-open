@@ -107,7 +107,7 @@ class Model(TimeStampedModel, S3Mixin):
     # doc2vec instance from gensim
     _doc2vec = Doc2Vec()
 
-    # fields
+    # fields of Paper used as text inputs during model training
     text_fields = models.ManyToManyField('TextField',
                                          related_name='text_fields')
 

@@ -51,7 +51,9 @@
 <div class="content">
     <div class="card">
         <p class="ids">
-            {{ paper.print_clean_ids }}
+            <a href="{{ paper.url }}">
+                {{ paper.print_clean_ids }}
+            </a>
         </p>
         <h1 class="title">
             {{ paper.title }}

@@ -485,7 +485,7 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Content weight')
 
     # date added vector weight
-    stream_reactivity = models.FloatField(default=0.9,
+    stream_reactivity = models.FloatField(default=0.5,
                                           verbose_name='Reactivity (higher reactivity focuses your stream on recent papers added to your library)')
 
     # DEPRECATED

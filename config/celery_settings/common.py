@@ -10,6 +10,13 @@ APPS_DIR = ROOT_DIR.path('etalia')
 
 env = environ.Env()
 
+# EMAIl
+CELERY_SEND_TASK_ERROR_EMAILS = True
+SERVER_EMAIL = 'no-reply@etalia.io'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
+          ]
+# BROKER
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
