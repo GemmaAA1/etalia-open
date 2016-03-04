@@ -38,4 +38,5 @@ def embed_all_models(paper_pk):
 
 @app.task()
 def failing_task():
+    """For email error testing"""
     raise AssertionError
