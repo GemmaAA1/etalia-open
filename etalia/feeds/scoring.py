@@ -207,9 +207,8 @@ class Scoring(object):
         created_date_int = [(pk, self.convert_date(v)) for pk, v in created_date]
 
         # logist parameter
-        delay = self.stream.user.settings.stream_roll_back_deltatime
-        k = np.float(((np.exp(react) - 1)/(np.exp(1)-1)) ** 2 * 0.1)
-        # baseline = 1. - react
+        delay = - self.stream.user.settings.stream_roll_back_deltatime * 30
+        k = 0.1
         baseline = 0
         created_date_int_d = dict(created_date_int)
         for pk in self.seed_pks:

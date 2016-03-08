@@ -24,7 +24,7 @@
                         <div class="row">
                             <div class="col-md-9">
 {#                                <h5>Method: <span id="stream_method">{{ user.settings.get_stream_method_display }}</span></h5>#}
-                                <h5>Reactivity: <span id="stream_reactivity">{{ user.settings.stream_reactivity|floatformat:2 }}</span></h5>
+                                <h5>Roll-back: <span id="stream_roll_back_deltatime">{{ user.settings.stream_roll_back_deltatime|floatformat:0 }} months</span></h5>
                                 <h4 style="padding-top:10px"><em>Beta-testing parameters:</em></h4>
                                 <h5>Content weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:2 }}</span></h5>
                                 <h5>Author weight: <span id="stream_author_weight">{{ user.settings.stream_author_weight|floatformat:2 }}</span></h5>
