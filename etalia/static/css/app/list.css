@@ -292,12 +292,8 @@
 
 /* ------------------------------------ FILTERS ------------------------------------ */
 
-#filter-flap {
-    padding-right: 20px;
-}
-
 #filter-flap .flap-inner {
-    width: 224px;
+    padding-right: 20px;
 }
 
 .filter-group {

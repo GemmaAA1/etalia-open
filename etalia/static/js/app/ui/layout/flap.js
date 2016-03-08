@@ -1,4 +1,4 @@
-define(['jquery', 'iscroll'], function($, IScroll) {
+define(['jquery'], function($) {
 
     var Flap = function(options) {
         options = options || {};
@@ -16,10 +16,8 @@ define(['jquery', 'iscroll'], function($, IScroll) {
         this.$button = $(this.config.button);
         this.$backdrop = $(this.config.backdrop);
 
-        this.iscroll = null;
         this.mobile = null;
         this.clickHandlersEnabled = false;
-        this.scrollHandlersEnabled = false;
         this.opened = false;
 
         var that = this;
@@ -43,21 +41,17 @@ define(['jquery', 'iscroll'], function($, IScroll) {
     };
     Flap.prototype.init = function() {
         this.log('Flap init');
+        this.$flap.css({height: window.innerHeight + 'px'});
         var mobile = window.innerWidth < this.config.mobileMaxWidth;
         if (mobile != this.mobile) {
             this.close();
-            this.disableScrollHandlers();
             if (mobile) {
                 this.enableClickHandlers();
             } else {
                 this.disableClickHandlers();
-                this.enableScrollHandlers();
             }
         }
         this.mobile = mobile;
-        if (this.iscroll) {
-            this.iscroll.refresh();
-        }
     };
     Flap.prototype.enableClickHandlers = function() {
         if (this.clickHandlersEnabled) {
@@ -81,40 +75,16 @@ define(['jquery', 'iscroll'], function($, IScroll) {
 
         this.clickHandlersEnabled = false;
     };
-    Flap.prototype.enableScrollHandlers = function() {
-        if (this.scrollHandlersEnabled) {
-            return;
-        }
-        this.log('enableScrollHandlers');
-
-        this.iscroll = new IScroll(this.config.flap, {mouseWheel: true, tap: true});
-
-        this.scrollHandlersEnabled = true;
-    };
-    Flap.prototype.disableScrollHandlers = function() {
-        if (!this.scrollHandlersEnabled) {
-            return;
-        }
-        this.log('disableScrollHandlers');
-
-        this.iscroll.destroy();
-        this.iscroll = null;
-
-        this.scrollHandlersEnabled = false;
-    };
     Flap.prototype.open = function() {
         if (this.opened) {
             return this;
         }
 
-        this.opened = true;
-
         $('body')
             .addClass('flap-opened')
             .addClass(this.config.side);
 
-        this.$flap.css({'top': 0});
-        this.enableScrollHandlers();
+        this.opened = true;
     };
     Flap.prototype.close = function() {
         if (!this.opened) {
@@ -124,9 +94,6 @@ define(['jquery', 'iscroll'], function($, IScroll) {
         $('body')
             .removeClass('flap-opened')
             .removeClass(this.config.side);
-
-        this.$flap.css({'top': 0});
-        this.disableScrollHandlers();
 
         this.opened = false;
     };
