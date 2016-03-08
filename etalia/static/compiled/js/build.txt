@@ -2,7 +2,6 @@
 app/default.js
 ----------------
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -13,7 +12,6 @@ app/default.js
 app/pages.js
 ----------------
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -24,7 +22,6 @@ app/pages.js
 app/feed/default.js
 ----------------
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -61,7 +58,6 @@ app/ui/controls.js
 app/ui/list.js
 app/util/sticky.js
 app/ui/paper.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -72,7 +68,6 @@ app/feed/paper.js
 app/user/profile.js
 ----------------
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -83,7 +78,6 @@ app/user/profile.js
 app/user/settings.js
 ----------------
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -98,7 +92,6 @@ app/user/settings.js
 app/user/signup.js
 ----------------
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js
@@ -110,7 +103,6 @@ app/user/library.js
 ----------------
 app/ui/api.js
 app/util/utils.js
-lib/iscroll.js
 app/ui/layout/flap.js
 app/ui/layout/interact.js
 app/ui/layout/invite.js

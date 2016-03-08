@@ -71,16 +71,6 @@ gulp.task('libraries', function() {
         .pipe(gulp.dest(config.src + '/js/lib/jquery-ui'));
 
     /**
-     * iScroll
-     */
-    var iScroll = gulp
-        .src('bower_components/iscroll/build/iscroll.js', {
-            base: 'bower_components/iscroll/build'
-        })
-        .pipe(strip())
-        .pipe(gulp.dest(config.src + '/js/lib'));
-
-    /**
      * Bootstrap (custom build)
      */
     var bootstrap = gulp
@@ -107,7 +97,7 @@ gulp.task('libraries', function() {
         .pipe(strip())
         .pipe(gulp.dest(config.src + '/js/lib'));
 
-    return merge(requireJs, ie9, jquery, jqueryUi, iScroll, bootstrap, hogan);
+    return merge(requireJs, ie9, jquery, jqueryUi, bootstrap, hogan);
 });
 
 
@@ -220,7 +210,7 @@ gulp.task('clean', function () {
 /**
  * Tasks
  */
-gulp.task('build', function(cb) {
+gulp.task('build', function() {
     runSequence(
         'clean',
         ['libraries', 'templates'],

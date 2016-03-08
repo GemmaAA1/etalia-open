@@ -7,9 +7,6 @@ requirejs.config({
         'endless': {
             deps: ['jquery']
         },
-        'iscroll': {
-            exports: 'IScroll'
-        },
         'jquery-ui': {
             deps: ['jquery']
         }
@@ -18,7 +15,6 @@ requirejs.config({
         bootstrap: './lib/bootstrap',
         endless: './lib/endless-pagination',
         hogan: './lib/hogan',
-        iscroll: './lib/iscroll',
         jquery: './lib/jquery',
         'jquery-ui': './lib/jquery-ui',
         altmetric: 'https://d1bxh8uas1mnw7.cloudfront.net/assets/embed'
