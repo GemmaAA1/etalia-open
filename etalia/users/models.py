@@ -221,6 +221,9 @@ class UserLib(TimeStampedModel):
                  ('IDL', 'Idle'),
                  ('ING', 'Syncing')))
 
+    # date of first paper added in user library
+    d_oldest = models.DateField(null=True, blank=True)
+
     @property
     def count_papers(self):
         return self.papers.all().count()
@@ -271,6 +274,17 @@ class UserLib(TimeStampedModel):
         return UserLibJournal.objects\
                     .filter(userlib=self)\
                     .values_list('journal', 'occurrence')
+
+    def get_d_oldest(self):
+        # get date_created for papers
+        created_date = self.userlib_paper.values('pk', 'date_created')
+        # sort them
+        created_date_s = sorted(created_date, key=lambda x: x['date_created'])
+        return created_date_s[0]['date_created']
+
+    def set_d_oldest(self):
+        self.d_oldest = self.get_d_oldest()
+        self.save()
 
 
 class UserLibPaper(TimeStampedModel):
@@ -484,9 +498,9 @@ class UserSettings(TimeStampedModel):
     stream_vector_weight = models.FloatField(default=1.0,
                                              verbose_name='Content weight')
 
-    # date added vector weight
-    stream_reactivity = models.FloatField(default=0.5,
-                                          verbose_name='Reactivity (higher reactivity focuses your stream on recent papers added to your library)')
+    # delta-time in months to roll back stream
+    stream_roll_back_deltatime = models.IntegerField(default=36,
+                                             verbose_name='Rolling back time (Lower time will focus on recent addition to your library')
 
     # DEPRECATED
     # in days
@@ -544,6 +558,13 @@ class UserSettings(TimeStampedModel):
 
     def __str__(self):
         return self.user.email
+
+    def init(self):
+        """Initialize user settings"""
+        # default roll back deltatime (either default or user.lib.d_oldest)
+        if self.stream_roll_back_deltatime > self.user.lib.d_oldest:
+            self.stream_roll_back_deltatime = self.user.lib.d_oldest
+            self.save()
 
 
 class UserTaste(TimeStampedModel):
