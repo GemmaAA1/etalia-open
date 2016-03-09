@@ -50,7 +50,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return session
 
-    def update_lib(self, user, session, full=False):
+    def _update_lib(self, user, session, full=False):
         """Update User Lib
 
         Args:
@@ -66,10 +66,6 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         new = True
         count = 0
         not_new_stack_count = 0
-
-        # update db states
-        user.stats.log_lib_starts_sync(user)
-        user.lib.set_state('ING')
 
         items = session.top(limit=self.CHUNK_SIZE)
 
@@ -111,9 +107,6 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
             except:
                 break
 
-        # update UserLib and Stats
-        user.stats.log_lib_ends_sync(user, count)
-        user.lib.set_state('IDL')
         return count
 
     @staticmethod

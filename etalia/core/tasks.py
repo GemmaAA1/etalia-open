@@ -34,3 +34,9 @@ def embed_all_models(paper_pk):
             continue
 
         model_task.delay('infer_paper', paper_pk=paper_pk)
+
+
+@app.task()
+def failing_task():
+    """For email error testing"""
+    raise AssertionError

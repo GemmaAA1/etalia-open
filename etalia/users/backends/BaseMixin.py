@@ -161,7 +161,20 @@ class BackendLibMixin(object):
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')
 
-    def update_lib(self, session, user):
+    def update_lib(self, user, session):
+        # update db state
+        user.lib.set_state('ING')
+        user.stats.log_lib_starts_sync(user)
+        # really update
+        count = self._update_lib(user, session)
+        # retrieve first paper added
+        user.lib.set_d_oldest()
+        # update UserLib and Stats
+        user.stats.log_lib_ends_sync(user, count)
+        user.lib.set_state('IDL')
+        return count
+
+    def _update_lib(self, session, user):
         raise NotImplementedError('Implement in subclass')
 
     def is_journal_has_id(self, item_journal):

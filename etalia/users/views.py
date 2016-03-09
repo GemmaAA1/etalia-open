@@ -471,7 +471,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.stream_vector_weight = form.cleaned_data['stream_vector_weight']
         self.request.user.settings.stream_author_weight = form.cleaned_data['stream_author_weight']
         self.request.user.settings.stream_journal_weight = form.cleaned_data['stream_journal_weight']
-        self.request.user.settings.stream_reactivity = form.cleaned_data['stream_reactivity']
+        self.request.user.settings.stream_roll_back_deltatime = form.cleaned_data['stream_roll_back_deltatime']
         self.request.user.settings.save()
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
@@ -479,7 +479,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         data = {'stream_vector_weight': '{0:.2f}'.format(self.request.user.settings.stream_vector_weight),
                 'stream_author_weight': '{0:.2f}'.format(self.request.user.settings.stream_author_weight),
                 'stream_journal_weight': '{0:.2f}'.format(self.request.user.settings.stream_journal_weight),
-                'stream_reactivity': '{0:.2f}'.format(self.request.user.settings.stream_reactivity),
+                'stream_roll_back_deltatime': '{0:d} months'.format(self.request.user.settings.stream_roll_back_deltatime),
                 }
         return data
 
@@ -548,13 +548,13 @@ def user_init_step(request):
         done = False
         redirect = ''
         if request.user.init_step == 'LIB':
-            messages = ['Syncing your library with Etalia' ,
-                        '({0})'.format(request.user.lib.count_papers)]
+            messages = ['Syncing your library' ,
+                        '({0} papers)'.format(request.user.lib.count_papers)]
         elif request.user.init_step == 'STR':
-            messages = ['Building your personalized streams',
+            messages = ['Building your streams',
                         '(1/2)']
         elif request.user.init_step == 'TRE':
-            messages = ['Building your personalized streams',
+            messages = ['Building your streams',
                         '2/2']
         elif request.user.init_step == 'IDL':
             done = True
@@ -575,9 +575,9 @@ def user_update_step(request):
         done = False
         redirect = ''
         if request.user.streams.first().state == 'ING':
-            messages = ['Updating Your News']
+            messages = ['Updating My Stream', '']
         elif request.user.trends.first().state == 'ING':
-            messages = ['Updating Top News']
+            messages = ['Updating Trends', '']
         elif request.user.streams.first().state == 'IDL' and \
                         request.user.trends.first().state == 'IDL':
             done = True

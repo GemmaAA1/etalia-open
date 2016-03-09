@@ -16,6 +16,7 @@ from endless_pagination.views import AjaxListView
 from etalia.altmetric.models import AltmetricModel
 from etalia.users.models import UserTaste, Author
 from etalia.core.utils import AttrDict
+from .tasks import failing_task
 
 
 def home(request):
@@ -306,6 +307,11 @@ class BasePaperListView(AjaxListView):
 
     def get_context_settings(self):
         raise NotImplemented
+
+
+def test_failing_task(request):
+    failing_task.delay()
+    return redirect('feeds:stream')
 
 
 

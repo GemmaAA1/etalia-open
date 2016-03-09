@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
+from django.utils import timezone
 from .models import Affiliation, UserSettings, UserTaste, UserLibPaper
 from .validators import validate_first_name, validate_last_name
 
@@ -140,11 +141,15 @@ class UserStreamSettingsForm(forms.ModelForm):
                 '{0:.2f}'.format(kwargs['instance'].stream_author_weight)
             self.fields['stream_journal_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_journal_weight)
+            self.fields['stream_roll_back_deltatime'].widget.attrs['data-slider-value'] = \
+                '{0:.2f}'.format(kwargs['instance'].stream_roll_back_deltatime)
+            delta_month = int((timezone.now().date() - kwargs['instance'].user.lib.d_oldest).days / 30)
+            self.fields['stream_roll_back_deltatime'].widget.attrs['data-slider-max'] = delta_month
 
     class Meta:
         model = UserSettings
         fields = (
-                  'stream_reactivity',
+                  'stream_roll_back_deltatime',
                   'stream_vector_weight',
                   'stream_author_weight',
                   'stream_journal_weight',
@@ -171,12 +176,12 @@ class UserStreamSettingsForm(forms.ModelForm):
                 'data-slider-max': '1',
                 'data-slider-step': '.01',
                 'data-slider-value': '1'}),
-            'stream_reactivity': forms.TextInput(attrs={
-                'data-slider-id': 'stream_journal_weight_slider',
+            'stream_roll_back_deltatime': forms.TextInput(attrs={
+                'data-slider-id': 'stream_roll_back_deltatime_slider',
                 'type': 'text',
-                'data-slider-min': '0',
+                'data-slider-min': '1',
                 'data-slider-max': '1',
-                'data-slider-step': '.01',
+                'data-slider-step': '1',
                 'data-slider-value': '1'}),
         }
 

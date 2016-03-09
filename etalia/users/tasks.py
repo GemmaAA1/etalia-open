@@ -35,6 +35,18 @@ def update_lib(user_pk, provider_name):
 
 
 @app.task()
+def update_settings(user_pk):
+    """Async task for updating user library"""
+    # get user
+    user = User.objects.get(pk=user_pk)
+
+    # init settings
+    user.settings.init()
+
+    return user_pk
+
+
+@app.task()
 def init_step(user_pk, step):
     """Set flag is_init to True"""
     user = User.objects.get(pk=user_pk)
@@ -50,6 +62,8 @@ def init_user(user_pk, provider_name):
     task = chain(
         init_step.s(user_pk, 'LIB'),
         update_lib.s(provider_name),
+        init_step.s('SET'),
+        update_settings.s(),
         init_step.s('STR'),
         update_stream.s(),
         init_step.s('TRE'),

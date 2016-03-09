@@ -200,36 +200,16 @@ class Scoring(object):
         date_vec = np.zeros(len(self.seed_pks), dtype=np.float)
 
         # Get date data
-        created_date = Paper.objects\
-                .filter(userlib_paper__userlib=self.stream.user.lib,
-                        userlib_paper__paper__in=self.seed_pks)\
-                .values_list('pk',
-                             'userlib_paper__date_created')
+        created_date = self.stream.user.lib.userlib_paper\
+            .filter(paper_id__in=self.seed_pks)\
+            .values_list('paper_id', 'date_created')
 
         # Convert date into integer number of days from now
         created_date_int = [(pk, self.convert_date(v)) for pk, v in created_date]
 
-        self.created_date_vec = []
-        # reactivity
-        react = self.stream.user.settings.stream_reactivity
-        # get useful date
-        created_date_s = sorted(created_date_int, key=lambda x: x[1])
-        # how many papers in last 2 months
-        nb_30 = len([1 for k, v in created_date_int if v > -30])
-        if nb_30 > 5:  # keep 1 month as a baseline delay
-            d0 = -30
-        else:  # get date of when last 5th paper was added
-            try:
-                d0 = created_date_s[-5][1]
-            except IndexError:
-                d0 = created_date_s[0][1]
-        # get date of first paper added
-        dinf = created_date_s[0][1]
-
         # logist parameter
-        delay = (d0 - dinf) * react + dinf
-        k = np.float(((np.exp(react) - 1)/(np.exp(1)-1)) ** 2 * 0.1)
-        # baseline = 1. - react
+        delay = - self.stream.user.settings.stream_roll_back_deltatime * 30
+        k = 0.1
         baseline = 0
         created_date_int_d = dict(created_date_int)
         for pk in self.seed_pks:

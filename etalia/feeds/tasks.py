@@ -89,3 +89,5 @@ def reset_trend(user_pk, trend_name='main'):
     # update
     df.update()
     return user_pk
+
+
