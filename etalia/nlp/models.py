@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import os
 import logging
 import glob
+import pickle
 from random import shuffle
 import numpy as np
 import collections
@@ -813,12 +814,12 @@ class MostSimilarManager(models.Manager):
 
             obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
                                                 '{0}.ms_data'.format(obj.name)))
-            obj.index2pk = joblib.load(os.path.join(settings.NLP_MS_PATH,
-                                                '{0}.ms_ind2pk'.format(obj.name)))
-            obj.index2journalpk = joblib.load(os.path.join(settings.NLP_MS_PATH,
-                                                '{0}.ms_ind2journalpk'.format(obj.name)))
-            obj.date = joblib.load(os.path.join(settings.NLP_MS_PATH,
-                                                '{0}.ms_date'.format(obj.name)))
+            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2pk'), 'rb') as f:
+                obj.index2pk = pickle.load(f)
+            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2journalpk'), 'rb') as f:
+                obj.index2journalpk = pickle.load(f)
+            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_date'), 'rb') as f:
+                obj.date = pickle.load(f)
         except EnvironmentError:      # OSError or IOError...
             raise
 
@@ -890,14 +891,15 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # save files to local volume
         if not os.path.exists(settings.NLP_MS_PATH):
             os.makedirs(settings.NLP_MS_PATH)
-        joblib.dump(self.data, os.path.join(settings.NLP_MS_PATH,
-                                            self.name + '.ms_data'))
-        joblib.dump(self.index2pk, os.path.join(settings.NLP_MS_PATH,
-                                            self.name + '.ms_ind2pk'))
-        joblib.dump(self.index2journalpk, os.path.join(settings.NLP_MS_PATH,
-                                            self.name + '.ms_ind2journalpk'))
-        joblib.dump(self.date, os.path.join(settings.NLP_MS_PATH,
-                                            self.name + '.ms_date'))
+        # use joblib for numpy array pickling optimization
+        joblib.dump(self.data, os.path.join(settings.NLP_MS_PATH, self.name + '.ms_data'))
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2pk'), 'wb') as f:
+            pickle.dump(self.index2pk, f)
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2journalpk'), 'wb') as f:
+            pickle.dump(self.index2journalpk, f)
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_date'), 'wb') as f:
+            pickle.dump(self.date, f)
+
         # push files to s3
         if self.BUCKET_NAME:
             self.upload_state = 'ING'

@@ -64,11 +64,11 @@ if INVITE_MODE:
         }
     }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-}
+# CACHES = {
+    # 'default': {
+    #     'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    # }
+# }
 
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
@@ -80,14 +80,14 @@ CACHES = {
 #
 # NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
 # NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
-# NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': env.str('AWS_RDS_DB_NAME'),
-#         'USER': env.str('AWS_RDS_USERNAME'),
-#         'PASSWORD': env.str('AWS_RDS_PASSWORD'),
-#         'HOST': env.str('AWS_RDS_HOSTNAME'),
-#         'PORT': env.str('AWS_RDS_PORT'),
-#     }
-# }
+NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env.str('AWS_RDS_DB_NAME'),
+        'USER': env.str('AWS_RDS_USERNAME'),
+        'PASSWORD': env.str('AWS_RDS_PASSWORD'),
+        'HOST': env.str('AWS_RDS_HOSTNAME'),
+        'PORT': env.str('AWS_RDS_PORT'),
+    }
+}

@@ -663,3 +663,10 @@ def go_off_maintenance():
         run_as_root('rm {on}'.format(off=template_off, on=template_on))
     else:
         raise IOError('maintenance_on.html does not exist')
+
+
+@task
+def copy_local_file_to_remote(local_path, remote_path):
+    if not files.exists(os.path.dirname(remote_path)):
+        run('mkdir -p {0}'.format(os.path.dirname(remote_path)))
+    put(local_path, remote_path)
