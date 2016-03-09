@@ -5,7 +5,6 @@
     "jquery-ui": "~1.11",
     "jquery": "~1.11",
     "html5shiv": "~3.7",
-    "respond": "Respond#~1.4",
-    "iscroll": "~5.1"
+    "respond": "Respond#~1.4"
   }
 }

@@ -9,14 +9,14 @@
 <div class="wrap">
 
     {% block toggle-pinned %}
-    <button id="toggle-pinned" class="btn-circle{% if control_session.pin %} active{% endif %}" type="button" title="Filter pinned items">
+    <button id="toggle-pinned" class="btn-circle{% if control_session.pin %} active{% endif %}" type="button" title="Pinned items">
         <span class="eai eai-pin"></span>
     </button>
     {% endblock toggle-pinned %}
 
     {% block cluster-selector %}
     {% if not hide_cluster_icon %}
-    <div id="cluster" class="selector" title="Filter items by color">
+    <div id="cluster" class="selector" title="Clusters">
         <button id="toggle-cluster" class="btn-circle" type="button">
             {# {% if 0 < control_session.cluster %} #}
             {# <span id="cluster-selection" class="cluster-value cluster-{{ control_session.cluster - 1 }}" data-value="{{ control_session.cluster }}"></span> #}
@@ -61,7 +61,7 @@
     {% endblock cluster-selector %}
 
     {% block timespan-selector %}
-    <div id="timespan" class="selector" title="Filter items by time span">
+    <div id="timespan" class="selector" title="Time span">
         <button id="toggle-timespan" class="btn-circle" type="button">
             <span class="eai eai-clock"></span>
             <span id="timespan-selection" class="timespan-value" data-value="{{ control_session.time_span }}">

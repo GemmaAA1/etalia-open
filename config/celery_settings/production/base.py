@@ -3,8 +3,9 @@ from __future__ import unicode_literals, absolute_import
 
 from config.celery_settings.common import *
 
-CELERY_SEND_TASK_ERROR_EMAILS = True
-SERVER_EMAIL = 'no-reply@etalia.io'
+EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
+MAILGUN_ACCESS_KEY = env.str('MAILGUN_KEY')
+MAILGUN_SERVER_NAME = 'mg.etalia.io'
 
 # Celery
 BROKER_URL = 'amqp://{username}:{password}@{host}:5672//'.format(

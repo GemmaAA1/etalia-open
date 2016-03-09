@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^terms/$', views.terms, name='terms'),
     url(r'^support/$', views.support, name='support'),
     url(r'^help/$', views.help, name='help'),
+    url(r'^test-failing-task$', views.test_failing_task)
 ]

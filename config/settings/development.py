@@ -17,6 +17,16 @@ DEBUG_TOOLBAR_PATCH_SETTINGS = False
 #                      MIDDLEWARE_CLASSES
 INTERNAL_IPS = ['127.0.0.1']
 
+# APPS
+INSTALLED_APPS += ('django_extensions', )
+
+
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}
+
+
 # CONSUMER
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database

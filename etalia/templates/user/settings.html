@@ -13,19 +13,19 @@
                 <div id="stream-settings-section" class="col-md-8 col-md-offset-2">
                     <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
                     <h4><div id="errors" class="text-center" style="padding-bottom: 20px;"></div></h4>
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
                             Stream
                             <br>
                             <a class="edit" href="javascript:" data-toggle="modal" data-target="#stream-settings-modal">Edit</a>
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div class="row">
                             <div class="col-md-9">
 {#                                <h5>Method: <span id="stream_method">{{ user.settings.get_stream_method_display }}</span></h5>#}
-                                <h5>Reactivity: <span id="stream_reactivity">{{ user.settings.stream_reactivity|floatformat:2 }}</span></h5>
-                                <h4 style="padding-top:10px"><em>Beta-testing parameters:</em></h4>
+                                <h5>Roll-back: <span id="stream_roll_back_deltatime">{{ user.settings.stream_roll_back_deltatime|floatformat:0 }} months</span></h5>
+                                <h4 style="padding-top:10px; font-size: 120%;">Extra parameters during during beta:</h4>
                                 <h5>Content weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:2 }}</span></h5>
                                 <h5>Author weight: <span id="stream_author_weight">{{ user.settings.stream_author_weight|floatformat:2 }}</span></h5>
                                 <h5>Journal weight: <span id="stream_journal_weight">{{ user.settings.stream_journal_weight|floatformat:2 }}</span></h5>
@@ -48,14 +48,14 @@
             <div class="row">
                 <div id="trend-settings-section" class="col-md-8 col-md-offset-2">
                     <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
                             Trend
                             <br>
                             <a class="edit" href="javascript:" data-toggle="modal" data-target="#trend-settings-modal">Edit</a>
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div class="row">
                             <div class="col-md-9">
 {#                                <h5>Method: <span id="trend_method">{{ user.settings.get_trend_method_display }}</span></h5>#}
@@ -79,14 +79,14 @@
             <hr class="divider">
             <div class="row">
                 <div id="email-digest-settings-section" class="col-md-8 col-md-offset-2 affiliation">
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
                             Email digest
                             <br>
                             <a class="edit" href="javascript:" data-toggle="modal" data-target="#email-digest-settings-modal">Edit</a>
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div class="row">
                             <div class="col-md-9">
                                 <h5>Received <span id="email_digest_frequency">{{ user.settings.get_email_digest_frequency_display }}</span></h5>
@@ -99,12 +99,12 @@
             <hr class="divider">
             <div class="row">
                 <div class="col-md-8 col-md-offset-2 affiliation">
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
                             Library
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div class="row">
                             <div class="col-md-9">
                                 <h5>Last modified: {{ user.lib.modified }}</h5>
@@ -124,15 +124,15 @@
             <hr class="divider">
             <div class="row">
                 <div class="col-md-8 col-md-offset-2">
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
-                            Delete account
+                            Delete Etalia account
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div class="row">
                             <div class="col-md-9">
-                                <h5>Last login: {{ user.last_login }}</h5>
+                                <h5>{{ user.email }}</h5>
                             </div>
                             <div class="col-md-3">
                                 <form role="form" method="GET" action="{% url 'user:delete-user' %}">

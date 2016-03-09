@@ -54,7 +54,9 @@
             {{ paper.print_clean_ids }}
         </p>
         <h1 class="title">
-            {{ paper.title }}
+            <a href="{{ paper.url }}" target="_blank">
+                {{ paper.title }}
+            </a>
         </h1>
         <p class="authors">
             {{ paper.print_full_authors }}
