@@ -11,6 +11,7 @@ from django.contrib.auth.models import AbstractBaseUser, \
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
 
 from etalia.library.models import Paper, Journal, Author
 from etalia.nlp.models import Model
@@ -498,9 +499,9 @@ class UserSettings(TimeStampedModel):
     stream_vector_weight = models.FloatField(default=1.0,
                                              verbose_name='Content weight')
 
-    # delta-time in months to roll back stream
+    # delta-time in MONTHS to roll back stream
     stream_roll_back_deltatime = models.IntegerField(default=36,
-                                             verbose_name='Rolling back time (Lower time will focus on recent addition to your library')
+                                             verbose_name='Roll-back time (months)')
 
     # DEPRECATED
     # in days
@@ -562,8 +563,9 @@ class UserSettings(TimeStampedModel):
     def init(self):
         """Initialize user settings"""
         # default roll back deltatime (either default or user.lib.d_oldest)
-        if self.stream_roll_back_deltatime > self.user.lib.d_oldest:
-            self.stream_roll_back_deltatime = self.user.lib.d_oldest
+        d_oldest_month = (timezone.now().date() - self.user.lib.d_oldest).days // 30
+        if self.stream_roll_back_deltatime > d_oldest_month:
+            self.stream_roll_back_deltatime = d_oldest_month
             self.save()
 
 

@@ -161,12 +161,12 @@ class BackendLibMixin(object):
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')
 
-    def update_lib(self, session, user):
+    def update_lib(self, user, session):
         # update db state
         user.lib.set_state('ING')
         user.stats.log_lib_starts_sync(user)
         # really update
-        count = self._update_lib(session, user)
+        count = self._update_lib(user, session)
         # retrieve first paper added
         user.lib.set_d_oldest()
         # update UserLib and Stats

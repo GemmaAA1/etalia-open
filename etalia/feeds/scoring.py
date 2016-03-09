@@ -200,8 +200,9 @@ class Scoring(object):
         date_vec = np.zeros(len(self.seed_pks), dtype=np.float)
 
         # Get date data
-        created_date = self.stream.user.lib.userlib_paper.values('pk',
-                                                                 'date_created')
+        created_date = self.stream.user.lib.userlib_paper\
+            .filter(paper_id__in=self.seed_pks)\
+            .values_list('paper_id', 'date_created')
 
         # Convert date into integer number of days from now
         created_date_int = [(pk, self.convert_date(v)) for pk, v in created_date]
