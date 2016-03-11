@@ -94,12 +94,12 @@ class AltmetricModel(TimeStampedModel):
         ids = self.paper.get_ids()
         # Fetch altmetric data based on paper supported id
         try:
-            if ids.get('doi'):
+            if 'doi' in ids:
                 rsp = a.doi(ids.get('doi', ''))
-                if not rsp and ids.get('arx'):
-                    rsp = a.arxiv(ids.get('arx'))
-                    if not rsp and ids.get('pmi'):
-                        rsp = a.pmid(ids.get('pmi'))
+            if not rsp and 'arx' in ids:
+                rsp = a.arxiv(ids.get('arx'))
+            if not rsp and 'pmi' in ids:
+                rsp = a.pmid(ids.get('pmi'))
         except AltmetricHTTPException:
             raise
 

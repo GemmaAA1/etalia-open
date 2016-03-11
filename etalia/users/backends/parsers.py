@@ -220,7 +220,7 @@ class ParserZotero(ParserBackend):
             paper['id_oth'] = 'to-be-generated'
 
         # URL
-        if entry.get('url', ''):
+        if 'url' in entry:
             paper['url'] = entry.get('url', '')
         elif paper['id_doi']:
             paper['url'] = '{base_url}{doi}'.format(
@@ -303,10 +303,10 @@ class ParserZotero(ParserBackend):
             if res:
                 paper_id_arx = res.groupdict().get('id', '')
                 journal_id_arx = 'arxiv.'+res.groupdict().get('sub', '')
-            elif entry.get('reportNumber', ''):
+            elif 'reportNumber' in entry:
                 paper_id_arx = entry.get('reportNumber', '')
                 journal_id_arx = 'arxiv.common'
-            elif entry.get('url', ''):
+            elif 'url' in entry:
                 res = re.match(r'http:\/\/arxiv.org\/abs\/(?P<id>[\d\.]+)',
                                entry.get('url', ''))
                 paper_id_arx = res.groupdict().get('id', '')

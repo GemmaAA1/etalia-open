@@ -68,6 +68,8 @@ ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'nlp': 't2.large',
                           'spot': 'm4.large'}
 SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
+SSL_PATH = '/etc/nginx/ssl'
+
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -75,6 +77,7 @@ env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
 env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
+env.ssl_path = SSL_PATH
 
 init_slack(SLACK_WEB_HOOK)
 
@@ -104,9 +107,9 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     roles = []
     roles += [tag.get('layer', '') for tag in tags.values()]
     for tag in tags.values():
-        if tag.get('layer', None):
+        if 'layer' in tag:
             roles.append(tag.get('layer'))
-        if tag.get('role', None):
+        if 'role' in tag:
             r = tag.get('role', '').split(',')
             for rr in r:
                 roles.append(rr)
@@ -283,6 +286,7 @@ def update_and_require_libraries():
                                    'libpq-dev',
                                    'supervisor',
                                    'libjpeg-dev',
+                                   'openssl',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper'], use_sudo=True)
@@ -388,6 +392,31 @@ def update_database():
     with settings(cd(env.source_dir), _workon()):
         run('cd {} && ./manage.py migrate --noinput'.format(env.source_dir,))
 
+
+@task
+@roles('apps')
+def create_ssl_certificates():
+    # Require some Ubuntu packages
+    fabtools.require.deb.packages(['openssl'], update=True)
+    key_path = '{0}/{1}.key'.format(env.ssl_path, env.stack_site)
+    csr_path = '{0}/{1}.csr'.format(env.ssl_path, env.stack_site)
+    crt_path = '{0}/{1}-unified.crt'.format(env.ssl_path, env.stack_site)
+    if not files.exists(env.ssl_path):
+        run_as_root('mkdir -p {0}'.format(ssl_path))
+    if not files.exists(key_path):
+        run_as_root('openssl genrsa -out {key} 2048'.format(key=key_path))
+    if not files.exists(csr_path):
+        run_as_root('openssl req -new -nodes -keyout {key} -out {csr}'.format(key=key_path, csr=csr_path))
+    if not files.exists(crt_path):
+        run_as_root('openssl x509 -req -in {csr} -signkey {key} -out {crt}'.format(
+            csr=csr_path,
+            key=key_path,
+            crt=crt_path))
+
+@task
+@roles('apps')
+def rm_ssl_certificates():
+    run_as_root('rm {0}/*'.format(env.ssl_path))
 
 @task
 @roles('apps')
@@ -669,4 +698,4 @@ def go_off_maintenance():
 def copy_local_file_to_remote(local_path, remote_path):
     if not files.exists(os.path.dirname(remote_path)):
         run('mkdir -p {0}'.format(os.path.dirname(remote_path)))
-    put(local_path, remote_path)
+    put(local_path, remote_path, use_sudo=True)

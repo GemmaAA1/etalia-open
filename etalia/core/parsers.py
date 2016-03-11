@@ -82,7 +82,7 @@ class Parser(object):
         str_ = ''
         str_ += paper.get('title', '')
         str_ += ' '.join([author['last_name'] for author in authors])
-        if not journal.get('title', ''):
+        if 'title' not in journal:
             str_ += ''
         else:
             str_ += journal.get('title')

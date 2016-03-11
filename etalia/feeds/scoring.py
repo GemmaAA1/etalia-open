@@ -45,11 +45,11 @@ class Scoring(object):
 
     def get_seed_pks(self):
         """Retrieve seed paper pk"""
-        #TODO: optimze SQL query
+        # TODO: optimze SQL query
 
-        seed_pks = PaperVectors.objects\
+        seed_pks = PaperVectors.objects \
             .filter(paper__pk__in=self.stream.seeds.values('pk'),
-                    model=self.stream.user.settings.stream_model)\
+                    model=self.stream.user.settings.stream_model) \
             .values_list('paper__pk', flat=True)
 
         return list(seed_pks)
@@ -73,7 +73,8 @@ class Scoring(object):
         target_pks = [pk for pk in target_pks
                       if pk not in list(lib_pks)][:settings.FEED_MAX_TARGETS]
         pks_date = dict([(pk, pks_date[i]) for i, pk in enumerate(target_pks)
-                    if pk not in list(lib_pks)][:settings.FEED_MAX_TARGETS])
+                         if pk not in list(lib_pks)][
+                        :settings.FEED_MAX_TARGETS])
 
         return target_pks, pks_date
 
@@ -106,8 +107,8 @@ class Scoring(object):
     def get_data(self, pks):
         """Get paper metadata and vector and sort by pks"""
         data = list(
-            PaperVectors.objects\
-                .filter(paper__pk__in=pks, model=self.model)\
+            PaperVectors.objects \
+                .filter(paper__pk__in=pks, model=self.model) \
                 .values('vector', 'paper__pk', 'paper__journal__pk')
         )
         # sort
@@ -119,8 +120,8 @@ class Scoring(object):
     def get_altmetric_data(pks):
         """Get altmetric data"""
         data = list(
-            AltmetricModel.objects\
-                .filter(paper_id__in=pks)\
+            AltmetricModel.objects \
+                .filter(paper_id__in=pks) \
                 .values('paper__pk', 'score'))
         # sort
         data.sort(key=lambda d: pks.index(d['paper__pk']))
@@ -129,8 +130,8 @@ class Scoring(object):
 
     def get_auth_data(self, pks):
         """Get author data and group them by paper_pk and sort by pks"""
-        auth_data = Paper.objects\
-            .filter(pk__in=pks)\
+        auth_data = Paper.objects \
+            .filter(pk__in=pks) \
             .values('pk', 'authors')
 
         auth_dic = {}
@@ -171,10 +172,12 @@ class Scoring(object):
         Returns:
             (float): weighted date by logistic function
         """
-        return baseline + (1-baseline) / (1 + np.exp(- (day_lapse - delay) * k))
+        return baseline + (1 - baseline) / (
+        1 + np.exp(- (day_lapse - delay) * k))
 
     @staticmethod
-    def logist_weight_time_score(day_lapse, score, b0=0.5, k0=0.1, d0=-60.0, b1=0, k1=20, d1=0.3):
+    def logist_weight_time_score(day_lapse, score, b0=0.5, k0=0.1, d0=-60.0,
+                                 b1=0, k1=20, d1=0.3):
         """2D Logistic (product of 2 1d-logit)
 
         Args:
@@ -190,8 +193,8 @@ class Scoring(object):
         Returns:
             (float): weighted date by logistic function
         """
-        return (b0 + (1-b0) / (1 + np.exp(- (day_lapse - d0) * k0))) * \
-               (b1 + (1-b1) / (1 + np.exp(- (score - d1) * k1)))
+        return (b0 + (1 - b0) / (1 + np.exp(- (day_lapse - d0) * k0))) * \
+               (b1 + (1 - b1) / (1 + np.exp(- (score - d1) * k1)))
 
     def build_date_vec(self):
         """Build created_date_vec an array of weights related to created_date
@@ -200,12 +203,13 @@ class Scoring(object):
         date_vec = np.zeros(len(self.seed_pks), dtype=np.float)
 
         # Get date data
-        created_date = self.stream.user.lib.userlib_paper\
-            .filter(paper_id__in=self.seed_pks)\
+        created_date = self.stream.user.lib.userlib_paper \
+            .filter(paper_id__in=self.seed_pks) \
             .values_list('paper_id', 'date_created')
 
         # Convert date into integer number of days from now
-        created_date_int = [(pk, self.convert_date(v)) for pk, v in created_date]
+        created_date_int = [(pk, self.convert_date(v)) for pk, v in
+                            created_date]
 
         # logist parameter
         delay = - self.stream.user.settings.stream_roll_back_deltatime * 30
@@ -314,7 +318,7 @@ class ContentBasedScoring(Scoring):
         seed_occ = collections.Counter(seed_auth)
         # populate seed_ind2authpk
         self.seed_ind2authpk = []
-        for k,v in seed_occ.items():
+        for k, v in seed_occ.items():
             if v > self.MIN_OCC_SEED_AUTH:
                 self.seed_ind2authpk.append(k)
             if len(self.seed_ind2authpk) >= self.MAX_SEED_AUTH_PK:
@@ -324,11 +328,12 @@ class ContentBasedScoring(Scoring):
 
     def build_profile_ind2jourpk(self):
         """Build array of journal_pk based on occurrence of journal_pk in seeds"""
-        seed_jour = [d['paper__journal__pk'] for d in self.seed_data if d['paper__journal__pk']]
+        seed_jour = [d['paper__journal__pk'] for d in self.seed_data if
+                     d['paper__journal__pk']]
         # compute occurrences
         seed_occ = collections.Counter(seed_jour)
         self.seed_ind2jourpk = []
-        for k,v in seed_occ.items():
+        for k, v in seed_occ.items():
             if v > self.MIN_OCC_SEED_JOUR:
                 self.seed_ind2jourpk.append(k)
             if len(self.seed_ind2jourpk) >= self.MAX_SEED_JOUR_PK:
@@ -397,8 +402,10 @@ class ContentBasedScoring(Scoring):
 
         # concatenate with weight
         self.profile = np.hstack((self.vec_w * seed_vec_av,
-                              self.auth_w * seed_auth_av * seed_vec_av.shape[0],
-                              self.jour_w * seed_jour_av * seed_vec_av.shape[0]))
+                                  self.auth_w * seed_auth_av *
+                                  seed_vec_av.shape[0],
+                                  self.jour_w * seed_jour_av *
+                                  seed_vec_av.shape[0]))
 
         # # normalize
         # norm = np.linalg.norm(seed_av, axis=0)
@@ -419,6 +426,7 @@ class ContentBasedScoring(Scoring):
     def score(self):
 
         # Build profile
+        # NB: should not be be cached (user settings specific)
         self.build_profile(time_weight=True)
 
         # Get seed
@@ -428,50 +436,63 @@ class ContentBasedScoring(Scoring):
             seed /= norm
 
         # Get target data (from cache if available)
-        if not self.cache.get('target_pks'):
+        if 'target_pks' not in self.cache:
             if self.target_search == 'neighbor':
                 self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
             elif self.target_search == 'all':
                 self.target_pks, self.target_date = self.get_target_all_pks()
             else:
                 raise ValueError('')
-            self.cache.add('target_pks', self.target_pks, 60 * 60 * 24)
-            self.cache.add('target_date', self.target_date, 60 * 60 * 24)
+            self.cache.add('target_pks', self.target_pks,
+                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+            self.cache.add('target_date', self.target_date,
+                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
         else:
             self.target_pks = self.cache.get('target_pks')
             self.target_date = self.cache.get('target_date')
 
-        # Build target data
-        if not self.cache.get('target_data'):
-            self.target_data = self.get_data(self.target_pks)
-            self.cache.add('target_data', self.target_data, 60 * 60 * 24)
-        else:
-            self.target_data = self.cache.get('target_data')
-        # auth data
-        if not self.cache.get('target_auth_data'):
-            self.target_auth_data = self.get_auth_data(self.target_pks)
-            self.cache.add('target_auth_data', self.target_auth_data, 60 * 60 * 24)
-        else:
-            self.target_auth_data = self.cache.get('target_auth_data')
+        # build target mat (or get from cache)
+        user_target_mat_key = '{user_pk}_stream_target_mat'.format(
+            user_pk=self.stream.user_id)
+        if user_target_mat_key not in self.cache:
 
-        # build target mat
-        target_vec_mat = self.build_paper_vec_mat(self.target_data)
-        # build target author mat
-        target_auth_mat = self.build_auth_utility_mat(self.target_auth_data)
-        # build target journal mat
-        target_jour_mat = self.build_jour_utility_mat(self.target_data)
-        # concatenate
-        # target_mat = np.hstack((self.vec_w * target_vec_mat,
-        #                         self.auth_w * target_auth_mat,
-        #                         self.jour_w * target_jour_mat))
-        target_mat = np.hstack((target_vec_mat,
-                                target_auth_mat,
-                                target_jour_mat))
+            # build target data
+            if 'target_data' not in self.cache:
+                self.target_data = self.get_data(self.target_pks)
+                self.cache.add('target_data', self.target_data,
+                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+            else:
+                self.target_data = self.cache.get('target_data')
+            # auth data
+            if 'target_auth_data' not in self.cache:
+                self.target_auth_data = self.get_auth_data(self.target_pks)
+                self.cache.add('target_auth_data', self.target_auth_data,
+                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+            else:
+                self.target_auth_data = self.cache.get('target_auth_data')
 
-        # normalize
-        norm = np.linalg.norm(target_mat, axis=1)
-        non_zeros = norm > 0.
-        target_mat[non_zeros, :] /= norm[non_zeros, None]
+            target_vec_mat = self.build_paper_vec_mat(self.target_data)
+            # build target author mat
+            target_auth_mat = self.build_auth_utility_mat(self.target_auth_data)
+            # build target journal mat
+            target_jour_mat = self.build_jour_utility_mat(self.target_data)
+            # concatenate
+            # target_mat = np.hstack((self.vec_w * target_vec_mat,
+            #                         self.auth_w * target_auth_mat,
+            #                         self.jour_w * target_jour_mat))
+            target_mat = np.hstack((target_vec_mat,
+                                    target_auth_mat,
+                                    target_jour_mat))
+
+            # normalize
+            norm = np.linalg.norm(target_mat, axis=1)
+            non_zeros = norm > 0.
+            target_mat[non_zeros, :] /= norm[non_zeros, None]
+            # cache for user specific target mat
+            self.cache.add(user_target_mat_key, target_mat,
+                           settings.CACHE_NLP_USER_DATA_TIMEOUT)
+        else:
+            target_mat = self.cache.get(user_target_mat_key)
 
         # Dot product
         dis = np.dot(target_mat, self.profile.T)
@@ -483,7 +504,6 @@ class ContentBasedScoring(Scoring):
 
 
 class TrendScoring(Scoring):
-
     DEFAULT_DOC_WEIGHT = 1.
     DEFAULT_ALTMETRIC_WEIGHT = 1.
     DEFAULT_TARGET_SEARCH = 'all'
@@ -491,7 +511,8 @@ class TrendScoring(Scoring):
     def __init__(self, **kwargs):
         super(TrendScoring, self).__init__(**kwargs)
         self.doc_w = kwargs.get('doc_weight', self.DEFAULT_DOC_WEIGHT)
-        self.alt_w = kwargs.get('altmetric_weight', self.DEFAULT_ALTMETRIC_WEIGHT)
+        self.alt_w = kwargs.get('altmetric_weight',
+                                self.DEFAULT_ALTMETRIC_WEIGHT)
 
         self.target_search = kwargs.get('target_search',
                                         self.DEFAULT_TARGET_SEARCH)
@@ -511,48 +532,62 @@ class TrendScoring(Scoring):
             seed /= norm
 
         # Get target data (from cache if available)
-        if not self.cache.get('target_pks'):
+        # build target mat (or get from cache)
+        if 'target_pks' not in self.cache:
             if self.target_search == 'neighbor':
                 self.target_pks = self.get_target_neigh_pks_from_seed(seed=seed)
             elif self.target_search == 'all':
                 self.target_pks, self.target_date = self.get_target_all_pks()
             else:
                 raise ValueError('')
-            self.cache.add('target_pks', self.target_pks, 60 * 60 * 24)
-            self.cache.add('target_date', self.target_date, 60 * 60 * 24)
+            self.cache.add('target_pks', self.target_pks,
+                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+            self.cache.add('target_date', self.target_date,
+                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
         else:
             self.target_pks = self.cache.get('target_pks')
             self.target_date = self.cache.get('target_date')
 
-        # Build target data (from cache if available)
-        if not self.cache.get('target_data'):
-            self.target_data = self.get_data(self.target_pks)
-            self.cache.add('target_data', self.target_data, 60 * 60 * 24)
-        else:
-            self.target_data = self.cache.get('target_data')
-        # auth data
-        if not self.cache.get('target_auth_data'):
-            self.target_auth_data = self.get_auth_data(self.target_pks)
-            self.cache.add('target_auth_data', self.target_auth_data, 60 * 60 * 24)
-        else:
-            self.target_auth_data = self.cache.get('target_auth_data')
+        user_target_mat_key = '{user_pk}_trend_target_mat'.format(
+            user_pk=self.stream.user_id)
+        if user_target_mat_key not in self.cache:
+            # Build target data (from cache if available)
+            if 'target_data' not in self.cache:
+                self.target_data = self.get_data(self.target_pks)
+                self.cache.add('target_data', self.target_data,
+                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+            else:
+                self.target_data = self.cache.get('target_data')
+            # auth data
+            if 'target_auth_data' not in self.cache:
+                self.target_auth_data = self.get_auth_data(self.target_pks)
+                self.cache.add('target_auth_data', self.target_auth_data,
+                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+            else:
+                self.target_auth_data = self.cache.get('target_auth_data')
 
-        # build target mat
-        target_mat = self.build_paper_vec_mat(self.target_data)
+            # build target mat
+            target_mat = self.build_paper_vec_mat(self.target_data)
 
-        # normalize
-        norm = np.linalg.norm(target_mat, axis=1)
-        non_zeros = norm > 0.
-        target_mat[non_zeros, :] /= norm[non_zeros, None]
+            # normalize
+            norm = np.linalg.norm(target_mat, axis=1)
+            non_zeros = norm > 0.
+            target_mat[non_zeros, :] /= norm[non_zeros, None]
+            # cache for user specific target mat
+            self.cache.add(user_target_mat_key, target_mat,
+                           settings.CACHE_NLP_USER_DATA_TIMEOUT)
+        else:
+            target_mat = self.cache.get(user_target_mat_key)
 
         # Dot product
         dis = np.dot(target_mat, self.profile.T)
 
         # Get Altmetric data (from cache if available)
-        if not self.cache.get('target_altmetric'):
+        if 'target_altmetric' not in self.cache:
             target_altmetric = self.get_altmetric_data(self.target_pks)
             # cache
-            self.cache.add('target_altmetric', target_altmetric, 60 * 60 * 24)
+            self.cache.add('target_altmetric', target_altmetric,
+                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
         else:
             # get from cache
             target_altmetric = self.cache.get('target_altmetric')
@@ -564,9 +599,11 @@ class TrendScoring(Scoring):
         alt_pks = [p['paper__pk'] for p in target_altmetric]
 
         # Intersect altmetric pks and target pks
-        pk_idx = np.array([pk in alt_pks for pk in self.target_pks])
-        target_pks_reduced = np.array([pk for pk in self.target_pks if pk in alt_pks])
-        dis_reduced = dis[pk_idx]
+        intersect = set.intersection(set(self.target_pks), set(alt_pks))
+        # reduced distance based on intersect and get corresponding pks
+        pk_idx = np.array([[pk in intersect, pk] for pk in self.target_pks])
+        dis_reduced = dis[pk_idx[:, 0] == 1]
+        target_pks_reduced = pk_idx[pk_idx[:, 0] == 1, 1]
 
         # compute weighted score
         score = self.doc_w * dis_reduced + self.alt_w * alt_score
@@ -577,110 +614,108 @@ class TrendScoring(Scoring):
         return res, self.target_date
 
 
-
-
-# class SimpleMax(StreamScoring):
-#
-#     def _run(self):
-#         seed_mat = self.build_mat(self.seed_data)
-#         targ_mat = self.build_mat(self.target_data)
-#         scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
-#         return self.target_pks, scores
-#
-#
-# class SimpleAverage(StreamScoring):
-#
-#     def _run(self):
-#         seed_mat = self.build_mat(self.seed_data)
-#         targ_mat = self.build_mat(self.target_data)
-#         scores = np.average(np.dot(targ_mat, seed_mat.T), axis=1)
-#         return self.target_pks, scores
-#
-#
-# class ThresholdAverage(StreamScoring):
-#
-#     def __init__(self, **kwargs):
-#         super(ThresholdAverage, self).__init__(**kwargs)
-#         self.threshold = kwargs.get('threshold', 0.25)
-#
-#     def _run(self):
-#         seed_mat = self.build_mat(self.seed_data)
-#         targ_mat = self.build_mat(self.target_data)
-#         dis = np.dot(targ_mat, seed_mat.T)
-#         dis = np.where(dis > self.threshold, dis, 0)
-#         scores = np.sum(dis, axis=1)
-#
-#         return self.target_pks, scores
-#
-#
-# class WeightedJournalAverage(StreamScoring):
-#
-#     def _run(self):
-#         seed_mat = self.build_mat(self.seed_data)
-#         targ_mat = self.build_mat(self.target_data)
-#         # weight with journal
-#         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-#         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
-#         scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
-#         return self.target_pks, scores
-#
-#
-# class WeightedJournalCreatedDateAverage(StreamScoring):
-#
-#     def __init__(self, **kwargs):
-#         super(WeightedJournalCreatedDateAverage, self).__init__(**kwargs)
-#         self.threshold = kwargs.get('threshold', 0.25)
-#
-#     def _run(self):
-#         seed_mat = self.build_mat(self.seed_data)
-#         targ_mat = self.build_mat(self.target_data)
-#         # weight with journal
-#         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-#         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
-#         date_vec = self.build_created_date_vec(self.seed_data)
-#
-#         dis = np.dot(targ_mat, seed_mat.T)
-#         dis = np.where(dis > self.threshold, dis, 0)
-#         scores = np.average(dis, weights=date_vec, axis=1)
-#
-#         return self.target_pks, scores
-#
-#
-# class OccurrenceCount(StreamScoring):
-#
-#     def __init__(self, **kwargs):
-#         super(OccurrenceCount, self).__init__(**kwargs)
-#         user = kwargs.get('user')
-#         if user:
-#             # number of closest neighbors to keep per seed paper
-#             self.cutoff = 5 + 3 * user.settings.stream_narrowness
-#
-#     def _run(self):
-#         seed_mat = self.build_mat(self.seed_data)
-#         targ_mat = self.build_mat(self.target_data)
-#         # weight with journal
-#         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-#         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
-#         # build date vector
-#         # date_vec = self.build_created_date_vec(self.seed_data)
-#         date_vec = np.ones((len(self.seed_data), ))
-#
-#         dis = 1.0 - np.dot(targ_mat, seed_mat.T)
-#         ind = np.argpartition(dis, self.cutoff, axis=0)[:self.cutoff, :][:]
-#
-#         ind_unique = np.unique(ind[:])
-#
-#         # count occurrences
-#         occ = []
-#         # replicate date_vec for computation ease
-#         date_mat = np.tile(date_vec, (ind.shape[0], 1))
-#         for i, idx in enumerate(ind_unique):
-#             occ.append((idx, np.sum(date_mat[ind == idx])))
-#         # normalize by number of paper in user lib
-#         occ = list(map(lambda x: (x[0], x[1]/(seed_mat.shape[0]*self.cutoff)), occ))
-#         occ_sorted = sorted(occ, key=lambda x: x[1], reverse=True)
-#
-#         scores = [x[1] for x in occ_sorted]
-#         scores_pks = [self.target_pks[x[0]] for x in occ_sorted]
-#
-#         return scores_pks, scores
+        # class SimpleMax(StreamScoring):
+        #
+        #     def _run(self):
+        #         seed_mat = self.build_mat(self.seed_data)
+        #         targ_mat = self.build_mat(self.target_data)
+        #         scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
+        #         return self.target_pks, scores
+        #
+        #
+        # class SimpleAverage(StreamScoring):
+        #
+        #     def _run(self):
+        #         seed_mat = self.build_mat(self.seed_data)
+        #         targ_mat = self.build_mat(self.target_data)
+        #         scores = np.average(np.dot(targ_mat, seed_mat.T), axis=1)
+        #         return self.target_pks, scores
+        #
+        #
+        # class ThresholdAverage(StreamScoring):
+        #
+        #     def __init__(self, **kwargs):
+        #         super(ThresholdAverage, self).__init__(**kwargs)
+        #         self.threshold = kwargs.get('threshold', 0.25)
+        #
+        #     def _run(self):
+        #         seed_mat = self.build_mat(self.seed_data)
+        #         targ_mat = self.build_mat(self.target_data)
+        #         dis = np.dot(targ_mat, seed_mat.T)
+        #         dis = np.where(dis > self.threshold, dis, 0)
+        #         scores = np.sum(dis, axis=1)
+        #
+        #         return self.target_pks, scores
+        #
+        #
+        # class WeightedJournalAverage(StreamScoring):
+        #
+        #     def _run(self):
+        #         seed_mat = self.build_mat(self.seed_data)
+        #         targ_mat = self.build_mat(self.target_data)
+        #         # weight with journal
+        #         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
+        #         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
+        #         scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
+        #         return self.target_pks, scores
+        #
+        #
+        # class WeightedJournalCreatedDateAverage(StreamScoring):
+        #
+        #     def __init__(self, **kwargs):
+        #         super(WeightedJournalCreatedDateAverage, self).__init__(**kwargs)
+        #         self.threshold = kwargs.get('threshold', 0.25)
+        #
+        #     def _run(self):
+        #         seed_mat = self.build_mat(self.seed_data)
+        #         targ_mat = self.build_mat(self.target_data)
+        #         # weight with journal
+        #         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
+        #         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
+        #         date_vec = self.build_created_date_vec(self.seed_data)
+        #
+        #         dis = np.dot(targ_mat, seed_mat.T)
+        #         dis = np.where(dis > self.threshold, dis, 0)
+        #         scores = np.average(dis, weights=date_vec, axis=1)
+        #
+        #         return self.target_pks, scores
+        #
+        #
+        # class OccurrenceCount(StreamScoring):
+        #
+        #     def __init__(self, **kwargs):
+        #         super(OccurrenceCount, self).__init__(**kwargs)
+        #         user = kwargs.get('user')
+        #         if user:
+        #             # number of closest neighbors to keep per seed paper
+        #             self.cutoff = 5 + 3 * user.settings.stream_narrowness
+        #
+        #     def _run(self):
+        #         seed_mat = self.build_mat(self.seed_data)
+        #         targ_mat = self.build_mat(self.target_data)
+        #         # weight with journal
+        #         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
+        #         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
+        #         # build date vector
+        #         # date_vec = self.build_created_date_vec(self.seed_data)
+        #         date_vec = np.ones((len(self.seed_data), ))
+        #
+        #         dis = 1.0 - np.dot(targ_mat, seed_mat.T)
+        #         ind = np.argpartition(dis, self.cutoff, axis=0)[:self.cutoff, :][:]
+        #
+        #         ind_unique = np.unique(ind[:])
+        #
+        #         # count occurrences
+        #         occ = []
+        #         # replicate date_vec for computation ease
+        #         date_mat = np.tile(date_vec, (ind.shape[0], 1))
+        #         for i, idx in enumerate(ind_unique):
+        #             occ.append((idx, np.sum(date_mat[ind == idx])))
+        #         # normalize by number of paper in user lib
+        #         occ = list(map(lambda x: (x[0], x[1]/(seed_mat.shape[0]*self.cutoff)), occ))
+        #         occ_sorted = sorted(occ, key=lambda x: x[1], reverse=True)
+        #
+        #         scores = [x[1] for x in occ_sorted]
+        #         scores_pks = [self.target_pks[x[0]] for x in occ_sorted]
+        #
+        #         return scores_pks, scores

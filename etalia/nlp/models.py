@@ -979,7 +979,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 # store journal pk
                 self.index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
-                if data_journal.get(dat.journal_id):
+                if dat.journal_id in data_journal:
                     self.data[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
                         self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
                 else:
@@ -1038,7 +1038,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 # store journal pk
                 index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
-                if data_journal.get(dat.journal_id):
+                if dat.journal_id in data_journal:
                     data_mat[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
                         self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
                 else:
@@ -1156,7 +1156,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # MostSimilar object
         mat = np.zeros((self.model.size, len(data)))
         for i, d in enumerate(data):
-            if d.get('paper__journal_id') and data_journal.get(d['paper__journal_id']):
+            if 'paper__journal_id' in d and d['paper__journal_id'] in data_journal:
                 mat[:, i] = (1. - self.journal_ratio) * np.array(d['vector'][:self.model.size]) + \
                     self.journal_ratio * np.array(data_journal[d['paper__journal_id']][:self.model.size])
             else:

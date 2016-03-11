@@ -7,6 +7,10 @@ CONFIG_FILE = __file__
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['www.etalia.io', 'etalia.io', 'alpha.etalia.io']
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
+
 # Admins received email of the full exception information when DEGUB=False
 ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
           ]

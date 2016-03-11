@@ -143,7 +143,7 @@ class Stream(TimeStampedModel):
                 options=options))
 
         elif level == 'debug':
-            logger.debug('Feed ({pk}/{stream_name}@{user_email}): '
+            logger.debug('Stream ({pk}/{stream_name}@{user_email}): '
                          '{message} - {options}'.format(
                 pk=self.id,
                 stream_name=self.name,
@@ -219,7 +219,7 @@ class Stream(TimeStampedModel):
         self.atomic_update(del_objs, save_objs, create_objs, last_seen=last_seen)
 
         self.set_state('IDL')
-        self.log('info', 'Updating', 'DONE')
+        self.log('info', 'Updating', 'done')
 
     @atomic
     def atomic_update(self, delete_objs, save_objs, create_objs, last_seen=None):
@@ -347,6 +347,28 @@ class Trend(TimeStampedModel):
         self.state = state
         self.save()
 
+    def log(self, level, message, options):
+        """Local wrapper around logger"""
+        if level == 'info':
+            logger.info('Trend ({pk}/{trend_name}@{user_email}): '
+                        '{message} - {options}'.format(
+                pk=self.id,
+                trend_name=self.name,
+                user_email=self.user.email,
+                message=message,
+                options=options))
+
+        elif level == 'debug':
+            logger.debug('Trend ({pk}/{trend_name}@{user_email}): '
+                         '{message} - {options}'.format(
+                pk=self.id,
+                trend_name=self.name,
+                user_email=self.user.email,
+                message=message,
+                options=options))
+        else:
+            raise ValueError('level unknown')
+
     def get_old_trendmatches(self):
         """Remove outdating matches based on user settings"""
 
@@ -366,6 +388,7 @@ class Trend(TimeStampedModel):
     def update(self):
 
         self.set_state('ING')
+        self.log('info', 'Updating', 'starting...')
 
         # get out-dated StreamMatches
         del_objs = self.get_old_trendmatches()
@@ -419,6 +442,7 @@ class Trend(TimeStampedModel):
         self.atomic_update(del_objs, save_objs, create_objs, last_seen=last_seen)
 
         self.set_state('IDL')
+        self.log('info', 'Updating', 'done')
 
     @atomic
     def atomic_update(self, delete_objs, save_objs, create_objs, last_seen=None):
