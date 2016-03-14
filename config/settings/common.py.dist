@@ -15,6 +15,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from __future__ import absolute_import, unicode_literals
 import environ
+import os
 from . import get_version
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
@@ -360,6 +361,11 @@ AVATAR_DEFAULT_MENDELEY = 'http://s3.amazonaws.com/mendeley-photos/awaiting.png'
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------
+LOG_DIR = (ROOT_DIR-1).path('log')
+# creating log directory if does not exist
+if not os.path.exists(str(LOG_DIR)):
+    os.mkdir(str(LOG_DIR))
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -385,49 +391,49 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'etalia.log')),
+            'filename': str(LOG_DIR.path('etalia.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'populate': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'populate.log')),
+            'filename': str(LOG_DIR.path('populate.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'nlp': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'nlp.log')),
+            'filename': str(LOG_DIR.path('nlp.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'feeds': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'feeds.log')),
+            'filename': str(LOG_DIR.path('feeds.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'users': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'users.log')),
+            'filename': str(LOG_DIR.path('users.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'consumers': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'consumers.log')),
+            'filename': str(LOG_DIR.path('consumers.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'celery': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str((ROOT_DIR-1).path('log', 'celery.log')),
+            'filename': str(LOG_DIR.path('celery.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
