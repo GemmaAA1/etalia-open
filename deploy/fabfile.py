@@ -53,7 +53,7 @@ VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
 JOB_MASTER = 'job1'
-CACHE_REDIS_HOSTNAME = 'spot2'
+CACHE_SCORING_REDIS_HOSTNAME = 'spot2'
 INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         't2.small': 1,
                         't2.medium': 2,
@@ -171,7 +171,6 @@ def deploy():
         update_nginx_conf()
         reload_nginx()
     # cache related
-
         update_redis_cache()
     # job related
     if env.host_string in env.roledefs.get('jobs', []):
@@ -480,13 +479,11 @@ def update_rabbit_user():
 @task
 @roles('jobs')
 def update_redis_cache():
-    if env.tags[env.host_string].get('Name') == CACHE_REDIS_HOSTNAME:
+    if env.tags[env.host_string].get('Name') == CACHE_SCORING_REDIS_HOSTNAME:
         with settings(_workon()):  # to get env var
             # if redis-server not installed, install
             if not files.exists("/usr/bin/redis-server"):
                 fabtools.require.deb.packages(['redis-server'])
-
-
 
 @task
 def update_supervisor_conf():
@@ -556,6 +553,19 @@ def reload_supervisor():
     run_as_root('supervisorctl reread')
     run_as_root('supervisorctl update')
 
+
+@task
+def clean_and_update_hosts_file(stack=STACK):
+    hosts_ip6 = '# The following lines are desirable for IPv6 capable hosts ' \
+                '::1 ip6-localhost ip6-loopback\n' \
+                'fe00::0 ip6-localnet\n' \
+                'ff00::0 ip6-mcastprefix\n' \
+                'ff02::1 ip6-allnodes\n' \
+                'ff02::2 ip6-allrouter\n' \
+                'ff02::3 ip6-allhosts\n'
+    run_as_root('> /etc/hosts')
+    files.append('/etc/hosts', hosts_ip6, use_sudo=True)
+    update_hosts_file(stack=stack)
 
 @task
 def update_hosts_file(stack=STACK):
