@@ -18,9 +18,7 @@ Once you get the requirements installed, follow these steps to get started:
 variables for Etalia (Request them if you don't have them). 
 2. Clone Etalia repository
 
-    ```
-    #!bash
-    
+    ```bash
     git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
     ```
 3. Create a local Postgres database (e.g. "CREATE DATABASE etalia;" from psql on mac)
