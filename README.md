@@ -18,8 +18,6 @@ Once you get the requirements installed, follow these steps to get started:
 1. Create you virtual environment with Python 3.4 onboard. Export the environment variables for Etalia (Request them if you don't have them). 
 
 2. Clone Etalia repository:
-
-    <!-- language: lang-bash -->
         
         git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
 
@@ -28,8 +26,6 @@ Once you get the requirements installed, follow these steps to get started:
 4. Copy etalia/config/settings/common.py.dist to etalia/config/settings/common.py
 
 5. Update database settings in etalia/config/settings/common.py with your username and database name. Example:
- 
-    <!-- language: lang-json -->
     
         DATABASES = {
             'default': {
@@ -42,8 +38,6 @@ Once you get the requirements installed, follow these steps to get started:
         }
 
 6. Go to scripts directory and run the install_local script:
-
-    <!-- language: lang-bash -->
 
         cd scripts/
         ./install_local.sh
