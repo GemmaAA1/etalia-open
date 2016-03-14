@@ -444,10 +444,8 @@ class ContentBasedScoring(Scoring):
                 self.target_pks, self.target_date = self.get_target_all_pks()
             else:
                 raise ValueError('')
-            self.cache.add('target_pks', self.target_pks,
-                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
-            self.cache.add('target_date', self.target_date,
-                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+            self.cache.add('target_pks', self.target_pks)
+            self.cache.add('target_date', self.target_date)
         else:
             self.target_pks = self.cache.get('target_pks')
             self.target_date = self.cache.get('target_date')
@@ -460,15 +458,13 @@ class ContentBasedScoring(Scoring):
             # build target data
             if 'target_data' not in self.cache:
                 self.target_data = self.get_data(self.target_pks)
-                self.cache.add('target_data', self.target_data,
-                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+                self.cache.add('target_data', self.target_data)
             else:
                 self.target_data = self.cache.get('target_data')
             # auth data
             if 'target_auth_data' not in self.cache:
                 self.target_auth_data = self.get_auth_data(self.target_pks)
-                self.cache.add('target_auth_data', self.target_auth_data,
-                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+                self.cache.add('target_auth_data', self.target_auth_data)
             else:
                 self.target_auth_data = self.cache.get('target_auth_data')
 
@@ -490,8 +486,7 @@ class ContentBasedScoring(Scoring):
             non_zeros = norm > 0.
             target_mat[non_zeros, :] /= norm[non_zeros, None]
             # cache for user specific target mat
-            self.cache_user.add(user_target_mat_key, target_mat,
-                           settings.CACHE_SCORING_USER_DATA_TIMEOUT)
+            self.cache_user.add(user_target_mat_key, target_mat)
         else:
             target_mat = self.cache_user.get(user_target_mat_key)
 
@@ -541,10 +536,8 @@ class TrendScoring(Scoring):
                 self.target_pks, self.target_date = self.get_target_all_pks()
             else:
                 raise ValueError('')
-            self.cache.add('target_pks', self.target_pks,
-                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
-            self.cache.add('target_date', self.target_date,
-                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+            self.cache.add('target_pks', self.target_pks)
+            self.cache.add('target_date', self.target_date)
         else:
             self.target_pks = self.cache.get('target_pks')
             self.target_date = self.cache.get('target_date')
@@ -555,15 +548,13 @@ class TrendScoring(Scoring):
             # Build target data (from cache if available)
             if 'target_data' not in self.cache:
                 self.target_data = self.get_data(self.target_pks)
-                self.cache.add('target_data', self.target_data,
-                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+                self.cache.add('target_data', self.target_data)
             else:
                 self.target_data = self.cache.get('target_data')
             # auth data
             if 'target_auth_data' not in self.cache:
                 self.target_auth_data = self.get_auth_data(self.target_pks)
-                self.cache.add('target_auth_data', self.target_auth_data,
-                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+                self.cache.add('target_auth_data', self.target_auth_data)
             else:
                 self.target_auth_data = self.cache.get('target_auth_data')
 
@@ -575,8 +566,7 @@ class TrendScoring(Scoring):
             non_zeros = norm > 0.
             target_mat[non_zeros, :] /= norm[non_zeros, None]
             # cache for user specific target mat
-            self.cache_user.add(user_target_mat_key, target_mat,
-                           settings.CACHE_SCORING_USER_DATA_TIMEOUT)
+            self.cache_user.add(user_target_mat_key, target_mat)
         else:
             target_mat = self.cache_user.get(user_target_mat_key)
 
@@ -587,8 +577,7 @@ class TrendScoring(Scoring):
         if 'target_altmetric' not in self.cache:
             target_altmetric = self.get_altmetric_data(self.target_pks)
             # cache
-            self.cache.add('target_altmetric', target_altmetric,
-                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
+            self.cache.add('target_altmetric', target_altmetric)
         else:
             # get from cache
             target_altmetric = self.cache.get('target_altmetric')
