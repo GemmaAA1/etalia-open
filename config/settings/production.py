@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .common import *
+import os
 
 CONFIG_FILE = __file__
 
@@ -52,6 +53,26 @@ STATICFILES_DIRS = (
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = env.str('MAILGUN_KEY')
 MAILGUN_SERVER_NAME = 'mg.etalia.io'
+
+
+# CACHE
+CACHE_FILE_DIR = os.path.exists(str((ROOT_DIR-1).path('cache_files')))
+# Create directory to store cache files if does not exists
+if not CACHE_FILE_DIR:
+    os.mkdir(CACHE_FILE_DIR)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '{host}:6379'.format(host=env.str('REDIS_SCORING_CACHE_HOSTNAME')),
+        'TIMEOUT': 60 * 60 * 24,     # 24 h
+    },
+    'scoring_user': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': CACHE_FILE_DIR,
+        'TIMEOUT': 60 * 60,     # 1 h
+    }
+}
 
 INVITE_MODE = False
 if INVITE_MODE:

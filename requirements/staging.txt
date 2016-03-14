@@ -12,3 +12,6 @@ boto==2.38.0
 # ---------------
 django-mailgun==0.8.0
 
+# Cache
+# ---------------
+django-redis-cache==1.6.5

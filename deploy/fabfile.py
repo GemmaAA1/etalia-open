@@ -53,6 +53,7 @@ VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
 JOB_MASTER = 'job1'
+CACHE_REDIS_HOSTNAME = 'spot2'
 INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         't2.small': 1,
                         't2.medium': 2,
@@ -169,6 +170,9 @@ def deploy():
         update_gunicorn_conf()
         update_nginx_conf()
         reload_nginx()
+    # cache related
+
+        update_redis_cache()
     # job related
     if env.host_string in env.roledefs.get('jobs', []):
         update_rabbit_user()
@@ -286,7 +290,6 @@ def update_and_require_libraries():
                                    'libpq-dev',
                                    'supervisor',
                                    'libjpeg-dev',
-                                   'openssl',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper'], use_sudo=True)
@@ -472,6 +475,17 @@ def update_rabbit_user():
                 run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
             if 'guest' in list_users:
                 run_as_root("rabbitmqctl delete_user guest")
+
+
+@task
+@roles('jobs')
+def update_redis_cache():
+    if env.tags[env.host_string].get('Name') == CACHE_REDIS_HOSTNAME:
+        with settings(_workon()):  # to get env var
+            # if redis-server not installed, install
+            if not files.exists("/usr/bin/redis-server"):
+                fabtools.require.deb.packages(['redis-server'])
+
 
 
 @task

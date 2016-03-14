@@ -21,6 +21,7 @@ class Scoring(object):
     """Scoring abstract class"""
 
     cache = caches['default']
+    cache_user = caches['scoring_user']
 
     def __init__(self, stream, **kwargs):
         self.stream = stream
@@ -238,7 +239,7 @@ class Scoring(object):
                                 topn=nb_papers,
                                 reverse=True)
 
-        return [(pks[ind], float(scores[ind])) for ind in best]
+        return dict([(pks[ind], float(scores[ind])) for ind in best])
 
     def build_doc_profile(self, time_weight=True):
 
@@ -444,9 +445,9 @@ class ContentBasedScoring(Scoring):
             else:
                 raise ValueError('')
             self.cache.add('target_pks', self.target_pks,
-                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
             self.cache.add('target_date', self.target_date,
-                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
         else:
             self.target_pks = self.cache.get('target_pks')
             self.target_date = self.cache.get('target_date')
@@ -454,20 +455,20 @@ class ContentBasedScoring(Scoring):
         # build target mat (or get from cache)
         user_target_mat_key = '{user_pk}_stream_target_mat'.format(
             user_pk=self.stream.user_id)
-        if user_target_mat_key not in self.cache:
+        if user_target_mat_key not in self.cache_user:
 
             # build target data
             if 'target_data' not in self.cache:
                 self.target_data = self.get_data(self.target_pks)
                 self.cache.add('target_data', self.target_data,
-                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
             else:
                 self.target_data = self.cache.get('target_data')
             # auth data
             if 'target_auth_data' not in self.cache:
                 self.target_auth_data = self.get_auth_data(self.target_pks)
                 self.cache.add('target_auth_data', self.target_auth_data,
-                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
             else:
                 self.target_auth_data = self.cache.get('target_auth_data')
 
@@ -489,10 +490,10 @@ class ContentBasedScoring(Scoring):
             non_zeros = norm > 0.
             target_mat[non_zeros, :] /= norm[non_zeros, None]
             # cache for user specific target mat
-            self.cache.add(user_target_mat_key, target_mat,
-                           settings.CACHE_NLP_USER_DATA_TIMEOUT)
+            self.cache_user.add(user_target_mat_key, target_mat,
+                           settings.CACHE_SCORING_USER_DATA_TIMEOUT)
         else:
-            target_mat = self.cache.get(user_target_mat_key)
+            target_mat = self.cache_user.get(user_target_mat_key)
 
         # Dot product
         dis = np.dot(target_mat, self.profile.T)
@@ -541,28 +542,28 @@ class TrendScoring(Scoring):
             else:
                 raise ValueError('')
             self.cache.add('target_pks', self.target_pks,
-                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
             self.cache.add('target_date', self.target_date,
-                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
         else:
             self.target_pks = self.cache.get('target_pks')
             self.target_date = self.cache.get('target_date')
 
         user_target_mat_key = '{user_pk}_trend_target_mat'.format(
             user_pk=self.stream.user_id)
-        if user_target_mat_key not in self.cache:
+        if user_target_mat_key not in self.cache_user:
             # Build target data (from cache if available)
             if 'target_data' not in self.cache:
                 self.target_data = self.get_data(self.target_pks)
                 self.cache.add('target_data', self.target_data,
-                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
             else:
                 self.target_data = self.cache.get('target_data')
             # auth data
             if 'target_auth_data' not in self.cache:
                 self.target_auth_data = self.get_auth_data(self.target_pks)
                 self.cache.add('target_auth_data', self.target_auth_data,
-                               settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                               settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
             else:
                 self.target_auth_data = self.cache.get('target_auth_data')
 
@@ -574,10 +575,10 @@ class TrendScoring(Scoring):
             non_zeros = norm > 0.
             target_mat[non_zeros, :] /= norm[non_zeros, None]
             # cache for user specific target mat
-            self.cache.add(user_target_mat_key, target_mat,
-                           settings.CACHE_NLP_USER_DATA_TIMEOUT)
+            self.cache_user.add(user_target_mat_key, target_mat,
+                           settings.CACHE_SCORING_USER_DATA_TIMEOUT)
         else:
-            target_mat = self.cache.get(user_target_mat_key)
+            target_mat = self.cache_user.get(user_target_mat_key)
 
         # Dot product
         dis = np.dot(target_mat, self.profile.T)
@@ -587,7 +588,7 @@ class TrendScoring(Scoring):
             target_altmetric = self.get_altmetric_data(self.target_pks)
             # cache
             self.cache.add('target_altmetric', target_altmetric,
-                           settings.CACHE_NLP_TARGET_DATA_TIMEOUT)
+                           settings.CACHE_SCORING_TARGET_DATA_TIMEOUT)
         else:
             # get from cache
             target_altmetric = self.cache.get('target_altmetric')

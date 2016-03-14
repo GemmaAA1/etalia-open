@@ -299,10 +299,10 @@ CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
-NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data', 'data'))
-NLP_MODELS_PATH = str(ROOT_DIR.path('nlp_data', 'mods'))
-NLP_MS_PATH = str(ROOT_DIR.path('nlp_data', 'ms'))
-NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
+NLP_DATA_PATH = str((ROOT_DIR-1).path('nlp_data', 'data'))
+NLP_MODELS_PATH = str((ROOT_DIR-1).path('nlp_data', 'mods'))
+NLP_MS_PATH = str((ROOT_DIR-1).path('nlp_data', 'ms'))
+NLP_NLTK_DATA_PATH = str((ROOT_DIR-1).path('nlp', 'nltk_data'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
 
@@ -344,7 +344,7 @@ AVATAR_GRAVATAR_BACKUP = False
 AVATAR_GRAVATAR_DEFAULT = None
 AVATAR_GRAVATAR_BASE_URL = 'https://www.gravatar.com/avatar/'
 AVATAR_CACHE_TIMEOUT = 10
-AVATAR_DEFAULT_URL = 'img/avatar_default.png'
+AVATAR_DEFAULT_URL = 'img/avatar.png'
 AVATAR_MAX_AVATARS_PER_USER = 1
 AVATAR_ALLOWED_FILE_EXTS = ('.png', '.jpg')
 AVATAR_MAX_SIZE = 1024 * 1024
@@ -385,49 +385,49 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'etalia.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'etalia.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'populate': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'populate.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'populate.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'nlp': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'nlp.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'nlp.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'feeds': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'feeds.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'feeds.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'users': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'users.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'users.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'consumers': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'consumers.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'consumers.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
         'celery': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(ROOT_DIR.path('logs', 'celery.log')),
+            'filename': str((ROOT_DIR-1).path('log', 'celery.log')),
             'formatter': 'verbose',
             'maxBytes': 1024 * 1024 * 5,  # 5 mb
         },
@@ -479,9 +479,6 @@ LOGGING = {
         },
     }
 }
-
-# CACHES
-
 
 # MESSAGES
 MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'
