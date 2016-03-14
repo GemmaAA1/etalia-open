@@ -22,6 +22,15 @@ def mostsimilar_update_all():
         ms.update()
 
 @app.task()
+def mostsimilar_full_update_all():
+    models = Model.objects.filter(is_active=True)
+    for model in models:
+        ms = MostSimilar.objects.load(model=model,
+                                      is_active=True)
+        ms.full_update()
+        ms.activate()
+
+@app.task()
 def add_nlp(x, y):
     """dummy task"""
     logger.info("--> Processing task add")

@@ -935,7 +935,6 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     def full_update(self):
         """Full update data for knn search
         """
-        self.deactivate()
 
         logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
             pk=self.id, name=self.name))
