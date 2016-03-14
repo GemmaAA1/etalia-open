@@ -3,7 +3,7 @@ Easy hacks to tweak data from django shell
 
 ```bash
 ./manage.py shell
-`f``
+```
 
 ## Get user
 
