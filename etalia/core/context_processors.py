@@ -14,11 +14,13 @@ def admin_context(request):
 def user_update_check(request):
     """Check for stream, trend update and user initialization"""
 
-    if not request.user.init_step is not 'IDL':
+    if not request.user.init_step == 'IDL':
         return {'busy_url': reverse('user:user-init-check')}
-    elif request.user.streams.first().state == 'ING':
+    elif request.path.startswith('/feed/stream') and \
+            not request.user.streams.first().state == 'IDL':
         return {'busy_url': reverse('user:user-update-stream-check')}
-    elif request.user.trends.first().state == 'ING':
+    elif request.path.startswith('/feed/trend') and \
+            not request.user.trends.first().state == 'IDL':
         return {'busy_url': reverse('user:user-update-trend-check')}
     else:
         return {'busy_url': None}
