@@ -18,7 +18,7 @@ Once you get the requirements installed, follow these steps to get started:
 
 2. Clone Etalia repository
 
-    ```bash
+    ```
     git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
     ```
 
@@ -28,7 +28,7 @@ Once you get the requirements installed, follow these steps to get started:
 
 5. Update database settings in etalia/config/settings/common.py with your username and database name. Example:
  
-    ```json
+    ```
     DATABASES = {
       'default': {
           ...
@@ -42,14 +42,14 @@ Once you get the requirements installed, follow these steps to get started:
 
 6. Go to scripts directory and run the install_local script:
 
-    ```bash
+    ```
     cd scripts/
     ./install_local.sh
     ``` 
 
 ### Launching the app:
 
-```bash
+```
 ./manage.py runserver
 ```
 
@@ -57,9 +57,9 @@ and visit 127.0.0.1:8000
 
 ### Updating Etalia data:
 
-This script will update the database with new data and update related objects.
+This script updates the database and related object with new data.
 
-```bash
+```
 ./scripts/routines/update.py
 ```
 
@@ -68,4 +68,3 @@ This script will update the database with new data and update related objects.
 * Etienne Dauvergne
 * Nicolas Pannetier (nicolas.pannetier@gmail.com)
 * Norbert Schuff
-
