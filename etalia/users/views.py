@@ -542,13 +542,13 @@ update_email_digest_settings = UserEmailDigestSettingsUpdateView.as_view()
 
 
 @login_required
-def user_init_step(request):
+def user_init_check(request):
     if request.method == 'GET':
         messages = []
         done = False
         redirect = ''
         if request.user.init_step == 'LIB':
-            messages = ['Syncing your library' ,
+            messages = ['Syncing your library',
                         '({0} papers)'.format(request.user.lib.count_papers)]
         elif request.user.init_step == 'STR':
             messages = ['Building your streams',
@@ -568,23 +568,33 @@ def user_init_step(request):
 
         return JsonResponse(data)
 
+
 @login_required
-def user_update_step(request):
+def user_update_stream_check(request):
     if request.method == 'GET':
-        messages = []
-        done = False
-        redirect = ''
         if request.user.streams.first().state == 'ING':
             messages = ['Updating My Stream', '']
-        elif request.user.trends.first().state == 'ING':
+            done = False
+        else:
+            messages = []
+            done = True
+        data = {'done': done,
+                'messages': messages}
+        return JsonResponse(data)
+
+
+@login_required
+def user_update_trend_check(request):
+    if request.method == 'GET':
+        if request.user.trends.first().state == 'ING':
             messages = ['Updating Trends', '']
-        elif request.user.streams.first().state == 'IDL' and \
-                        request.user.trends.first().state == 'IDL':
+            done = False
+        else:
+            messages = []
             done = True
 
         data = {'done': done,
                 'messages': messages}
-
         return JsonResponse(data)
 
 

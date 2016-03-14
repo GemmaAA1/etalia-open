@@ -30,7 +30,7 @@
     <script src="{% static 'js/ie9.js' %}"></script>
     <![endif]-->
 </head>
-<body>
+<body {% if busy_url %}data-busy-check={{ busy_url }}{% endif %}>
 
 {% block body %}{% endblock body %}
 
