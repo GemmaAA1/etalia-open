@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from .common import *
-import os
 
 CONFIG_FILE = __file__
 
@@ -56,9 +55,9 @@ MAILGUN_SERVER_NAME = 'mg.etalia.io'
 
 
 # CACHE
-CACHE_FILE_DIR = os.path.exists(str((ROOT_DIR-1).path('cache_files')))
+CACHE_FILE_DIR = str((ROOT_DIR-1).path('cache_files'))
 # Create directory to store cache files if does not exists
-if not CACHE_FILE_DIR:
+if not os.path.exists(CACHE_FILE_DIR):
     os.mkdir(CACHE_FILE_DIR)
 
 CACHES = {
