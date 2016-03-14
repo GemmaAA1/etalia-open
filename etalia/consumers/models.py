@@ -312,7 +312,7 @@ class Consumer(TimeStampedModel):
         journal is queued for consumption if <countdown_period> = 1
 
         After consumption, <base_counter_period> is increased by 1 if no paper
-        was fetched, decreased by 1 if matches were fetched.
+        was fetched, decreased by 1 if papers were fetched.
         """
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,

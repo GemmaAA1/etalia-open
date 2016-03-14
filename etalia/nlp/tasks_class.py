@@ -22,7 +22,7 @@ class EmbedPaperTask(Task):
     init = False
 
     def __init__(self, *args, **kwargs):
-        if kwargs.get('model_name', None):
+        if 'model_name' in kwargs:
             model_name = kwargs.get('model_name')
             # check in model_name is known
             choices = [model['name'] for model in
@@ -68,7 +68,7 @@ class MostSimilarTask(Task):
     init = False
 
     def __init__(self, *args, **kwargs):
-        if kwargs.get('model_name', None):
+        if 'model_name' in kwargs:
             # check in model_name is known
             model_name = kwargs.get('model_name')
             choices = [model['name'] for model in

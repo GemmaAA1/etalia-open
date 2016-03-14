@@ -7,6 +7,10 @@ CONFIG_FILE = __file__
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['www.etalia.io', 'etalia.io', 'alpha.etalia.io']
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
+
 # Admins received email of the full exception information when DEGUB=False
 ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
           ]
@@ -48,6 +52,26 @@ STATICFILES_DIRS = (
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = env.str('MAILGUN_KEY')
 MAILGUN_SERVER_NAME = 'mg.etalia.io'
+
+
+# CACHE
+CACHE_FILE_DIR = str((ROOT_DIR-1).path('cache_files'))
+# Create directory to store cache files if does not exists
+if not os.path.exists(CACHE_FILE_DIR):
+    os.mkdir(CACHE_FILE_DIR)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '{host}:6379'.format(host=env.str('REDIS_SCORING_CACHE_HOSTNAME')),
+        'TIMEOUT': 60 * 60 * 24,     # 24 h
+    },
+    'scoring_user': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': CACHE_FILE_DIR,
+        'TIMEOUT': 60 * 60,     # 1 h
+    }
+}
 
 INVITE_MODE = False
 if INVITE_MODE:

@@ -134,7 +134,7 @@ class UserStreamSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserStreamSettingsForm, self).__init__(*args, **kwargs)
-        if kwargs.get('instance'):
+        if 'instance' in kwargs:
             self.fields['stream_vector_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_vector_weight)
             self.fields['stream_author_weight'].widget.attrs['data-slider-value'] = \
@@ -190,7 +190,7 @@ class UserTrendSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserTrendSettingsForm, self).__init__(*args, **kwargs)
-        if kwargs.get('instance'):
+        if 'instance' in kwargs:
             self.fields['trend_doc_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].trend_doc_weight)
             self.fields['trend_altmetric_weight'].widget.attrs['data-slider-value'] = \

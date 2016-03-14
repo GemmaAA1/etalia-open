@@ -22,13 +22,13 @@ Requirements are:
 Once you get the requirements installed, follow these steps to get started:
 
 1. Create you virtual environment and export environment variables from the 
-development configuration file to your virtual environment. 
+development configuration file to your virtual environment.
 (Request one if you don't have one already)
 2. Clone Etalia repository
 ```
 #!bash
 
-git clone https://NPann@bitbucket.org/NPann/etalia.git
+git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
 ```
 
 3. Create a local Postgres database (e.g. "CREATE DATABASE etalia;" from psql on mac)
