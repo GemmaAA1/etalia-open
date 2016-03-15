@@ -24,8 +24,6 @@ define([
             // Redirect if key exists
             if (data.hasOwnProperty('redirect')) {
                 window.location.href = data['redirect'];
-            } else {
-                checkUserInit();
             }
         });
 
@@ -52,31 +50,6 @@ define([
         });
 
         return false;
-    }
-
-    function checkUserInit() {
-        var statusInterval;
-
-        layout.setBusy();
-
-        statusInterval = setInterval(function() {
-            $.getJSON('/user/user-update-step', function (data) {
-                if (data.done) {
-                    clearInterval(statusInterval);
-                    if (data.hasOwnProperty('redirect')) {
-                        window.location.href = data['redirect'];
-                        return;
-                    }
-                    layout.setAvailable();
-                } else {
-                    // TODO improve response json format ...
-                    layout.setBusy(
-                        '<p><strong>' + data.messages[0] + '</strong></p>' +
-                        '<p>' + data.messages[1] + '</p>'
-                    );
-                }
-            });
-        }, 1000);
     }
 
     $(function() {

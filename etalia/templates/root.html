@@ -30,7 +30,7 @@
     <script src="{% static 'js/ie9.js' %}"></script>
     <![endif]-->
 </head>
-<body>
+<body {% if busy_url %}data-busy-check={{ busy_url }}{% endif %}>
 
 {% block body %}{% endblock body %}
 
@@ -74,9 +74,6 @@
     b[k]=o+'d.write("'+p().replace(/"/g,String.fromCharCode(92)+'"')+'");d.close();'}a.P(2)};ld()};nt()})({
     loader: "static.olark.com/jsclient/loader0.js",name:"olark",methods:["configure","extend","declare","identify"]});
     /* custom configuration goes here (www.olark.com/documentation) */
-    olark('api.chat.updateVisitorEmail', {
-        snippet: "{{ user.email }}"
-    });
     olark.identify('2588-774-10-6255');/*]]>*/
     olark('api.visitor.updateEmailAddress', {
         emailAddress: "{{ user.email }}"

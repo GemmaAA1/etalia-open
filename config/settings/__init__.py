@@ -2,11 +2,6 @@
 
 import os
 import re
-from etalia.core.utils import makedirs_p
-
-# creating logs directory if not exist
-if not(os.path.isdir('logs')):
-    makedirs_p('logs')
 
 
 def get_version(package):

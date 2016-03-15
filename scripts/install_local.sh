@@ -48,9 +48,6 @@ fi
 : "${ALTMETRIC_API_KEY?Error: Need to set env var ALTMETRIC_API_KEY}"
 
 
-# MAKE FOLDER
-mkdir ../logs
-
 # MAKE MIGRATIONS AND MIGRATE
 ../manage.py makemigrations
 ../manage.py migrate

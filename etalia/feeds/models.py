@@ -116,17 +116,6 @@ class Stream(TimeStampedModel):
             ufv, _ = self.vectors.get_or_create(model_id=model_pk)
             ufv.update_vector()
 
-    def get_old_streammatches(self):
-        """Remove outdating matches based on user settings"""
-
-        # get time lapse corresponding to user settings
-        from_date = (timezone.now() -
-                     timezone.timedelta(
-                         days=self.user.settings.stream_time_lapse)).date()
-
-        # clean old matches
-        return StreamMatches.objects.filter(stream=self, date__lt=from_date)
-
     def clear_all(self):
         """Delete all matched matches"""
         StreamMatches.objects.filter(stream=self).delete()
@@ -143,7 +132,7 @@ class Stream(TimeStampedModel):
                 options=options))
 
         elif level == 'debug':
-            logger.debug('Feed ({pk}/{stream_name}@{user_email}): '
+            logger.debug('Stream ({pk}/{stream_name}@{user_email}): '
                          '{message} - {options}'.format(
                 pk=self.id,
                 stream_name=self.name,
@@ -167,14 +156,6 @@ class Stream(TimeStampedModel):
         self.log('info', 'Updating', 'starting...')
         self.set_message('Cleaning')
 
-        # get out-dated StreamMatches
-        del_objs = self.get_old_streammatches()
-
-        # get paper_id list for StreamMatches that remain
-        current_paper_list = self.streammatches_set\
-            .exclude(id__in=del_objs)\
-            .values_list('paper_id', flat=True)
-
         # Instantiate Score
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
         # and instantiate
@@ -187,28 +168,36 @@ class Stream(TimeStampedModel):
         }
         scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
 
-        # Score
+        # Get score and date
         results, date = scoring.score()
+        pks_res = results.keys()
 
-        # create/update UserFeedPaper
+        # get StreamMatches to be deleted
+        del_objs = self.streammatches_set.all().exclude(paper_id__in=pks_res)
+
+        # get paper_pk from TrendMatches to be updated
+        update_paper_list = self.streammatches_set\
+            .filter(paper_id__in=pks_res)\
+            .values_list('paper_id', flat=True)
+
+        # create TrendMatches
         create_objs = []
-        save_objs = []
-        for pk, val in results:
-            if pk in current_paper_list:
-                sm = StreamMatches.objects.get(
-                    stream=self,
-                    paper_id=pk)
-                sm.score = val
-                save_objs.append(sm)
-            else:
-                create_objs.append(StreamMatches(
-                    stream=self,
-                    paper_id=pk,
-                    score=val,
-                    date=date[pk],
-                    is_score_computed=True))
+        for pk in list(set(pks_res) - set(update_paper_list)):
+            create_objs.append(StreamMatches(
+                stream=self,
+                paper_id=pk,
+                score=results[pk],
+                date=date[pk]))
 
-        # Get last user visit
+        # udpate matches that already exists and are in results
+        update_objs = []
+        sms = list(StreamMatches.objects.filter(stream=self,
+                                               paper_id__in=update_paper_list))
+        for sm in sms:
+            sm.score = results[sm.paper_id]
+            update_objs.append(sm)
+
+        # Get last user visit. use for the tagging matched with 'new'
         try:
             last_seen = LastSeen.objects.when(user=self.user)
         except LastSeen.DoesNotExist:
@@ -216,17 +205,17 @@ class Stream(TimeStampedModel):
             pass
 
         # atomic update
-        self.atomic_update(del_objs, save_objs, create_objs, last_seen=last_seen)
+        self.atomic_update(del_objs, update_objs, create_objs, last_seen=last_seen)
 
         self.set_state('IDL')
-        self.log('info', 'Updating', 'DONE')
+        self.log('info', 'Updating', 'done')
 
     @atomic
-    def atomic_update(self, delete_objs, save_objs, create_objs, last_seen=None):
+    def atomic_update(self, delete_objs, update_objs, create_objs, last_seen=None):
         if delete_objs:
             delete_objs.delete()
-        if save_objs:
-            for obj in save_objs:
+        if update_objs:
+            for obj in update_objs:
                 obj.save()
         if create_objs:
             StreamMatches.objects.bulk_create(create_objs)
@@ -347,17 +336,27 @@ class Trend(TimeStampedModel):
         self.state = state
         self.save()
 
-    def get_old_trendmatches(self):
-        """Remove outdating matches based on user settings"""
+    def log(self, level, message, options):
+        """Local wrapper around logger"""
+        if level == 'info':
+            logger.info('Trend ({pk}/{trend_name}@{user_email}): '
+                        '{message} - {options}'.format(
+                pk=self.id,
+                trend_name=self.name,
+                user_email=self.user.email,
+                message=message,
+                options=options))
 
-        # get time lapse corresponding to user settings
-        from_date = (timezone.now() -
-                     timezone.timedelta(
-                         days=self.user.settings.stream_time_lapse)).date()
-
-        # clean old matches
-        return TrendMatches.objects\
-            .filter(trend=self, date__lt=from_date)
+        elif level == 'debug':
+            logger.debug('Trend ({pk}/{trend_name}@{user_email}): '
+                         '{message} - {options}'.format(
+                pk=self.id,
+                trend_name=self.name,
+                user_email=self.user.email,
+                message=message,
+                options=options))
+        else:
+            raise ValueError('level unknown')
 
     def clear_all(self):
         """Delete all matched matches"""
@@ -366,14 +365,7 @@ class Trend(TimeStampedModel):
     def update(self):
 
         self.set_state('ING')
-
-        # get out-dated StreamMatches
-        del_objs = self.get_old_trendmatches()
-
-        # get paper_id list for StreamMatches that remain
-        current_paper_list = self.trendmatches_set\
-            .exclude(id__in=del_objs)\
-            .values_list('paper_id', flat=True)
+        self.log('info', 'Updating', 'starting...')
 
         # Instantiate Score
         Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
@@ -388,27 +380,36 @@ class Trend(TimeStampedModel):
                         journal_ratio=journal_ratio,
                         **method_arg)
 
-        # Score
+        # Get score and date
         results, date = scoring.score()
+        pks_res = results.keys()
 
-        # create/update UserFeedPaper
-        save_objs = []
+        # get TrendMatches to be deleted
+        del_objs = self.trendmatches_set.all().exclude(paper_id__in=pks_res)
+
+        # get paper_pk from TrendMatches to be updated
+        update_paper_list = self.trendmatches_set\
+            .filter(paper_id__in=pks_res)\
+            .values_list('paper_id', flat=True)
+
+        # create TrendMatches
         create_objs = []
-        for pk, val in results:
-            if pk in current_paper_list:
-                tm = TrendMatches.objects.get(
-                    trend=self,
-                    paper_id=pk)
-                tm.score = val
-                save_objs.append(tm)
-            else:
-                create_objs.append(TrendMatches(
-                    trend=self,
-                    paper_id=pk,
-                    score=val,
-                    date=date[pk]))
+        for pk in list(set(results.keys()) - set(update_paper_list)):
+            create_objs.append(TrendMatches(
+                trend=self,
+                paper_id=pk,
+                score=results[pk],
+                date=date[pk]))
 
-        # Get last user visit
+        # udpate matches that already exists and are in results
+        update_objs = []
+        tms = list(TrendMatches.objects.filter(trend=self,
+                                               paper_id__in=update_paper_list))
+        for tm in tms:
+            tm.score = results[tm.paper_id]
+            update_objs.append(tm)
+
+        # Get last user visit. use for the tagging matched with 'new'
         try:
             last_seen = LastSeen.objects.when(user=self.user)
         except LastSeen.DoesNotExist:
@@ -416,16 +417,17 @@ class Trend(TimeStampedModel):
             pass
 
         # atomic update
-        self.atomic_update(del_objs, save_objs, create_objs, last_seen=last_seen)
+        self.atomic_update(del_objs, update_objs, create_objs, last_seen=last_seen)
 
         self.set_state('IDL')
+        self.log('info', 'Updating', 'done')
 
     @atomic
-    def atomic_update(self, delete_objs, save_objs, create_objs, last_seen=None):
+    def atomic_update(self, delete_objs, update_objs, create_objs, last_seen=None):
         if delete_objs:
             delete_objs.delete()
-        if save_objs:
-            for obj in save_objs:
+        if update_objs:
+            for obj in update_objs:
                 obj.save()
         if create_objs:
             TrendMatches.objects.bulk_create(create_objs)

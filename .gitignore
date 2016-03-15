@@ -75,9 +75,11 @@ nlp_data_test/
 etalia/trash
 fabfile/
 staticfiles/
-deploy/.envs
-deploy/.ssh
+deploy/.*
 deploy/notes.txt
-scripts/heroku_cheats
-scripts/routines/tmp.py
+scripts/tmp
 config/settings/common.py
+
+# redis
+*.rdb
+

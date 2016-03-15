@@ -52,7 +52,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         out['email'] = response.get('email', '')
         out['first_name'] = response.get('first_name', '')
         out['last_name'] = response.get('last_name', '')
-        if response.get('employment', None):
+        if 'employment' in response:
             out['tmp_affiliation'] = {}
             first_aff = response.get('employment')[0]
             first_aff_details = first_aff.get('institution_details', '')

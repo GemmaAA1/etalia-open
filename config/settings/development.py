@@ -67,9 +67,13 @@ if INVITE_MODE:
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'TIMEOUT': 60 * 60 * 24,    # 24 h
+    },
+    'files': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'TIMEOUT': 60 * 60,         # 1 h
     }
 }
-
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #

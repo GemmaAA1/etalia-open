@@ -53,6 +53,7 @@ VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
 JOB_MASTER = 'job1'
+CACHE_SCORING_REDIS_HOSTNAME = 'spot2'
 INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         't2.small': 1,
                         't2.medium': 2,
@@ -68,6 +69,8 @@ ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'nlp': 't2.large',
                           'spot': 'm4.large'}
 SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
+SSL_PATH = '/etc/nginx/ssl'
+
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -75,6 +78,7 @@ env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
 env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
+env.ssl_path = SSL_PATH
 
 init_slack(SLACK_WEB_HOOK)
 
@@ -104,9 +108,9 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     roles = []
     roles += [tag.get('layer', '') for tag in tags.values()]
     for tag in tags.values():
-        if tag.get('layer', None):
+        if 'layer' in tag:
             roles.append(tag.get('layer'))
-        if tag.get('role', None):
+        if 'role' in tag:
             r = tag.get('role', '').split(',')
             for rr in r:
                 roles.append(rr)
@@ -166,6 +170,8 @@ def deploy():
         update_gunicorn_conf()
         update_nginx_conf()
         reload_nginx()
+    # cache related
+        update_redis_cache()
     # job related
     if env.host_string in env.roledefs.get('jobs', []):
         update_rabbit_user()
@@ -391,6 +397,31 @@ def update_database():
 
 @task
 @roles('apps')
+def create_ssl_certificates():
+    # Require some Ubuntu packages
+    fabtools.require.deb.packages(['openssl'], update=True)
+    key_path = '{0}/{1}.key'.format(env.ssl_path, env.stack_site)
+    csr_path = '{0}/{1}.csr'.format(env.ssl_path, env.stack_site)
+    crt_path = '{0}/{1}-unified.crt'.format(env.ssl_path, env.stack_site)
+    if not files.exists(env.ssl_path):
+        run_as_root('mkdir -p {0}'.format(ssl_path))
+    if not files.exists(key_path):
+        run_as_root('openssl genrsa -out {key} 2048'.format(key=key_path))
+    if not files.exists(csr_path):
+        run_as_root('openssl req -new -nodes -keyout {key} -out {csr}'.format(key=key_path, csr=csr_path))
+    if not files.exists(crt_path):
+        run_as_root('openssl x509 -req -in {csr} -signkey {key} -out {crt}'.format(
+            csr=csr_path,
+            key=key_path,
+            crt=crt_path))
+
+@task
+@roles('apps')
+def rm_ssl_certificates():
+    run_as_root('rm {0}/*'.format(env.ssl_path))
+
+@task
+@roles('apps')
 def update_nginx_conf():
     """Update Nginx conf files"""
     # remove file if exists
@@ -444,6 +475,15 @@ def update_rabbit_user():
             if 'guest' in list_users:
                 run_as_root("rabbitmqctl delete_user guest")
 
+
+@task
+@roles('jobs')
+def update_redis_cache():
+    if env.tags[env.host_string].get('Name') == CACHE_SCORING_REDIS_HOSTNAME:
+        with settings(_workon()):  # to get env var
+            # if redis-server not installed, install
+            if not files.exists("/usr/bin/redis-server"):
+                fabtools.require.deb.packages(['redis-server'])
 
 @task
 def update_supervisor_conf():
@@ -513,6 +553,19 @@ def reload_supervisor():
     run_as_root('supervisorctl reread')
     run_as_root('supervisorctl update')
 
+
+@task
+def clean_and_update_hosts_file(stack=STACK):
+    hosts_ip6 = '# The following lines are desirable for IPv6 capable hosts ' \
+                '::1 ip6-localhost ip6-loopback\n' \
+                'fe00::0 ip6-localnet\n' \
+                'ff00::0 ip6-mcastprefix\n' \
+                'ff02::1 ip6-allnodes\n' \
+                'ff02::2 ip6-allrouter\n' \
+                'ff02::3 ip6-allhosts\n'
+    run_as_root('> /etc/hosts')
+    files.append('/etc/hosts', hosts_ip6, use_sudo=True)
+    update_hosts_file(stack=stack)
 
 @task
 def update_hosts_file(stack=STACK):
@@ -663,3 +716,10 @@ def go_off_maintenance():
         run_as_root('rm {on}'.format(off=template_off, on=template_on))
     else:
         raise IOError('maintenance_on.html does not exist')
+
+
+@task
+def copy_local_file_to_remote(local_path, remote_path):
+    if not files.exists(os.path.dirname(remote_path)):
+        run('mkdir -p {0}'.format(os.path.dirname(remote_path)))
+    put(local_path, remote_path, use_sudo=True)
