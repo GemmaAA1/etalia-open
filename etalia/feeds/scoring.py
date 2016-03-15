@@ -21,7 +21,7 @@ class Scoring(object):
     """Scoring abstract class"""
 
     cache = caches['default']
-    cache_user = caches['scoring_user']
+    cache_files = caches['files']
 
     def __init__(self, stream, **kwargs):
         self.stream = stream
@@ -453,7 +453,7 @@ class ContentBasedScoring(Scoring):
         # build target mat (or get from cache)
         user_target_mat_key = '{user_pk}_stream_target_mat'.format(
             user_pk=self.stream.user_id)
-        if user_target_mat_key not in self.cache_user:
+        if user_target_mat_key not in self.cache_files:
 
             # build target data
             if 'target_data' not in self.cache:
@@ -486,9 +486,9 @@ class ContentBasedScoring(Scoring):
             non_zeros = norm > 0.
             target_mat[non_zeros, :] /= norm[non_zeros, None]
             # cache for user specific target mat
-            self.cache_user.add(user_target_mat_key, target_mat)
+            self.cache_files.add(user_target_mat_key, target_mat)
         else:
-            target_mat = self.cache_user.get(user_target_mat_key)
+            target_mat = self.cache_files.get(user_target_mat_key)
 
         # Dot product
         dis = np.dot(target_mat, self.profile.T)
@@ -544,7 +544,7 @@ class TrendScoring(Scoring):
 
         user_target_mat_key = '{user_pk}_trend_target_mat'.format(
             user_pk=self.stream.user_id)
-        if user_target_mat_key not in self.cache_user:
+        if user_target_mat_key not in self.cache_files:
             # Build target data (from cache if available)
             if 'target_data' not in self.cache:
                 self.target_data = self.get_data(self.target_pks)
@@ -566,9 +566,9 @@ class TrendScoring(Scoring):
             non_zeros = norm > 0.
             target_mat[non_zeros, :] /= norm[non_zeros, None]
             # cache for user specific target mat
-            self.cache_user.add(user_target_mat_key, target_mat)
+            self.cache_files.add(user_target_mat_key, target_mat)
         else:
-            target_mat = self.cache_user.get(user_target_mat_key)
+            target_mat = self.cache_files.get(user_target_mat_key)
 
         # Dot product
         dis = np.dot(target_mat, self.profile.T)

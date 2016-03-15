@@ -66,7 +66,7 @@ CACHES = {
         'LOCATION': '{host}:6379'.format(host=env.str('REDIS_SCORING_CACHE_HOSTNAME')),
         'TIMEOUT': 60 * 60 * 24,     # 24 h
     },
-    'scoring_user': {
+    'files': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': CACHE_FILE_DIR,
         'TIMEOUT': 60 * 60,     # 1 h

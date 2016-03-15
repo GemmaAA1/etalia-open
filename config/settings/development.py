@@ -69,7 +69,7 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         'TIMEOUT': 60 * 60 * 24,    # 24 h
     },
-    'scoring_user': {
+    'files': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         'TIMEOUT': 60 * 60,         # 1 h
     }
