@@ -42,7 +42,9 @@ define([
     };
 
     Layout.prototype.init = function () {
-        var $leftFlap = $(this.config.leftFlap),
+        var that = this,
+            $body = $('body'),
+            $leftFlap = $(this.config.leftFlap),
             $leftFlapButton = $(this.config.leftFlapButton),
             $rightFlap = $(this.config.rightFlap),
             $rightFlapButton = $(this.config.rightFlapButton),
@@ -84,7 +86,6 @@ define([
 
         // Resize handler
         if (attacheResizeHandler) {
-            var that = this;
             $(window).on('resize', function () {
                 if (that.resizeTimeout) {
                     clearTimeout(that.resizeTimeout);
@@ -118,6 +119,11 @@ define([
                 }
             });
         }
+
+        var busyCheckUrl = $body.data('busy-check');
+        if (busyCheckUrl) {
+            that.checkBusyUrl(busyCheckUrl);
+        }
     };
 
     Layout.prototype.setBusy = function(content) {
@@ -139,6 +145,32 @@ define([
 
         $('#busy-content').html('');
         $('body').removeClass('busy');
+    };
+
+    Layout.prototype.checkBusyUrl = function(url) {
+        var that = this,
+            statusInterval;
+
+        that.setBusy();
+
+        statusInterval = setInterval(function() {
+            $.getJSON(url, function (data) {
+                if (data.done) {
+                    clearInterval(statusInterval);
+                    if (data.hasOwnProperty('redirect')) {
+                        window.location.href = data['redirect'];
+                        return;
+                    }
+                    that.setAvailable();
+                } else {
+                    // TODO improve response json format ...
+                    that.setBusy(
+                        '<p><strong>' + data.messages[0] + '</strong></p>' +
+                        '<p>' + data.messages[1] + '</p>'
+                    );
+                }
+            });
+        }, 1000);
     };
 
     var layout = new Layout();
