@@ -40,5 +40,5 @@ fi
 ../manage.py populate consumer elsevier --name elsevier_all
 
 # RUN TEST
-py.test
+#py.test
 

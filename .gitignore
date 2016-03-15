@@ -77,8 +77,7 @@ fabfile/
 staticfiles/
 deploy/.*
 deploy/notes.txt
-scripts/heroku_cheats
-scripts/routines/tmp.py
+scripts/tmp
 config/settings/common.py
 
 # redis

@@ -9,6 +9,7 @@ import sys
 import copy
 import random
 
+
 def update():
     from django.contrib.auth import get_user_model
     from etalia.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
