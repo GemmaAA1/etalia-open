@@ -60,7 +60,7 @@ class NavFlapMixin(object):
                 trend__user=self.request.user,
                 trend__name='main',
                 new=True).count(),
-            'tocles_counter': 0
+            'Threads_counter': 0
         }
 
 

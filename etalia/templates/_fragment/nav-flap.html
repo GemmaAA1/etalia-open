@@ -8,13 +8,16 @@
         <div class="flap-inner">
             <ul id="main-nav">
                 <li class="{% active request 'feed/stream.+' %}">
-                    <a href="{% url 'feeds:stream' %}">My stream {% if stream_counter > 0 %}<span>({{ stream_counter }})</span>{% endif %}</a>
+                    <a href="{% url 'feeds:stream' %}">My stream</a>
+{#                    {% if stream_counter > 0 %}<span>({{ stream_counter }})</span>{% endif %}#}
                 </li>
-                <li class="{% active request 'user/tocles.+' %}">
-                    <a href="{% url 'user:tocles' %}">My Tocles  {% if tocles_counter > 0 %}<span>({{ tocles_counter }})</span>{% endif %}</a>
+                <li class="{% active request 'user/Threads.+' %}">
+                    <a href="{% url 'user:threads' %}">My Threads</a>
+{#                    {% if threads_counter > 0 %}<span>({{ threads_counter }})</span>{% endif %}#}
                 </li>
                 <li class="{% active request 'feed/trend.+' %}">
-                    <a href="{% url 'feeds:trend' %}">Trends  {% if trend_counter > 0 %}<span>({{ trend_counter }})</span>{% endif %}</a>
+                    <a href="{% url 'feeds:trend' %}">Trends</a>
+{#                    {% if trend_counter > 0 %}<span>({{ trend_counter }})</span>{% endif %}#}
                 </li>
                 <li class="{% active request 'user/library.+' %}">
                     <a href="{% url 'user:library' %}">Library</a>

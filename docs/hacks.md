@@ -17,7 +17,7 @@ user = User.objects.get(email='trucfortest@gmail.com')
 
 
 ```python
-user.init_step = 'STR'      # choices are 'TRE' for trend, 'LIB' for library, 'IDL' for idle
+user.init_step = 'STR'      # choices are 'TRE' for TREnd, 'STR' for STReam, 'LIB' for LIBrary, 'IDL' for IDLe
 user.save()
 ```
 
@@ -26,7 +26,7 @@ user.save()
 
 ```python
 stream = user.streams.first()
-stream.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for idle
+stream.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for IDLe
 ```
 
 ## Update user stream state (require user)
@@ -34,5 +34,5 @@ stream.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for idl
 
 ```python
 trend = user.trends.first()
-trend.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for idle
+trend.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for IDLe
 ```

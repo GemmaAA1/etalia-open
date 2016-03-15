@@ -783,7 +783,7 @@ def send_invite(request):
         redirect('invite:home')
 
 
-class ToclesView(LoginRequiredMixin, NavFlapMixin, TemplateView):
-    template_name = 'tocles/tocles.html'
+class ThreadsView(LoginRequiredMixin, NavFlapMixin, TemplateView):
+    template_name = 'threads/threads.html'
 
-tocles = ToclesView.as_view()
+threads = ThreadsView.as_view()
