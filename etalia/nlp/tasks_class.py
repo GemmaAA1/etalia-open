@@ -56,7 +56,6 @@ class EmbedPaperTask(Task):
         return self.model.tasks(*args, **kwargs)
 
 
-
 class MostSimilarTask(Task):
     """Abstract task for MostSimilar model
     Use to load MostSimilar instance in __init__ so that it is cached for subsequent call
