@@ -192,7 +192,7 @@ define([
             })
             .on('click', '.detail-twitter:visible', function(e) {
                 var $actions = $('#detail-actions');
-                $.getJSON("http://api.bitly.com/v3/shorten?callback=?", {
+                $.getJSON("https://api.bitly.com/v3/shorten?callback=?", {
                         format: "json",
                         apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
                         login: "nicolaspannetier",
