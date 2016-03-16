@@ -712,7 +712,7 @@ def go_off_maintenance():
     template_off = '{source}/etalia/templates/maintenance_off.html'.format(source=env.source_dir)
     template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
     if files.exists(template_on):
-        run_as_root('rm {on}'.format(off=template_off, on=template_on))
+        run_as_root('rm {on}'.format(on=template_on))
     else:
         raise IOError('maintenance_on.html does not exist')
 
