@@ -7,7 +7,7 @@
 {% load ui_goodies %}
 
 {# TODO need the absolute url #}
-{% url 'library:paper' paper.pk as paper_detail_url %}
+{% url 'library:paper-slug' paper.title|slugify paper.pk as paper_detail_url %}
 
 <div id="detail-actions" class="actions" data-paper-id="{{ paper.pk }}" data-paper-url="{{ request.build_absolute_uri }}" data-paper-title="{{ paper.title }}">
     {% if user.is_authenticated %}

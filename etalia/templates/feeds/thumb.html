@@ -32,7 +32,7 @@
     </div>
     <div class="card">
         <p class="title">
-            <a href="{% url 'library:paper' paper.pk %}">
+            <a href="{% url 'library:paper-slug' paper.title|slugify paper.pk %}">
                 {% if paper.pk in new_papers %}<span>new</span>{% endif %}
                 {{ paper.title }}
             </a>

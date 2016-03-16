@@ -131,13 +131,12 @@ class PaperViewPk(RedirectView):
 
     permanent = False
     query_string = True
+    pattern_name = 'library:paper-slug'
 
     def get_redirect_url(self, *args, **kwargs):
         paper = Paper.objects.get(pk=kwargs['pk'])
-        if self.request.is_secure():
-            return 'https://' + paper.get_absolute_url() + '?' + self.request.GET.urlencode()
-        else:
-            return 'http://' + paper.get_absolute_url() + '?' + self.request.GET.urlencode()
+        kwargs['slug'] = slugify(paper.title)
+        return super(PaperViewPk, self).get_redirect_url(*args, **kwargs)
 
 paper = PaperViewPk.as_view()
 
