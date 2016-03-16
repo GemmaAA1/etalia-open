@@ -191,14 +191,23 @@ define([
                 return false;
             })
             .on('click', '.detail-twitter:visible', function(e) {
-                var $actions = $('#detail-actions'),
-                    url = 'https://twitter.com/intent/tweet/'
-                        + '?text=' + $actions.data('paper-title')
-                        + '&url=' + $actions.data('paper-url')
-                        + '&via=etaliaio';
-                        //+ '&hashtags=web,development';
-
-                utils.popup(url, 'share-popup');
+                var $actions = $('#detail-actions');
+                $.getJSON("http://api.bitly.com/v3/shorten?callback=?", {
+                        format: "json",
+                        apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
+                        login: "nicolaspannetier",
+                        longUrl: $actions.data('paper-url')
+                    }, function(response) {
+                        utils.popup(
+                            'https://twitter.com/intent/tweet/'
+                                + '?text=' + $actions.data('paper-title')
+                                + '&url=' + encodeURI(response.data.url)
+                                + '&via=etaliaio'
+                            //+ '&hashtags=web,development';
+                            , 'share-popup'
+                        );
+                    }
+                );
 
                 var data = extraData();
                 data.id = that.id;
