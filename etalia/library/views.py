@@ -134,7 +134,10 @@ class PaperViewPk(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         paper = Paper.objects.get(pk=kwargs['pk'])
-        return paper.get_absolute_url() + '?' + self.request.GET.urlencode()
+        if self.request.is_secure():
+            return 'https://' + paper.get_absolute_url() + '?' + self.request.GET.urlencode()
+        else:
+            return 'http://' + paper.get_absolute_url() + '?' + self.request.GET.urlencode()
 
 paper = PaperViewPk.as_view()
 

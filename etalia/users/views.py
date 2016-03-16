@@ -573,7 +573,7 @@ def user_init_check(request):
 def user_update_stream_check(request):
     if request.method == 'GET':
         if request.user.streams.first().state == 'ING':
-            messages = ['Updating My Stream', '']
+            messages = ['Updating Your Stream', '']
             done = False
         else:
             messages = []

@@ -44,6 +44,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'etalia.altmetric.tasks.update_altmetric_periodic',
         'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0
     },
+    'update-userlib-all': {
+        'task': 'etalia.users.tasks.userlib_update_all',
+        'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
+    },
     'update-ms-all': {
         'task': 'etalia.nlp.tasks.mostsimilar_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
