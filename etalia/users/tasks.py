@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+
+@app.task()
+def userlib_update_all():
+    us = User.objects.all()
+    for user in us:
+        provider_names = user.social_auth.all().values_list('provider', flat=True)
+        for provider_name in provider_names:
+            update_lib.delay(user.id, provider_name)
+
+
 @app.task()
 def update_lib(user_pk, provider_name):
     """Async task for updating user library"""
