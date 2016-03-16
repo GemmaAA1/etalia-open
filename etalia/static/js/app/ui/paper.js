@@ -195,7 +195,7 @@ define([
                     url = 'https://twitter.com/intent/tweet/'
                         + '?text=' + $actions.data('paper-title')
                         + '&url=' + $actions.data('paper-url')
-                        + '&via=etalia';
+                        + '&via=etaliaio';
                         //+ '&hashtags=web,development';
 
                 utils.popup(url, 'share-popup');
