@@ -28,7 +28,7 @@ def update_altmetric_periodic():
         update_altmetric.apply_async(args=(pk,))
 
 
-@app.task(rate_limit=1, bind=True)
+@app.task(rate_limit=1, bind=True, max_retries=3, default_retry_delay=10 * 60)
 def update_altmetric(self, paper_pk):
     """Celery task for altmetric update"""
     try:
