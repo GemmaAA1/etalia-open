@@ -61,10 +61,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("stack", help="(str) stack name to be deploy", type=str)
     parser.add_argument("-p", "--parallel", help="deploy in parallel", action="store_true")
+    parser.add_argument("-s", "--slack", help="deploy in parallel", action="store_true")
+    parser.add_argument("-np", "--no-push", help="deploy in parallel", action="store_true",
+                        dest='no_push')
     args = parser.parse_args()
 
-    send_deploy_version_message(args.stack)
-    checkout_master_and_push_recompiled_assets()
+    if args.slack:
+        send_deploy_version_message(args.stack)
+
+    if not args.no_push:
+        checkout_master_and_push_recompiled_assets()
     if args.parallel:
         # Go on maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_on_maintenance'])
@@ -80,4 +86,5 @@ if __name__ == '__main__':
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
 
-    send_deploy_version_message(args.stack, done=True)
+    if args.slack:
+        send_deploy_version_message(args.stack, done=True)
