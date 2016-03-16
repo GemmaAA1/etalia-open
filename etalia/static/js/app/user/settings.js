@@ -109,7 +109,7 @@ define([
         initXhr = $.ajax(url);
         initXhr.done(function() {
             statusInterval = setInterval(function() {
-                $.getJSON('/user/user-update-step', function (data) {
+                $.getJSON('/user/user-update-settings-check', function (data) {
                     if (data.done) {
                         clearInterval(statusInterval);
                         if (data.hasOwnProperty('redirect')) {
