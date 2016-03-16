@@ -122,6 +122,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social.apps.django_app.context_processors.backends',
     'django.core.context_processors.request',
     'etalia.core.context_processors.admin_context',
+    'etalia.core.context_processors.user_update_check',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
@@ -300,10 +301,10 @@ CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 # NLP APP
 # ------------------------------------------------------------------------------
 NLP_CHUNK_SIZE = 10000
-NLP_DATA_PATH = str((ROOT_DIR-1).path('nlp_data', 'data'))
-NLP_MODELS_PATH = str((ROOT_DIR-1).path('nlp_data', 'mods'))
-NLP_MS_PATH = str((ROOT_DIR-1).path('nlp_data', 'ms'))
-NLP_NLTK_DATA_PATH = str((ROOT_DIR-1).path('nlp', 'nltk_data'))
+NLP_DATA_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'data'))
+NLP_MODELS_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'mods'))
+NLP_MS_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'ms'))
+NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
 
