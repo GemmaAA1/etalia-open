@@ -597,6 +597,32 @@ def user_update_trend_check(request):
                 'messages': messages}
         return JsonResponse(data)
 
+@login_required
+def user_update_settings_check(request):
+    if request.method == 'GET':
+        if request.user.streams.first().state == 'ING':
+            user_update_stream_check()
+        elif request.user.streams.first().state == 'ING':
+            user_update_stream_check()
+        elif request.user.lib.state == 'ING':
+            user_update_library_check()
+        else:
+            data = {'done': True, 'messages': []}
+            return JsonResponse(data)
+
+@login_required
+def user_update_library_check(request):
+    if request.method == 'GET':
+        if request.user.lib.state == 'ING':
+            messages = ['Updating You Library', '']
+            done = False
+        else:
+            messages = []
+            done = True
+
+        data = {'done': done,
+                'messages': messages}
+        return JsonResponse(data)
 
 @login_required
 def update_library(request):

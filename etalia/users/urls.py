@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^user-init-check$', views.user_init_check, name='user-init-check'),
     url(r'^user-update-stream-check$', views.user_update_stream_check, name='user-update-stream-check'),
     url(r'^user-update-trend-check$', views.user_update_trend_check, name='user-update-trend-check'),
+    url(r'^user-update-settings-check$', views.user_update_settings_check, name='user-update-settings-check'),
     url(r'^paper/ban', views.ban_call, name='ban'),
     url(r'^paper/pin$', views.pin_call, name='pin'),
     url(r'^paper/add$', views.add_call, name='add'),
