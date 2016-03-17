@@ -32,8 +32,10 @@ import os
 import re
 import string
 import random
+from datetime import datetime
 
-from boto.ec2 import connect_to_region
+from boto import utils
+from boto.ec2 import connect_to_region, instance
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
     put, sudo, get, reboot
@@ -70,7 +72,8 @@ ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'spot': 'm4.large'}
 SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
 SSL_PATH = '/etc/nginx/ssl'
-
+# Two levels up
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -149,8 +152,24 @@ def check_integrity():
 def get_host_roles():
     return [k for k, v in env.roledefs.items() if env.host_string in v]
 
+
+class ConditionalDecorator(object):
+    def __init__(self, dec, condition):
+        self.decorator = dec
+        self.condition = condition
+
+    def __call__(self, func, *args, **kwargs):
+        if not self.condition:
+            # Return the function unchanged, not decorated.
+            return func
+        return self.decorator(func, args, kwargs)
+
 @task
 @announce_deploy("Etalia", channel="#general", username="deployment-bot")
+def deploy_verbose():
+    deploy()
+
+@task
 def deploy():
     """Deploy etalia on hosts"""
     if not env.hosts:
@@ -170,11 +189,15 @@ def deploy():
         update_gunicorn_conf()
         update_nginx_conf()
         reload_nginx()
-    # cache related
-        update_redis_cache()
+        # cache related
     # job related
     if env.host_string in env.roledefs.get('jobs', []):
         update_rabbit_user()
+    # spot related
+    update_rc_local()
+    # redis
+    update_redis_cache()
+
     update_supervisor_conf()
     restart_supervisor()
     reb = update_hosts_file(env.stack_string)
@@ -239,10 +262,15 @@ def _get_public_dns(region, context):
     for reservation in reservations:
         for instance in reservation.instances:
             if instance.public_dns_name:
-                print("Instance {}".format(instance.public_dns_name))
-                public_dns.append(str(instance.public_dns_name))
-                tags[str(instance.public_dns_name)] = instance.tags
-                tags[str(instance.public_dns_name)]['type'] = instance.instance_type
+                key = str(instance.public_dns_name)
+                print("Instance {}".format(key))
+                public_dns.append(key)
+                tags[key] = instance.tags
+                tags[key]['type'] = instance.instance_type
+                if instance.spot_instance_request_id:
+                    tags[key]['spot_child'] = True
+                else:
+                    tags[key]['spot_child'] = False
 
     return tags
 
@@ -335,7 +363,6 @@ def create_directory_structure_if_necessary():
         if not files.exists('{0}/{1}'.format(env.stack_dir, sub_dir)):
             run('mkdir -p {0}/{1}'.format(env.stack_dir, sub_dir))
 
-
 @task
 def copy_common_py():
     run('cp {0}/source/config/settings/common.py.dist {0}/source/config/settings/common.py'.format(env.stack_dir))
@@ -377,6 +404,7 @@ def update_remote_origin():
 @task
 def pip_install():
     """Pip install requirements"""
+    run_as_root('pip install boto')
     with settings(cd(env.source_dir), _workon()):
         run('pip install -r requirements/{stack}.txt'.format(stack=env.stack))
 
@@ -484,6 +512,10 @@ def update_redis_cache():
             # if redis-server not installed, install
             if not files.exists("/usr/bin/redis-server"):
                 fabtools.require.deb.packages(['redis-server'])
+            # upload redis.conf
+            files.upload_template('redis.conf', '/etc/redis/redis.conf', {}, user_sudo=True)
+            run_as_root("/etc/init.d/redis-server restart")
+
 
 @task
 def update_supervisor_conf():
@@ -531,6 +563,16 @@ def update_supervisor_conf():
         conf_dir=env.conf_dir,
     ))
 
+@task
+def update_rc_local():
+    if env.tags[env.host_string]['spot_child']:
+        rc_local_path = '/etc/rc.local'
+        run_as_root('rm ' + rc_local_path)
+        files.upload_template('rc.template.local', rc_local_path,
+                              context={'STACK': env.stack,
+                                        'USER': env.user},
+                              use_sudo=True,
+                              use_jinja=True)
 
 @task
 def restart_supervisor():
@@ -722,3 +764,67 @@ def copy_local_file_to_remote(local_path, remote_path):
     if not files.exists(os.path.dirname(remote_path)):
         run('mkdir -p {0}'.format(os.path.dirname(remote_path)))
     put(local_path, remote_path, use_sudo=True)
+
+
+def is_spot_child():
+    instance_id = utils.get_instance_identity()['document']['instanceId']
+    region = utils.get_instance_identity()['document']['region']
+    conn = connect_to_region(
+        region_name=region,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    inst = instance.Instance(connection=conn)
+    if inst.spot_instance_request_id:
+        return True
+    else:
+        return False
+
+
+
+def get_etalia_version():
+    init_py = open(os.path.join(ROOT_DIR, '__init__.py')).read()
+    return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
+
+
+def create_amis(region=REGION):
+    # Get current version of etalia
+    version = get_etalia_version()
+
+    # general conext
+    context = {
+        'tag:stack': STACK,
+        'tag:layer': '*',
+        'tag:role': '*',
+    }
+
+    # connect
+    connection = _create_connection(region)
+
+    # get instances
+    reservations = connection.get_all_instances(filters=context)
+
+    # get set of unique instances based on tags
+    instances_set = []
+    tags_set = []
+    for res in reservations:
+        instance = res.instances[0]
+        tags = instance.tags
+        tags.pop('Name')
+        if tags not in tags_set:
+            tags_set.append(tags)
+            instances_set.append(instance.id)
+    instance_tags_set = zip(instances_set, tags_set)
+
+    # create AMIs
+    for instance_id, tags in instance_tags_set:
+        ami_name = '{version}/{stack}/{layer}/{role}/{date}'\
+            .format(version=version,
+                    stack=tags.get('stack'),
+                    layer=tags.get('layer'),
+                    role=tags.get('role').replace(',', '-'),
+                    date=str(datetime.now().ctime())).replace(':', '-')
+        ami_id = connection.create_image(instance_id, ami_name)
+        im = connection.get_image(ami_id)
+        # replace instance name by its role
+        tags['Name'] = '{0}/{1}'.format(tags.get('layer'), tags.get('role'))
+        im.add_tags(tags)

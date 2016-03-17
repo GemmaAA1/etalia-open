@@ -61,22 +61,34 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("stack", help="(str) stack name to be deploy", type=str)
     parser.add_argument("-p", "--parallel", help="deploy in parallel", action="store_true")
+    parser.add_argument("-s", "--slack", help="Send deployment info to slack", action="store_true")
+    parser.add_argument("-a", "--assets", help="Compiled and push assests before deployment", action="store_true")
     args = parser.parse_args()
 
-    send_deploy_version_message(args.stack)
-    checkout_master_and_push_recompiled_assets()
+    if args.slack:
+        send_deploy_version_message(args.stack)
+
+    if args.assets:
+        checkout_master_and_push_recompiled_assets()
+
     if args.parallel:
         # Go on maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_on_maintenance'])
         # parallel deploy
-        call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy'])
+        if args.slack:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy_verbose'])
+        else:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy'])
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_off_maintenance'])
     else:
         # Go on maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_on_maintenance'])
         # parallel deploy
-        call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
+        if args.slack:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy_verbose'])
+        else:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
 
