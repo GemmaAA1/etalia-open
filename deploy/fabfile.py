@@ -827,4 +827,5 @@ def create_amis(region=REGION):
         im = connection.get_image(ami_id)
         # replace instance name by its role
         tags['Name'] = '{0}/{1}'.format(tags.get('layer'), tags.get('role'))
+        tags['version'] = version
         im.add_tags(tags)

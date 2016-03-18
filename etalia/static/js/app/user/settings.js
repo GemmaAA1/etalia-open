@@ -5,6 +5,9 @@ define([
     'bootstrap'
 ], function($, layout) {
 
+    // bootstrap tooltip for title display
+    $('[data-toggle="tooltip"]').tooltip();
+
     function submitForm(e) {
         var $form = $(this);
         var $data = $($form.attr('data-target'));
