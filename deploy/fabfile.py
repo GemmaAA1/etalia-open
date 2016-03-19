@@ -2,14 +2,24 @@
 """
 Fabfile for etalia deployment on AWS.
 
-Current Configuration is as follow:
-Stacks defined by STACK_SITE_MAPPING
-Each stack has has 3 layers:
-    - a Postgres db (host on AWS RDS)
-    - apps
-    - jobs (one master and satellites)
+Current stack is composed of:
+- webwerver
+- job master
+- db on aws rds
+- worker (as spot instances)
 
-Each instance is tagged accordingly. For example, an instance with tags
+Instance roles is defined by its tags and layer
+Current possile roles are:
+- jobs      # job layer
+- apps      # front-end layer
+- web       # webserver
+- master    # master job (e.g rabbitmq, any unitary task, celery-beat, flower)
+- base      # default job queue, consumers
+- nlp       # doc2vec tagging
+- ms        # mostsimilar request
+- feed      # feed computation
+- redis     # currently
+
 {'site': 'staging', 'layer': 'jobs', 'Name': 'job1'} corresponds to an instance
 that belongs to stack staging and layer jobs.
 
