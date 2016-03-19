@@ -50,6 +50,5 @@ def get_tags_from_spot_request():
     inst.add_tag({'Name': inst_name})
 
 
-
 if __name__ == '__main__':
     get_tags_from_spot_request()
