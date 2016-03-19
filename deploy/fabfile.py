@@ -32,11 +32,9 @@ import os
 import re
 import string
 import random
-from datetime import datetime
 
 from boto import utils
 from boto.ec2 import connect_to_region, instance
-from boto.exception import EC2ResponseError
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
     put, sudo, get, reboot
@@ -55,7 +53,6 @@ REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
-CACHE_SCORING_REDIS_HOSTNAME = 'spot2'
 INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         't2.small': 1,
                         't2.medium': 2,
@@ -76,9 +73,8 @@ SSL_PATH = '/etc/nginx/ssl'
 # Two levels up
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-#AMIS
-NO_REBOOT=True
+# AMIS
+NO_REBOOT = True
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -124,11 +120,12 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
             for rr in r:
                 roles.append(rr)
     env.roles = list(set(roles))
+
+    # define roledefs
     roledefs = {}
     for role in env.roles:
         roledefs[role] = [host for host in env.hosts
-                          if tags[host]['layer'] == role or
-                          role in tags[host].get('role', '')]
+                          if tags[host]['layer'] == role or role in tags[host].get('role', '')]
     env.roledefs = roledefs
 
     # store stack used
@@ -511,16 +508,25 @@ def update_rabbit_user():
 
 
 @task
-@roles('jobs')
+@roles('redis')
 def update_redis_cache():
-    if env.tags[env.host_string].get('Name') == CACHE_SCORING_REDIS_HOSTNAME:
-        with settings(_workon()):  # to get env var
-            # if redis-server not installed, install
-            if not files.exists("/usr/bin/redis-server"):
-                fabtools.require.deb.packages(['redis-server'])
-            # upload redis.conf
-            files.upload_template('redis.conf', '/etc/redis/redis.conf', {}, user_sudo=True)
-            run_as_root("/etc/init.d/redis-server restart")
+    with settings(_workon()):  # to get env var
+
+        # if redis-server not installed, install
+        if not files.exists("/usr/bin/redis-server"):
+            fabtools.require.deb.packages(['redis-server'])
+
+        # turn of autostart, manage by supervisor
+        run_as_root('update-rc.d redis-server disable')
+
+        # upload redis.conf to conf_dir
+        files.upload_template('redis.conf',
+                              '{stack_dir}/{conf_dir}/redis.conf'.format(
+                                  stack_dir=env.stack_dir,
+                                  conf_dir=env.conf_dire),
+                              {},
+                              user_sudo=True)
+        run_as_root("/etc/init.d/redis-server restart")
 
 
 @task
@@ -546,8 +552,8 @@ def update_supervisor_conf():
                      'SOURCE_DIR': env.source_dir,
                      'ENV_DIR': env.env_dir,
                      'CONF_DIR': env.conf_dir,
+                     'LAYER': env.tags[env.host_string].get('layer'),
                      'ROLES': get_host_roles(),
-                     'SPOT': env.tags[env.host_string].get('spot'),
                      'USERS_PASSWORDS_FLOWER': flower_users_passwords,
                      'INSTANCE_TYPE': env.tags[env.host_string]['type']
                      }, use_sudo=True, use_jinja=True)
@@ -567,16 +573,16 @@ def update_supervisor_conf():
 
 
 @task
+@roles('spot')
 def update_rc_local():
     """Add spot_boot script to rc.local"""
-    if env.tags[env.host_string].get('spot'):
-        rc_local_path = '/etc/rc.local'
-        run_as_root('rm ' + rc_local_path)
-        files.upload_template('rc.template.local', rc_local_path,
-                              context={'STACK': env.stack,
-                                        'USER': env.user},
-                              use_sudo=True,
-                              use_jinja=True)
+    rc_local_path = '/etc/rc.local'
+    run_as_root('rm ' + rc_local_path)
+    files.upload_template('rc.template.local', rc_local_path,
+                          context={'STACK': env.stack,
+                                    'USER': env.user},
+                          use_sudo=True,
+                          use_jinja=True)
 
 
 @task
@@ -798,7 +804,7 @@ def create_amis(stack=STACK, layer='*', role='*', name='*', region=REGION):
 
     # general context
     context = {
-        'tag:stack': STACK,
+        'tag:stack': stack,
         'tag:layer': layer,
         'tag:role': role,
         'tag:Name': name,
