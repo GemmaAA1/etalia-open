@@ -95,8 +95,8 @@ class Model(TimeStampedModel, S3Mixin):
     # For S3 Mixin
     BUCKET_NAME = getattr(settings, 'NLP_MODELS_BUCKET_NAME', '')
     PATH = getattr(settings, 'NLP_MODELS_PATH', '')
-    AWS_ACCESS_KEY_ID = getattr(settings, 'DJANGO_AWS_ACCESS_KEY_ID', '')
-    AWS_SECRET_ACCESS_KEY = getattr(settings, 'DJANGO_AWS_SECRET_ACCESS_KEY', '')
+    AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
 
     name = models.CharField(max_length=128, blank=False, null=False,
                             unique=True)
@@ -833,8 +833,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     # For S3 Mixin
     BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
     PATH = getattr(settings, 'NLP_MS_PATH', '')
-    AWS_ACCESS_KEY_ID = getattr(settings, 'DJANGO_AWS_ACCESS_KEY_ID', '')
-    AWS_SECRET_ACCESS_KEY = getattr(settings, 'DJANGO_AWS_SECRET_ACCESS_KEY', '')
+    AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
 
     model = models.ForeignKey(Model, related_name='ms')
 

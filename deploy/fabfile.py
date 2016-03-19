@@ -7,7 +7,7 @@ Stacks defined by STACK_SITE_MAPPING
 Each stack has has 3 layers:
     - a Postgres db (host on AWS RDS)
     - apps
-    - jobs (one master (JOB_MASTER) and satellites)
+    - jobs (one master and satellites)
 
 Each instance is tagged accordingly. For example, an instance with tags
 {'site': 'staging', 'layer': 'jobs', 'Name': 'job1'} corresponds to an instance
@@ -36,6 +36,7 @@ from datetime import datetime
 
 from boto import utils
 from boto.ec2 import connect_to_region, instance
+from boto.exception import EC2ResponseError
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
     put, sudo, get, reboot
@@ -48,13 +49,12 @@ from fabric_slack_tools import *
 STACK = 'production'
 STACK_SITE_MAPPING = {'staging': '',
                       'production': 'alpha.etalia.io'}
-REGION = os.environ.get("DJANGO_AWS_REGION")
+REGION = os.environ.get("AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
 SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
-JOB_MASTER = 'job1'
 CACHE_SCORING_REDIS_HOSTNAME = 'spot2'
 INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         't2.small': 1,
@@ -66,6 +66,7 @@ INSTANCE_TYPES_RANK = { 't2.micro': 0,
                         'm4.10xlarge': 6}
 ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
                           'base': 't2.small',
+                          'master': 't2.small',
                           'ms': 't2.medium',
                           'feed': 't2.medium',
                           'nlp': 't2.large',
@@ -74,6 +75,10 @@ SLACK_WEB_HOOK = "https://hooks.slack.com/services/T0LGELAD8/B0P5G9XLL/qzoOHkE7N
 SSL_PATH = '/etc/nginx/ssl'
 # Two levels up
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+#AMIS
+NO_REBOOT=True
 
 # Server user, normally AWS Ubuntu instances have default user "ubuntu"
 # List of AWS private key Files
@@ -86,7 +91,7 @@ env.ssl_path = SSL_PATH
 init_slack(SLACK_WEB_HOOK)
 
 @task
-def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
+def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
     # setup env
     setattr(env, 'stack', stack)
@@ -103,6 +108,7 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     context = {
         'tag:stack': stack,
         'tag:layer': layer,
+        'tag:role': role,
         'tag:Name': name,
     }
     tags = _get_public_dns(region, context)
@@ -267,10 +273,11 @@ def _get_public_dns(region, context):
                 public_dns.append(key)
                 tags[key] = instance.tags
                 tags[key]['type'] = instance.instance_type
+                # check if instance is from spot request or not
                 if instance.spot_instance_request_id:
-                    tags[key]['spot_child'] = True
+                    tags[key]['spot'] = True
                 else:
-                    tags[key]['spot_child'] = False
+                    tags[key]['spot'] = False
 
     return tags
 
@@ -280,8 +287,8 @@ def _create_connection(region):
     print("Connecting to {}".format(region))
     conn = connect_to_region(
         region_name=region,
-        aws_access_key_id=os.environ.get("DJANGO_AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.environ.get("DJANGO_AWS_SECRET_ACCESS_KEY")
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY")
     )
     print("Connection with AWS established")
     return conn
@@ -485,23 +492,22 @@ def update_gunicorn_conf():
 
 
 @task
-@roles('jobs')
+@roles('master')
 def update_rabbit_user():
-    """Set rabbit user on job_master"""
-    if env.tags[env.host_string].get('Name') == JOB_MASTER:
-        with settings(_workon()):  # to get env var
-            # if rabbitmq not installed, install
-            if not files.exists("/usr/sbin/rabbitmq-server"):
-                fabtools.require.deb.packages(['rabbitmq-server'])
-            # test if user exists:
-            list_users = run_as_root('rabbitmqctl list_users')
-            user = run_as_root('echo $RABBITMQ_USERNAME')
-            if user not in list_users:
-                run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
-                run_as_root('rabbitmqctl set_user_tags $RABBITMQ_USERNAME administrator')
-                run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
-            if 'guest' in list_users:
-                run_as_root("rabbitmqctl delete_user guest")
+    """Set rabbit user on master"""
+    with settings(_workon()):  # to get env var
+        # if rabbitmq not installed, install
+        if not files.exists("/usr/sbin/rabbitmq-server"):
+            fabtools.require.deb.packages(['rabbitmq-server'])
+        # test if user exists:
+        list_users = run_as_root('rabbitmqctl list_users')
+        user = run_as_root('echo $RABBITMQ_USERNAME')
+        if user not in list_users:
+            run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
+            run_as_root('rabbitmqctl set_user_tags $RABBITMQ_USERNAME administrator')
+            run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
+        if 'guest' in list_users:
+            run_as_root("rabbitmqctl delete_user guest")
 
 
 @task
@@ -532,10 +538,6 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
-        if env.tags[env.host_string].get('Name') == JOB_MASTER:
-            job_master = True
-        else:
-            job_master = False
         files.upload_template('supervisord.template.conf', supervisor_file,
             context={'SITENAME': env.stack_site,
                      'USER': env.user,
@@ -545,8 +547,8 @@ def update_supervisor_conf():
                      'ENV_DIR': env.env_dir,
                      'CONF_DIR': env.conf_dir,
                      'ROLES': get_host_roles(),
+                     'SPOT': env.tags[env.host_string].get('spot'),
                      'USERS_PASSWORDS_FLOWER': flower_users_passwords,
-                     'JOB_MASTER': job_master,
                      'INSTANCE_TYPE': env.tags[env.host_string]['type']
                      }, use_sudo=True, use_jinja=True)
 
@@ -563,9 +565,11 @@ def update_supervisor_conf():
         conf_dir=env.conf_dir,
     ))
 
+
 @task
 def update_rc_local():
-    if env.tags[env.host_string]['spot_child']:
+    """Add spot_boot script to rc.local"""
+    if env.tags[env.host_string].get('spot'):
         rc_local_path = '/etc/rc.local'
         run_as_root('rm ' + rc_local_path)
         files.upload_template('rc.template.local', rc_local_path,
@@ -573,6 +577,7 @@ def update_rc_local():
                                         'USER': env.user},
                               use_sudo=True,
                               use_jinja=True)
+
 
 @task
 def restart_supervisor():
@@ -608,6 +613,7 @@ def clean_and_update_hosts_file(stack=STACK):
     run_as_root('> /etc/hosts')
     files.append('/etc/hosts', hosts_ip6, use_sudo=True)
     update_hosts_file(stack=stack)
+
 
 @task
 def update_hosts_file(stack=STACK):
@@ -780,21 +786,22 @@ def is_spot_child():
         return False
 
 
-
 def get_etalia_version():
     init_py = open(os.path.join(ROOT_DIR, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
 
-def create_amis(region=REGION):
+@task
+def create_amis(stack=STACK, layer='*', role='*', name='*', region=REGION):
     # Get current version of etalia
     version = get_etalia_version()
 
-    # general conext
+    # general context
     context = {
         'tag:stack': STACK,
-        'tag:layer': '*',
-        'tag:role': '*',
+        'tag:layer': layer,
+        'tag:role': role,
+        'tag:Name': name,
     }
 
     # connect
@@ -817,13 +824,12 @@ def create_amis(region=REGION):
 
     # create AMIs
     for instance_id, tags in instance_tags_set:
-        ami_name = '{version}/{stack}/{layer}/{role}/{date}'\
+        ami_name = '({version}).{stack}.{layer}.{role}'\
             .format(version=version,
                     stack=tags.get('stack'),
                     layer=tags.get('layer'),
-                    role=tags.get('role').replace(',', '-'),
-                    date=str(datetime.now().ctime())).replace(':', '-')
-        ami_id = connection.create_image(instance_id, ami_name)
+                    role=tags.get('role').replace(',', '-'))
+        ami_id = connection.create_image(instance_id, ami_name, no_reboot=NO_REBOOT)
         im = connection.get_image(ami_id)
         # replace instance name by its role
         tags['Name'] = '{0}/{1}'.format(tags.get('layer'), tags.get('role'))
