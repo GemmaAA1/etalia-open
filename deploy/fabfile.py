@@ -57,7 +57,8 @@ ROLE_INSTANCE_TYPE_MAP = {
     'ms': 't2.medium',
     'feed': 't2.medium',
     'nlp': 't2.large',
-    'spot': 'm4.large'}
+    'spot': 'm4.large',
+    'redis': 'm4.large'}
 INSTANCE_TYPES_RANK = {
     't2.micro': 0,
     't2.small': 1,
