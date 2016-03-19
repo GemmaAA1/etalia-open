@@ -15,7 +15,7 @@
                     <h4><div id="errors" class="text-center" style="padding-bottom: 20px;"></div></h4>
                     <div class="col-md-4 text-right">
                         <div class="title">
-                            Stream
+                            My Stream
                             <br>
                             <a class="edit" href="javascript:" data-toggle="modal" data-target="#stream-settings-modal">Edit</a>
                         </div>
@@ -24,11 +24,19 @@
                         <div class="row">
                             <div class="col-md-9">
 {#                                <h5>Method: <span id="stream_method">{{ user.settings.get_stream_method_display }}</span></h5>#}
-                                <h5>Roll-back: <span id="stream_roll_back_deltatime">{{ user.settings.stream_roll_back_deltatime|floatformat:0 }} months</span><span class="glyphicon glyphicon-info-sign" style="padding: 0 10px 0 10px;" title="Past period of references inclusion"></span></h5>
+                                <h5>Roll-back: <span id="stream_roll_back_deltatime">{{ user.settings.stream_roll_back_deltatime|floatformat:0 }} months</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Past period of references inclusion"></span>
+                                </h5>
                                 <h4 style="padding-top:10px; font-size: 120%;">Extra parameters during beta:</h4>
-                                <h5>Content weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:2 }}</span></h5>
-                                <h5>Author weight: <span id="stream_author_weight">{{ user.settings.stream_author_weight|floatformat:2 }}</span></h5>
-                                <h5>Journal weight: <span id="stream_journal_weight">{{ user.settings.stream_journal_weight|floatformat:2 }}</span></h5>
+                                <h5>Content weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to abstract and title of the publications"></span></h5>
+                                </h5>
+                                <h5>Author weight: <span id="stream_author_weight">{{ user.settings.stream_author_weight|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to author names"></span>
+                                </h5>
+                                <h5>Journal weight: <span id="stream_journal_weight">{{ user.settings.stream_journal_weight|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to journal names"></span>
+                                </h5>
                                 {% if user.is_admin %}
                                 <h5>Last update: {{ user.streams.first.modified }}</h5>
                                 {% endif %}
@@ -50,7 +58,7 @@
                     <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
                     <div class="col-md-4 text-right">
                         <div class="title">
-                            Trend
+                            Trends
                             <br>
                             <a class="edit" href="javascript:" data-toggle="modal" data-target="#trend-settings-modal">Edit</a>
                         </div>
@@ -59,8 +67,12 @@
                         <div class="row">
                             <div class="col-md-9">
 {#                                <h5>Method: <span id="trend_method">{{ user.settings.get_trend_method_display }}</span></h5>#}
-                                <h5>Content weight: <span id="trend_doc_weight">{{ user.settings.trend_doc_weight|floatformat:2 }}</span></h5>
-                                <h5>Altmetric weight: <span id="trend_altmetric_weight">{{ user.settings.trend_altmetric_weight|floatformat:2 }}</span></h5>
+                                <h5>Content weight: <span id="trend_doc_weight">{{ user.settings.trend_doc_weight|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to abstract and title of the publications"></span></h5>
+                                </h5>
+                                <h5>Altmetric weight: <span id="trend_altmetric_weight">{{ user.settings.trend_altmetric_weight|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to Almetric scores"></span></h5>
+                                </h5>
                                 {% if user.is_admin %}
                                 <h5>Last update: {{ user.trends.first.modified }}</h5>
                                 {% endif %}
@@ -126,7 +138,7 @@
                 <div class="col-md-8 col-md-offset-2">
                     <div class="col-md-4 text-right">
                         <div class="title">
-                            Delete Etalia account
+                            Etalia account
                         </div>
                     </div>
                     <div class="col-md-8">

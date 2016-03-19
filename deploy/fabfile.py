@@ -2,29 +2,26 @@
 """
 Fabfile for etalia deployment on AWS.
 
-Current Configuration is as follow:
-Stacks defined by STACK_SITE_MAPPING
-Each stack has has 3 layers:
-    - a Postgres db (host on AWS RDS)
-    - apps
-    - jobs (one master (JOB_MASTER) and satellites)
+Current stack is composed of:
+- webwerver
+- job master
+- db on aws rds
+- worker (as spot instances)
 
-Each instance is tagged accordingly. For example, an instance with tags
-{'site': 'staging', 'layer': 'jobs', 'Name': 'job1'} corresponds to an instance
-that belongs to stack staging and layer jobs.
+Instance roles is defined by its tags and layer
+Current possile roles are:
+- jobs      # job layer
+- apps      # front-end layer
+- web       # webserver
+- master    # master job (e.g rabbitmq, any unitary task, celery-beat, flower)
+- base      # default job queue, consumers
+- nlp       # doc2vec tagging
+- ms        # mostsimilar request
+- feed      # feed computation
+- redis     # MUST BE DEFINED ON ONE SINGLE SPOT INSTANCE
 
-Deployment examples:
-- deploy to layer jobs on staging stack:
-    >> fab set_hosts:staging,jobs deploy
-- deploy instance app1 on layer apps on the production stack:
-    >> fab set_hosts:production,apps,app1 deploy
-- reset env var
-    >> fab set_hosts:staging,apps,app1 set_virtual_env_hooks
 
-NB:
-- During first deployment, fabfile will stop to allow you to upload you id_rsa.pub
-to Bitbucket to allow pulling
-- Environment variables are defined
+Examples:
 
 """
 from __future__ import absolute_import, unicode_literals, print_function
@@ -32,8 +29,10 @@ import os
 import re
 import string
 import random
+import itertools
 
-from boto.ec2 import connect_to_region
+from boto import utils
+from boto.ec2 import connect_to_region, instance
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
     put, sudo, get, reboot
@@ -42,38 +41,43 @@ from fabtools.utils import run_as_root
 import fabtools
 from fabric_slack_tools import *
 
-
 STACK = 'production'
-STACK_SITE_MAPPING = {'staging': '',
-                      'production': 'alpha.etalia.io'}
-REGION = os.environ.get("DJANGO_AWS_REGION")
+STACK_SITE_MAPPING = \
+    {'staging': '',
+     'production': 'alpha.etalia.io'}
+REGION = os.environ.get("AWS_REGION")
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
-SUPERVISOR_CONF_DIR = 'supervisor'
 USER = 'ubuntu'
-JOB_MASTER = 'job1'
-CACHE_SCORING_REDIS_HOSTNAME = 'spot2'
-INSTANCE_TYPES_RANK = { 't2.micro': 0,
-                        't2.small': 1,
-                        't2.medium': 2,
-                        't2.large': 3,
-                        'm4.large': 3,
-                        'm4.xlarge': 4,
-                        'm4.2xlarge': 5,
-                        'm4.10xlarge': 6}
-ROLE_INSTANCE_TYPE_MAP = {'web': 't2.micro',
-                          'base': 't2.small',
-                          'ms': 't2.medium',
-                          'feed': 't2.medium',
-                          'nlp': 't2.large',
-                          'spot': 'm4.large'}
-SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
+ROLE_INSTANCE_TYPE_MAP = {
+    'web': 't2.micro',
+    'base': 't2.small',
+    'master': 't2.small',
+    'ms': 't2.medium',
+    'feed': 't2.medium',
+    'nlp': 't2.large',
+    'spot': 'm4.large'}
+INSTANCE_TYPES_RANK = {
+    't2.micro': 0,
+    't2.small': 1,
+    't2.medium': 2,
+    't2.large': 3,
+    'm4.large': 3,
+    'm4.xlarge': 4,
+    'm4.2xlarge': 5,
+    'm4.10xlarge': 6}
+
+# ROOT_DIR is two levels up
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SUPERVISOR_CONF_DIR = 'supervisor'
 SSL_PATH = '/etc/nginx/ssl'
+SLACK_WEB_HOOK = \
+    "https://hooks.slack.com/services/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"
 
+# AMIS
+NO_REBOOT = True
 
-# Server user, normally AWS Ubuntu instances have default user "ubuntu"
-# List of AWS private key Files
 env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
 env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
@@ -82,8 +86,9 @@ env.ssl_path = SSL_PATH
 
 init_slack(SLACK_WEB_HOOK)
 
+
 @task
-def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
+def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
     # setup env
     setattr(env, 'stack', stack)
@@ -100,92 +105,48 @@ def set_hosts(stack=STACK, layer='*', name='*', region=REGION):
     context = {
         'tag:stack': stack,
         'tag:layer': layer,
+        'tag:role': role,
         'tag:Name': name,
     }
     tags = _get_public_dns(region, context)
 
+    # merge aws layer and aws role into roles
     env.hosts = tags.keys()
-    roles = []
-    roles += [tag.get('layer', '') for tag in tags.values()]
-    for tag in tags.values():
-        if 'layer' in tag:
-            roles.append(tag.get('layer'))
-        if 'role' in tag:
-            r = tag.get('role', '').split(',')
-            for rr in r:
-                roles.append(rr)
+    roles_layer = list(set([tag.get('layer', '') for tag in tags.values()]))
+    roles_role = list(itertools.chain.from_iterable([tag.get('role', '').split(',') for tag in tags.values()]))
+    roles = list(set(roles_layer + roles_role))
     env.roles = list(set(roles))
+
+    # define roledefs (http://docs.fabfile.org/en/1.10/usage/execution.html#Roles)
     roledefs = {}
     for role in env.roles:
-        roledefs[role] = [host for host in env.hosts
-                          if tags[host]['layer'] == role or
-                          role in tags[host].get('role', '')]
+        for host in env.hosts:
+            if role in [tags[host]['layer']] + tags[host]['role'].split(','):
+                if roledefs.get(role):
+                    roledefs[role] += [host]
+                else:
+                    roledefs[role] = [host]
     env.roledefs = roledefs
 
-    # store stack used
+    # store stack
     setattr(env, 'stack_string', stack)
     # store tags
     setattr(env, 'tags', tags)
 
+    # Check minimum requirement between instance type and role
     check_integrity()
 
+# ------------------------------------------------------------------------------
+# COMMON
+# ------------------------------------------------------------------------------
 
-def check_integrity():
-    """Check if instance type is compatible with role"""
-    for host in env.hosts:
-        inst_type = env.tags[host]['type']
-        roles = env.tags[host].get('role', '').split(',')
-        if roles:
-            for role in roles:
-                min_type = ROLE_INSTANCE_TYPE_MAP[role]
-                if not INSTANCE_TYPES_RANK[min_type] <= INSTANCE_TYPES_RANK[inst_type]:
-                    raise TypeError('Instance {0} too small, type is {1} (min {2})'.format(
-                        host,
-                        inst_type,
-                        min_type
-                    ))
-
-
-def get_host_roles():
-    return [k for k, v in env.roledefs.items() if env.host_string in v]
 
 @task
-@announce_deploy("Etalia", channel="#general", username="deployment-bot")
-def deploy():
-    """Deploy etalia on hosts"""
-    if not env.hosts:
-        raise ValueError('No hosts defined')
-    # run
-    update_and_require_libraries()
-    create_virtual_env_if_necessary()
-    create_virtual_env_hooks_if_necessary()
-    create_directory_structure_if_necessary()
-    pull_latest_source()
-    pip_install()
-    copy_common_py()
-    update_database()
-    update_static_files()
-    # app related
-    if env.host_string in env.roledefs.get('apps', []):
-        update_gunicorn_conf()
-        update_nginx_conf()
-        reload_nginx()
-    # cache related
-        update_redis_cache()
-    # job related
-    if env.host_string in env.roledefs.get('jobs', []):
-        update_rabbit_user()
-    update_supervisor_conf()
-    restart_supervisor()
-    reb = update_hosts_file(env.stack_string)
-    if reb:
-        reboot_instance()
-
-
 def create_virtual_env_hooks_if_necessary():
     """Create environment variable hooks if not defined"""
     postactivate_path = '{env_dir}/bin/postactivate'.format(env_dir=env.env_dir)
-    if not files.contains(postactivate_path, 'DJANGO_SECRET_KEY'):  # this is the bare minimum
+    if not files.contains(postactivate_path,
+                          'DJANGO_SECRET_KEY'):  # this is the bare minimum
         update_virtual_env_hooks()
 
 
@@ -218,7 +179,8 @@ def update_virtual_env_hooks():
                     env_vars.append(res.groups()[0])
 
     # update predeactivate
-    predeactivate_path = '{env_dir}/bin/predeactivate'.format(env_dir=env.env_dir)
+    predeactivate_path = '{env_dir}/bin/predeactivate'.format(
+        env_dir=env.env_dir)
     if files.exists(predeactivate_path):
         run_as_root('rm ' + predeactivate_path)
     run('touch ' + predeactivate_path)
@@ -227,43 +189,6 @@ def update_virtual_env_hooks():
     for env_var in env_vars:
         run("echo 'unset {var}' >> {dest}".format(
             var=env_var, dest=predeactivate_path))
-
-
-def _get_public_dns(region, context):
-    """Private method to get public DNS name for instance with given tag key
-     and value pair"""
-    public_dns = []
-    tags = {}
-    connection = _create_connection(region)
-    reservations = connection.get_all_instances(filters=context)
-    for reservation in reservations:
-        for instance in reservation.instances:
-            if instance.public_dns_name:
-                print("Instance {}".format(instance.public_dns_name))
-                public_dns.append(str(instance.public_dns_name))
-                tags[str(instance.public_dns_name)] = instance.tags
-                tags[str(instance.public_dns_name)]['type'] = instance.instance_type
-
-    return tags
-
-
-def _create_connection(region):
-    """Private method for getting AWS connection"""
-    print("Connecting to {}".format(region))
-    conn = connect_to_region(
-        region_name=region,
-        aws_access_key_id=os.environ.get("DJANGO_AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.environ.get("DJANGO_AWS_SECRET_ACCESS_KEY")
-    )
-    print("Connection with AWS established")
-    return conn
-
-
-def _generate_new_secret_key(key_length=32):
-    """Return new secret key"""
-    symbols = string.ascii_letters + str(string.digits) + '!@#$%^&*()+-'
-    secret_key = "".join(random.sample(symbols * 2, key_length))
-    return secret_key
 
 
 @task
@@ -294,39 +219,30 @@ def update_and_require_libraries():
     fabtools.require.python.packages(['virtualenvwrapper'], use_sudo=True)
 
     # Set virtualenvwrapper
-    if not files.contains("~/.bashrc", "export WORKON_HOME={virtualenv_dir}".format(
-            virtualenv_dir=env.virtualenv_dir)):
+    if not files.contains("~/.bashrc",
+                          "export WORKON_HOME={virtualenv_dir}".format(
+                              virtualenv_dir=env.virtualenv_dir)):
         files.append("~/.bashrc", "export WORKON_HOME={virtualenv_dir}".format(
             virtualenv_dir=env.virtualenv_dir))
-    if not files.contains("~/.bashrc", "source /usr/local/bin/virtualenvwrapper.sh"):
+    if not files.contains("~/.bashrc",
+                          "source /usr/local/bin/virtualenvwrapper.sh"):
         files.append("~/.bashrc", "source /usr/local/bin/virtualenvwrapper.sh")
     if not files.exists(env.virtualenv_dir):
-        run("mkdir -p {virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir))
+        run("mkdir -p {virtualenv_dir}".format(
+            virtualenv_dir=env.virtualenv_dir))
 
 
 @task
 def create_virtual_env_if_necessary():
     # Create virtual env
-    with prefix("WORKON_HOME={virtualenv_dir}".format(virtualenv_dir=env.virtualenv_dir)):
+    with prefix("WORKON_HOME={virtualenv_dir}".format(
+            virtualenv_dir=env.virtualenv_dir)):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
             existent_virtual_envs = run("lsvirtualenv")
             if not env.stack in existent_virtual_envs:
-                run("mkvirtualenv --python=/usr/bin/python3 --system-site-packages {virtual_env}".format(virtual_env=env.stack))
-
-
-@task
-def remove_virtual_env():
-    with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
-        run("rmvirtualenv {virtual_env}".format(virtual_env=env.stack))
-
-
-def _workon():
-    workon_command = [
-        "source /usr/local/bin/virtualenvwrapper.sh",
-        "workon {stack}".format(stack=env.stack),
-        "export DJANGO_SETTINGS_MODULE=config.settings.{stack}".format(stack=env.stack) % env
-    ]
-    return prefix(" && ".join(workon_command))
+                run(
+                    "mkvirtualenv --python=/usr/bin/python3 --system-site-packages {virtual_env}".format(
+                        virtual_env=env.stack))
 
 
 @task
@@ -338,7 +254,9 @@ def create_directory_structure_if_necessary():
 
 @task
 def copy_common_py():
-    run('cp {0}/source/config/settings/common.py.dist {0}/source/config/settings/common.py'.format(env.stack_dir))
+    run('cp {0}/source/config/settings/common.py.dist '
+        '{0}/source/config/settings/common.py'.format(env.stack_dir))
+
 
 @task
 def pull_latest_source():
@@ -347,7 +265,8 @@ def pull_latest_source():
     if not files.exists('/home/{}/.ssh/bitbucket_id_rsa'.format(env.user)):
         if not files.exists('/home/{}/.ssh'.format(env.user)):
             run('mkdir /home/{}/.ssh'.format(env.user))
-        put('.ssh/bitbucket_id_rsa', '/home/{}/.ssh/bitbucket_id_rsa'.format(env.user))
+        put('.ssh/bitbucket_id_rsa',
+            '/home/{}/.ssh/bitbucket_id_rsa'.format(env.user))
         run('chmod 400 /home/{}/.ssh/bitbucket_id_rsa'.format(env.user))
         if not files.exists('/home/{}/.ssh/config'):
             put('.ssh/config', '/home/{}/.ssh/config'.format(env.user))
@@ -361,6 +280,7 @@ def pull_latest_source():
     run('cd {0} && sudo git reset --hard {1}'.format(env.source_dir,
                                                      current_commit))
 
+
 @task
 def rm_bitbucket_key_config():
     if files.exists('/home/{}/.ssh/bitbucket_id_rsa'.format(env.user)):
@@ -368,122 +288,29 @@ def rm_bitbucket_key_config():
     if files.exists('/home/{}/.ssh/config'.format(env.user)):
         run_as_root('rm /home/{}/.ssh/config'.format(env.user))
 
+
 @task
 def update_remote_origin():
     run_as_root('cd {0} && git remote remove origin'.format(env.source_dir))
-    run('cd {source} && git remote add origin {url}'.format(source=env.source_dir,
-                                                            url=REPO_URL))
+    run('cd {source} && git remote add origin {url}'.format(
+        source=env.source_dir,
+        url=REPO_URL))
+
 
 @task
 def pip_install():
     """Pip install requirements"""
+    run_as_root('pip install boto')
     with settings(cd(env.source_dir), _workon()):
         run('pip install -r requirements/{stack}.txt'.format(stack=env.stack))
 
-@task
-def update_static_files():
-    """Update static files"""
-    with settings(cd(env.source_dir), _workon()):
-        run('cd {} && ./manage.py collectstatic --noinput'
-            .format(env.source_dir))
 
 @task
 @runs_once
 def update_database():
     """Update database from migrations"""
     with settings(cd(env.source_dir), _workon()):
-        run('cd {} && ./manage.py migrate --noinput'.format(env.source_dir,))
-
-
-@task
-@roles('apps')
-def create_ssl_certificates():
-    # Require some Ubuntu packages
-    fabtools.require.deb.packages(['openssl'], update=True)
-    key_path = '{0}/{1}.key'.format(env.ssl_path, env.stack_site)
-    csr_path = '{0}/{1}.csr'.format(env.ssl_path, env.stack_site)
-    crt_path = '{0}/{1}-unified.crt'.format(env.ssl_path, env.stack_site)
-    if not files.exists(env.ssl_path):
-        run_as_root('mkdir -p {0}'.format(ssl_path))
-    if not files.exists(key_path):
-        run_as_root('openssl genrsa -out {key} 2048'.format(key=key_path))
-    if not files.exists(csr_path):
-        run_as_root('openssl req -new -nodes -keyout {key} -out {csr}'.format(key=key_path, csr=csr_path))
-    if not files.exists(crt_path):
-        run_as_root('openssl x509 -req -in {csr} -signkey {key} -out {crt}'.format(
-            csr=csr_path,
-            key=key_path,
-            crt=crt_path))
-
-@task
-@roles('apps')
-def rm_ssl_certificates():
-    run_as_root('rm {0}/*'.format(env.ssl_path))
-
-@task
-@roles('apps')
-def update_nginx_conf():
-    """Update Nginx conf files"""
-    # remove file if exists
-    available_file = '/etc/nginx/sites-available/{site}'.format(site=env.stack_site)
-    if files.exists(available_file):
-        run_as_root('rm ' + available_file)
-    # upload template
-    files.upload_template('nginx.template.conf', available_file,
-        context={'SITENAME': env.stack_site,
-                 'USER': env.user,
-                 'STACK': env.stack}, use_sudo=True, use_jinja=True)
-    # update link
-    enable_link = '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site)
-    if files.is_link(enable_link):
-        run_as_root('rm {link}'.format(link=enable_link))
-    run_as_root('ln -s /etc/nginx/sites-available/{site} '
-                '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site))
-
-@task
-@roles('apps')
-def update_gunicorn_conf():
-    """Update Gunicorn conf files"""
-    # remove file if exists
-    gunicorn_conf_path = '{stack_dir}/{conf_dir}/gunicorn.conf.py'.format(
-        stack_dir=env.stack_dir,
-        conf_dir=env.conf_dir)
-    if files.exists(gunicorn_conf_path):
-        run_as_root('rm ' + gunicorn_conf_path)
-    # upload template
-    files.upload_template( 'gunicorn.template.conf.py', gunicorn_conf_path,
-        context={'SITENAME': env.stack_site,
-                 'USER': env.user}, use_sudo=True, use_jinja=True)
-
-
-@task
-@roles('jobs')
-def update_rabbit_user():
-    """Set rabbit user on job_master"""
-    if env.tags[env.host_string].get('Name') == JOB_MASTER:
-        with settings(_workon()):  # to get env var
-            # if rabbitmq not installed, install
-            if not files.exists("/usr/sbin/rabbitmq-server"):
-                fabtools.require.deb.packages(['rabbitmq-server'])
-            # test if user exists:
-            list_users = run_as_root('rabbitmqctl list_users')
-            user = run_as_root('echo $RABBITMQ_USERNAME')
-            if user not in list_users:
-                run_as_root('rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
-                run_as_root('rabbitmqctl set_user_tags $RABBITMQ_USERNAME administrator')
-                run_as_root('rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
-            if 'guest' in list_users:
-                run_as_root("rabbitmqctl delete_user guest")
-
-
-@task
-@roles('jobs')
-def update_redis_cache():
-    if env.tags[env.host_string].get('Name') == CACHE_SCORING_REDIS_HOSTNAME:
-        with settings(_workon()):  # to get env var
-            # if redis-server not installed, install
-            if not files.exists("/usr/bin/redis-server"):
-                fabtools.require.deb.packages(['redis-server'])
+        run('cd {} && ./manage.py migrate --noinput'.format(env.source_dir, ))
 
 @task
 def update_supervisor_conf():
@@ -500,58 +327,186 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
-        if env.tags[env.host_string].get('Name') == JOB_MASTER:
-            job_master = True
-        else:
-            job_master = False
         files.upload_template('supervisord.template.conf', supervisor_file,
-            context={'SITENAME': env.stack_site,
-                     'USER': env.user,
-                     'STACK': env.stack,
-                     'STACK_DIR': env.stack_dir,
-                     'SOURCE_DIR': env.source_dir,
-                     'ENV_DIR': env.env_dir,
-                     'CONF_DIR': env.conf_dir,
-                     'ROLES': get_host_roles(),
-                     'USERS_PASSWORDS_FLOWER': flower_users_passwords,
-                     'JOB_MASTER': job_master,
-                     'INSTANCE_TYPE': env.tags[env.host_string]['type']
-                     }, use_sudo=True, use_jinja=True)
+                              context={'SITENAME': env.stack_site,
+                                       'USER': env.user,
+                                       'STACK': env.stack,
+                                       'STACK_DIR': env.stack_dir,
+                                       'SOURCE_DIR': env.source_dir,
+                                       'ENV_DIR': env.env_dir,
+                                       'CONF_DIR': env.conf_dir,
+                                       'LAYER': env.tags[env.host_string].get(
+                                           'layer'),
+                                       'ROLES': get_host_roles(),
+                                       'USERS_PASSWORDS_FLOWER': flower_users_passwords,
+                                       'INSTANCE_TYPE':
+                                           env.tags[env.host_string]['type']
+                                       }, use_sudo=True, use_jinja=True)
 
     # Copy env variable from postactivate
-    run('python {source_dir}/deploy/cp_p2s.py -i {env_dir}/bin/postactivate -o {supervisor}'.format(
-        source_dir=env.source_dir,
-        env_dir=env.env_dir,
-        supervisor=supervisor_file))
+    run(
+        'python {source_dir}/deploy/cp_p2s.py -i {env_dir}/bin/postactivate -o {supervisor}'.format(
+            source_dir=env.source_dir,
+            env_dir=env.env_dir,
+            supervisor=supervisor_file))
 
     # Simlink to conf file
     run_as_root('rm /etc/supervisor/supervisord.conf')
-    run_as_root('ln -s {stack_dir}/{conf_dir}/supervisord.conf /etc/supervisor/supervisord.conf'.format(
+    run_as_root(
+        'ln -s {stack_dir}/{conf_dir}/supervisord.conf /etc/supervisor/supervisord.conf'.format(
+            stack_dir=env.stack_dir,
+            conf_dir=env.conf_dir,
+        ))
+
+# ------------------------------------------------------------------------------
+# APPS
+# ------------------------------------------------------------------------------
+
+
+@task
+@roles('apps')
+def update_static_files():
+    """Update static files"""
+    with settings(cd(env.source_dir), _workon()):
+        run('cd {} && ./manage.py collectstatic --noinput'
+            .format(env.source_dir))
+
+
+@task
+@roles('apps')
+def create_ssl_certificates():
+    # Require some Ubuntu packages
+    fabtools.require.deb.packages(['openssl'], update=True)
+    key_path = '{0}/{1}.key'.format(env.ssl_path, env.stack_site)
+    csr_path = '{0}/{1}.csr'.format(env.ssl_path, env.stack_site)
+    crt_path = '{0}/{1}-unified.crt'.format(env.ssl_path, env.stack_site)
+    if not files.exists(env.ssl_path):
+        run_as_root('mkdir -p {0}'.format(ssl_path))
+    if not files.exists(key_path):
+        run_as_root('openssl genrsa -out {key} 2048'.format(key=key_path))
+    if not files.exists(csr_path):
+        run_as_root('openssl req -new -nodes -keyout {key} -out {csr}'.format(
+            key=key_path, csr=csr_path))
+    if not files.exists(crt_path):
+        run_as_root(
+            'openssl x509 -req -in {csr} -signkey {key} -out {crt}'.format(
+                csr=csr_path,
+                key=key_path,
+                crt=crt_path))
+
+
+@task
+@roles('apps')
+def rm_ssl_certificates():
+    run_as_root('rm {0}/*'.format(env.ssl_path))
+
+
+@task
+@roles('apps')
+def update_nginx_conf():
+    """Update Nginx conf files"""
+    # remove file if exists
+    available_file = '/etc/nginx/sites-available/{site}'.format(
+        site=env.stack_site)
+    if files.exists(available_file):
+        run_as_root('rm ' + available_file)
+    # upload template
+    files.upload_template('nginx.template.conf', available_file,
+                          context={'SITENAME': env.stack_site,
+                                   'USER': env.user,
+                                   'STACK': env.stack}, use_sudo=True,
+                          use_jinja=True)
+    # update link
+    enable_link = '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site)
+    if files.is_link(enable_link):
+        run_as_root('rm {link}'.format(link=enable_link))
+    run_as_root('ln -s /etc/nginx/sites-available/{site} '
+                '/etc/nginx/sites-enabled/{site}'.format(site=env.stack_site))
+
+
+@task
+@roles('apps')
+def update_gunicorn_conf():
+    """Update Gunicorn conf files"""
+    # remove file if exists
+    gunicorn_conf_path = '{stack_dir}/{conf_dir}/gunicorn.conf.py'.format(
         stack_dir=env.stack_dir,
-        conf_dir=env.conf_dir,
-    ))
-
-
-@task
-def restart_supervisor():
-    # restart supervisor
-    with settings(warn_only=True):
-        pid = run('pgrep supervisor')
-        if pid:
-            run_as_root('kill -HUP {pid}'.format(pid=pid))
-        else:   # just start it
-            run('supervisord')
-
+        conf_dir=env.conf_dir)
+    if files.exists(gunicorn_conf_path):
+        run_as_root('rm ' + gunicorn_conf_path)
+    # upload template
+    files.upload_template('gunicorn.template.conf.py', gunicorn_conf_path,
+                          context={'SITENAME': env.stack_site,
+                                   'USER': env.user}, use_sudo=True,
+                          use_jinja=True)
 
 @task
+@roles('apps')
 def reload_nginx():
     run_as_root('sudo service nginx reload')
 
+# ------------------------------------------------------------------------------
+# JOBS
+# ------------------------------------------------------------------------------
+
+# MASTER
+@task
+@roles('master')
+def update_rabbit_user():
+    """Set rabbit user on master"""
+    with settings(_workon()):  # to get env var
+        # if rabbitmq not installed, install
+        if not files.exists("/usr/sbin/rabbitmq-server"):
+            fabtools.require.deb.packages(['rabbitmq-server'])
+        # test if user exists:
+        list_users = run_as_root('rabbitmqctl list_users')
+        user = run_as_root('echo $RABBITMQ_USERNAME')
+        if user not in list_users:
+            run_as_root(
+                'rabbitmqctl add_user $RABBITMQ_USERNAME $RABBITMQ_PASSWORD')
+            run_as_root(
+                'rabbitmqctl set_user_tags $RABBITMQ_USERNAME administrator')
+            run_as_root(
+                'rabbitmqctl set_permissions $RABBITMQ_USERNAME ".*" ".*" ".*"')
+        if 'guest' in list_users:
+            run_as_root("rabbitmqctl delete_user guest")
+
+
+# REDIS
+@task
+@roles('redis')
+def update_redis_cache():
+    with settings(_workon()):  # to get env var
+
+        # if redis-server not installed, install
+        if not files.exists("/usr/bin/redis-server"):
+            fabtools.require.deb.packages(['redis-server'])
+
+        # turn of autostart, manage by supervisor
+        run_as_root('update-rc.d redis-server disable')
+
+        # upload redis.conf to conf_dir
+        files.upload_template('redis.conf',
+                              '{stack_dir}/{conf_dir}/redis.conf'.format(
+                                  stack_dir=env.stack_dir,
+                                  conf_dir=env.conf_dire),
+                              {},
+                              user_sudo=True)
+        run_as_root("/etc/init.d/redis-server restart")
+
+# SPOT
 
 @task
-def reload_supervisor():
-    run_as_root('supervisorctl reread')
-    run_as_root('supervisorctl update')
+@roles('spot')
+def update_rc_local():
+    """Add spot_boot script to rc.local"""
+    rc_local_path = '/etc/rc.local'
+    run_as_root('rm ' + rc_local_path)
+    files.upload_template('rc.template.local', rc_local_path,
+                          context={'STACK': env.stack,
+                                   'USER': env.user},
+                          use_sudo=True,
+                          use_jinja=True)
 
 
 @task
@@ -566,6 +521,7 @@ def clean_and_update_hosts_file(stack=STACK):
     run_as_root('> /etc/hosts')
     files.append('/etc/hosts', hosts_ip6, use_sudo=True)
     update_hosts_file(stack=stack)
+
 
 @task
 def update_hosts_file(stack=STACK):
@@ -604,117 +560,204 @@ def update_hosts_file(stack=STACK):
 
         if not files.contains('/etc/hosts', line_str):
             if files.contains('/etc/hosts', cont['private_ip']):  # update line if ip already in
-                run_as_root("sed -i 's/.*{private_ip}.*/{new_line}/' /etc/hosts".format(
-                    private_ip=cont['private_ip'],
-                    new_line=line_str))
-            elif files.contains('/etc/hosts', cont['name']):  # update line if name already in
-                run_as_root("sed -i 's/.*{name}.*/{new_line}/' /etc/hosts".format(
-                    name=cont['name'],
-                    new_line=line_str))
+                run_as_root(
+                    "sed -i 's/.*{private_ip}.*/{new_line}/' /etc/hosts".format(
+                        private_ip=cont['private_ip'],
+                        new_line=line_str))
+            elif files.contains('/etc/hosts',
+                                cont['name']):  # update line if name already in
+                run_as_root(
+                    "sed -i 's/.*{name}.*/{new_line}/' /etc/hosts".format(
+                        name=cont['name'],
+                        new_line=line_str))
             else:  # add line to top row
                 run_as_root("sed -i -e '1i{new_line}\' /etc/hosts".format(
                     new_line=line_str))
 
     # update host_name
     if not files.contains('/etc/hostname', context[env.host_string]['name']):
-        run_as_root('echo "{name}.localdomain" > /etc/hostname'.format(name=context[env.host_string]['name']))
-        run_as_root('hostname {name}'.format(name=context[env.host_string]['name']))
+        run_as_root('echo "{name}.localdomain" > /etc/hostname'.format(
+            name=context[env.host_string]['name']))
+        run_as_root(
+            'hostname {name}'.format(name=context[env.host_string]['name']))
         reb = True
     return reb
+
+
+# ------------------------------------------------------------------------------
+# UTILITIES
+# ------------------------------------------------------------------------------
+
+def _get_public_dns(region, context):
+    """Private method to get public DNS name for instance with given tag key
+     and value pair"""
+    public_dns = []
+    tags = {}
+    connection = _create_connection(region)
+    reservations = connection.get_all_instances(filters=context)
+    for reservation in reservations:
+        for instance in reservation.instances:
+            if instance.public_dns_name:
+                key = str(instance.public_dns_name)
+                print("Instance {}".format(key))
+                public_dns.append(key)
+                tags[key] = instance.tags
+                tags[key]['type'] = instance.instance_type
+                # check if instance is from spot request or not
+                if instance.spot_instance_request_id:
+                    tags[key]['spot'] = True
+                else:
+                    tags[key]['spot'] = False
+
+    return tags
+
+
+def _create_connection(region):
+    """Private method for getting AWS connection"""
+    print("Connecting to {}".format(region))
+    conn = connect_to_region(
+        region_name=region,
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY")
+    )
+    print("Connection with AWS established")
+    return conn
+
+
+def _generate_new_secret_key(key_length=32):
+    """Return new secret key"""
+    symbols = string.ascii_letters + str(string.digits) + '!@#$%^&*()+-'
+    secret_key = "".join(random.sample(symbols * 2, key_length))
+    return secret_key
+
+
+def check_integrity():
+    """Check if instance type is compatible with role"""
+    for host in env.hosts:
+        inst_type = env.tags[host]['type']
+        roles = env.tags[host].get('role', '').split(',')
+        if roles:
+            for role in roles:
+                min_type = ROLE_INSTANCE_TYPE_MAP[role]
+                if not INSTANCE_TYPES_RANK[min_type] <= INSTANCE_TYPES_RANK[
+                    inst_type]:
+                    raise TypeError(
+                        'Instance {0} too small, type is {1} (min {2})'.format(
+                            host,
+                            inst_type,
+                            min_type
+                        ))
+
+
+def get_host_roles():
+    return [k for k, v in env.roledefs.items() if env.host_string in v]
+
+
+@task
+def restart_supervisor():
+    # restart supervisor
+    with settings(warn_only=True):
+        pid = run('pgrep supervisor')
+        if pid:
+            run_as_root('kill -HUP {pid}'.format(pid=pid))
+        else:  # just start it
+            run('supervisord')
+
+@task
+def reload_supervisor():
+    run_as_root('supervisorctl reread')
+    run_as_root('supervisorctl update')
+
 
 @task
 def reboot_instance():
     reboot()
 
+
 @task
 def start_default():
     run('supervisorctl start celery-default')
+
 
 @task
 def start_consumers():
     run('supervisorctl start celery-consumers')
 
+
 @task
 def start_nlp():
     run('supervisorctl start celery-nlp')
+
 
 @task
 def start_ms():
     run('supervisorctl start celery-mostsimilar')
 
+
 @task
 def stop_default():
     run('supervisorctl stop celery-default')
+
 
 @task
 def stop_consumers():
     run('supervisorctl stop celery-consumers')
 
+
 @task
 def stop_nlp():
     run('supervisorctl stop celery-nlp')
+
 
 @task
 def stop_ms():
     run('supervisorctl stop celery-mostsimilar')
 
+
 @task
 def start_flower():
     run('supervisorctl start flower')
+
 
 @task
 def stop_flower():
     run('supervisorctl stop flower')
 
+
 @task
 def restart_flower():
     run('supervisorctl restart flower')
 
+
 @task
 def stop_all():
     run('supervisorctl stop all')
+
 
 @task
 def start_all():
     run('supervisorctl start all')
 
+
 @task
 def stop_all():
     run('supervisorctl stop all')
 
+
 @task
 def restart_all():
     run('supervisorctl restart all')
+
 
 @task
 def clear_nlp_data():
     run('rm -f /home/ubuntu/staging/source/nlp_data/mods/*')
     run('rm -f /home/ubuntu/staging/source/nlp_data/ms/*')
 
+
 @task
 def remove_env(stack):
     run('rmvirtualenv staging')
-
-@task
-@roles('apps')
-def go_on_maintenance():
-    template_off = '{source}/etalia/templates/maintenance_off.html'.format(source=env.source_dir)
-    template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
-    if not files.exists(template_on):  # maintenance is not already on
-        if files.exists(template_off):
-            run_as_root('cp {off} {on}'.format(off=template_off, on=template_on))
-        else:
-            raise IOError('maintenance_off.html does not exist')
-
-@task
-@roles('apps')
-def go_off_maintenance():
-    template_off = '{source}/etalia/templates/maintenance_off.html'.format(source=env.source_dir)
-    template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
-    if files.exists(template_on):
-        run_as_root('rm {on}'.format(on=template_on))
-    else:
-        raise IOError('maintenance_on.html does not exist')
 
 
 @task
@@ -722,3 +765,126 @@ def copy_local_file_to_remote(local_path, remote_path):
     if not files.exists(os.path.dirname(remote_path)):
         run('mkdir -p {0}'.format(os.path.dirname(remote_path)))
     put(local_path, remote_path, use_sudo=True)
+
+
+def get_etalia_version():
+    init_py = open(os.path.join(ROOT_DIR, '__init__.py')).read()
+    return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
+
+
+@task
+@announce_deploy("Etalia", channel="#general", username="deployment-bot")
+def deploy_verbose():
+    deploy()
+
+
+@task
+def remove_virtual_env():
+    with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
+        run("rmvirtualenv {virtual_env}".format(virtual_env=env.stack))
+
+
+def _workon():
+    workon_command = [
+        "source /usr/local/bin/virtualenvwrapper.sh",
+        "workon {stack}".format(stack=env.stack),
+        "export DJANGO_SETTINGS_MODULE=config.settings.{stack}".format(
+            stack=env.stack) % env
+    ]
+    return prefix(" && ".join(workon_command))
+
+
+# ------------------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------------------
+
+@task
+def deploy():
+    """Deploy etalia on hosts"""
+    if not env.hosts:
+        raise ValueError('No hosts defined')
+
+    # common
+    update_and_require_libraries()
+    create_virtual_env_if_necessary()
+    create_virtual_env_hooks_if_necessary()
+    create_directory_structure_if_necessary()
+    pull_latest_source()
+    pip_install()
+    copy_common_py()
+
+    # only once (WARNING: only effective when not in parallel)
+    update_database()
+
+    # apps related
+    update_gunicorn_conf()
+    update_nginx_conf()
+    reload_nginx()
+    update_static_files()
+
+    # master
+    update_rabbit_user()
+
+    # spot
+    update_rc_local()
+
+    # redis
+    update_redis_cache()
+
+    # hosts
+    reb = update_hosts_file(env.stack_string)
+
+    # supervisor
+    update_supervisor_conf()
+    restart_supervisor()
+
+    if reb:
+        reboot_instance()
+
+
+@task
+def create_amis(stack=STACK, layer='*', role='*', name='*', region=REGION):
+    """Create AMIs on AWS from current instances"""
+    # Get current version of etalia
+    version = get_etalia_version()
+
+    # general context
+    context = {
+        'tag:stack': stack,
+        'tag:layer': layer,
+        'tag:role': role,
+        'tag:Name': name,
+    }
+
+    # connect
+    connection = _create_connection(region)
+
+    # get instances
+    reservations = connection.get_all_instances(filters=context)
+
+    # get set of unique instances based on tags
+    instances_set = []
+    tags_set = []
+    for res in reservations:
+        instance = res.instances[0]
+        tags = instance.tags
+        tags.pop('Name')
+        if tags not in tags_set:
+            tags_set.append(tags)
+            instances_set.append(instance.id)
+    instance_tags_set = zip(instances_set, tags_set)
+
+    # create AMIs
+    for instance_id, tags in instance_tags_set:
+        ami_name = '({version}).{stack}.{layer}.{role}' \
+            .format(version=version,
+                    stack=tags.get('stack'),
+                    layer=tags.get('layer'),
+                    role=tags.get('role').replace(',', '-'))
+        ami_id = connection.create_image(instance_id, ami_name,
+                                         no_reboot=NO_REBOOT)
+        im = connection.get_image(ami_id)
+        # replace instance name by its role
+        tags['Name'] = '{0}/{1}'.format(tags.get('layer'), tags.get('role'))
+        tags['version'] = version
+        im.add_tags(tags)

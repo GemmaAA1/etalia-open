@@ -71,18 +71,25 @@ if __name__ == '__main__':
 
     if not args.no_push:
         checkout_master_and_push_recompiled_assets()
+
     if args.parallel:
         # Go on maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_on_maintenance'])
         # parallel deploy
-        call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy'])
+        if args.slack:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy_verbose'])
+        else:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy'])
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_off_maintenance'])
     else:
         # Go on maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_on_maintenance'])
         # parallel deploy
-        call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
+        if args.slack:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy_verbose'])
+        else:
+            call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
 

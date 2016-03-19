@@ -52,7 +52,7 @@ STATICFILES_DIRS = (
 NLP_DATA_BUCKET_NAME = 'etalia-development-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'etalia-development-nlp-models'
 NLP_MS_BUCKET_NAME = 'etalia-development-nlp-ms'
-AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
 
 INVITE_MODE = False

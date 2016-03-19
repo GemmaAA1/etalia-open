@@ -192,22 +192,23 @@ define([
             })
             .on('click', '.detail-twitter:visible', function(e) {
                 var $actions = $('#detail-actions');
-                $.getJSON("https://api.bitly.com/v3/shorten?callback=?", {
-                        format: "json",
-                        apiKey: "R_8521db3604704f2ebaf044ec9be0ed6b",
-                        login: "nicolaspannetier",
-                        longUrl: $actions.data('paper-url')
-                    }, function(response) {
+                var longURL = $actions.find('.detail-pdf').attr('href');
+                $.ajax({
+                    type: 'POST',
+                    url: "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyCG85OFeMEgZMeHOI2dJB4VkuP-2HfGPPo",
+                    data: JSON.stringify({ longUrl:longURL}),
+                    contentType: 'application/json; charset=utf-8',
+                    success: function(data) {
                         utils.popup(
                             'https://twitter.com/intent/tweet/'
-                                + '?text=' + $actions.data('paper-title')
-                                + '&url=' + encodeURI(response.data.url)
+                                + '?text=' + $actions.data('paper-title') + '. ' + $actions.data('short-author')
+                                + '&url=' + encodeURI(data.id)
                                 + '&via=etaliaio'
                             //+ '&hashtags=web,development';
                             , 'share-popup'
                         );
                     }
-                );
+                  });
 
                 var data = extraData();
                 data.id = that.id;
