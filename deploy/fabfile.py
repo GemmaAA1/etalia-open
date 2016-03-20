@@ -101,7 +101,6 @@ init_slack(SLACK_WEB_HOOK)
 @task
 def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     """Fabric task to set env.hosts based on tag key-value pair"""
-    print(stack, layer, role, name)
     # setup env
     setattr(env, 'stack', stack)
     setattr(env, 'stack_site', STACK_SITE_MAPPING.get(env.stack))
@@ -128,6 +127,7 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     roles_role = list(itertools.chain.from_iterable([tag.get('role', '').split('-') for tag in tags.values()]))
     roles = list(set(roles_layer + roles_role))
     env.roles = list(set(roles))
+    print(env.roles)
 
     # define roledefs (http://docs.fabfile.org/en/1.10/usage/execution.html#Roles)
     roledefs = {}
@@ -144,6 +144,7 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     setattr(env, 'stack_string', stack)
     # store tags
     setattr(env, 'tags', tags)
+    print(tags)
 
     # Check minimum requirement between instance type and role
     check_integrity()
@@ -339,6 +340,8 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
+        print('HERE: {}'.format(env.tags[env.host_string].get('spot')))
+        print(env.host_string)
         files.upload_template('supervisord.template.conf', supervisor_file,
                               context={'SITENAME': env.stack_site,
                                        'USER': env.user,
@@ -922,17 +925,18 @@ def create_amis(stack=STACK, layer='*', role='*', name='*', region=REGION):
 
     # create AMIs
     for instance_id, tags in instance_tags_set:
-        ami_name = '{stack}-{layer}-({role})-({version})' \
+        ami_name = '{version}-{stack}-{layer}-{role}' \
             .format(version=version,
                     stack=tags.get('stack'),
                     layer=tags.get('layer'),
-                    role=tags.get('role'))
+                    role=tags.get('role').replace('-', '/'))
         ami_id = connection.create_image(instance_id, ami_name,
                                          no_reboot=NO_REBOOT)
+        print(ami_name)
         im = connection.get_image(ami_id)
         # replace instance name by its role
-        tags['Name'] = '{layer}-({role})'.format(
-            tags.get('layer'),
-            tags.get('role'))
+        tags['Name'] = '{layer}/{role}'.format(
+            layer=tags.get('layer'),
+            role=tags.get('role'))
         tags['version'] = version
         im.add_tags(tags)
