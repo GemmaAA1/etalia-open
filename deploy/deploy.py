@@ -98,7 +98,7 @@ if __name__ == '__main__':
         send_deploy_version_message(args.stack, done=True)
 
     # Create AMIs
-    if amis:
+    if args.amis:
         ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
         version = get_version(str(ROOT_DIR.path()))
         if args.slack:

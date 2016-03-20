@@ -36,15 +36,14 @@ def going_to_termination():
 def cancel_spot_request(aws_connection):
 
     # Get instance data
-    instance_id = utils.get_instance_identity()['document'][
-        'instanceId']
+    instance_id = utils.get_instance_identity()['document']['instanceId']
 
     # Retrieve Instance
     reservations = aws_connection.get_all_instances(instance_ids=[instance_id])
     instance = reservations[0].instances[0]
 
     # Retrieve Spot request
-    spot_id = inst.spot_instance_request_id
+    spot_id = instance.spot_instance_request_id
     spot_request = aws_connection.get_all_spot_instance_requests(request_ids=[spot_id])[0]
 
     # Cancel spot request
