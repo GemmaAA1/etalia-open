@@ -127,7 +127,6 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     roles_role = list(itertools.chain.from_iterable([tag.get('role', '').split('-') for tag in tags.values()]))
     roles = list(set(roles_layer + roles_role))
     env.roles = list(set(roles))
-    print(env.roles)
 
     # define roledefs (http://docs.fabfile.org/en/1.10/usage/execution.html#Roles)
     roledefs = {}
@@ -144,7 +143,6 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     setattr(env, 'stack_string', stack)
     # store tags
     setattr(env, 'tags', tags)
-    print(tags)
 
     # Check minimum requirement between instance type and role
     check_integrity()
@@ -518,7 +516,6 @@ def update_redis_cache():
 # SPOT
 # ----------
 @task
-@roles('spot')
 def update_rc_local():
     """Add spot_boot script to rc.local"""
     rc_local_path = '/etc/rc.local'
@@ -873,7 +870,7 @@ def deploy():
         update_rabbit_user()
 
     # spot
-    if 'spot' in roles:
+    if env.tags[env.host_string].get('spot'):
         update_rc_local()
 
     # redis
