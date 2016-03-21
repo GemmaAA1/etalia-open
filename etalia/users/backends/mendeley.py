@@ -147,9 +147,9 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                                                item.id) and new
                     if new:
                         count += 1
-                    #     not_new_stack_count = 0
-                    # else:
-                    #     not_new_stack_count += 1
+                        not_new_stack_count = 0
+                    else:
+                        not_new_stack_count += 1
                     if journal:
                         self.associate_journal(journal, user)
                 else:

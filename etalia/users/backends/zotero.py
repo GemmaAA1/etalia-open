@@ -100,7 +100,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             user=user.email,
                             backend=self.name))
             if not full:
-                if not_new_stack_count > 10:
+                if not_new_stack_count > 50:
                     break  # exit when reaching a stack of 10 already uploaded references
             try:
                 items = session.follow()
