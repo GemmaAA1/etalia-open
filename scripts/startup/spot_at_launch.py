@@ -56,9 +56,6 @@ def get_tags_from_spot_request():
 
 if __name__ == '__main__':
     get_tags_from_spot_request()
-    startup_path = os.path.dirname(__file__)
-    if os.path.exists(os.path.join(startup_path, 'first_reboot_done')):
-        call(["touch", os.path.join(startup_path, 'first_reboot_done')])
-        call(["sudo", "reboot"])
+    call(["sudo", "reboot"])
 
 

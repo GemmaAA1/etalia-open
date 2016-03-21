@@ -22,6 +22,12 @@ from boto.ec2 import connect_to_region
 DRY_RUN = False
 SLEEP_TIME = 5  # sleep time between 2 checks
 URL_CHECK = 'http://169.254.169.254/latest/meta-data/spot/termination-time'
+USER_DATA = \
+"""
+#!/bin/bash
+chmod +x /home/ubuntu/production/source/scripts/startup/spot_boot.py
+/home/ubuntu/production/source/scripts/startup/spot_at_launch.py
+"""
 
 
 def going_to_termination():
@@ -91,7 +97,8 @@ def start_new_spot_request(aws_connection, instance, spot_request):
         instance_type=instance.instance_type,
         key_name=instance.key_name,
         ebs_optimized=True,
-        dry_run=DRY_RUN)[0]
+        dry_run=DRY_RUN,
+        user_data=USER_DATA)[0]
 
     # Tag spot request
     new_spot.add_tags(ami.tags)
