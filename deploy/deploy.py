@@ -61,14 +61,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("stack", help="(str) stack name to be deploy", type=str)
     parser.add_argument("-p", "--parallel", help="deploy in parallel", action="store_true")
-    parser.add_argument("-s", "--slack", help="Send deployment info to slack", action="store_true")
-    parser.add_argument("-a", "--assets", help="Compiled and push assests before deployment", action="store_true")
+    parser.add_argument("-s", "--slack", help="deploy in parallel", action="store_true")
+    parser.add_argument("-np", "--no-push", help="deploy in parallel", action="store_true",
+                        dest='no_push')
+    parser.add_argument("-a", "--amis", help="create AMIs", action="store_true")
     args = parser.parse_args()
 
     if args.slack:
         send_deploy_version_message(args.stack)
 
-    if args.assets:
+    if not args.no_push:
         checkout_master_and_push_recompiled_assets()
 
     if args.parallel:
@@ -92,4 +94,16 @@ if __name__ == '__main__':
         # Go off maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
 
-    send_deploy_version_message(args.stack, done=True)
+    if args.slack:
+        send_deploy_version_message(args.stack, done=True)
+
+    # Create AMIs
+    if args.amis:
+        ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
+        version = get_version(str(ROOT_DIR.path()))
+        if args.slack:
+            send_slack_message('Registering AMIs {v}'.format(v=version),
+                       channel="#general",
+                       username="deployment-bot",
+                       web_hook_url=SLACK_WEB_HOOK)
+        call(['fab', 'create_amis:{stack}'])

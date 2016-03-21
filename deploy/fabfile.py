@@ -8,8 +8,8 @@ Current stack is composed of:
 - db on aws rds
 - worker (as spot instances)
 
-Instance roles is defined by its tags and layer
-Current possile roles are:
+Instance roles are defined by tags and layer
+Current understood roles are:
 - jobs      # job layer
 - apps      # front-end layer
 - web       # webserver
@@ -57,7 +57,8 @@ ROLE_INSTANCE_TYPE_MAP = {
     'ms': 't2.medium',
     'feed': 't2.medium',
     'nlp': 't2.large',
-    'spot': 'm4.large'}
+    'spot': 'm4.large',
+    'redis': 'm4.large'}
 INSTANCE_TYPES_RANK = {
     't2.micro': 0,
     't2.small': 1,
@@ -83,6 +84,16 @@ env.user = USER
 env.virtualenv_dir = VIRTUALENV_DIR
 env.conf_dir = SUPERVISOR_CONF_DIR
 env.ssl_path = SSL_PATH
+env.roledefs = {
+    'jobs': [],
+    'apps': [],
+    'master': [],
+    'base': [],
+    'feed': [],
+    'nlp': [],
+    'ms': [],
+    'redis': [],
+}
 
 init_slack(SLACK_WEB_HOOK)
 
@@ -113,7 +124,7 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     # merge aws layer and aws role into roles
     env.hosts = tags.keys()
     roles_layer = list(set([tag.get('layer', '') for tag in tags.values()]))
-    roles_role = list(itertools.chain.from_iterable([tag.get('role', '').split(',') for tag in tags.values()]))
+    roles_role = list(itertools.chain.from_iterable([tag.get('role', '').split('-') for tag in tags.values()]))
     roles = list(set(roles_layer + roles_role))
     env.roles = list(set(roles))
 
@@ -121,12 +132,12 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     roledefs = {}
     for role in env.roles:
         for host in env.hosts:
-            if role in [tags[host]['layer']] + tags[host]['role'].split(','):
+            if role in [tags[host]['layer']] + tags[host]['role'].split('-'):
                 if roledefs.get(role):
                     roledefs[role] += [host]
                 else:
                     roledefs[role] = [host]
-    env.roledefs = roledefs
+    env.roledefs.update(roledefs)
 
     # store stack
     setattr(env, 'stack_string', stack)
@@ -335,8 +346,7 @@ def update_supervisor_conf():
                                        'SOURCE_DIR': env.source_dir,
                                        'ENV_DIR': env.env_dir,
                                        'CONF_DIR': env.conf_dir,
-                                       'LAYER': env.tags[env.host_string].get(
-                                           'layer'),
+                                       'SPOT': env.tags[env.host_string].get('spot'),
                                        'ROLES': get_host_roles(),
                                        'USERS_PASSWORDS_FLOWER': flower_users_passwords,
                                        'INSTANCE_TYPE':
@@ -450,6 +460,7 @@ def reload_nginx():
 # ------------------------------------------------------------------------------
 
 # MASTER
+# ----------
 @task
 @roles('master')
 def update_rabbit_user():
@@ -473,6 +484,7 @@ def update_rabbit_user():
 
 
 # REDIS
+# ----------
 @task
 @roles('redis')
 def update_redis_cache():
@@ -482,31 +494,25 @@ def update_redis_cache():
         if not files.exists("/usr/bin/redis-server"):
             fabtools.require.deb.packages(['redis-server'])
 
-        # turn of autostart, manage by supervisor
+        # turn off autostart, manage by supervisor
         run_as_root('update-rc.d redis-server disable')
+
+        # mkdir redis in stack_dir
+        redis_dir = os.path.join(env.stack_dir, 'redis')
+        run('mkdir -p {0}'.format(redis_dir))
 
         # upload redis.conf to conf_dir
         files.upload_template('redis.conf',
-                              '{stack_dir}/{conf_dir}/redis.conf'.format(
-                                  stack_dir=env.stack_dir,
-                                  conf_dir=env.conf_dire),
-                              {},
-                              user_sudo=True)
-        run_as_root("/etc/init.d/redis-server restart")
+                              '{redis_dir}/redis.conf'.format(redis_dir=redis_dir),
+                              context={
+                                  'LOG_DIR': env.stack_dir + '/log',
+                                  'REDIS_DIR': redis_dir},
+                              use_sudo=True,
+                              use_jinja=True)
+        # run_as_root("/etc/init.d/redis-server restart")
 
 # SPOT
-
-@task
-@roles('spot')
-def update_rc_local():
-    """Add spot_boot script to rc.local"""
-    rc_local_path = '/etc/rc.local'
-    run_as_root('rm ' + rc_local_path)
-    files.upload_template('rc.template.local', rc_local_path,
-                          context={'STACK': env.stack,
-                                   'USER': env.user},
-                          use_sudo=True,
-                          use_jinja=True)
+# ----------
 
 
 @task
@@ -635,7 +641,7 @@ def check_integrity():
     """Check if instance type is compatible with role"""
     for host in env.hosts:
         inst_type = env.tags[host]['type']
-        roles = env.tags[host].get('role', '').split(',')
+        roles = env.tags[host].get('role', '').split('-')
         if roles:
             for role in roles:
                 min_type = ROLE_INSTANCE_TYPE_MAP[role]
@@ -794,6 +800,28 @@ def _workon():
     return prefix(" && ".join(workon_command))
 
 
+@task
+@roles('apps')
+def go_on_maintenance():
+    template_off = '{source}/etalia/templates/maintenance_off.html'.format(source=env.source_dir)
+    template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
+    if not files.exists(template_on):  # maintenance is not already on
+        if files.exists(template_off):
+            run_as_root('cp {off} {on}'.format(off=template_off, on=template_on))
+        else:
+            raise IOError('maintenance_off.html does not exist')
+
+
+@task
+@roles('apps')
+def go_off_maintenance():
+    template_on = '{source}/etalia/templates/maintenance_on.html'.format(source=env.source_dir)
+    if files.exists(template_on):
+        run_as_root('rm {on}'.format(on=template_on))
+    else:
+        raise IOError('maintenance_on.html does not exist')
+
+
 # ------------------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------------------
@@ -803,6 +831,8 @@ def deploy():
     """Deploy etalia on hosts"""
     if not env.hosts:
         raise ValueError('No hosts defined')
+
+    roles = get_host_roles()
 
     # common
     update_and_require_libraries()
@@ -817,19 +847,19 @@ def deploy():
     update_database()
 
     # apps related
-    update_gunicorn_conf()
-    update_nginx_conf()
-    reload_nginx()
-    update_static_files()
+    if 'apps' in roles:
+        update_gunicorn_conf()
+        update_nginx_conf()
+        reload_nginx()
+        update_static_files()
 
     # master
-    update_rabbit_user()
-
-    # spot
-    update_rc_local()
+    if 'master' in roles:
+        update_rabbit_user()
 
     # redis
-    update_redis_cache()
+    if 'redis' in roles:
+        update_redis_cache()
 
     # hosts
     reb = update_hosts_file(env.stack_string)
@@ -876,15 +906,18 @@ def create_amis(stack=STACK, layer='*', role='*', name='*', region=REGION):
 
     # create AMIs
     for instance_id, tags in instance_tags_set:
-        ami_name = '({version}).{stack}.{layer}.{role}' \
+        ami_name = '{version}-{stack}-{layer}-{role}' \
             .format(version=version,
                     stack=tags.get('stack'),
                     layer=tags.get('layer'),
-                    role=tags.get('role').replace(',', '-'))
+                    role=tags.get('role').replace('-', '/'))
         ami_id = connection.create_image(instance_id, ami_name,
                                          no_reboot=NO_REBOOT)
+        print(ami_name)
         im = connection.get_image(ami_id)
         # replace instance name by its role
-        tags['Name'] = '{0}/{1}'.format(tags.get('layer'), tags.get('role'))
+        tags['Name'] = '{layer}/{role}'.format(
+            layer=tags.get('layer'),
+            role=tags.get('role'))
         tags['version'] = version
         im.add_tags(tags)

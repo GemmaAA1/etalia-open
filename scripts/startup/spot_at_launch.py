@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
+import os
+from subprocess import call
 from boto import utils
 from boto.ec2 import instance, connect_to_region
+
 
 AWS_ACCESS_KEY_ID = 'AKIAJELT34R362VHB56A'
 AWS_SECRET_ACCESS_KEY = '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'
@@ -28,7 +31,8 @@ def get_tags_from_spot_request():
     # Get related spot instance
     spot_id = inst.spot_instance_request_id
     # get tags from spot
-    tags = conn.get_all_tags(filters={'resource-type': 'spot-instances-request', 'resource-id': spot_id})
+    spot_request = conn.get_all_spot_instance_requests(request_ids=[spot_id])[0]
+    tags = spot_request.tags
 
     # Add tags to instance
     tags.pop('Name')
@@ -40,15 +44,18 @@ def get_tags_from_spot_request():
     base_name = ami.name
     # fetch all current name
     rs = conn.get_all_reservations()
-    inst_names = [r.instances[0].tags['Name'] for r in rs]
+    inst_names = [r.instances[0].tags.get('Name') for r in rs]
     # Compare names and increment
     count = 0
     inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
     while inst_name in inst_names:
         count += 1
         inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
-    inst.add_tag({'Name': inst_name})
+    inst.add_tags({'Name': inst_name})
 
 
 if __name__ == '__main__':
     get_tags_from_spot_request()
+    call(["sudo", "reboot"])
+
+
