@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
+import os
+from subprocess import call
 from boto import utils
 from boto.ec2 import instance, connect_to_region
+
 
 AWS_ACCESS_KEY_ID = 'AKIAJELT34R362VHB56A'
 AWS_SECRET_ACCESS_KEY = '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'
@@ -41,7 +44,7 @@ def get_tags_from_spot_request():
     base_name = ami.name
     # fetch all current name
     rs = conn.get_all_reservations()
-    inst_names = [r.instances[0].tags['Name'] for r in rs]
+    inst_names = [r.instances[0].tags.get('Name') for r in rs]
     # Compare names and increment
     count = 0
     inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
@@ -53,3 +56,9 @@ def get_tags_from_spot_request():
 
 if __name__ == '__main__':
     get_tags_from_spot_request()
+    startup_path = os.path.dirname(__file__)
+    if os.path.exists(os.path.join(startup_path, 'first_reboot_done')):
+        call(["touch", os.path.join(startup_path, 'first_reboot_done')])
+        call(["sudo", "reboot"])
+
+

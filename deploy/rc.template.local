@@ -11,9 +11,9 @@
 #
 # By default this script does nothing.
 
-# Run script for auto-taggin instance from spot requests
+# Run script for auto-tagging instance from spot requests
 chmod o+x /home/{{ USER }}/{{ STACK }}/source/scripts/startup/spot_boot.py
 /home/{{ USER }}/{{ STACK }}/source/scripts/startup/spot_boot.py
-
+touch /home/{{ USER }}/{{ STACK }}/source/scripts/startup/spot_boot_run
 
 exit 0
