@@ -515,16 +515,6 @@ def update_redis_cache():
 
 # SPOT
 # ----------
-@task
-def update_rc_local():
-    """Add spot_boot script to rc.local"""
-    rc_local_path = '/etc/rc.local'
-    run_as_root('rm ' + rc_local_path)
-    files.upload_template('rc.template.local', rc_local_path,
-                          context={'STACK': env.stack,
-                                   'USER': env.user},
-                          use_sudo=True,
-                          use_jinja=True)
 
 
 @task
@@ -868,10 +858,6 @@ def deploy():
     # master
     if 'master' in roles:
         update_rabbit_user()
-
-    # spot
-    if env.tags[env.host_string].get('spot'):
-        update_rc_local()
 
     # redis
     if 'redis' in roles:
