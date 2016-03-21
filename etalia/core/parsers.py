@@ -85,5 +85,5 @@ class Parser(object):
         if 'title' not in journal:
             str_ += ''
         else:
-            str_ += journal.get('title')
+            str_ += journal.get('title', '')
         return hashlib.sha1(str_.encode('utf-8')).hexdigest()
