@@ -28,7 +28,8 @@ def get_tags_from_spot_request():
     # Get related spot instance
     spot_id = inst.spot_instance_request_id
     # get tags from spot
-    tags = conn.get_all_tags(filters={'resource-type': 'spot-instances-request', 'resource-id': spot_id})
+    spot_request = conn.get_all_spot_instance_requests(request_ids=[spot_id])[0]
+    tags = spot_request.tags
 
     # Add tags to instance
     tags.pop('Name')
@@ -47,7 +48,7 @@ def get_tags_from_spot_request():
     while inst_name in inst_names:
         count += 1
         inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
-    inst.add_tag({'Name': inst_name})
+    inst.add_tags({'Name': inst_name})
 
 
 if __name__ == '__main__':
