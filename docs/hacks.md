@@ -36,3 +36,11 @@ stream.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for IDL
 trend = user.trends.first()
 trend.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for IDLe
 ```
+
+## Delete all users
+
+
+```python
+us = User.objects.all()
+us.delete()
+```
