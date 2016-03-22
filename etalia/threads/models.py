@@ -25,10 +25,11 @@ class Thread(TimeStampedModel):
                                      through='ThreadMember')
 
     # Paper that the thread is based on, if any
-    paper = models.ForeignKey(Paper, null=True, blank=True, default=None)
+    paper = models.ForeignKey(Paper, null=True, blank=True, default=None,
+                              verbose_name='Paper')
 
     # title of thread
-    title = models.CharField(max_length=256)
+    title = models.CharField(max_length=256, verbose_name='Title')
 
     # content of the thread
     content = models.TextField(null=True, blank=True, default='')

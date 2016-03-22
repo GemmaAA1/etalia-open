@@ -2,18 +2,16 @@ Easy hacks to tweak data from django shell
 ========================
 
 ```bash
-./manage.py shell
+./manage.py shell_plus          # shell_plus is the enhanced shell from django-extension
 ```
 
 ## Get user
 
 ```python
-from django.contrib.auth import get_user_model
-User = get_user_model()
 user = User.objects.get(email='trucfortest@gmail.com')
 ```
 
-## Update user initialization steps (require user)
+## Update user initialization steps
 
 
 ```python
@@ -21,7 +19,7 @@ user.init_step = 'STR'      # choices are 'TRE' for TREnd, 'STR' for STReam, 'LI
 user.save()
 ```
 
-## Update user stream state (require user)
+## Update user stream state 
 
 
 ```python
@@ -29,7 +27,7 @@ stream = user.streams.first()
 stream.set_state('ING')     # choices are 'ING' for processING, or 'IDL' for IDLe
 ```
 
-## Update user stream state (require user)
+## Update user stream state
 
 
 ```python
