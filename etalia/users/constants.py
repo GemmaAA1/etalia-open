@@ -40,6 +40,14 @@ INIT_STEPS = (
     ('IDL', 'done'),
 )
 
+# Relationship
+RELATIONSHIP_FOLLOWING = 1
+RELATIONSHIP_BLOCKED = 2
+RELATIONSHIP_STATUSES = (
+    (RELATIONSHIP_FOLLOWING, 'Following'),
+    (RELATIONSHIP_BLOCKED, 'Blocked'),
+)
+
 # MESSAGES
 # User linked persistant message (i.e. that user needs to close)
 # in the form (id, extra_tag (str), message (str))

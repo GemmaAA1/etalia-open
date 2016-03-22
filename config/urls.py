@@ -15,6 +15,7 @@ else:
         url(r'^', include('etalia.core.urls', namespace='core')),
         url(r'^library/', include('etalia.library.urls', namespace='library')),
         url(r'^feed/', include('etalia.feeds.urls', namespace='feeds')),
+        url(r'^thread/', include('etalia.threads.urls', namespace='threads')),
         url(r'^user/', include('etalia.users.urls', namespace='user')),
         url(r'^user/', include('social.apps.django_app.urls', namespace='social')),
         url(r'^admin/', include(admin.site.urls)),
