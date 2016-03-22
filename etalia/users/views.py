@@ -601,11 +601,11 @@ def user_update_trend_check(request):
 def user_update_settings_check(request):
     if request.method == 'GET':
         if request.user.streams.first().state == 'ING':
-            user_update_stream_check(request)
+            return user_update_stream_check(request)
         elif request.user.streams.first().state == 'ING':
-            user_update_stream_check(request)
+            return user_update_stream_check(request)
         elif request.user.lib.state == 'ING':
-            user_update_library_check(request)
+            return user_update_library_check(request)
         else:
             data = {'done': True, 'messages': []}
             return JsonResponse(data)
