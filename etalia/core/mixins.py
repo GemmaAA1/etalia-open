@@ -32,7 +32,7 @@ class AjaxableResponseMixin(object):
         else:
             return response
 
-    def get_ajax_data(self, *kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         raise NotImplementedError
 
 

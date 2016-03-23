@@ -67,7 +67,7 @@ class UserLoginView(AjaxableResponseMixin, FormView):
     def get_success_url(self):
         return reverse('feeds:main')
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'email': self.request.user.email,
                 'redirect': self.get_success_url(),
                 }
@@ -82,8 +82,11 @@ class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
     template_name = 'user/signup_form.html'
 
     def get_success_url(self, **kwargs):
-        return reverse('social:complete',
-        kwargs={'backend': self.request.session['partial_pipeline']['backend']})
+        return reverse(
+            'social:complete',
+            kwargs={
+                'backend': self.request.session['partial_pipeline']['backend']
+            })
 
     def get_context_data(self, **kwargs):
         context = super(UserBasicInfoSignupView, self).get_context_data(**kwargs)
@@ -108,7 +111,7 @@ class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
             }
         return super(UserBasicInfoSignupView, self).form_valid(form)
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'redirect': self.get_success_url()}
         return data
 
@@ -370,7 +373,7 @@ class UpdateUserNameView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView):
     def get_success_url(self):
         return reverse('core:home')
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'first_name': self.request.user.first_name,
                 'last_name': self.request.user.last_name}
         return data
@@ -387,7 +390,7 @@ class UpdateUserTitleView(LoginRequiredMixin, AjaxableResponseMixin, UpdateView)
     def get_success_url(self):
         return reverse('core:home')
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'title': self.request.user.title}
         return data
 
@@ -403,7 +406,7 @@ class UpdateUserPositionView(LoginRequiredMixin, AjaxableResponseMixin, UpdateVi
     def get_success_url(self):
         return reverse('core:home')
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'position': self.request.user.position}
         return data
 
@@ -435,7 +438,7 @@ class UserAffiliationUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.save()
         return super(UserAffiliationUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'print-affiliation':
                     self.request.user.affiliation.print_affiliation}
         return data
@@ -475,7 +478,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.save()
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'stream_vector_weight': '{0:.2f}'.format(self.request.user.settings.stream_vector_weight),
                 'stream_author_weight': '{0:.2f}'.format(self.request.user.settings.stream_author_weight),
                 'stream_journal_weight': '{0:.2f}'.format(self.request.user.settings.stream_journal_weight),
@@ -505,7 +508,7 @@ class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.save()
         return super(UserTrendSettingsUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'trend_doc_weight': '{0:.2f}'.format(self.request.user.settings.trend_doc_weight),
                 'trend_altmetric_weight': '{0:.2f}'.format(self.request.user.settings.trend_altmetric_weight),
                 }
@@ -533,7 +536,7 @@ class UserEmailDigestSettingsUpdateView(LoginRequiredMixin,
         self.request.user.settings.save()
         return super(UserEmailDigestSettingsUpdateView, self).form_valid(form)
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         data = {'email_digest_frequency': self.request.user.settings.get_email_digest_frequency_display(),
                 }
         return data
@@ -646,7 +649,7 @@ class UserPaperCallView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
         kwargs = super(UserPaperCallView, self).get_form_kwargs()
         return kwargs
 
-    def get_ajax_data(self, **kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         return {
            'state': self.request.user.get_paper_state(
                kwargs['form'].cleaned_data['paper'].id),

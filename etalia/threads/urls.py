@@ -6,6 +6,7 @@ from . import views
 
 
 urlpatterns = [
-    url(r'create$', views.create, name='create'),
-
+    url(r'^create$', views.create, name='create'),
+    url(r'^(?P<pk>[0-9]+)/$', views.thread, name='thread'),
+    # url(r'^(?P<pk>[0-9]+)/edit$', views.thread, name='thread'),
 ]

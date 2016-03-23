@@ -1,0 +1,31 @@
+{% load staticfiles %}
+{% load ui_goodies %}
+{% spaceless %}
+<div class="content">
+    <div class="card">
+        <h1 class="title">
+            {{ thread.title }}
+        </h1>
+        <p class="autho">
+            {{ thread.user }}
+        </p>
+        <p class="body">
+            {{ thread.content }}
+        </p>
+
+        {% if has_joined %}
+            <p class="members">
+                {{ thread.members }}
+            </p>
+
+            {% for post in thread.posts %}
+                {{ post.content }}
+                {% for comment in post.comments %}
+                    {{ comment.content }}
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+
+        {% endif %}
+</div>
+{% endspaceless %}

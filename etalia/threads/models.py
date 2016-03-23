@@ -11,6 +11,17 @@ from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
     THREAD_TIME_LAPSE_CHOICES, INVITE_STATUSES, INVITE_PENDING, THREAD_QUESTION
 
 
+class ThreadManager(models.Manager):
+
+    def create(self, **kwargs):
+        """Create new Thread, add user to member list
+        """
+        obj = super(ThreadManager, self).create(**kwargs)
+        # add user to member
+        ThreadMember.objects.create(user=obj.user, thread=obj)
+        return obj
+
+
 class Thread(TimeStampedModel):
 
     # type of thread
@@ -18,7 +29,7 @@ class Thread(TimeStampedModel):
                                null=False, blank=False, verbose_name='Type')
 
     # User who create thread
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads')
 
     # Users that joined the thread
     members = models.ManyToManyField(settings.AUTH_USER_MODEL,
@@ -34,6 +45,30 @@ class Thread(TimeStampedModel):
     # content of the thread
     content = models.TextField(null=True, blank=True, default='',
                                verbose_name='Content')
+
+    objects = ThreadManager()
+
+    class Meta:
+        unique_together = (('type', 'user', 'title', 'paper'), )
+
+    @property
+    def short_title(self):
+        return self.title[:30]
+
+    def __str__(self):
+        return '{0}@{1}'.format(self.short_title, self.user)
+
+    def is_owner(self, user):
+        if user == self.user:
+            return True
+        else:
+            return False
+
+    def has_joined(self, user):
+        if user in self.members.all():
+            return True
+        else:
+            return False
 
 
 class ThreadMember(models.Model):
@@ -60,7 +95,7 @@ class ThreadPost(TimeStampedModel):
     thread = models.ForeignKey(Thread, related_name='posts')
 
     # User who posts
-    author = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     # index of the post in the thread
     position = models.PositiveIntegerField(default=0)
@@ -80,8 +115,8 @@ class ThreadPostComment(TimeStampedModel):
     # index of the comment for this post
     position = models.PositiveIntegerField(default=0)
 
-    # author
-    author = models.ForeignKey(settings.AUTH_USER_MODEL)
+    # user
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     # content
     content = models.TextField(null=False, blank=True, default='')
