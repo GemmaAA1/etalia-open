@@ -15,7 +15,7 @@ class Thread(TimeStampedModel):
 
     # type of thread
     type = models.IntegerField(choices=THREAD_TYPES, default=THREAD_QUESTION,
-                               null=False, blank=False)
+                               null=False, blank=False, verbose_name='Type')
 
     # User who create thread
     author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads')
@@ -26,13 +26,14 @@ class Thread(TimeStampedModel):
 
     # Paper that the thread is based on, if any
     paper = models.ForeignKey(Paper, null=True, blank=True, default=None,
-                              verbose_name='Paper')
+                              verbose_name='Related Paper')
 
     # title of thread
     title = models.CharField(max_length=256, verbose_name='Title')
 
     # content of the thread
-    content = models.TextField(null=True, blank=True, default='')
+    content = models.TextField(null=True, blank=True, default='',
+                               verbose_name='Content')
 
 
 class ThreadMember(models.Model):

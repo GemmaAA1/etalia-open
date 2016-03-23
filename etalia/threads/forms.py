@@ -9,8 +9,20 @@ from .models import Thread
 User = get_user_model()
 
 
-class ThreadForm(forms.ModelForm):
+class ThreadCreateForm(forms.ModelForm):
 
     class Meta:
         model = Thread
-        field = ('type', 'title', 'paper', 'author')
+        fields = ('type', 'title', 'paper', 'author')
+        exclude = ('author',)
+
+    def __init__(self, *args, **kwargs):
+        super(ThreadCreateForm, self).__init__(*args, **kwargs)
+        self.fields['title'].required = True
+
+
+class ThreadUpdateForm(ThreadCreateForm):
+
+    class Meta(ThreadCreateForm.Meta):
+        fields = ('title', 'content')
+

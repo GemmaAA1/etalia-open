@@ -6,6 +6,6 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^$', views.library, name='library'),
+    url(r'create$', views.create, name='create'),
 
 ]
