@@ -241,6 +241,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_followers(self):
         return self.get_related_to(RELATIONSHIP_FOLLOWING)
 
+    def follows(self, user):
+        return self.add_relationship(user, RELATIONSHIP_FOLLOWING)
+
+    def blocks(self, user):
+        return self.add_relationship(user, RELATIONSHIP_BLOCKED)
+
 
 class UserLib(TimeStampedModel):
     """Table - User Library"""

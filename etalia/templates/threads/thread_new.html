@@ -11,7 +11,7 @@
 {% spaceless %}
 <div class="document">
     <div id="signup-form">
-        <form role="form" method="POST" data-async action="{% url 'threads:create' %}">
+        <form role="form" method="POST" data-async action="{% url 'threads:new_thread' %}">
             {% csrf_token %}
             <span id="id_errors"></span>
 

@@ -1,31 +1,96 @@
+{% extends 'layout.html' %}
+
+
 {% load staticfiles %}
-{% load ui_goodies %}
+
+
+{% block title %}{{ block.super }} - Thread{% endblock %}
+
+
+{% block content %}
 {% spaceless %}
-<div class="content">
-    <div class="card">
-        <h1 class="title">
-            {{ thread.title }}
-        </h1>
-        <p class="autho">
-            {{ thread.user }}
-        </p>
-        <p class="body">
-            {{ thread.content }}
-        </p>
+    <div style="padding-top: 100px"></div>
+    <h4 class="title">
+        title: {{ thread.title }}
+    </h4>
+    <h4>
+        type: {{ thread.type }}
+    </h4>
+    <h4>
+        owner: {{ thread.owner }}
+    </h4>
+    <h4>
+        content: {{ thread.content }}
+    </h4>
+    <a href="{% url 'threads:update_thread' thread.id %}">edit Thread</a>
+    <h4>
+        privacy: {{ thread.privacy }}
+    </h4>
+    <h4>
+        # posts: {{ nb_posts }}
+    </h4>
+    <h4>
+        # members: {{ nb_members }}
+    </h4>
+    <h4>
+        has_joined: {{ has_joined }}
+    </h4>
+    <h4>
+        following: {{ following }}
+    </h4>
 
-        {% if has_joined %}
-            <p class="members">
-                {{ thread.members }}
-            </p>
-
-            {% for post in thread.posts %}
-                {{ post.content }}
-                {% for comment in post.comments %}
-                    {{ comment.content }}
-                {% endfor %}
+    {% if has_joined %}
+        <h4>
+            members: {{ members }}
+        </h4>
+        <h4>
+            posts:
+        </h4>
+        {% if posts %}
+            {% for post in posts %}
+                <div style="padding: 5px 0 5px 0;">
+                    {{ post.created }}
+                    {{ post.author }}
+                    {{ post.content }}
+                    {% if post.author == user %}
+                        <div>
+    {#                        <h4>#}
+                                <a href="{% url 'threads:update_post' post.id %}">Edit </a>
+                                <a href="{% url 'threads:delete_post' post.id %}">Delete</a>
+    {#                        </h4>#}
+                        </div>
+                    {% endif %}
+                    <div style="padding-left: 20px">comment: <br>
+                    {% for comment in post.comments.all %}
+                        {{ comment.created }} {{ comment.author }} {{ comment.content }}
+                        {% if comment.author == user %}
+                        <div>
+    {#                        <h4>#}
+                                <a href="{% url 'threads:update_comment' comment.id %}">Edit </a>
+                                <a href="{% url 'threads:delete_comment' comment.id %}">Delete</a>
+    {#                        </h4>#}
+                        </div>
+                    {% endif %}
+                    {% endfor %}
+                    <a href="{% url 'threads:new_comment' post.id %}">Add comment</a>
+                    </div>
+                </div>
             {% endfor %}
         {% else %}
-
+            No posts yet
         {% endif %}
-</div>
+    {% else %}
+        <p class="members">
+            {{ members }}
+        </h4>
+        <h4>
+            <h5>Join</h5>
+        </h4>
+    {% endif %}
+
+    <div style="padding-top: 10px;">
+        <a href="{% url 'threads:new_post' thread.id%}">New Post</a>
+    </div>
+
 {% endspaceless %}
+{% endblock content %}

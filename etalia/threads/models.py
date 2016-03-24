@@ -4,22 +4,13 @@ from __future__ import unicode_literals, absolute_import
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
+from django.core import serializers
 
 from etalia.core.models import TimeStampedModel
 from etalia.library.models import Paper
 from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
-    THREAD_TIME_LAPSE_CHOICES, INVITE_STATUSES, INVITE_PENDING, THREAD_QUESTION
-
-
-class ThreadManager(models.Manager):
-
-    def create(self, **kwargs):
-        """Create new Thread, add user to member list
-        """
-        obj = super(ThreadManager, self).create(**kwargs)
-        # add user to member
-        ThreadMember.objects.create(user=obj.user, thread=obj)
-        return obj
+    THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, THREAD_QUESTION,\
+    THREAD_PRIVACIES, THREAD_PUBLIC
 
 
 class Thread(TimeStampedModel):
@@ -29,7 +20,11 @@ class Thread(TimeStampedModel):
                                null=False, blank=False, verbose_name='Type')
 
     # User who create thread
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads')
+
+    # Privacy
+    privacy = models.IntegerField(choices=THREAD_PRIVACIES,
+                                  default=THREAD_PUBLIC)
 
     # Users that joined the thread
     members = models.ManyToManyField(settings.AUTH_USER_MODEL,
@@ -46,20 +41,18 @@ class Thread(TimeStampedModel):
     content = models.TextField(null=True, blank=True, default='',
                                verbose_name='Content')
 
-    objects = ThreadManager()
-
     class Meta:
-        unique_together = (('type', 'user', 'title', 'paper'), )
+        unique_together = (('type', 'owner', 'title', 'paper'), )
 
     @property
     def short_title(self):
         return self.title[:30]
 
     def __str__(self):
-        return '{0}@{1}'.format(self.short_title, self.user)
+        return '{0}@{1}'.format(self.short_title, self.owner)
 
     def is_owner(self, user):
-        if user == self.user:
+        if user == self.owner:
             return True
         else:
             return False
@@ -70,6 +63,12 @@ class Thread(TimeStampedModel):
         else:
             return False
 
+    def save(self, *args, **kwargs):
+        super(Thread, self).save(*args, **kwargs)
+        # Add self.user to members if does not exist
+        if not ThreadMember.objects.filter(member=self.owner, thread=self).exists():
+            ThreadMember.objects.create(member=self.owner, thread=self)
+
 
 class ThreadMember(models.Model):
 
@@ -77,7 +76,7 @@ class ThreadMember(models.Model):
     thread = models.ForeignKey(Thread)
 
     # member of the thread
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    member = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     # First time joined the thread
     joined_at = models.DateTimeField(auto_now_add=True)
@@ -88,6 +87,9 @@ class ThreadMember(models.Model):
     # Number of comments posted in thread
     num_comments = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        ordering = ['-num_comments', 'joined_at']
+
 
 class ThreadPost(TimeStampedModel):
 
@@ -95,16 +97,17 @@ class ThreadPost(TimeStampedModel):
     thread = models.ForeignKey(Thread, related_name='posts')
 
     # User who posts
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
-    # index of the post in the thread
-    position = models.PositiveIntegerField(default=0)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     # content
     content = models.TextField(null=False, blank=True, default='')
 
     class Meta:
-        unique_together = (('thread', 'position'), )
+        unique_together = (('thread', 'content', 'author'), )
+        ordering = ('created', )
+
+    def __str__(self):
+        return '{0} {1}'.format(self.created, self.author)
 
 
 class ThreadPostComment(TimeStampedModel):
@@ -112,17 +115,18 @@ class ThreadPostComment(TimeStampedModel):
     # thread
     post = models.ForeignKey(ThreadPost, related_name='comments')
 
-    # index of the comment for this post
-    position = models.PositiveIntegerField(default=0)
-
     # user
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     # content
     content = models.TextField(null=False, blank=True, default='')
 
     class Meta:
-        unique_together = (('post', 'position'), )
+        unique_together = (('post', 'author', 'content'), )
+        ordering = ('created', )
+
+    def __str__(self):
+        return '{0} {1}'.format(self.created.ctime(), self.author)
 
 
 class ThreadUserState(TimeStampedModel):
@@ -160,8 +164,8 @@ class ThreadUserInvite(TimeStampedModel):
                                 related_name='invite_to_users')
 
     # invite status
-    status = models.IntegerField(choices=INVITE_STATUSES,
-                                 default=INVITE_PENDING)
+    status = models.IntegerField(choices=THREAD_INVITE_STATUSES,
+                                 default=THREAD_INVITE_PENDING)
 
 
 class ThreadFeed(TimeStampedModel):
