@@ -23,6 +23,16 @@ URL maps
 /support/	etalia.core.views.support	core:support	
 /terms/	etalia.core.views.terms	core:terms	
 /test-failing-task	etalia.core.views.test_failing_task		
+/threads/<pk>/	etalia.threads.views.ThreadView	threads:thread	
+/threads/<pk>/join	etalia.threads.views.join_thread	threads:join_thread	
+/threads/<pk>/posts/new	etalia.threads.views.ThreadPostCreateView	threads:new_post	
+/threads/<pk>/update	etalia.threads.views.ThreadUpdateView	threads:update_thread	
+/threads/comments/<pk>/delete	etalia.threads.views.ThreadPostCommentDeleteView	threads:delete_comment	
+/threads/comments/<pk>/update	etalia.threads.views.ThreadPostCommentUpdateView	threads:update_comment	
+/threads/new	etalia.threads.views.ThreadCreate	threads:new_thread	
+/threads/posts/<pk>/comments/new	etalia.threads.views.ThreadPostCommentCreateView	threads:new_comment	
+/threads/posts/<pk>/delete	etalia.threads.views.ThreadPostDeleteView	threads:delete_post	
+/threads/posts/<pk>/update	etalia.threads.views.ThreadPostUpdateView	threads:update_post	
 /user/avatar/add/	avatar.views.add	user:avatar_add	login_required
 /user/avatar/change/	avatar.views.change	user:avatar_change	login_required
 /user/avatar/delete/	avatar.views.delete	user:avatar_delete	login_required
@@ -68,12 +78,4 @@ URL maps
 /user/user-update-settings-check	etalia.users.views.user_update_settings_check	user:user-update-settings-check	login_required
 /user/user-update-stream-check	etalia.users.views.user_update_stream_check	user:user-update-stream-check	login_required
 /user/user-update-trend-check	etalia.users.views.user_update_trend_check	user:user-update-trend-check	login_required
-/feed/thread
-/feed/thread/<name>
-/feed/thread/<name>/reset
-/feed/thread/<name>/update
-/feed/thread/xml
-/feed/thread/<name>/xml
-/thread/<pk>
-/thread/<pk>/join
 

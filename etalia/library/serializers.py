@@ -10,7 +10,7 @@ class JournalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Journal
-        fields = ('pk',
+        fields = ('id',
                   'title',
                   'short_title',
                   'url')
@@ -20,7 +20,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Author
-        fields = ('pk',
+        fields = ('id',
                   'first_name',
                   'last_name',)
 
@@ -32,7 +32,7 @@ class PaperSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Paper
-        fields = ('pk',
+        fields = ('id',
                   'title',
                   'journal',
                   'authors',

@@ -641,7 +641,7 @@ def update_library(request):
 
 
 class UserPaperCallView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
-    """Abstract class to deal with intercation between user and paper"""
+    """Abstract class to deal with interaction between user and paper"""
     def get_success_url(self):
         return reverse('core:home')
 

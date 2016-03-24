@@ -5,7 +5,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
-from .models import Thread, ThreadPost, ThreadPostComment
+from .models import Thread, ThreadPost, ThreadPostComment, ThreadMember
 from .constant import THREAD_QUESTION, THREAD_PAPER
 
 User = get_user_model()
@@ -102,4 +102,11 @@ class ThreadPostCommentForm(forms.ModelForm):
     class Meta:
         model = ThreadPostComment
         fields = ('content',)
+
+
+class ThreadMemberForm(forms.ModelForm):
+
+    class Meta:
+        model = ThreadMember
+        fields = ('thread', 'member')
 

@@ -15,7 +15,8 @@ class ThreadPostCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThreadPostComment
-        fields = ('content',
+        fields = ('id',
+                  'content',
                   'author',
                   'created',
                   'modified',
@@ -29,7 +30,8 @@ class ThreadPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThreadPost
-        fields = ('content',
+        fields = ('id',
+                  'content',
                   'author',
                   'created',
                   'modified',
@@ -46,7 +48,8 @@ class ThreadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thread
-        fields = ('type',
+        fields = ('id',
+                  'type',
                   'title',
                   'owner',
                   'privacy',
@@ -54,7 +57,9 @@ class ThreadSerializer(serializers.ModelSerializer):
                   'paper',
                   'title',
                   'content',
-                  'posts')
+                  'posts',
+                  'created',
+                  'modified')
 
 
 

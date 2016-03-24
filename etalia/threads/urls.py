@@ -8,6 +8,7 @@ from . import views
 urlpatterns = [
     url(r'^new', views.new_thread, name='new_thread'),
     url(r'^(?P<pk>[0-9]+)/$', views.thread, name='thread'),
+    # url(r'^(?P<pk>[0-9]+)/join$', views.join_thread, name='join_thread'),
     url(r'^(?P<pk>[0-9]+)/update$', views.update_thread, name='update_thread'),
     url(r'^(?P<pk>[0-9]+)/posts/new$', views.new_post, name='new_post'),
     url(r'^posts/(?P<pk>[0-9]+)/update$', views.update_post, name='update_post'),
