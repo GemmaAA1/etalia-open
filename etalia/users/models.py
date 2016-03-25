@@ -705,30 +705,31 @@ class UserThread(TimeStampedModel):
     is_left = models.BooleanField(default=False)
 
     # First time joined the thread
-    joined_at = models.DateTimeField(null=True, blank=True, default=None)
+    first_joined_at = models.DateTimeField(null=True, blank=True, default=None)
 
     # When user left the thread, is any
-    left_at = models.DateTimeField(null=True, blank=True, default=None)
+    last_left_at = models.DateTimeField(null=True, blank=True, default=None)
 
     # Number of comments posted in thread
     num_comments = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ['-num_comments', 'joined_at']
+        ordering = ['-num_comments', 'first_joined_at']
 
     def join(self):
         self.is_joined = True
         self.is_left = False
         self.is_banned = False
-        self.joined_at = timezone.now()
-        self.left_at = None
+        if not self.first_joined_at:
+            self.first_joined_at = timezone.now()
+        self.last_left_at = None
         self.save()
 
     def leave(self):
         self.is_joined = False
         self.is_banned = False
         self.is_left = True
-        self.left_at = timezone.now()
+        self.last_left_at = timezone.now()
         self.save()
 
     def pin(self):

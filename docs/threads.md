@@ -10,12 +10,36 @@ Url: ```[GET] /threads/<pk>/```
 HTML Page
 
 
-## Thread (new, update)
+## Thread
 
 Url: ```[POST] /threads/new/```
+
+**Parameters**
+```
+{
+    'type': enum                # required (see THREAD_TYPES in threads/constant.py)
+    'privacy': enum             # required (see THREAD_PRIVACIES in threads/constant.py)
+    'title': (str)              # required
+    'paper': (int) | None
+}
+```
+
 Url: ```[POST] /threads/<pk>/update```
 
-**Response**
+**Parameters**
+```
+{
+    'title': (str)              # required
+    'content': (str)
+}
+```
+
+Url: ```[GET] /threads/<pk>/```
+**Parameters**
+```
+```
+
+**All Response**
 
 ```200 OK```
 ```
@@ -31,14 +55,21 @@ Url: ```[POST] /threads/<pk>/update```
             "first_name": (string),
             "last_name": (string),
             "url": (string),
+            "photo_url": (string)
+        },
+        "state": {
+            "
         },
         "privacy": (enum),
         "state": {
             "id": (int),
-            "pinned": (bool),
-            "banned": (bool),
-            "added": (bool),
-            "trashed": (bool)
+            "is_pinned": (bool),
+            "is_banned": (bool),
+            "is_joined": (bool),
+            "is_left": (bool),
+            "first_joined_at": (string),
+            "last_left_at": (string),
+            "num_comments": ing
         }
         "members": [
             {
@@ -47,6 +78,7 @@ Url: ```[POST] /threads/<pk>/update```
                 "first_name": (string),
                 "last_name": (string),
                 "url": (string),
+                "photo_url": (string)
             },
             ...
         ],
@@ -63,7 +95,7 @@ Url: ```[POST] /threads/<pk>/update```
                 {
                     "id": (int), 
                     "first_name": (string),
-                    "last_name": (string),
+                    "last_name": (string)
                 },
             ...
             ], 
@@ -85,6 +117,7 @@ Url: ```[POST] /threads/<pk>/update```
                     "first_name": (string),
                     "last_name": (string),
                     "url": (string),
+                    "photo_url": (string)
                 },
                 "comments:" : [
                     {                                    
@@ -98,6 +131,7 @@ Url: ```[POST] /threads/<pk>/update```
                             "first_name": (string),
                             "last_name": (string),
                             "url": (string),
+                            "photo_url": (string)
                         },
                         "post": (int)
                     },
@@ -115,6 +149,13 @@ Url: ```[POST] /threads/<pk>/update```
 
 Url: ```[POST] /threads/<pk>/posts/new```
 Url: ```[POST] /threads/posts/<pk>/update```
+
+**Parameters**
+```
+{
+    'content':  (str)
+}
+```
 
 **Response**
 
@@ -167,6 +208,14 @@ Url: ```[POST] /threads/posts/<pk>/delete```
 Url: ```[POST] /threads/post/<pk>/comments/new```
 Url: ```[POST] /threads/comments/<pk>/update```
 
+**Parameters**
+```
+{
+    'content':  (str)
+}
+```
+
+
 **Response**
 
 ```200 OK```
@@ -184,6 +233,7 @@ Url: ```[POST] /threads/comments/<pk>/update```
             "first_name": (string),
             "last_name": (string),
             "url": (string),
+            "photo_url": (string)
         }
     }
 }

@@ -17,7 +17,7 @@ from .serializers import ThreadSerializer, ThreadPostSerializer, \
     ThreadPostCommentSerializer, UserThreadSerializer
 
 
-class ThreadView(LoginRequiredMixin, DetailView):
+class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
     model = Thread
     template_name = 'threads/thread.html'
     max_members = 3
@@ -52,6 +52,13 @@ class ThreadView(LoginRequiredMixin, DetailView):
 
         return context
 
+    def get_ajax_data(self, *args, **kwargs):
+        return {
+            'results': ThreadContextualizedSerializer(
+                instance=self.object,
+                context={'request': self.request}).data,
+        }
+
 
 thread = ThreadView.as_view()
 
@@ -76,7 +83,8 @@ class ThreadCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
     def get_ajax_data(self, *args, **kwargs):
         return {
             'redirect': self.get_success_url(),
-            'results': ThreadSerializer(instance=self.object).data,
+            'results': ThreadSerializer(instance=self.object,
+                                        context={'request': self.request}).data,
         }
 
 
@@ -116,7 +124,8 @@ class ThreadUpdateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': ThreadSerializer(instance=self.object).data,
+            'results': ThreadSerializer(instance=self.object,
+                                        context={'request': self.request}).data,
         }
 
 

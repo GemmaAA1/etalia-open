@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='threadmember',
-            options={'ordering': ['-num_comments', 'joined_at']},
+            options={'ordering': ['-num_comments', 'first_joined_at']},
         ),
     ]

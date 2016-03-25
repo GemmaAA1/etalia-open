@@ -102,10 +102,36 @@ class ThreadSerializer(serializers.ModelSerializer):
                   'members',
                   'posts',
                   'created',
+                  'modified')
+
+
+class ThreadContextualizedSerializer(serializers.ModelSerializer):
+
+    members = UserSerializer(many=True, read_only=True)
+    owner = UserSerializer(many=False, read_only=True)
+    paper = PaperSerializer(many=False, read_only=True)
+    posts = ThreadPostSerializer(many=True, read_only=True)
+    state = UserThreadSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Thread
+        fields = ('id',
+                  'type',
+                  'title',
+                  'owner',
+                  'privacy',
+                  'paper',
+                  'title',
+                  'content',
+                  'members',
+                  'posts',
+                  'created',
                   'modified',
                   'state')
 
-
+    def get_state(self, obj):
+        return UserThread(user=self.context['request'].user,
+                          thread=obj)
 
 
 

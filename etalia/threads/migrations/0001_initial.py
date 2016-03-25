@@ -62,8 +62,8 @@ class Migration(migrations.Migration):
             name='ThreadMember',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('joined_at', models.DateTimeField(auto_now_add=True)),
-                ('left_at', models.DateTimeField(default=None, null=True, blank=True)),
+                ('first_joined_at', models.DateTimeField(auto_now_add=True)),
+                ('last_left_at', models.DateTimeField(default=None, null=True, blank=True)),
                 ('num_comments', models.PositiveIntegerField(default=0)),
                 ('thread', models.ForeignKey(to='threads.Thread')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
