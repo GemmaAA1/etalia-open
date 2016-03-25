@@ -33,6 +33,13 @@ Url: ```[POST] /threads/<pk>/update```
             "url": (string),
         },
         "privacy": (enum),
+        "state": {
+            "id": (int),
+            "pinned": (bool),
+            "banned": (bool),
+            "added": (bool),
+            "trashed": (bool)
+        }
         "members": [
             {
                 "id": (int),
@@ -98,21 +105,8 @@ Url: ```[POST] /threads/<pk>/update```
                 ]
             },
             ...
-        ],
-    },
-}
-```
-
-
-## Join thread
-
-Url: ```[POST] /threads/<pk>/join```
-
-**Response**
-
-```200 OK```
-```
-{
+        ]
+    }
 }
 ```
 
@@ -157,7 +151,7 @@ Url: ```[POST] /threads/posts/<pk>/update```
             },
             ...
         ]
-    },
+    }
 }
 ```
 
@@ -190,8 +184,8 @@ Url: ```[POST] /threads/comments/<pk>/update```
             "first_name": (string),
             "last_name": (string),
             "url": (string),
-        },
-    },
+        }
+    }
 }
 ```
 
@@ -201,3 +195,29 @@ Url: ```[POST] /threads/comments/<pk>/delete```
 
 **Response**
 ``` 200 OK```
+
+
+## ThreadUserState
+
+Url:  ```[POST] /threads/state```
+
+**Request**
+```json
+{
+    'thread': (int)         # thread id
+    'action': (str),        # either 'pin', 'ban', 'join', 'leave'
+}
+```
+
+**Response**
+```json
+{
+    "results": {
+        "id": (int),
+        "is_pinned": (bool),
+        "is_banned": (bool),
+        "is_joined": (bool),
+        "is_left": (bool)
+    }    
+}
+```

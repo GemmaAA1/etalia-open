@@ -642,12 +642,9 @@ def update_library(request):
 
 class UserPaperCallView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
     """Abstract class to deal with interaction between user and paper"""
+
     def get_success_url(self):
         return reverse('core:home')
-
-    def get_form_kwargs(self):
-        kwargs = super(UserPaperCallView, self).get_form_kwargs()
-        return kwargs
 
     def get_ajax_data(self, *args, **kwargs):
         return {
@@ -671,6 +668,12 @@ class UserPaperCallView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
 class PinCallView(UserPaperCallView):
 
     form_class = UserTasteForm
+
+    def __init__(self,  **kwargs):
+        super(PinCallView, self).__init__(**kwargs)
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(PinCallView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         ut, _ = UserTaste.objects.get_or_create(
@@ -811,8 +814,3 @@ def send_invite(request):
     else:
         redirect('invite:home')
 
-
-class ThreadsView(LoginRequiredMixin, NavFlapMixin, TemplateView):
-    template_name = 'threads/threads.html'
-
-threads = ThreadsView.as_view()

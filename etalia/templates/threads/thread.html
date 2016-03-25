@@ -33,16 +33,37 @@
         # members: {{ nb_members }}
     </h4>
     <h4>
-        has_joined: {{ has_joined }}
+        has_joined: {{ state.is_joined }}
     </h4>
     <h4>
         following: {{ following }}
     </h4>
 
-    {% if has_joined %}
+    Pin: {{ state.is_pinned }}
+    <form role="form" method="POST" action="{% url 'threads:state' %}">
+        {% csrf_token %}
+        <input type="text" name="action" value="pin" hidden>
+        <input type="text" name="thread" value="{{ thread.id }}" hidden>
+        <button id="signup" type="submit" class="btn btn-primary">Pin</button>
+    </form>
+    Ban: {{ state.is_banned }}
+    <form role="form" method="POST" action="{% url 'threads:state' %}">
+        {% csrf_token %}
+        <input type="text" name="action" value="ban" hidden>
+        <input type="text" name="thread" value="{{ thread.id }}" hidden>
+        <button id="signup" type="submit" class="btn btn-primary">Ban</button>
+    </form>
+
+    {% if state.is_joined %}
         <h4>
             members: {{ members }}
         </h4>
+        <div>
+            {% for member in members %}
+                <img style="height: 50px;" src="{{ member.photo.name }}"/>
+            {% endfor %}
+        </div>
+
         <h4>
             posts:
         </h4>
@@ -53,22 +74,16 @@
                     {{ post.author }}
                     {{ post.content }}
                     {% if post.author == user %}
-                        <div>
-    {#                        <h4>#}
-                                <a href="{% url 'threads:update_post' post.id %}">Edit </a>
-                                <a href="{% url 'threads:delete_post' post.id %}">Delete</a>
-    {#                        </h4>#}
-                        </div>
+                        <a href="{% url 'threads:edit_post' post.id %}">Edit </a>
+                        <a href="{% url 'threads:delete_post' post.id %}">Delete</a>
                     {% endif %}
                     <div style="padding-left: 20px">comment: <br>
                     {% for comment in post.comments.all %}
+                        <div>
                         {{ comment.created }} {{ comment.author }} {{ comment.content }}
                         {% if comment.author == user %}
-                        <div>
-    {#                        <h4>#}
-                                <a href="{% url 'threads:update_comment' comment.id %}">Edit </a>
-                                <a href="{% url 'threads:delete_comment' comment.id %}">Delete</a>
-    {#                        </h4>#}
+                            <a href="{% url 'threads:edit_comment' comment.id %}">Edit </a>
+                            <a href="{% url 'threads:delete_comment' comment.id %}">Delete</a>
                         </div>
                     {% endif %}
                     {% endfor %}
@@ -79,22 +94,32 @@
         {% else %}
             No posts yet
         {% endif %}
+
+        <div style="padding-top: 10px;">
+            <a href="{% url 'threads:new_post' thread.id%}">New Post</a>
+        </div>
+        <h4>
+            <form role="form" method="POST" action="{% url 'threads:state' %}">
+                {% csrf_token %}
+                <input type="text" name="action" value="leave" hidden>
+                <input type="text" name="thread" value="{{ thread.id }}" hidden>
+                <button id="signup" type="submit" class="btn btn-primary">Leave</button>
+            </form>
+        </h4>
+
     {% else %}
         <h4>
             members: {{ members }}
         </h4>
         <h4>
-{#            <form role="form" method="POST" data-async action="{% url 'threads:join_thread' thread.id%}">#}
-{#                {% csrf_token %}#}
-{#                <button id="signup" type="submit" class="btn btn-primary">Join</button>#}
-{#            </form>#}
-            Join
+            <form role="form" method="POST" action="{% url 'threads:state' %}">
+                {% csrf_token %}
+                <input type="text" name="action" value="join" hidden>
+                <input type="text" name="thread" value="{{ thread.id }}" hidden>
+                <button type="submit" class="btn btn-primary">Join</button>
+            </form>
         </h4>
     {% endif %}
-
-    <div style="padding-top: 10px;">
-        <a href="{% url 'threads:new_post' thread.id%}">New Post</a>
-    </div>
 
 {% endspaceless %}
 {% endblock content %}

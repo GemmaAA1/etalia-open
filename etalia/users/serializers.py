@@ -9,6 +9,7 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     url = serializers.URLField(source='get_absolute_url')
+    photo_url = serializers.URLField(read_only=True, source='photo.name')
 
     class Meta:
         model = User
@@ -16,4 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'url')
+                  'url',
+                  'photo_url')
+

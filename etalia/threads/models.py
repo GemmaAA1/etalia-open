@@ -4,7 +4,8 @@ from __future__ import unicode_literals, absolute_import
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
-from django.core import serializers
+from django.db.models import F
+from django.utils import timezone
 
 from etalia.core.models import TimeStampedModel
 from etalia.library.models import Paper
@@ -20,15 +21,11 @@ class Thread(TimeStampedModel):
                                null=False, blank=False, verbose_name='Type')
 
     # User who create thread
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads_owned')
 
     # Privacy
     privacy = models.IntegerField(choices=THREAD_PRIVACIES,
                                   default=THREAD_PUBLIC)
-
-    # Users that joined the thread
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                     through='ThreadMember')
 
     # Paper that the thread is based on, if any
     paper = models.ForeignKey(Paper, null=True, blank=True, default=None,
@@ -48,8 +45,15 @@ class Thread(TimeStampedModel):
     def short_title(self):
         return self.title[:30]
 
+    @property
+    def members(self):
+        return list(self.get_active_members())
+
     def __str__(self):
         return '{0}@{1}'.format(self.short_title, self.owner)
+
+    def get_active_members(self):
+        return self.user_set.filter(userthread__is_joined=True)
 
     def is_owner(self, user):
         if user == self.owner:
@@ -57,38 +61,10 @@ class Thread(TimeStampedModel):
         else:
             return False
 
-    def has_joined(self, user):
-        if user in self.members.all():
-            return True
-        else:
-            return False
-
     def save(self, *args, **kwargs):
         super(Thread, self).save(*args, **kwargs)
-        # Add self.user to members if does not exist
-        if not ThreadMember.objects.filter(member=self.owner, thread=self).exists():
-            ThreadMember.objects.create(member=self.owner, thread=self)
-
-
-class ThreadMember(models.Model):
-
-    # thread
-    thread = models.ForeignKey(Thread)
-
-    # member of the thread
-    member = models.ForeignKey(settings.AUTH_USER_MODEL)
-
-    # First time joined the thread
-    joined_at = models.DateTimeField(auto_now_add=True)
-
-    # When user left the thread, is any
-    left_at = models.DateTimeField(null=True, blank=True, default=None)
-
-    # Number of comments posted in thread
-    num_comments = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['-num_comments', 'joined_at']
+        # add owner as member
+        self.owner.join_thread(self)
 
 
 class ThreadPost(TimeStampedModel):
@@ -109,6 +85,21 @@ class ThreadPost(TimeStampedModel):
     def __str__(self):
         return '{0} {1}'.format(self.created, self.author)
 
+    def save(self, **kwargs):
+        if not self.id:
+            # increment UserThread post count
+            self.author.userthread_set\
+                .filter(thread=self.thread)\
+                .update(num_comments=F('num_comments') + 1)
+        super(ThreadPost, self).save(**kwargs)
+
+    def delete(self, **kwargs):
+        # decrement UserThread post count
+        self.author.userthread_set\
+            .filter(thread=self.thread)\
+            .update(num_comments=F('num_comments') - 1)
+        super(ThreadPost, self).delete(**kwargs)
+
 
 class ThreadPostComment(TimeStampedModel):
 
@@ -127,27 +118,6 @@ class ThreadPostComment(TimeStampedModel):
 
     def __str__(self):
         return '{0} {1}'.format(self.created.ctime(), self.author)
-
-
-class ThreadUserState(TimeStampedModel):
-
-    # user
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
-    # thread
-    thread = models.ForeignKey(Thread)
-
-    # thread is pinned
-    is_pinned = models.BooleanField(default=False)
-
-    # thread is banned
-    is_banned = models.BooleanField(default=False)
-
-    # thread is added
-    is_added = models.BooleanField(default=False)
-
-    # thread is trashed
-    is_trashed = models.BooleanField(default=False)
 
 
 class ThreadUserInvite(TimeStampedModel):

@@ -20,6 +20,7 @@ from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import NLP_TIME_LAPSE_CHOICES, \
     NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
+from etalia.threads.models import Thread
 
 from .validators import validate_first_name, validate_last_name
 from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
@@ -143,6 +144,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                                           symmetrical=False,
                                           related_name='related_to')
 
+    threads = models.ManyToManyField(Thread, through='UserThread')
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -211,6 +214,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                     **UserLibPaper.get_counters(self.id))
 
     # Relationships methods
+    # ----------------------
     def add_relationship(self, user, status):
         relationship, created = Relationship.objects.get_or_create(
             from_user=self,
@@ -246,6 +250,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def blocks(self, user):
         return self.add_relationship(user, RELATIONSHIP_BLOCKED)
+
+    # Threads methods
+    # ----------------------
+    def join_thread(self, thread):
+        ut, new = UserThread.objects.get_or_create(user=self, thread=thread)
+        ut.join()
 
 
 class UserLib(TimeStampedModel):
@@ -674,5 +684,60 @@ class Relationship(TimeStampedModel):
                                  default=RELATIONSHIP_FOLLOWING)
 
 
+class UserThread(TimeStampedModel):
 
+    # user
+    user = models.ForeignKey(User)
+
+    # thread
+    thread = models.ForeignKey(Thread)
+
+    # thread is pinned
+    is_pinned = models.BooleanField(default=False)
+
+    # thread is banned
+    is_banned = models.BooleanField(default=False)
+
+    # thread is added
+    is_joined = models.BooleanField(default=False)
+
+    # thread is trashed
+    is_left = models.BooleanField(default=False)
+
+    # First time joined the thread
+    joined_at = models.DateTimeField(null=True, blank=True, default=None)
+
+    # When user left the thread, is any
+    left_at = models.DateTimeField(null=True, blank=True, default=None)
+
+    # Number of comments posted in thread
+    num_comments = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-num_comments', 'joined_at']
+
+    def join(self):
+        self.is_joined = True
+        self.is_left = False
+        self.is_banned = False
+        self.joined_at = timezone.now()
+        self.left_at = None
+        self.save()
+
+    def leave(self):
+        self.is_joined = False
+        self.is_banned = False
+        self.is_left = True
+        self.left_at = timezone.now()
+        self.save()
+
+    def pin(self):
+        self.is_pinned = not self.is_pinned
+        self.is_banned = False
+        self.save()
+
+    def ban(self):
+        self.is_pinned = False
+        self.is_banned = True
+        self.save()
 

@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.views.generic import UpdateView, FormView, DetailView, CreateView, DeleteView
+from django.views.generic import UpdateView, FormView, DetailView, CreateView, \
+    DeleteView, ListView
 from braces.views import LoginRequiredMixin, UserPassesTestMixin
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404, redirect
-from django.core import serializers
-
-from rest_framework.renderers import JSONRenderer
+from django.shortcuts import get_object_or_404
 
 from etalia.core.mixins import AjaxableResponseMixin
-from .forms import ThreadCreateForm, ThreadUpdateForm, ThreadPostForm, ThreadPostCommentForm, ThreadMemberForm
-from .models import Thread, ThreadPost, ThreadPostComment, ThreadMember
-from .serializers import ThreadSerializer, ThreadPostSerializer, ThreadPostCommentSerializer
+from etalia.users.models import UserThread
+from .forms import ThreadCreateForm, ThreadUpdateForm, ThreadPostForm, \
+    ThreadPostCommentForm, UserThreadForm
+from .models import Thread, ThreadPost, ThreadPostComment
+
+from .serializers import ThreadSerializer, ThreadPostSerializer, \
+    ThreadPostCommentSerializer, UserThreadSerializer
 
 
 class ThreadView(LoginRequiredMixin, DetailView):
-
     model = Thread
     template_name = 'threads/thread.html'
     max_members = 3
@@ -25,31 +26,37 @@ class ThreadView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(ThreadView, self).get_context_data(**kwargs)
         following = self.request.user.get_following()
-        members = self.object.members.all().exclude()
+        members = self.object.get_active_members()
+        if following:
+            members_non_followed = members.exclude(id=following)
+        else:
+            members_non_followed = members
         posts = self.object.posts.all()
 
-        context['has_joined'] = self.object.has_joined(self.request.user)
         context['nb_members'] = members.count()
         context['nb_posts'] = posts.count()
         context['following'] = following
+        context['state'], _ = UserThread.objects.get_or_create(
+            user=self.request.user, thread=self.object)
 
-        if context['has_joined']:
+        if context['state'].is_joined:
             context['members'] = members
             context['posts'] = posts
         else:
             context['members'] = []
             # restrict members to max_members, order by following + nb_comments
-            context['members'] = [m for m in members if m in following][:self.max_members]
+            context['members'] = [m for m in members if m in following][
+                                 :self.max_members]
             context['members'][len(context['members']):self.max_members] = \
-                members[:self.max_members-len(context['members'])]
+                members_non_followed[:self.max_members - len(context['members'])]
 
         return context
+
 
 thread = ThreadView.as_view()
 
 
 class ThreadCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
-
     template_name = 'threads/thread_new.html'
     form_class = ThreadCreateForm
 
@@ -71,6 +78,7 @@ class ThreadCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
             'redirect': self.get_success_url(),
             'results': ThreadSerializer(instance=self.object).data,
         }
+
 
 new_thread = ThreadCreate.as_view()
 
@@ -111,29 +119,28 @@ class ThreadUpdateView(LoginRequiredMixin, UserPassesTestMixin,
             'results': ThreadSerializer(instance=self.object).data,
         }
 
+
 update_thread = ThreadUpdateView.as_view()
 
 
-class ThreadPostCreateView(LoginRequiredMixin, UserPassesTestMixin, AjaxableResponseMixin,
+class ThreadPostCreateView(LoginRequiredMixin, UserPassesTestMixin,
+                           AjaxableResponseMixin,
                            CreateView):
-
     template_name = 'threads/post_new.html'
     form_class = ThreadPostForm
     thread = None
 
     def dispatch(self, request, *args, **kwargs):
         self.thread = get_object_or_404(Thread, pk=self.kwargs.get('pk'))
-        return super(ThreadPostCreateView, self).dispatch(request, *args, **kwargs)
+        return super(ThreadPostCreateView, self).dispatch(request, *args,
+                                                          **kwargs)
 
     def test_func(self, user):
         # test if user is in thread members
-        if user in self.thread.members.all():
+        if user in self.thread.get_active_members():
             return True
         else:
             return False
-
-    def get_success_url(self, **kwargs):
-        return reverse('threads:thread', kwargs={'pk': self.thread.id})
 
     def form_valid(self, form):
         form.instance.author_id = self.request.user.id
@@ -145,23 +152,23 @@ class ThreadPostCreateView(LoginRequiredMixin, UserPassesTestMixin, AjaxableResp
         context['thread'] = self.thread
         return context
 
+    def get_success_url(self, **kwargs):
+        return reverse('threads:thread', kwargs={'pk': self.thread.id})
+
     def get_ajax_data(self, *args, **kwargs):
         return {
             'results': ThreadPostSerializer(instance=self.object).data,
         }
+
 
 new_post = ThreadPostCreateView.as_view()
 
 
 class ThreadPostUpdateView(LoginRequiredMixin, UserPassesTestMixin,
                            AjaxableResponseMixin, UpdateView):
-
     template_name = 'threads/post_update.html'
     form_class = ThreadPostForm
     context_object_name = 'post'
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(ThreadPost, pk=self.kwargs.get('pk'))
 
     def test_func(self, user):
         # test if user is author of post
@@ -183,10 +190,11 @@ class ThreadPostUpdateView(LoginRequiredMixin, UserPassesTestMixin,
         }
 
 
-update_post = ThreadPostUpdateView.as_view()
+edit_post = ThreadPostUpdateView.as_view()
 
 
-class ThreadPostDeleteView(LoginRequiredMixin, AjaxableResponseMixin, DeleteView):
+class ThreadPostDeleteView(LoginRequiredMixin, AjaxableResponseMixin,
+                           DeleteView):
     model = ThreadPost
 
     def get_success_url(self):
@@ -196,29 +204,31 @@ class ThreadPostDeleteView(LoginRequiredMixin, AjaxableResponseMixin, DeleteView
         return {
         }
 
+
 delete_post = ThreadPostDeleteView.as_view()
 
 
 class ThreadPostCommentCreateView(LoginRequiredMixin, UserPassesTestMixin,
                                   AjaxableResponseMixin, CreateView):
-
     template_name = 'threads/comment_new.html'
     form_class = ThreadPostCommentForm
     post_ = None
 
     def dispatch(self, request, *args, **kwargs):
         self.post_ = get_object_or_404(ThreadPost, pk=self.kwargs.get('pk'))
-        return super(ThreadPostCommentCreateView, self).dispatch(request, *args, **kwargs)
+        return super(ThreadPostCommentCreateView, self).dispatch(request, *args,
+                                                                 **kwargs)
 
     def test_func(self, user):
         # test if user is in thread members
-        if user in self.post_.thread.members.all():
+        if user in self.post_.thread.get_active_members():
             return True
         else:
             return False
 
     def get_success_url(self, **kwargs):
-        return reverse('threads:thread', kwargs={'pk': self.post_.thread.id})
+        return reverse('threads:thread',
+                       kwargs={'pk': self.object.post.thread.id})
 
     def form_valid(self, form):
         form.instance.author_id = self.request.user.id
@@ -226,7 +236,8 @@ class ThreadPostCommentCreateView(LoginRequiredMixin, UserPassesTestMixin,
         return super(ThreadPostCommentCreateView, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ThreadPostCommentCreateView, self).get_context_data(**kwargs)
+        context = super(ThreadPostCommentCreateView, self).get_context_data(
+            **kwargs)
         context['post'] = self.post_
         return context
 
@@ -234,6 +245,7 @@ class ThreadPostCommentCreateView(LoginRequiredMixin, UserPassesTestMixin,
         return {
             'results': ThreadPostCommentSerializer(instance=self.object).data,
         }
+
 
 new_comment = ThreadPostCommentCreateView.as_view()
 
@@ -243,9 +255,6 @@ class ThreadPostCommentUpdateView(LoginRequiredMixin, UserPassesTestMixin,
     template_name = 'threads/comment_update.html'
     form_class = ThreadPostCommentForm
     context_object_name = 'comment'
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(ThreadPostComment, pk=self.kwargs.get('pk'))
 
     def test_func(self, user):
         # test if user is author of comment
@@ -259,50 +268,77 @@ class ThreadPostCommentUpdateView(LoginRequiredMixin, UserPassesTestMixin,
             return False
 
     def get_success_url(self, **kwargs):
-        return reverse('threads:thread', kwargs={'pk': self.object.post.thread.id})
+        return reverse('threads:thread',
+                       kwargs={'pk': self.object.post.thread.id})
 
     def get_ajax_data(self, *args, **kwargs):
         return {
             'results': ThreadPostCommentSerializer(instance=self.object).data,
         }
 
-update_comment = ThreadPostCommentUpdateView.as_view()
+
+edit_comment = ThreadPostCommentUpdateView.as_view()
 
 
-class ThreadPostCommentDeleteView(LoginRequiredMixin, AjaxableResponseMixin, DeleteView):
+class ThreadPostCommentDeleteView(LoginRequiredMixin, AjaxableResponseMixin,
+                                  DeleteView):
     model = ThreadPostComment
 
     def get_success_url(self):
-        return reverse('threads:thread', kwargs={'pk': self.object.post.thread.id})
+        return reverse('threads:thread',
+                       kwargs={'pk': self.object.post.thread.id})
 
     def get_ajax_data(self, *args, **kwargs):
         return {
         }
 
+
 delete_comment = ThreadPostCommentDeleteView.as_view()
 
 
-# class ThreadJoinView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
-#     #
-#     # form_class = ThreadMemberForm
-#     #
-#     # def get_success_url(self):
-#     #     return reverse('threads:thread', kwargs={'pk': self.kwargs.get('pk')})
-#     #
-#     # def get_initial(self):
-#     #     thread_id = self.kwargs.get('pk')
-#     #     return {'tread_id': thread_id,
-#     #             'member': self.request.user}
-#     #
-#     # def form_valid(self, form):
-#     #     super(ThreadJoinView, self).form_valid(form)
-#     #
-#     # def get_ajax_data(self, *args, **kwargs):
-#     #     return {
-#     #         'results': ThreadPostSerializer(instance=self.object).data,
-#     #     }
-#
-# join_thread = ThreadJoinView.as_view()
+class MyThreadsView(LoginRequiredMixin, AjaxableResponseMixin, ListView):
+    pass
+
+my_threads = MyThreadsView.as_view()
 
 
+class UserThreadView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
 
+    form_class = UserThreadForm
+    thread_id = None
+    action = None
+    object = None
+
+    def get_form_kwargs(self):
+        kwargs = super(UserThreadView, self).get_form_kwargs()
+        self.thread_id = kwargs['data']['thread']
+        # copy data (post data is immutable)
+        data = kwargs['data'].copy()
+        # pop action (action not not an attribute of ThreadUserState)
+        self.action = data['action']
+        data.pop('action')
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('threads:thread', kwargs={'pk': self.object.thread_id})
+
+    def form_valid(self, form):
+        ut, _ = UserThread.objects.get_or_create(user=self.request.user,
+                                                 thread_id=self.thread_id)
+        if self.action == 'pin':
+            ut.pin()
+        if self.action == 'ban':
+            ut.ban()
+        if self.action == 'join':
+            ut.join()
+        if self.action == 'leave':
+            ut.leave()
+        self.object = ut
+        return super(UserThreadView, self).form_valid(form)
+
+    def get_ajax_data(self, *args, **kwargs):
+        return {
+            'results': UserThreadSerializer(instance=self.object).data,
+        }
+
+thread_state = UserThreadView.as_view()

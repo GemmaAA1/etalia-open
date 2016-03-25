@@ -5,7 +5,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
-from .models import Thread, ThreadPost, ThreadPostComment, ThreadMember
+from etalia.users.models import UserThread
+from .models import Thread, ThreadPost, ThreadPostComment
 from .constant import THREAD_QUESTION, THREAD_PAPER
 
 User = get_user_model()
@@ -37,7 +38,7 @@ class ThreadCreateForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        # Check coherence between 'type' and 'paper'
+        # Check integrity between 'type' and 'paper'
         if cleaned_data.get('type') == THREAD_QUESTION:
             if cleaned_data.get('paper'):
                 raise ValidationError(
@@ -104,9 +105,8 @@ class ThreadPostCommentForm(forms.ModelForm):
         fields = ('content',)
 
 
-class ThreadMemberForm(forms.ModelForm):
+class UserThreadForm(forms.ModelForm):
 
     class Meta:
-        model = ThreadMember
-        fields = ('thread', 'member')
-
+        model = UserThread
+        fields = ('thread', )
