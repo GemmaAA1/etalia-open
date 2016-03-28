@@ -12,7 +12,7 @@ HTML Page
 
 ## Thread
 
-Url: ```[POST] /threads/new/```
+Url: ```[POST] /threads/```
 
 **Parameters**
 ```
@@ -24,7 +24,7 @@ Url: ```[POST] /threads/new/```
 }
 ```
 
-Url: ```[POST] /threads/<pk>/update```
+Url: ```[POST] /threads/<pk>/```
 
 **Parameters**
 ```
@@ -57,9 +57,6 @@ Url: ```[GET] /threads/<pk>/```
             "url": (string),
             "photo_url": (string)
         },
-        "state": {
-            "
-        },
         "privacy": (enum),
         "state": {
             "id": (int),
@@ -70,7 +67,7 @@ Url: ```[GET] /threads/<pk>/```
             "first_joined_at": (string),
             "last_left_at": (string),
             "num_comments": ing
-        }
+        },
         "members": [
             {
                 "id": (int),
@@ -147,7 +144,7 @@ Url: ```[GET] /threads/<pk>/```
 
 ## Post (new, update)
 
-Url: ```[POST] /threads/<pk>/posts/new```
+Url: ```[POST] /threads/<pk>/posts/```
 Url: ```[POST] /threads/posts/<pk>/update```
 
 **Parameters**
@@ -254,7 +251,6 @@ Url:  ```[POST] /threads/state```
 **Request**
 ```json
 {
-    'thread': (int)         # thread id
     'action': (str),        # either 'pin', 'ban', 'join', 'leave'
 }
 ```
@@ -268,6 +264,6 @@ Url:  ```[POST] /threads/state```
         "is_banned": (bool),
         "is_joined": (bool),
         "is_left": (bool)
-    }    
+    }
 }
 ```

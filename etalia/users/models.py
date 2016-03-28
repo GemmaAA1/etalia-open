@@ -245,11 +245,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_followers(self):
         return self.get_related_to(RELATIONSHIP_FOLLOWING)
 
-    def follows(self, user):
+    def follow(self, user):
         return self.add_relationship(user, RELATIONSHIP_FOLLOWING)
 
-    def blocks(self, user):
+    def block(self, user):
         return self.add_relationship(user, RELATIONSHIP_BLOCKED)
+
+    @property
+    def followers(self):
+        return self.get_followers()
+
+    @property
+    def following(self):
+        return self.get_following()
 
     # Threads methods
     # ----------------------
@@ -683,6 +691,14 @@ class Relationship(TimeStampedModel):
     status = models.IntegerField(choices=RELATIONSHIP_STATUSES,
                                  default=RELATIONSHIP_FOLLOWING)
 
+    def follow(self):
+        self.status = RELATIONSHIP_FOLLOWING
+        self.save()
+
+    def block(self):
+        self.status = RELATIONSHIP_BLOCKED
+        self.save()
+
 
 class UserThread(TimeStampedModel):
 
@@ -741,4 +757,6 @@ class UserThread(TimeStampedModel):
         self.is_pinned = False
         self.is_banned = True
         self.save()
+
+
 

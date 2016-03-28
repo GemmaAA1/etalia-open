@@ -56,7 +56,16 @@
 
     {% if state.is_joined %}
         <h4>
-            members: {{ members }}
+            members:
+            {% for member in members %}
+                {{ member }}
+                {% if member in following %}
+                    (followed)
+                {% elif %}
+                    <a href="{% url 'users:follow'  %}">(follow)</a>
+                {% endif %}
+
+            {% endfor %}
         </h4>
         <div>
             {% for member in members %}

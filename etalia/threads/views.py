@@ -102,10 +102,7 @@ class ThreadUpdateView(LoginRequiredMixin, UserPassesTestMixin,
     def test_func(self, user):
         # test if user is thread owner
         try:
-            if Thread.objects.get(pk=self.kwargs.get('pk')).owner == user:
-                return True
-            else:
-                return False
+            return Thread.objects.get(pk=self.kwargs.get('pk')).owner == user
         except Thread.DoesNotExist:
             return False
 
@@ -146,10 +143,7 @@ class ThreadPostCreateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def test_func(self, user):
         # test if user is in thread members
-        if user in self.thread.get_active_members():
-            return True
-        else:
-            return False
+        return user in self.thread.get_active_members()
 
     def form_valid(self, form):
         form.instance.author_id = self.request.user.id
@@ -183,10 +177,7 @@ class ThreadPostUpdateView(LoginRequiredMixin, UserPassesTestMixin,
         # test if user is author of post
         try:
             tp = ThreadPost.objects.get(pk=self.kwargs.get('pk'))
-            if user.id == tp.author.id:
-                return True
-            else:
-                return False
+            return user.id == tp.author.id
         except ThreadPost.DoesNotExist:
             return False
 
@@ -230,10 +221,7 @@ class ThreadPostCommentCreateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def test_func(self, user):
         # test if user is in thread members
-        if user in self.post_.thread.get_active_members():
-            return True
-        else:
-            return False
+        return user in self.post_.thread.get_active_members()
 
     def get_success_url(self, **kwargs):
         return reverse('threads:thread',
@@ -269,10 +257,7 @@ class ThreadPostCommentUpdateView(LoginRequiredMixin, UserPassesTestMixin,
         # test if user is author of comment
         try:
             tpc = ThreadPostComment.objects.get(pk=self.kwargs.get('pk'))
-            if user.id == tpc.author.id:
-                return True
-            else:
-                return False
+            return user.id == tpc.author.id
         except ThreadPostComment.DoesNotExist:
             return False
 
@@ -306,7 +291,11 @@ delete_comment = ThreadPostCommentDeleteView.as_view()
 
 
 class MyThreadsView(LoginRequiredMixin, AjaxableResponseMixin, ListView):
-    pass
+
+    template_name = 'threads/my_threads.html'
+
+    def get_queryset(self):
+        return Thread.objects.all()
 
 my_threads = MyThreadsView.as_view()
 
