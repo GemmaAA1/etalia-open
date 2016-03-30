@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import UserLibPaper, UserLib, Relationship
-from etalia.library.serializers import PaperSerializer
+from ..models import UserLibPaper, UserLib, Relationship
+from etalia.library.api.serializers import PaperSerializer
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    url = serializers.URLField(source='get_absolute_url')
     photo_url = serializers.URLField(read_only=True, source='photo.name')
 
     class Meta:
@@ -19,7 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'url',
                   'photo_url')
 
 
@@ -37,12 +38,11 @@ class UserLibPaperSerializer(serializers.ModelSerializer):
 
 class UserLibSerializer(serializers.ModelSerializer):
 
-    papers = UserLibPaperSerializer(many=True, read_only=True)
+    papers = UserLibPaperSerializer(many=True, read_only=True, source='userlib_paper')
 
     class Meta:
         model = UserLib
-        fields = ('id',
-                  'user',
+        fields = ('pk',
                   'papers')
 
 
@@ -50,5 +50,6 @@ class RelationshipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Relationship
-        fields = ('id',
-                  )
+        fields = ('pk',
+                  'from_user',
+                  'to_user')

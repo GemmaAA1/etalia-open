@@ -3,10 +3,9 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout, login
 from django.views.generic import UpdateView, FormView, DetailView
 from django.views.generic.edit import DeleteView
@@ -18,23 +17,18 @@ from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 
-from rest_framework import generics
-
-from braces.views import LoginRequiredMixin, AjaxResponseMixin
+from braces.views import LoginRequiredMixin
 
 from etalia.core.views import BasePaperListView
 from etalia.core.mixins import AjaxableResponseMixin, NavFlapMixin, \
     XMLMixin
-
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
     UserEmailDigestSettingsForm, UserTasteForm, UserLibPaperForm
-from .models import Affiliation, UserLibPaper, UserTaste, UserSettings, UserLib, \
-    Relationship
+from .models import Affiliation, UserLibPaper, UserTaste, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
-from .serializers import UserLibSerializer, RelationshipSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -818,22 +812,4 @@ def send_invite(request):
         redirect('invite:home')
 
 
-class RelationshipCreate(generics.CreateAPIView):
-    queryset = Relationship.objects.all()
-    serializer_class = RelationshipSerializer
-
-
-# class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Snippet.objects.all()
-#     serializer_class = SnippetSerializer
-
-
-class UserLibDetail(LoginRequiredMixin, generics.RetrieveAPIView):
-    queryset = UserLib.objects.all()
-    serializer_class = UserLibSerializer
-
-    def get_object(self, queryset=None):
-        return self.request.user.lib
-
-userlib = UserLibDetail.as_view()
 

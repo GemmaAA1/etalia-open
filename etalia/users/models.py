@@ -144,8 +144,6 @@ class User(AbstractBaseUser, PermissionsMixin):
                                           symmetrical=False,
                                           related_name='related_to')
 
-    threads = models.ManyToManyField(Thread, through='UserThread')
-
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -258,12 +256,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def following(self):
         return self.get_following()
-
-    # Threads methods
-    # ----------------------
-    def join_thread(self, thread):
-        ut, new = UserThread.objects.get_or_create(user=self, thread=thread)
-        ut.join()
 
 
 class UserLib(TimeStampedModel):
@@ -697,65 +689,6 @@ class Relationship(TimeStampedModel):
 
     def block(self):
         self.status = RELATIONSHIP_BLOCKED
-        self.save()
-
-
-class UserThread(TimeStampedModel):
-
-    # user
-    user = models.ForeignKey(User)
-
-    # thread
-    thread = models.ForeignKey(Thread)
-
-    # thread is pinned
-    is_pinned = models.BooleanField(default=False)
-
-    # thread is banned
-    is_banned = models.BooleanField(default=False)
-
-    # thread is added
-    is_joined = models.BooleanField(default=False)
-
-    # thread is trashed
-    is_left = models.BooleanField(default=False)
-
-    # First time joined the thread
-    first_joined_at = models.DateTimeField(null=True, blank=True, default=None)
-
-    # When user left the thread, is any
-    last_left_at = models.DateTimeField(null=True, blank=True, default=None)
-
-    # Number of comments posted in thread
-    num_comments = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['-num_comments', 'first_joined_at']
-
-    def join(self):
-        self.is_joined = True
-        self.is_left = False
-        self.is_banned = False
-        if not self.first_joined_at:
-            self.first_joined_at = timezone.now()
-        self.last_left_at = None
-        self.save()
-
-    def leave(self):
-        self.is_joined = False
-        self.is_banned = False
-        self.is_left = True
-        self.last_left_at = timezone.now()
-        self.save()
-
-    def pin(self):
-        self.is_pinned = not self.is_pinned
-        self.is_banned = False
-        self.save()
-
-    def ban(self):
-        self.is_pinned = False
-        self.is_banned = True
         self.save()
 
 

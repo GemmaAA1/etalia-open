@@ -8,13 +8,11 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 
 from etalia.core.mixins import AjaxableResponseMixin
-from etalia.users.models import UserThread
 from .forms import ThreadCreateForm, ThreadUpdateForm, ThreadPostForm, \
-    ThreadPostCommentForm, UserThreadForm
-from .models import Thread, ThreadPost, ThreadPostComment
-
-from .serializers import ThreadSerializer, ThreadPostSerializer, \
-    ThreadPostCommentSerializer, UserThreadSerializer
+    ThreadPostCommentForm, ThreadUserForm
+from .models import Thread, ThreadPost, ThreadComment, ThreadUser
+from .api.serializers import FullThreadSerializer, ThreadPostSerializer, \
+    ThreadCommentSerializer, ThreadUserSerializer
 
 
 class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
@@ -36,7 +34,7 @@ class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
         context['nb_members'] = members.count()
         context['nb_posts'] = posts.count()
         context['following'] = following
-        context['state'], _ = UserThread.objects.get_or_create(
+        context['state'], _ = ThreadUser.objects.get_or_create(
             user=self.request.user, thread=self.object)
 
         if context['state'].is_joined:
@@ -54,7 +52,7 @@ class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': ThreadContextualizedSerializer(
+            'results': FullThreadSerializer(
                 instance=self.object,
                 context={'request': self.request}).data,
         }
@@ -83,7 +81,7 @@ class ThreadCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
     def get_ajax_data(self, *args, **kwargs):
         return {
             'redirect': self.get_success_url(),
-            'results': ThreadSerializer(instance=self.object,
+            'results': FullThreadSerializer(instance=self.object,
                                         context={'request': self.request}).data,
         }
 
@@ -121,7 +119,7 @@ class ThreadUpdateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': ThreadSerializer(instance=self.object,
+            'results': FullThreadSerializer(instance=self.object,
                                         context={'request': self.request}).data,
         }
 
@@ -240,7 +238,7 @@ class ThreadPostCommentCreateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': ThreadPostCommentSerializer(instance=self.object).data,
+            'results': ThreadCommentSerializer(instance=self.object).data,
         }
 
 
@@ -256,9 +254,9 @@ class ThreadPostCommentUpdateView(LoginRequiredMixin, UserPassesTestMixin,
     def test_func(self, user):
         # test if user is author of comment
         try:
-            tpc = ThreadPostComment.objects.get(pk=self.kwargs.get('pk'))
+            tpc = ThreadComment.objects.get(pk=self.kwargs.get('pk'))
             return user.id == tpc.author.id
-        except ThreadPostComment.DoesNotExist:
+        except ThreadComment.DoesNotExist:
             return False
 
     def get_success_url(self, **kwargs):
@@ -267,7 +265,7 @@ class ThreadPostCommentUpdateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': ThreadPostCommentSerializer(instance=self.object).data,
+            'results': ThreadCommentSerializer(instance=self.object).data,
         }
 
 
@@ -276,7 +274,7 @@ edit_comment = ThreadPostCommentUpdateView.as_view()
 
 class ThreadPostCommentDeleteView(LoginRequiredMixin, AjaxableResponseMixin,
                                   DeleteView):
-    model = ThreadPostComment
+    model = ThreadComment
 
     def get_success_url(self):
         return reverse('threads:thread',
@@ -297,18 +295,19 @@ class MyThreadsView(LoginRequiredMixin, AjaxableResponseMixin, ListView):
     def get_queryset(self):
         return Thread.objects.all()
 
+
 my_threads = MyThreadsView.as_view()
 
 
-class UserThreadView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
+class ThreadUserView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
 
-    form_class = UserThreadForm
+    form_class = ThreadUserForm
     thread_id = None
     action = None
     object = None
 
     def get_form_kwargs(self):
-        kwargs = super(UserThreadView, self).get_form_kwargs()
+        kwargs = super(ThreadUserView, self).get_form_kwargs()
         self.thread_id = kwargs['data']['thread']
         # copy data (post data is immutable)
         data = kwargs['data'].copy()
@@ -321,7 +320,7 @@ class UserThreadView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
         return reverse('threads:thread', kwargs={'pk': self.object.thread_id})
 
     def form_valid(self, form):
-        ut, _ = UserThread.objects.get_or_create(user=self.request.user,
+        ut, _ = ThreadUser.objects.get_or_create(user=self.request.user,
                                                  thread_id=self.thread_id)
         if self.action == 'pin':
             ut.pin()
@@ -332,11 +331,11 @@ class UserThreadView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
         if self.action == 'leave':
             ut.leave()
         self.object = ut
-        return super(UserThreadView, self).form_valid(form)
+        return super(ThreadUserView, self).form_valid(form)
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': UserThreadSerializer(instance=self.object).data,
+            'results': ThreadUserSerializer(instance=self.object).data,
         }
 
-thread_state = UserThreadView.as_view()
+thread_state = ThreadUserView.as_view()

@@ -41,5 +41,4 @@ urlpatterns = [
     url(r'^paper/restore$', views.restore_call, name='restore'),
     url(r'^library/trash/empty$', views.empty_trash_call, name='empty-trash'),
     # url(r'^relationship/$', views.relationship, name='relationship'),
-    url(r'^userlib/$', views.userlib, name='userlib'),
 ]

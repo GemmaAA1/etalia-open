@@ -5,8 +5,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
-from etalia.users.models import UserThread
-from .models import Thread, ThreadPost, ThreadPostComment
+from .models import Thread, ThreadPost, ThreadComment, ThreadUser
 from .constant import THREAD_QUESTION, THREAD_PAPER
 
 User = get_user_model()
@@ -101,12 +100,12 @@ class ThreadPostForm(forms.ModelForm):
 
 class ThreadPostCommentForm(forms.ModelForm):
     class Meta:
-        model = ThreadPostComment
+        model = ThreadComment
         fields = ('content',)
 
 
-class UserThreadForm(forms.ModelForm):
+class ThreadUserForm(forms.ModelForm):
 
     class Meta:
-        model = UserThread
+        model = ThreadUser
         fields = ('thread', )

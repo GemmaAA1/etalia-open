@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from rest_framework import serializers
 
-from .models import Paper, Journal, Author
+from ..models import Paper, Journal, Author
 
 
 class JournalSerializer(serializers.ModelSerializer):
@@ -13,7 +13,8 @@ class JournalSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'title',
                   'short_title',
-                  'url')
+                  'url',
+                  )
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -33,12 +34,14 @@ class PaperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paper
         fields = ('id',
-                  'title',
-                  'journal',
-                  'authors',
                   'id_doi',
                   'id_pmi',
                   'id_arx',
+                  'id_pii',
+                  'id_oth',
+                  'title',
+                  'journal',
+                  'authors',
                   'url')
 
 

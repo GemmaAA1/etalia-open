@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from django.views.generic.base import ContextMixin
 
-from .forms import ThreadPostForm, ThreadPostComment
+from .forms import ThreadPostForm, ThreadComment
 
 
 class ThreadFormsMixin(ContextMixin):
@@ -13,5 +13,5 @@ class ThreadFormsMixin(ContextMixin):
         context = super(ThreadFormsMixin, self).get_context_data(**kwargs)
         if not self.request.user.is_anonymous():
             context['form_post'] = ThreadPostForm()
-            context['form_comment'] = ThreadPostComment()
+            context['form_comment'] = ThreadComment()
         return context
