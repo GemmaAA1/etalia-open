@@ -85,7 +85,10 @@ if __name__ == '__main__':
     root_path = fetch_path()
 
     # Run pip requirements
-    call(["pip", "-r", os.path.join(root_path, "requirements/development.txt")])
+    call(["sudo",
+          "pip",
+          "install",
+          "-r", os.path.join(root_path, "requirements/development.txt")])
 
     # Run migrations
     call([os.path.join(root_path, "manage.py"), "migrate"])
