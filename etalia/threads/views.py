@@ -11,7 +11,7 @@ from etalia.core.mixins import AjaxableResponseMixin
 from .forms import ThreadCreateForm, ThreadUpdateForm, ThreadPostForm, \
     ThreadPostCommentForm, ThreadUserForm
 from .models import Thread, ThreadPost, ThreadComment, ThreadUser
-from .api.serializers import FullThreadSerializer, ThreadPostSerializer, \
+from .api.serializers import ThreadSerializer, ThreadPostSerializer, \
     ThreadCommentSerializer, ThreadUserSerializer
 
 
@@ -52,7 +52,7 @@ class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': FullThreadSerializer(
+            'results': ThreadSerializer(
                 instance=self.object,
                 context={'request': self.request}).data,
         }
@@ -81,7 +81,7 @@ class ThreadCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
     def get_ajax_data(self, *args, **kwargs):
         return {
             'redirect': self.get_success_url(),
-            'results': FullThreadSerializer(instance=self.object,
+            'results': ThreadSerializer(instance=self.object,
                                         context={'request': self.request}).data,
         }
 
@@ -119,7 +119,7 @@ class ThreadUpdateView(LoginRequiredMixin, UserPassesTestMixin,
 
     def get_ajax_data(self, *args, **kwargs):
         return {
-            'results': FullThreadSerializer(instance=self.object,
+            'results': ThreadSerializer(instance=self.object,
                                         context={'request': self.request}).data,
         }
 

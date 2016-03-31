@@ -44,6 +44,12 @@ class IsThreadMember(permissions.BasePermission):
             return request.user in obj.post.thread.members
 
 
+class IsNOTThreadMember(IsThreadMember):
+
+    def has_object_permission(self, request, view, obj):
+        return not super(IsNOTThreadMember, self).has_object_permission(request, view, obj)
+
+
 class IsOwner(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit it
@@ -52,3 +58,48 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
+
+
+class IsStateAction(permissions.BasePermission):
+    """
+    Custom permission for ThreadUser action verbs
+    """
+
+    def has_permission(self, request, view):
+        return view.action in ['join', 'leave', 'pin', 'ban']
+
+
+class IsNOTStateAction(permissions.BasePermission):
+    """
+    Custom permission for ThreadUser action verbs
+    """
+
+    def has_permission(self, request, view):
+        return not super(IsNOTStateAction, self).has_permission(request, view)
+
+
+class IsJoinAction(permissions.BasePermission):
+    """
+    Custom permission for ThreadUser action verbs
+    """
+
+    def has_permission(self, request, view):
+        return view.action == 'join'
+
+
+class IsLeaveAction(permissions.BasePermission):
+    """
+    Custom permission for ThreadUser action verbs
+    """
+
+    def has_permission(self, request, view):
+        return view.action == 'leave'
+
+
+class IsPinBanAction(permissions.BasePermission):
+    """
+    Custom permission for ThreadUser action verbs
+    """
+
+    def has_permission(self, request, view):
+        return view.action in ['pin', 'ban']

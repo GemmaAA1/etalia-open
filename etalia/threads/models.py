@@ -68,7 +68,6 @@ class Thread(TimeStampedModel):
             tu.join()
         super(Thread, self).save(*args, **kwargs)
 
-    @property
     def state(self, user):
         if ThreadUser.objects.filter(user=user, thread=self).exists():
             return ThreadUser.objects.get(user=user, thread=self)
