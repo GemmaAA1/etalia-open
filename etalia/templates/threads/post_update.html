@@ -1,0 +1,21 @@
+<form role="form" method="POST" data-async action="{% url 'threads:edit_post' post.id %}">
+    {% csrf_token %}
+    <span id="id_errors"></span>
+
+    <div class="form-inner">
+        {% for field in form %}
+        <div class="form-group">
+            {{ field }}
+            {% if field.help_text %}
+            <p class="help">{{ field.help_text|safe }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center submit">
+        <button type="submit" class="btn btn-primary btn-lg">Save</button>
+    </div>
+</form>
+
+

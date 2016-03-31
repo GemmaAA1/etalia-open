@@ -40,5 +40,5 @@ urlpatterns = [
     url(r'^paper/trash$', views.trash_call, name='trash'),
     url(r'^paper/restore$', views.restore_call, name='restore'),
     url(r'^library/trash/empty$', views.empty_trash_call, name='empty-trash'),
-    url(r'^threads/$', views.threads, name='threads'),
+    # url(r'^relationship/$', views.relationship, name='relationship'),
 ]

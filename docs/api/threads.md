@@ -110,7 +110,7 @@ Note: setting both added=1 AND trashed=1 should return a ```400 Bad request``` e
     "author": {
         "url": (string),
         "id": (int),
-        "username": (string),               # @TODO username or first/last name
+        "email": (string),
         "first_name": (string),
         "last_name": (string),
         "photo": (string)
@@ -546,7 +546,7 @@ url: ```[POST] /api/v1/threads/{id}/answers```
                 "id": (int),
                 "username": (string),               # @TODO username or first/last name
                 "first_name": (string),
-                "last_name": (string),
+                "last_name": (string    ),
                 "photo": (string)
             },
             "comments:" : [

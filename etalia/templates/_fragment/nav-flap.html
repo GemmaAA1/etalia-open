@@ -12,7 +12,7 @@
 {#                    {% if stream_counter > 0 %}<span>({{ stream_counter }})</span>{% endif %}#}
                 </li>
                 <li class="{% active request 'user/Threads.+' %}">
-                    <a href="{% url 'user:threads' %}">My Threads</a>
+                    <a href="{% url 'threads:my_threads' %}">My Threads</a>
 {#                    {% if threads_counter > 0 %}<span>({{ threads_counter }})</span>{% endif %}#}
                 </li>
                 <li class="{% active request 'feed/trend.+' %}">

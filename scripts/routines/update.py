@@ -8,6 +8,7 @@ import os
 import sys
 import copy
 import random
+from subprocess import call
 
 
 def update():
@@ -62,12 +63,16 @@ def update():
         reset_trend(user_pk)
 
 
-def setup_django():
+def fetch_path():
     # search for config/ is parent tree directory and setup django
     cpath = os.path.abspath(__file__)
     while cpath and not os.path.isdir('config'):
         os.chdir('..')
     sys.path.append(os.path.abspath(os.getcwd()))
+
+    return os.path.abspath(os.getcwd())
+
+def setup_django():
     import django
     django.setup()
 
@@ -75,5 +80,21 @@ def setup_django():
 if __name__ == '__main__':
     """Update db and relevant objects with fresh data
     """
+
+    # fetch path
+    root_path = fetch_path()
+
+    # Run pip requirements
+    call(["sudo",
+          "pip",
+          "install",
+          "-r", os.path.join(root_path, "requirements/development.txt")])
+
+    # Run migrations
+    call([os.path.join(root_path, "manage.py"), "migrate"])
+
+    # Setup django
     setup_django()
+
+    # Fetch data and update etalia objects
     update()

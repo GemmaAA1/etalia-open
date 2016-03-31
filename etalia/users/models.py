@@ -20,9 +20,11 @@ from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import NLP_TIME_LAPSE_CHOICES, \
     NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
+from etalia.threads.models import Thread
 
 from .validators import validate_first_name, validate_last_name
-from .constants import INIT_STEPS
+from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
+    RELATIONSHIP_STATUSES
 
 
 class Affiliation(TimeStampedModel):
@@ -138,6 +140,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     photo = models.ImageField(upload_to='photos', null=True)
 
+    relationships = models.ManyToManyField('self', through='Relationship',
+                                          symmetrical=False,
+                                          related_name='related_to')
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -204,6 +210,52 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_counters(self):
         return dict(UserTaste.get_counters(self.id),
                     **UserLibPaper.get_counters(self.id))
+
+    # Relationships methods
+    # ----------------------
+    def add_relationship(self, user, status):
+        relationship, created = Relationship.objects.get_or_create(
+            from_user=self,
+            to_user=user,
+            status=status)
+        return relationship
+
+    def remove_relationship(self, user, status):
+        Relationship.objects.filter(
+            from_user=self,
+            to_user=user,
+            status=status).delete()
+        return
+
+    def get_relationships(self, status):
+        return self.relationships.filter(
+            relation_to_users__status=status,
+            relation_to_users__from_user=self)
+
+    def get_related_to(self, status):
+        return self.related_to.filter(
+            relation_from_users__status=status,
+            relation_from_users__to_user=self)
+
+    def get_following(self):
+        return self.get_relationships(RELATIONSHIP_FOLLOWING)
+
+    def get_followers(self):
+        return self.get_related_to(RELATIONSHIP_FOLLOWING)
+
+    def follow(self, user):
+        return self.add_relationship(user, RELATIONSHIP_FOLLOWING)
+
+    def block(self, user):
+        return self.add_relationship(user, RELATIONSHIP_BLOCKED)
+
+    @property
+    def followers(self):
+        return self.get_followers()
+
+    @property
+    def following(self):
+        return self.get_following()
 
 
 class UserLib(TimeStampedModel):
@@ -620,6 +672,24 @@ class UserTaste(TimeStampedModel):
             }
         except cls.DoesNotExist:
             return {'pin': None, 'ban': None}
+
+
+class Relationship(TimeStampedModel):
+
+    from_user = models.ForeignKey(User, related_name='relation_from_users')
+
+    to_user = models.ForeignKey(User, related_name='relation_to_users')
+
+    status = models.IntegerField(choices=RELATIONSHIP_STATUSES,
+                                 default=RELATIONSHIP_FOLLOWING)
+
+    def follow(self):
+        self.status = RELATIONSHIP_FOLLOWING
+        self.save()
+
+    def block(self):
+        self.status = RELATIONSHIP_BLOCKED
+        self.save()
 
 
 
