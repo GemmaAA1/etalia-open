@@ -12,42 +12,57 @@ from etalia.library.api.serializers import PaperSerializer
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     photo_url = serializers.URLField(read_only=True, source='photo.name')
 
     class Meta:
         model = User
-        fields = ('id',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'photo_url')
+        extra_kwargs = {
+            'link': {'view_name': 'api:user-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'email',
+            'first_name',
+            'last_name',
+            'photo_url')
+        read_only_fields = (
+            '__all__'
+        )
 
-
-class UserLibPaperSerializer(serializers.ModelSerializer):
-
+class UserLibPaperSerializer(serializers.HyperlinkedModelSerializer):
     paper = PaperSerializer(many=False, read_only=True)
 
     class Meta:
         model = UserLibPaper
-        fields = ('id',
-                  'date_created',
-                  'authored',
-                  'paper')
+        extra_kwargs = {
+            'link': {'view_name': 'api:userlib-detail'},
+        }
+        fields = (
+            'id',
+            'date_created',
+            'authored',
+            'paper')
+        read_only_fields = (
+            '__all__'
+        )
 
 
 class UserLibSerializer(serializers.ModelSerializer):
-
-    papers = UserLibPaperSerializer(many=True, read_only=True, source='userlib_paper')
+    papers = UserLibPaperSerializer(many=True, read_only=True,
+                                    source='userlib_paper')
 
     class Meta:
         model = UserLib
         fields = ('pk',
                   'papers')
+        read_only_fields = (
+            '__all__'
+        )
 
 
 class RelationshipSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Relationship
         fields = ('pk',

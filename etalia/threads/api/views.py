@@ -17,11 +17,14 @@ from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 
 
 from .serializers import \
-    ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, ThreadUserSerializer \
-    # FullThreadSerializer
+    ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
+    ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
+    ThreadCommentNestedSerializer
+from .mixins import ListRetrieveNestedMixin
 
 
-class ThreadViewSet(mixins.CreateModelMixin,
+class ThreadViewSet(ListRetrieveNestedMixin,
+                    mixins.CreateModelMixin,
                     mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
@@ -33,6 +36,7 @@ class ThreadViewSet(mixins.CreateModelMixin,
 
     queryset = Thread.objects.all()
     serializer_class = ThreadSerializer
+    serializer_nested_class = ThreadNestedSerializer
     permission_classes = (And(permissions.IsAuthenticated,
                               Or(And(IsReadOnlyRequest, ),
                                  And(IsPostRequest, ),
@@ -45,6 +49,9 @@ class ThreadViewSet(mixins.CreateModelMixin,
     def get_thread_id(self):
         return self.kwargs['pk']
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     def perform_threaduser_action(self, request, action):
         """Perform ThreadUser related action (join, pin, etc.)"""
         thread = self.get_object()
@@ -54,9 +61,11 @@ class ThreadViewSet(mixins.CreateModelMixin,
             thread_id=self.get_thread_id())
         method = getattr(instance, action)
         method()
-        # Return thread
-        serializer = self.get_serializer(thread)
-        return Response(serializer.data)
+        # Return
+        if new:
+            return Response({}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({}, status=status.HTTP_200_CREATED)
 
     @detail_route(methods=['patch', 'post'],
                   permission_classes=(IsNOTThreadMember, ))
@@ -77,15 +86,11 @@ class ThreadViewSet(mixins.CreateModelMixin,
         return self.perform_threaduser_action(request, 'ban')
 
 
-class ThreadPostViewSet(mixins.CreateModelMixin,
-                        mixins.ListModelMixin,
-                        mixins.RetrieveModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
+class ThreadPostViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
 
     queryset = ThreadPost.objects.all()
     serializer_class = ThreadPostSerializer
+    serializer_nested_class = ThreadPostNestedSerializer
     permission_classes = (And(permissions.IsAuthenticated,
                               Or(And(IsReadOnlyRequest, IsThreadMember),
                                  And(IsPostRequest, IsThreadMember),
@@ -98,13 +103,21 @@ class ThreadPostViewSet(mixins.CreateModelMixin,
         threads_joined = ThreadUser.objects\
             .filter(user=self.request.user, is_joined=True)\
             .values('thread')
-        return ThreadPost.objects.filter(thread__in=threads_joined)
+        queryset = ThreadPost.objects.filter(thread__in=threads_joined)
+
+        # filter based on ?thread_id
+        thread_id = self.request.query_params.get('thread_id', None)
+        if thread_id is not None:
+            queryset = queryset.filter(thread_id=thread_id)
+
+        return queryset
 
 
-class ThreadCommentViewSet(viewsets.ModelViewSet):
+class ThreadCommentViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
 
     queryset = ThreadComment.objects.filter()
     serializer_class = ThreadCommentSerializer
+    serializer_nested_class = ThreadCommentNestedSerializer
     permission_classes = (And(permissions.IsAuthenticated,
                               Or(And(IsReadOnlyRequest, IsThreadMember),
                                  And(IsPostRequest, IsThreadMember),

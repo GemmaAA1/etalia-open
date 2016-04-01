@@ -72,6 +72,7 @@ def fetch_path():
 
     return os.path.abspath(os.getcwd())
 
+
 def setup_django():
     import django
     django.setup()
@@ -85,12 +86,11 @@ if __name__ == '__main__':
     root_path = fetch_path()
 
     # Run pip requirements
-    call(["sudo",
-          "pip",
+    call(["pip",
           "install",
           "-r", os.path.join(root_path, "requirements/development.txt")])
 
-    # Run migrations
+    # Apply migrations
     call([os.path.join(root_path, "manage.py"), "migrate"])
 
     # Setup django

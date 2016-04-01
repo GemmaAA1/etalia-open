@@ -63,10 +63,10 @@ class Thread(TimeStampedModel):
             return False
 
     def save(self, *args, **kwargs):
+        super(Thread, self).save(*args, **kwargs)
         if not self.threaduser_set.exists():
             tu = self.threaduser_set.create(user=self.user)
             tu.join()
-        super(Thread, self).save(*args, **kwargs)
 
     def state(self, user):
         if ThreadUser.objects.filter(user=user, thread=self).exists():

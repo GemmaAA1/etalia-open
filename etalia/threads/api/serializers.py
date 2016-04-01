@@ -5,22 +5,22 @@ from django.conf import settings
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+from rest_framework.fields import empty
 
 from etalia.users.api.serializers import UserSerializer
 from etalia.library.api.serializers import PaperSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES
-from .utils import KeyValueField
 
 
 class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = ThreadUser
         extra_kwargs = {
             'link': {'view_name': 'api:threaduser-detail'},
         }
         fields = (
+            'id',
             'link',
             'is_pinned',
             'is_banned',
@@ -30,13 +30,7 @@ class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
             'last_left_at',
             'num_comments')
         read_only_fields = (
-            'is_pinned',
-            'is_banned',
-            'is_joined',
-            'is_left',
-            'first_joined_at',
-            'last_left_at',
-            'num_comments'
+            '__all__'
         )
 
 
@@ -47,17 +41,18 @@ class ThreadUserCountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThreadUser
-        fields = ('id',
-                  'is_pinned',
-                  'is_banned',
-                  'is_joined',
-                  'is_left',
-                  'first_joined_at',
-                  'last_left_at',
-                  'num_comments',
-                  'joined_count',
-                  'pinned_count',
-                  'left_count')
+        fields = (
+            'id',
+            'is_pinned',
+            'is_banned',
+            'is_joined',
+            'is_left',
+            'first_joined_at',
+            'last_left_at',
+            'num_comments',
+            'joined_count',
+            'pinned_count',
+            'left_count')
 
     def get_joined_count(self, obj):
         return obj.user.ThreadUser_set.filter(is_joined=True).count()
@@ -70,7 +65,6 @@ class ThreadUserCountSerializer(serializers.ModelSerializer):
 
 
 class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = ThreadComment
         extra_kwargs = {
@@ -79,6 +73,7 @@ class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):
             'post': {'view_name': 'api:threadpost-detail'}
         }
         fields = (
+            'id',
             'link',
             'user',
             'post',
@@ -87,23 +82,59 @@ class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):
             'modified',
         )
         read_only_fields = (
+            'id',
             'link',
-            'user',
             'created',
             'modified')
 
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user loged in are different")
+        return value
+
+    def validate(self, data):
+        """User is a member of thread"""
+        thread = data['thread']
+        if not self.context['request'].user in thread.members:
+            raise serializers.ValidationError(
+                "user is not a member of this thread")
+        return data
+
+
+class ThreadCommentNestedSerializer(serializers.HyperlinkedModelSerializer):
+    user = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = ThreadComment
+        extra_kwargs = {
+            'link': {'view_name': 'api:threadcomment-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'user',
+            'content',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            '__all__'
+        )
+
 
 class ThreadPostSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = ThreadPost
         extra_kwargs = {
             'link': {'view_name': 'api:threadpost-detail'},
             'comments': {'view_name': 'api:threadcomment-detail'},
-            'user': {'view_name': 'api:user-detail'},
+            'user': {'view_name': 'api:user-detail', 'required': True},
             'thread': {'view_name': 'api:thread-detail'}
         }
         fields = (
+            'id',
             'link',
             'thread',
             'user',
@@ -112,121 +143,50 @@ class ThreadPostSerializer(serializers.HyperlinkedModelSerializer):
             'modified',
             'comments')
         read_only_fields = (
+            'id',
             'link',
-            'user',
             'created',
             'modified',
             'comments')
 
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user logged in are different")
+        return value
 
-# class CreateThreadSerializer(serializers.ModelSerializer):
-#     """Update serializer for Thread"""
-#
-#     type = KeyValueField(labels=dict(THREAD_TYPES))
-#     privacy = KeyValueField(labels=dict(THREAD_PRIVACIES))
-#
-#     class Meta:
-#         model = Thread
-#         fields = ('id',
-#                   'type',
-#                   'paper',
-#                   'privacy',
-#                   'title')
-#
-#     def save(self, **kwargs):
-#         return super(CreateThreadSerializer, self).save(
-#             user=self.context['request'].user,
-#             **kwargs)
-#
-#
-# class UpdateThreadSerializer(serializers.ModelSerializer):
-#     """Update serializer for Thread"""
-#
-#     class Meta:
-#         model = Thread
-#         fields = ('id',
-#                   'title',
-#                   'content')
+    def validate(self, data):
+        """User is a member of thread"""
+        thread = data['thread']
+        if not self.context['request'].user in thread.members:
+            raise serializers.ValidationError(
+                "user is not a member of this thread")
+        return data
 
 
-# class BasicThreadSerializer(serializers.ModelSerializer):
-#     """Basic serializer for Thread when request.user is not a member"""
-#     user = UserSerializer(many=False, read_only=True)
-#     paper = PaperSerializer(many=False, read_only=True)
-#     state = serializers.SerializerMethodField(read_only=True)
-#     link = serializers.HyperlinkedIdentityField(view_name='api:thread-detail')
-#     type = KeyValueField(labels=dict(THREAD_TYPES))
-#     privacy = KeyValueField(labels=dict(THREAD_PRIVACIES))
-#
-#     class Meta:
-#         model = Thread
-#         fields = ('id',
-#                   'link',
-#                   'type',
-#                   'title',
-#                   'user',
-#                   'privacy',
-#                   'state',
-#                   'paper',
-#                   'title',
-#                   'content',
-#                   'created',
-#                   'modified')
-#
-#     def get_state(self, obj):
-#         if ThreadUser.objects.filter(user=self.context['request'].user,
-#                                      thread=obj).exists():
-#             instance = ThreadUser.objects.get(user=self.context['request'].user,
-#                                               thread=obj)
-#             return ThreadUserSerializer(instance=instance,
-#                                         context={'request': self.context[
-#                                             'request']}).data
-#         else:
-#             return None
+class ThreadPostNestedSerializer(serializers.HyperlinkedModelSerializer):
+    comments = ThreadCommentNestedSerializer(many=True, read_only=True)
+    user = UserSerializer(many=False, read_only=True)
 
-
-# class FullThreadSerializer(serializers.ModelSerializer):
-#     """Full thread serializer when request.user is a member"""
-#     members = UserSerializer(many=True, read_only=True)
-#     user = UserSerializer(many=False, read_only=True)
-#     paper = PaperSerializer(many=False, read_only=True)
-#     posts = ThreadPostSerializer(many=True, read_only=True)
-#     state = serializers.SerializerMethodField(read_only=True)
-#     type = KeyValueField(labels=dict(THREAD_TYPES))
-#     privacy = KeyValueField(labels=dict(THREAD_PRIVACIES))
-#     link = serializers.HyperlinkedIdentityField(view_name='api:thread-detail')
-#
-#     class Meta:
-#         model = Thread
-#         fields = ('id',
-#                   'link',
-#                   'type',
-#                   'title',
-#                   'user',
-#                   'privacy',
-#                   'state',
-#                   'paper',
-#                   'title',
-#                   'content',
-#                   'members',
-#                   'posts',
-#                   'created',
-#                   'modified')
-#
-#     def get_state(self, obj):
-#         if ThreadUser.objects.filter(user=self.context['request'].user,
-#                                      thread=obj).exists():
-#             instance = ThreadUser.objects.get(user=self.context['request'].user,
-#                                               thread=obj)
-#             return ThreadUserSerializer(instance=instance,
-#                                         context={'request': self.context[
-#                                             'request']}).data
-#         else:
-#             return None
+    class Meta:
+        model = ThreadPost
+        extra_kwargs = {
+            'link': {'view_name': 'api:threadpost-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'user',
+            'content',
+            'created',
+            'modified',
+            'comments')
+        read_only_fields = (
+            '__all__')
 
 
 class ThreadSerializer(serializers.HyperlinkedModelSerializer):
-
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
@@ -239,6 +199,7 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             'paper': {'view_name': 'api:paper-detail'},
         }
         fields = (
+            'id',
             'link',
             'user',
             'type',
@@ -253,7 +214,8 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             'modified'
         )
         read_only_fields = (
-            'user',
+            'id',
+            'link',
             'state',
             'members',
             'posts',
@@ -279,30 +241,30 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             for member in members:
                 members_urls.append(
                     reverse('api:user-detail',
-                           kwargs={'pk': member.id},
-                           request=self.context['request'],
-                           format=self.context['format'])
+                            kwargs={'pk': member.id},
+                            request=self.context['request'],
+                            format=self.context['format'])
                 )
         else:
             for member in members[:settings.MAX_MEMBERS_NOT_JOINED]:
                 members_urls.append(
                     reverse('api:user-detail',
-                           kwargs={'pk': member.id},
-                           request=self.context['request'],
-                           format=self.context['format'])
+                            kwargs={'pk': member.id},
+                            request=self.context['request'],
+                            format=self.context['format'])
                 )
         return members_urls
 
     def get_posts(self, obj):
-        """Get thread posts based on if request.user is a Thread member"""
+        """Retrieve posts if request.user is in Thread member"""
         posts_urls = []
         if self.context['request'].user in obj.members:
             for post in obj.posts.all():
                 posts_urls.append(
                     reverse('api:threadpost-detail',
-                           kwargs={'pk': post.id},
-                           request=self.context['request'],
-                           format=self.context['format'])
+                            kwargs={'pk': post.id},
+                            request=self.context['request'],
+                            format=self.context['format'])
                 )
         return posts_urls
 
@@ -310,22 +272,102 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
         """Limit paper queryset to user library paper"""
         fields = super(ThreadSerializer, self).get_fields(*args, **kwargs)
         if self.context.get('request'):
-            fields['paper'].queryset = self.context['request'].user.lib.papers.all()
+            fields['paper'].queryset = self.context[
+                'request'].user.lib.papers.all()
         return fields
 
+    def validate_user(self, value):
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user logged in are different")
+        return value
+
     def validate(self, data):
-        """
+        """Integrity of thread <type> and <paper>
         """
         # Check that paper is in user library if <type>='Paper'
         paper = data['paper']
         if dict(THREAD_TYPES).get(data['type']).lower() == 'paper':
             if paper not in self.context['request'].user.lib.papers.all():
-                raise serializers.ValidationError("Related paper must be in user library")
+                raise serializers.ValidationError(
+                    "Related paper must be in user library")
         elif dict(THREAD_TYPES).get(data['type']).lower() == 'question':
             if paper is not None:
-                raise serializers.ValidationError("Thread type <Question> cannot have related paper")
+                raise serializers.ValidationError(
+                    "Thread type <Question> cannot have related paper")
         return data
 
-    def save(self, **kwargs):
-        return super(ThreadSerializer, self).save(user=self.context['request'].user, **kwargs)
 
+class ThreadNestedSerializer(serializers.HyperlinkedModelSerializer):
+    state = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField()
+    posts = serializers.SerializerMethodField()
+    user = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Thread
+        extra_kwargs = {
+            'link': {'view_name': 'api:thread-detail'},
+            'user': {'view_name': 'api:user-detail'},
+            'paper': {'view_name': 'api:paper-detail'},
+            'posts': {'view_name': 'api:threadpost-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'user',
+            'type',
+            'privacy',
+            'title',
+            'content',
+            'paper',
+            'state',
+            'members',
+            'posts',
+            'created',
+            'modified'
+        )
+        read_only_fields = (
+            '__all__',
+        )
+
+    def get_state(self, obj):
+        """Get state based on ThreadUser instance if exists"""
+        threaduser = obj.state(self.context['request'].user)
+        if threaduser:
+            return ThreadUserSerializer(
+                instance=threaduser,
+                context={'request': self.context['request']}).data
+        return None
+
+    def get_members(self, obj):
+        """Get thread members based on if request.user is himself a Thread member"""
+        members = obj.members
+        members_list = []
+        if self.context['request'].user in members:
+            for member in members:
+                members_list.append(
+                    UserSerializer(
+                        instance=member,
+                        context={'request': self.context['request']}).data
+                )
+        else:
+            for member in members[:settings.MAX_MEMBERS_NOT_JOINED]:
+                members_list.append(
+                    UserSerializer(
+                        instance=member,
+                        context={'request': self.context['request']}).data
+                )
+        return members_list
+
+    def get_posts(self, obj):
+        """Retrieve posts if request.user is in Thread member"""
+        posts_list = []
+        if self.context['request'].user in obj.members:
+            for post in obj.posts.all():
+                posts_list.append(
+                    ThreadPostNestedSerializer(
+                        instance=post,
+                        context={'request': self.context['request']}).data
+                )
+        return posts_list
