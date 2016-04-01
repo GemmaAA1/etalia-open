@@ -1,0 +1,35 @@
+<div class="thumb">
+    <div class="actions">
+        <a href="javascript: void(0)" class="thumb-pin" title="Pin/Unpin">
+            <span class="eai eai-pin"></span>
+        </a>
+        <a href="javascript: void(0)" class="thumb-ban" title="Remove from my threads">
+            <span class="eai eai-remove"></span>
+        </a>
+    </div>
+    <div class="card">
+        {% include 'user/thumb.html' with user_id=user_id user_followed=0 %}
+        <p class="title">
+            <a href="javascript: void(0)">
+                <span>new</span>
+                Fusce faucibus magna quam, dictum pellentesque lorem venenatis id. Vestibulum sodales imperdiet enim ?
+            </a>
+        </p>
+        <div class="infos">
+            <p class="truncate">
+                Related paper’s title (author)
+                <em>Sep 25, 2015</em>
+            </p>
+            <p class="icons">
+                <span class="comment">
+                    <span class="count">16</span>
+                    <span class="eai eai-comment"></span>
+                </span>
+                <span class="member">
+                    <span class="count">16</span>
+                    <span class="eai eai-user"></span>
+                </span>
+            </p>
+        </div>
+    </div>
+</div>

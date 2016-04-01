@@ -1,0 +1,48 @@
+{% extends 'threads/base.html' %}
+
+{% load staticfiles %}
+{% load disqus_tags %}
+{% load user_taste %}
+
+{% block content %}
+{% spaceless %}
+
+<!-- start list -->
+<div id="list" class="document">
+    <div class="wrapper">
+        <div class="inner">
+            {% for message in messages %}
+            {% if 'stream' in message.extra_tags %}
+            <div class="alert alert-info">
+                {# close-href is used because href is used by bootstrap to closing other divs #}
+                <a class="close" data-dismiss="alert"{% if message.pk %} close-href="{% url 'message_extends:message_mark_read' message.pk %}"{% endif %}>×</a>
+                {{ message|safe }}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+
+            <div class="list-title">
+                <button type="button" class="btn btn-default">2 pending invitation</button>
+                <button type="button" class="btn btn-primary">Start a new thread</button>
+                <p><span>23</span> threads</p>
+            </div>
+
+
+            <div class="thumb-list async-content">
+
+                {% for t in "0123456789" %}
+                    {% include 'threads/thumb.html' with user_id=forloop.counter %}
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end list -->
+
+{% include 'feeds/detail.html' %}
+
+{% endspaceless %}
+{% endblock content %}
+

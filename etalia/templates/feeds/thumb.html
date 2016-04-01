@@ -40,30 +40,31 @@
         <p class="authors">
             {{ paper.print_full_authors|truncatechars:70 }}
         </p>
-        <p class="journal">
-            {{ paper.print_journal_title }}
-        </p>
-        <p class="date">
-            {{ paper.print_first_seen }}
-        </p>
-        <p class="icons">
-            {% if hide_cluster_icon == False %}
-            <span class="cluster-icon">
-                <span class="cluster-0"></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </span>
-            {% endif %}
+        <div class="infos">
+            <p class="truncate">
+                {{ paper.print_journal_title }}
+                <em>{{ paper.print_first_seen }}</em>
+            </p>
+            <p class="icons">
+                {% if hide_cluster_icon == False %}
+                <span class="cluster-icon">
+                    <span class="cluster-0"></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                {% endif %}
 
-            {% include "library/paper-altmetric-badge.html" with paper=paper %}
+                {% include "library/paper-altmetric-badge.html" with paper=paper %}
 
-            <!-- TODO relative questions count -->
-            <!--<span class="comment">
-                <span class="count">16</span>
-                <span class="eai eai-comment"></span>
-            </span>-->
-        </p>
+                <!-- TODO relative questions count -->
+                <!--<span class="comment">
+                    <span class="count">16</span>
+                    <span class="eai eai-comment"></span>
+                </span>-->
+            </p>
+        </div>
+
     </div>
 </div>
 {% endspaceless %}

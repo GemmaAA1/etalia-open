@@ -17,7 +17,7 @@
     <a href="javascript: void(0)" class="detail-ban" title="Remove from feed">
         <span class="eai eai-remove"></span>
     </a>
-    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button" title="{% if is_in_lib %}Move to trash{% else %}Add to library{% endif %}"">
+    <a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button" title="{% if is_in_lib %}Move to trash{% else %}Add to library{% endif %}">
         <span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>
     </a>
 
@@ -61,29 +61,29 @@
         <p class="authors">
             {{ paper.print_full_authors }}
         </p>
-        <p class="journal">
-            {{ paper.print_journal_title }}
-        </p>
-        <p class="date">
-            {{ paper.print_month_year }}
-        </p>
-        <p class="icons">
-            <!--<span class="cluster-icon">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span class="cluster-3"></span>
-            </span>-->
-            <!-- TODO -->
+        <div class="infos">
+            <p class="truncate">
+                {{ paper.print_journal_title }}
+                <em>{{ paper.print_month_year }}</em>
+            </p>
+            <p class="icons">
+                <!--<span class="cluster-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span class="cluster-3"></span>
+                </span>-->
+                <!-- TODO -->
 
-            {% include "library/paper-altmetric-badge.html" with paper=paper %}
+                {% include "library/paper-altmetric-badge.html" with paper=paper %}
 
-            <!-- TODO relative questions count -->
-            <!--<span class="comment">
-                <span class="count">16</span>
-                <span class="eai eai-comment"></span>
-            </span>-->
-        </p>
+                <!-- TODO relative questions count -->
+                <!--<span class="comment">
+                    <span class="count">16</span>
+                    <span class="eai eai-comment"></span>
+                </span>-->
+            </p>
+        </div>
     </div>
 
 
