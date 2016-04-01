@@ -29,9 +29,31 @@ class ThreadViewSet(ListRetrieveNestedMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
                     viewsets.GenericViewSet):
-    """Thread view set
+    """
+    Returns a list of all threads.
 
-    Destroy (DELETE) routes is not provided
+    ## Additional routes/actions ##
+
+    [POST, PATCH] /threads/<id>/join: To join thread
+    [POST, PATCH] /threads/<id>/leave: To leave thread
+    [POST, PATCH] /threads/<id>/pin: To pin thread
+    [POST, PATCH] /threads/<id>/ban: To ban thread
+
+    ## Optional Kwargs ##
+
+    ** All: **
+
+    * view=(str): Reformat output. choices: 'nested',
+
+    ** List: **
+
+    * pinned=(int): Fetch only **pinned** threads for logged user if 1 (default = 0)
+    * joined=(int): Fetch only **joined** threads for logged user if 1 (default = 0)
+    * left=(int): Fetch only **left** threads for logged user if 1 (default = 0)
+
+    ** Detail: **
+
+    Note: Destroy (DELETE) routes is not provided
     """
 
     queryset = Thread.objects.all()
@@ -85,9 +107,49 @@ class ThreadViewSet(ListRetrieveNestedMixin,
     def ban(self, request, pk=None):
         return self.perform_threaduser_action(request, 'ban')
 
+    def get_queryset(self):
+        queryset = Thread.objects.all()
+
+        # filter joined threads for user
+        joined = self.request.query_params.get('joined', False)
+        if joined:
+            queryset = queryset.filter(threaduser__user=self.request.user,
+                                       threaduser__is_joined=True)
+        # filter pinned threads for user
+        pinned = self.request.query_params.get('pinned', False)
+        if pinned:
+            queryset = queryset.filter(threaduser__user=self.request.user,
+                                       threaduser__is_pinned=True)
+        # filter left threads for user
+        left = self.request.query_params.get('left', False)
+        if left:
+            queryset = queryset.filter(threaduser__user=self.request.user,
+                                       threaduser__is_left=True)
+        if left and joined:
+            Response({'errors': 'cannot get <joined> and <left> simultaneously'},
+                     status=status.HTTP_400_BAD_REQUEST)
+
+        return queryset
+
 
 class ThreadPostViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
 
+    """
+    Returns a list of all posts visible for user
+
+    ## Optional Kwargs ##
+
+    ** All: **
+
+    * view=(str): Reformat output. choices: 'nested',
+
+    ** List: **
+
+    * thread_id=(int): Filter post related to thread
+
+    ** Detail: **
+
+    """
     queryset = ThreadPost.objects.all()
     serializer_class = ThreadPostSerializer
     serializer_nested_class = ThreadPostNestedSerializer
@@ -115,6 +177,23 @@ class ThreadPostViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
 
 class ThreadCommentViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
 
+    """
+    Returns a list of all visible comments for user
+
+    ## Optional Kwargs ##
+
+    ** All: **
+
+    * view=(str): Reformat output. choices: 'nested',
+
+    ** List: **
+
+    * post_id=(int): Filter comments related to post
+
+    ** Detail: **
+
+    """
+
     queryset = ThreadComment.objects.filter()
     serializer_class = ThreadCommentSerializer
     serializer_nested_class = ThreadCommentNestedSerializer
@@ -130,7 +209,15 @@ class ThreadCommentViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
         threads_joined = ThreadUser.objects\
             .filter(user=self.request.user, is_joined=True)\
             .values('thread')
-        return ThreadComment.objects.filter(post__thread__in=threads_joined)
+
+        queryset = ThreadComment.objects.filter(post__thread__in=threads_joined)
+
+        # filter based on ?post_id
+        post_id = self.request.query_params.get('post_id', None)
+        if post_id is not None:
+            queryset = queryset.filter(post_id=post_id)
+
+        return queryset
 
 
 class ThreadUserViewSet(viewsets.ModelViewSet):

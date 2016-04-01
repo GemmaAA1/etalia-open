@@ -249,6 +249,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def block(self, user):
         return self.add_relationship(user, RELATIONSHIP_BLOCKED)
 
+    def unfollow(self, user):
+        return self.remove_relationship(user, RELATIONSHIP_FOLLOWING)
+
+    def unblock(self, user):
+        return self.remove_relationship(user, RELATIONSHIP_BLOCKED)
+
     @property
     def followers(self):
         return self.get_followers()

@@ -13,8 +13,8 @@ Threads API
 | ------------- | ------------- | ------------- |
 | page          | (int)         | (optional) Number of the page (default = 1) | 
 | pinned        | (int)         | (optional) Fetch only **pinned** threads if 1 (default = 0) |
-| added         | (int)         | (optional) Fetch only **added** (to library) threads if 1 (default = 0) |
-| trashed       | (int)         | (optional) Fetch only **trashed** (from library) threads if 1 (default = 0) |
+| joined        | (int)         | (optional) Fetch only **added** (to library) threads if 1 (default = 0) |
+| left          | (int)         | (optional) Fetch only **trashed** (from library) threads if 1 (default = 0) |
 
 Note: setting both added=1 AND trashed=1 should return a ```400 Bad request``` error.
 

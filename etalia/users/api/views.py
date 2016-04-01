@@ -19,6 +19,16 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class UserLibViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Returns a list of user libraries (currenlty only per user)
+
+    ## Optional Kwargs ##
+
+    ** All: **
+
+    * view=(str): Reformat output. choices: 'nested',
+
+    """
 
     queryset = UserLib.objects.all()
     serializer_class = UserLibSerializer
