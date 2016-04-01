@@ -37,7 +37,6 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost']
 
 
-
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
 DJANGO_APPS = (
@@ -101,7 +100,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'etalia',
-        'USER': '',
+        'USER': 'nicolaspannetier',
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
@@ -333,21 +332,6 @@ ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
 ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 
 
-# THREAD
-# ------------------------------------------------------------------------------
-
-MAX_MEMBERS_NOT_JOINED = 3
-
-# REST FRAMEWORK
-# ------------------------------------------------------------------------------
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'PAGE_SIZE': 1,
-    'URL_FIELD_NAME': 'link',
-}
-
 # LANDING
 # ------------------------------------------------------------------------------
 LANDING_ACTIVE_PAPERS_NUMBER = 1
@@ -375,6 +359,24 @@ AVATAR_STORAGE = DEFAULT_FILE_STORAGE
 AVATAR_CLEANUP_DELETED = False
 AVATAR_AUTO_GENERATE_SIZES = (AVATAR_DEFAULT_SIZE, 120)
 AVATAR_DEFAULT_MENDELEY = 'http://s3.amazonaws.com/mendeley-photos/awaiting.png'
+
+
+# THREAD
+# ------------------------------------------------------------------------------
+
+MAX_MEMBERS_NOT_JOINED = 3
+
+# REST FRAMEWORK
+# ------------------------------------------------------------------------------
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'PAGE_SIZE': 1,
+    'URL_FIELD_NAME': 'link',
+}
+
+
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -505,4 +507,3 @@ LOGGING = {
 
 # MESSAGES
 MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'
-
