@@ -12,6 +12,11 @@ from ..models import UserLib, User
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Returns a list of users
+
+    """
+
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -22,7 +27,7 @@ class UserLibViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Returns a list of user libraries (currenlty only per user)
 
-    ## Optional Kwargs ##
+    ### Optional Kwargs ###
 
     ** All: **
 

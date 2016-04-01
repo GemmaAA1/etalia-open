@@ -32,14 +32,14 @@ class ThreadViewSet(ListRetrieveNestedMixin,
     """
     Returns a list of all threads.
 
-    ## Additional routes/actions ##
+    ### Additional routes/actions ###
 
-    [POST, PATCH] /threads/<id>/join: To join thread
-    [POST, PATCH] /threads/<id>/leave: To leave thread
-    [POST, PATCH] /threads/<id>/pin: To pin thread
-    [POST, PATCH] /threads/<id>/ban: To ban thread
+    * [POST, PATCH] /threads/<id>/join: To join thread
+    * [POST, PATCH] /threads/<id>/leave: To leave thread
+    * [POST, PATCH] /threads/<id>/pin: To pin thread
+    * [POST, PATCH] /threads/<id>/ban: To ban thread
 
-    ## Optional Kwargs ##
+    ### Optional Kwargs ###
 
     ** All: **
 
@@ -51,9 +51,9 @@ class ThreadViewSet(ListRetrieveNestedMixin,
     * joined=(int): Fetch only **joined** threads for logged user if 1 (default = 0)
     * left=(int): Fetch only **left** threads for logged user if 1 (default = 0)
 
-    ** Detail: **
+    ### Notes ###
 
-    Note: Destroy (DELETE) routes is not provided
+    Destroy (DELETE) routes is not provided
     """
 
     queryset = Thread.objects.all()
@@ -137,7 +137,7 @@ class ThreadPostViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
     """
     Returns a list of all posts visible for user
 
-    ## Optional Kwargs ##
+    ### Optional Kwargs ###
 
     ** All: **
 
@@ -146,8 +146,6 @@ class ThreadPostViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
     ** List: **
 
     * thread_id=(int): Filter post related to thread
-
-    ** Detail: **
 
     """
     queryset = ThreadPost.objects.all()
@@ -180,7 +178,7 @@ class ThreadCommentViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
     """
     Returns a list of all visible comments for user
 
-    ## Optional Kwargs ##
+    ### Optional Kwargs ###
 
     ** All: **
 
@@ -189,8 +187,6 @@ class ThreadCommentViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
     ** List: **
 
     * post_id=(int): Filter comments related to post
-
-    ** Detail: **
 
     """
 
