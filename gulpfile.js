@@ -87,6 +87,16 @@ gulp.task('libraries', function() {
         .pipe(gulp.dest(config.src + '/js/lib'));
 
     /**
+     * d3.js
+     */
+    var d3 = gulp
+        .src([
+            'bower_components/d3/d3.js'
+        ])
+        .pipe(strip())
+        .pipe(gulp.dest(config.src + '/js/lib'));
+
+    /**
      * Hogan.js
      */
     var hogan = gulp
