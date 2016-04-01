@@ -8,4 +8,26 @@
 
 {% block content %}
 
+    <div style="padding-top:100px;">
+
+    </div>
+    <p>
+        {{ thread.created }}
+    </p>
+    <p>
+        {{ thread.title }}
+    </p>
+    <p>
+        {{ thread.user.email }}
+    </p>
+    <p>
+
+    {% for post in thread.posts %}
+        <p>{{ post.content }}</p>
+        <p>{{ post.user.email }}</p>
+    {% endfor %}
+
+    ...
+
+
 {% endblock content %}
