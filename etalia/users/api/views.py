@@ -17,7 +17,6 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
 
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permissions_classes = ()
