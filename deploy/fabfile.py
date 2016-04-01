@@ -69,8 +69,8 @@ INSTANCE_TYPES_RANK = {
     'm4.2xlarge': 5,
     'm4.10xlarge': 6}
 
-# ROOT_DIR is two levels up
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # ROOT_DIR is two levels up
 SUPERVISOR_CONF_DIR = 'supervisor'
 SSL_PATH = '/etc/nginx/ssl'
 SLACK_WEB_HOOK = \
