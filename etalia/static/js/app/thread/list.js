@@ -2,20 +2,24 @@ define([
     'jquery',
     'app/ui/layout',
     'app/ui/controls',
+    'backbone',
+    'view/thread/list',
+    'view/thread/create-modal',
     'bootstrap'
-], function($, layout, controls) {
+], function($, layout, controls, Backbone, ThreadListView, ThreadCreateModal) {
 
-    var List = function(options) {
+    /**
+     * Thread list
+     */
+    var threadList = new ThreadListView();
+    threadList.render();
 
-        this.config = $.extend({
-            debug: false,
-            element: '#list',
-            container: '.thumb-list'
-        }, options);
-
-        this.$element = $(this.config.element);
-
-        this.loadXhr = null;
-    };
+    /**
+     * Thread create modal
+     */
+    $('#thread-create-modal').on('click', function() {
+        var threadCreateModal = new ThreadCreateModal();
+        threadCreateModal.render();
+    });
 
 });

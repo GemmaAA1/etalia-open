@@ -1,3 +1,17 @@
+/*!
+ *  Copyright 2011 Twitter, Inc.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 
 
@@ -16,23 +30,29 @@ var Hogan = {};
   }
 
   Hogan.Template.prototype = {
+    // render: replaced by generated code.
     r: function (context, partials, indent) { return ''; },
 
+    // variable escaping
     v: hoganEscape,
 
+    // triple stache
     t: coerceToString,
 
     render: function render(context, partials, indent) {
       return this.ri([context], partials || {}, indent);
     },
 
+    // render internal -- a hook for overrides that catches partials too
     ri: function (context, partials, indent) {
       return this.r(context, partials, indent);
     },
 
+    // ensurePartial
     ep: function(symbol, partials) {
       var partial = this.partials[symbol];
 
+      // check to see that if we've instantiated this partial before
       var template = partials[partial.name];
       if (partial.instance && partial.base == template) {
         return partial.instance;
@@ -49,9 +69,11 @@ var Hogan = {};
         return null;
       }
 
+      // We use this to check whether the partials dictionary has changed
       this.partials[symbol].base = template;
 
       if (partial.subs) {
+        // Make sure we consider parent template now
         if (!partials.stackText) partials.stackText = {};
         for (key in partial.subs) {
           if (!partials.stackText[key]) {
@@ -66,6 +88,7 @@ var Hogan = {};
       return template;
     },
 
+    // tries to find a partial in the current scope and render it
     rp: function(symbol, context, partials, indent) {
       var partial = this.ep(symbol, partials);
       if (!partial) {
@@ -75,6 +98,7 @@ var Hogan = {};
       return partial.ri(context, partials, indent);
     },
 
+    // render a section
     rs: function(context, partials, section) {
       var tail = context[context.length - 1];
 
@@ -90,6 +114,7 @@ var Hogan = {};
       }
     },
 
+    // maybe start a section
     s: function(val, ctx, partials, inverted, start, end, tags) {
       var pass;
 
@@ -110,6 +135,7 @@ var Hogan = {};
       return pass;
     },
 
+    // find values with dotted names
     d: function(key, ctx, partials, returnFound) {
       var found,
           names = key.split('.'),
@@ -144,6 +170,7 @@ var Hogan = {};
       return val;
     },
 
+    // find values with normal names
     f: function(key, ctx, partials, returnFound) {
       var val = false,
           v = null,
@@ -170,6 +197,7 @@ var Hogan = {};
       return val;
     },
 
+    // higher order templates
     ls: function(func, cx, partials, text, tags) {
       var oldTags = this.options.delimiters;
 
@@ -180,6 +208,7 @@ var Hogan = {};
       return false;
     },
 
+    // compile text
     ct: function(text, cx, partials) {
       if (this.options.disableLambda) {
         throw new Error('Lambda features disabled.');
@@ -187,10 +216,12 @@ var Hogan = {};
       return this.c.compile(text, this.options).render(cx, partials);
     },
 
+    // template result buffering
     b: function(s) { this.buf += s; },
 
     fl: function() { var r = this.buf; this.buf = ''; return r; },
 
+    // method replace section
     ms: function(func, ctx, partials, inverted, start, end, tags) {
       var textSource,
           cx = ctx[ctx.length - 1],
@@ -208,6 +239,7 @@ var Hogan = {};
       return result;
     },
 
+    // method replace variable
     mv: function(func, ctx, partials) {
       var cx = ctx[ctx.length - 1];
       var result = func.call(cx);
@@ -230,6 +262,7 @@ var Hogan = {};
 
   };
 
+  //Find a key in an object
   function findInScope(key, scope, doModelGet) {
     var val;
 
@@ -238,6 +271,7 @@ var Hogan = {};
       if (scope[key] !== undefined) {
         val = scope[key];
 
+      // try lookup with get for backbone or similar model data
       } else if (doModelGet && scope.get && typeof scope.get == 'function') {
         val = scope.get(key);
       }
@@ -254,7 +288,7 @@ var Hogan = {};
     var key;
     var partial = new PartialTemplate();
     partial.subs = new Substitutions();
-    partial.subsText = {};  
+    partial.subsText = {};  //hehe. substext.
     partial.buf = '';
 
     stackSubs = stackSubs || {};
@@ -311,6 +345,8 @@ var Hogan = {};
 
 
 (function (Hogan) {
+  // Setup regex  assignments
+  // remove whitespace according to Mustache spec
   var rIsWhitespace = /\S/,
       rQuot = /\"/g,
       rNewline =  /\n/g,
@@ -369,6 +405,7 @@ var Hogan = {};
         for (var j = lineStart, next; j < tokens.length; j++) {
           if (tokens[j].text) {
             if ((next = tokens[j+1]) && next.tag == '>') {
+              // set indent to token value
               next.indent = tokens[j].text.toString()
             }
             tokens.splice(j, 1);
@@ -481,6 +518,7 @@ var Hogan = {};
     return true;
   }
 
+  // the tags allowed inside super templates
   var allowedInSuper = {'_t': true, '\n': true, '$': true, '/': true};
 
   function buildTree(tokens, kind, stack, customTags) {
