@@ -184,20 +184,6 @@ body.detail-opened #detail {
     line-height: 16px;
 }
 
-#detail .thumb-list .card .journal {
-    font-size: 13px;
-    line-height: 24px;
-    height: 24px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#detail .thumb-list .card .date {
-    font-size: 13px;
-    line-height: 24px;
-}
-
 #detail .thumb-list .card .icons {
     height: 24px;
 }
@@ -206,6 +192,8 @@ body.detail-opened #detail {
 #detail .thumb-list .card .icons img {
     width: 24px;
     height: 24px;
+    line-height: 24px;
+    font-size: 14px;
 }
 
 #detail .thumb-list .card .cluster-icon span {
@@ -231,7 +219,35 @@ body.detail-opened #detail {
 
 /* ---------------------------------- RESPONSIVE --------------------------------- */
 
+@media (min-width: 600px) {
+    #detail .document .content {
+        padding-right: 35px;
+    }
+
+    #detail > .document > .wrapper > .inner > .actions {
+        position: absolute;
+        top: 30px;
+        right: 15px;
+    }
+
+    #detail .thumb-list .card .infos p:first-child {
+        font-size: 13px;
+        line-height: 24px;
+        height: 24px;
+    }
+}
+
 @media (min-width: 768px) {
+    #detail .document .content {
+        padding-right: 25px;
+    }
+
+    #detail > .document > .wrapper > .inner > .actions {
+        position: absolute;
+        top: 40px;
+        right: 20px;
+    }
+
     #detail-prev > span,
     #detail-next > span {
         display: inline-block;
@@ -240,9 +256,4 @@ body.detail-opened #detail {
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
-    /*#detail .card .journal {
-        line-height: 24px;
-        height: 24px;
-    }*/
 }

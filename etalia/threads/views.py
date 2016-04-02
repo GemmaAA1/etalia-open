@@ -12,7 +12,7 @@ from .api.serializers import ThreadNestedSerializer
 class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
 
     model = Thread
-    template_name = 'threads/thread.html'
+    template_name = 'threads/detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(ThreadView, self).get_context_data(**kwargs)
@@ -26,7 +26,7 @@ thread = ThreadView.as_view()
 
 class MyThreadsView(LoginRequiredMixin, AjaxableResponseMixin, ListView):
 
-    template_name = 'threads/my_threads.html'
+    template_name = 'threads/list.html'
 
     def get_queryset(self):
         return Thread.objects.all()

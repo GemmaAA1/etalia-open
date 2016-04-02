@@ -112,7 +112,7 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
 
 .inner {
     position: relative;
-    max-width: 800px;
+    max-width: 878px;
     margin: auto;
     padding: 10px;
     background-color: #ffffff;
@@ -470,18 +470,57 @@ a.btn-provider:hover {
 }
 
 /* ------------------------------------ BOOTSTRAP ------------------------------------ */
-
 .btn {
-    border-radius: 0;
+    font-size: 16px;
+    padding: 5px 10px;
+}
+
+.btn-lg,
+.btn-group-lg > .btn {
+    padding: 10px 16px;
+    font-size: 18px;
+    /*line-height: 1.3333333;*/
+    /*border-radius: 6px;*/
+}
+
+.btn-sm,
+.btn-group-sm > .btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    /*line-height: 1.5;*/
+    /*border-radius: 3px;*/
+}
+
+.btn-xs,
+.btn-group-xs > .btn {
+    padding: 1px 5px;
+    font-size: 12px;
+    /*line-height: 1.5;*/
+    /*border-radius: 3px;*/
+}
+
+.btn-default {
+    color: #7a7d80;
+    background-color: #ffffff;
+    border-color: #86b5b0;
+}
+
+.btn-default:hover {
+    color: #7a7d80;
+    background-color: #ffffff;
+    border-color: #004f46;
 }
 
 .btn-primary {
-    background-color: #00695c;
-    border-color: #00594d;
+    color: #ffffff;
+    background-color: #86b5b0;
+    border-color: #86b5b0;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(0, 105, 92, .5);
 }
 
 .btn-primary:hover {
-    background-color: #004f46;
+    background-color: #86b5b0;
     border-color: #004f46;
 }
 
@@ -670,6 +709,10 @@ a.btn-provider:hover {
 
     #brand {
         margin-left: 65px;
+    }
+
+    .inner {
+        padding: 40px;
     }
 
     #toggle-nav {
