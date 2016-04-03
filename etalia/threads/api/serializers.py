@@ -13,13 +13,10 @@ from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES
 
 
-class ThreadUserPatchSerializer(serializers.Serializer):
+class PatchSerializer(serializers.Serializer):
 
     OPERATIONS = (
-        "join",
-        "leave",
-        "pin",
-        "ban",
+        "replace",
     )
 
     op = serializers.ChoiceField(choices=OPERATIONS, required=True)
@@ -48,18 +45,12 @@ class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
             'link',
             'user',
             'thread',
-            'is_pinned',
-            'is_banned',
-            'is_joined',
-            'is_left',
-            'first_joined_at',
-            'last_left_at',
+            'watch',
+            'participate'
         )
         read_only_fields = (
             'id',
             'link',
-            'first_joined_at',
-            'last_left_at',
         )
 
     def validate_user(self, value):
@@ -68,45 +59,6 @@ class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
             raise serializers.ValidationError(
                 "user deserialized and user logged are different")
         return value
-
-    def validate(self, data):
-        """Integrity of state
-        """
-        if data['is_joined'] and data['is_left']:
-            raise serializers.ValidationError("Threaduser state cannot be joined and left simultaneously")
-        if data['is_pinned'] and data['is_banned']:
-            raise serializers.ValidationError("Threaduser state cannot be pinned and banned simultaneously")
-        return data
-
-
-class ThreadUserCountSerializer(serializers.ModelSerializer):
-    joined_count = serializers.SerializerMethodField()
-    pinned_count = serializers.SerializerMethodField()
-    left_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ThreadUser
-        fields = (
-            'id',
-            'is_pinned',
-            'is_banned',
-            'is_joined',
-            'is_left',
-            'first_joined_at',
-            'last_left_at',
-            'num_comments',
-            'joined_count',
-            'pinned_count',
-            'left_count')
-
-    def get_joined_count(self, obj):
-        return obj.user.ThreadUser_set.filter(is_joined=True).count()
-
-    def get_left_count(self, obj):
-        return obj.user.ThreadUser_set.filter(is_left=True).count()
-
-    def get_pinned_count(self, obj):
-        return obj.user.ThreadUser_set.filter(is_pinned=True).count()
 
 
 class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):

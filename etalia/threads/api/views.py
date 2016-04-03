@@ -12,7 +12,7 @@ from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadCommentNestedSerializer, ThreadUserPatchSerializer
+    ThreadCommentNestedSerializer, PatchSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
 
 
@@ -192,6 +192,7 @@ class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 class ThreadUserViewSet(MultiSerializerMixin,
                         mixins.CreateModelMixin,
                         mixins.ListModelMixin,
+                        mixins.UpdateModelMixin,
                         mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     """
@@ -200,17 +201,19 @@ class ThreadUserViewSet(MultiSerializerMixin,
     ### Routes ###
 
     * [GET, POST] /states/: List of Thread User states
-    * [GET] /states/<id\>/: Thread User state instance
-    * [PUT] /states/<id\>/join: User **join** thread
-    * [PUT] /states/<id\>/leave: User **leave** thread
-    * [PUT] /states/<id\>/pin: User **pin** thread
-    * [PUT] /states/<id\>/ban: User **ban** thread
+    * [GET, PUT, PATCH] /states/<id\>/: Thread User state instance
+
+    **Deprecated**:
+
+    * [PUT, PATCH] /states/<id\>/join: User **join** thread
+    * [PUT, PATCH] /states/<id\>/leave: User **leave** thread
+    * [PUT, PATCH] /states/<id\>/pin: User **pin** thread
+    * [PUT, PATCH] /states/<id\>/ban: User **ban** thread
 
     [ref1]: /api/v1/user/users/
     [ref2]: /api/v1/thread/threads/
 
     """
-
 
     queryset = ThreadUser.objects.filter()
     serializer_class = {
@@ -229,21 +232,21 @@ class ThreadUserViewSet(MultiSerializerMixin,
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @detail_route(methods=['put'],
+    @detail_route(methods=['put', 'patch'],
                   permission_classes=(IsNOTThreadMember, ))
     def join(self, request, pk=None):
         return self.perform_threaduser_action(request, 'join')
 
-    @detail_route(methods=['put'],
+    @detail_route(methods=['put', 'patch'],
                   permission_classes=(IsThreadMember, ))
     def leave(self, request, pk=None):
         return self.perform_threaduser_action(request, 'leave')
 
-    @detail_route(methods=['put'])
+    @detail_route(methods=['put', 'patch'])
     def pin(self, request, pk=None):
         return self.perform_threaduser_action(request, 'pin')
 
-    @detail_route(methods=['put'])
+    @detail_route(methods=['put', 'patch'])
     def ban(self, request, pk=None):
         return self.perform_threaduser_action(request, 'ban')
 
