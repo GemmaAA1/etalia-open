@@ -27,8 +27,8 @@ class ThreadViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET, POST] /posts/: List of threads
-    * [GET, PUT, PATCH] /posts/<id\>/: Thread instance
+    * [GET, POST] /threads/: List of threads
+    * [GET, PUT, PATCH] /threads/<id\>/: Thread instance
 
     ### Optional Kwargs ###
 

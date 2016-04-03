@@ -158,7 +158,7 @@ class UserLibPaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return UserLibPaper.objects.filter(user=self.request.user.lib)
+            return UserLibPaper.objects.filter(userlib=self.request.user.lib)
         return UserLibPaper.objects.all()
 
 

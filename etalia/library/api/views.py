@@ -13,6 +13,14 @@ from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
 
 
 class PaperViewSet(MultiSerializerMixin, viewsets.ReadOnlyModelViewSet):
+    """
+    Paper
+
+    ### Routes ###
+
+    * [GET] /papers/: List of papers
+    * [GET] /papers/<id\>/: Paper instance
+    """
 
     queryset = Paper.objects.all()
     serializer_class = {
@@ -23,14 +31,28 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class JournalViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Paper
 
+    ### Routes ###
+
+    * [GET] /journals/: List of journals
+    * [GET] /journals/<id\>/: Journal instance
+    """
     queryset = Journal.objects.all()
     serializer_class = JournalSerializer
     permission_classes = (IsReadOnlyRequest, )
 
 
 class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Author
 
+    ### Routes ###
+
+    * [GET] /authors/: List of authors
+    * [GET] /authors/<id\>/: Author instance
+    """
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
     permission_classes = (IsReadOnlyRequest, )
