@@ -8,30 +8,75 @@ from rest_framework.reverse import reverse
 from rest_framework.fields import empty
 
 from etalia.users.api.serializers import UserSerializer
-from etalia.library.api.serializers import PaperSerializer
+from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES
 
 
+class ThreadUserPatchSerializer(serializers.Serializer):
+
+    OPERATIONS = (
+        "join",
+        "leave",
+        "pin",
+        "ban",
+    )
+
+    op = serializers.ChoiceField(choices=OPERATIONS, required=True)
+    path = serializers.URLField(required=False)
+    value = serializers.IntegerField(required=False)
+
+    class Meta:
+        fields = (
+            'op',
+            'path',
+            'value',
+        )
+
+
 class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
+
     class Meta:
         model = ThreadUser
         extra_kwargs = {
             'link': {'view_name': 'api:threaduser-detail'},
+            'user': {'view_name': 'api:user-detail'},
+            'thread': {'view_name': 'api:thread-detail'},
         }
         fields = (
             'id',
             'link',
+            'user',
+            'thread',
             'is_pinned',
             'is_banned',
             'is_joined',
             'is_left',
             'first_joined_at',
             'last_left_at',
-            'num_comments')
-        read_only_fields = (
-            '__all__'
         )
+        read_only_fields = (
+            'id',
+            'link',
+            'first_joined_at',
+            'last_left_at',
+        )
+
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user logged are different")
+        return value
+
+    def validate(self, data):
+        """Integrity of state
+        """
+        if data['is_joined'] and data['is_left']:
+            raise serializers.ValidationError("Threaduser state cannot be joined and left simultaneously")
+        if data['is_pinned'] and data['is_banned']:
+            raise serializers.ValidationError("Threaduser state cannot be pinned and banned simultaneously")
+        return data
 
 
 class ThreadUserCountSerializer(serializers.ModelSerializer):
@@ -303,6 +348,7 @@ class ThreadNestedSerializer(serializers.HyperlinkedModelSerializer):
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
     user = UserSerializer(many=False, read_only=True)
+    paper = PaperNestedSerializer(many=False, read_only=True)
 
     class Meta:
         model = Thread

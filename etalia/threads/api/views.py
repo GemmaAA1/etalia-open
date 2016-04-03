@@ -1,111 +1,63 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.shortcuts import get_object_or_404
-
 from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
-from rest_condition import And, Or, Not
+from rest_condition import And, Or
 
-from etalia.core.api.permissions import IsReadOnlyRequest, IsPostRequest, \
-    IsDeleteRequest, IsPutPatchRequest, IsThreadMember, IsOwner, \
-    IsJoinAction, IsLeaveAction, IsPinBanAction, IsStateAction, \
-    IsNOTThreadMember, IsNOTStateAction
-
+from etalia.core.api.permissions import IsThreadMember, IsOwner, \
+    IsOwnerOrReadOnly, IsNOTThreadMember
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
-
-
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadCommentNestedSerializer
-from .mixins import ListRetrieveNestedMixin
+    ThreadCommentNestedSerializer, ThreadUserPatchSerializer
+from etalia.core.api.mixins import MultiSerializerMixin
 
 
-class ThreadViewSet(ListRetrieveNestedMixin,
+class ThreadViewSet(MultiSerializerMixin,
                     mixins.CreateModelMixin,
                     mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
                     viewsets.GenericViewSet):
     """
-    Returns a list of all threads.
+    Threads
 
-    ### Additional routes/actions ###
+    ### Routes ###
 
-    * [POST, PATCH] /threads/<id>/join: To join thread
-    * [POST, PATCH] /threads/<id>/leave: To leave thread
-    * [POST, PATCH] /threads/<id>/pin: To pin thread
-    * [POST, PATCH] /threads/<id>/ban: To ban thread
+    * [GET, POST] /posts/: List of threads
+    * [GET, PUT, PATCH] /posts/<id\>/: Thread instance
 
     ### Optional Kwargs ###
 
-    ** All: **
+    ** Detail: **
 
-    * view=(str): Reformat output. choices: 'nested',
+    * ?view=(str): Reformat output. choices: 'nested',
 
     ** List: **
 
-    * pinned=(int): Fetch only **pinned** threads for logged user if 1 (default = 0)
-    * joined=(int): Fetch only **joined** threads for logged user if 1 (default = 0)
-    * left=(int): Fetch only **left** threads for logged user if 1 (default = 0)
+    * ?view=(str): Reformat output. choices: 'nested',
+    * ?pinned=(int): Fetch only **pinned** threads for logged user if 1 (default = 0)
+    * ?joined=(int): Fetch only **joined** threads for logged user if 1 (default = 0)
+    * ?left=(int): Fetch only **left** threads for logged user if 1 (default = 0)
 
-    ### Notes ###
-
-    Destroy (DELETE) routes is not provided
     """
 
     queryset = Thread.objects.all()
-    serializer_class = ThreadSerializer
-    serializer_nested_class = ThreadNestedSerializer
-    permission_classes = (And(permissions.IsAuthenticated,
-                              Or(And(IsReadOnlyRequest, ),
-                                 And(IsPostRequest, ),
-                                 And(IsPutPatchRequest, IsOwner, IsNOTStateAction),
-                                 And(IsPutPatchRequest, IsStateAction),
-                                 ),
-                              ),
-                          )
+    serializer_class = {
+        'default': ThreadSerializer,
+        'nested': ThreadNestedSerializer
+    }
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOrReadOnly)
 
     def get_thread_id(self):
         return self.kwargs['pk']
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-    def perform_threaduser_action(self, request, action):
-        """Perform ThreadUser related action (join, pin, etc.)"""
-        thread = self.get_object()
-        self.check_object_permissions(request, thread)
-        instance, new = ThreadUser.objects.get_or_create(
-            user=request.user,
-            thread_id=self.get_thread_id())
-        method = getattr(instance, action)
-        method()
-        # Return
-        if new:
-            return Response({}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({}, status=status.HTTP_200_CREATED)
-
-    @detail_route(methods=['patch', 'post'],
-                  permission_classes=(IsNOTThreadMember, ))
-    def join(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'join')
-
-    @detail_route(methods=['patch', 'post'],
-                  permission_classes=(IsThreadMember, ))
-    def leave(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'leave')
-
-    @detail_route(methods=['patch', 'post'])
-    def pin(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'pin')
-
-    @detail_route(methods=['patch', 'post'])
-    def ban(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'ban')
 
     def get_queryset(self):
         queryset = Thread.objects.all()
@@ -132,96 +84,191 @@ class ThreadViewSet(ListRetrieveNestedMixin,
         return queryset
 
 
-class ThreadPostViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
+class ThreadPostViewSet(MultiSerializerMixin,
+                        viewsets.ModelViewSet):
 
     """
-    Returns a list of all posts visible for user
+    Thread Post: Post on thread
+
+    ### Routes ###
+
+    * [GET, POST] /posts/: List of posts
+    * [GET, PUT, PATCH] /posts/<id\>/: Post instance
 
     ### Optional Kwargs ###
 
-    ** All: **
+    ** Detail:**
 
-    * view=(str): Reformat output. choices: 'nested',
+    * ?view=(str): Reformat output. choices: 'nested',
 
     ** List: **
 
-    * thread_id=(int): Filter post related to thread
+    * ?view=(str): Reformat output. choices: 'nested',
+    * ?thread_id=(int): Filter comments related to Thread thread_id
 
     """
     queryset = ThreadPost.objects.all()
-    serializer_class = ThreadPostSerializer
-    serializer_nested_class = ThreadPostNestedSerializer
-    permission_classes = (And(permissions.IsAuthenticated,
-                              Or(And(IsReadOnlyRequest, IsThreadMember),
-                                 And(IsPostRequest, IsThreadMember),
-                                 And(IsPutPatchRequest, IsThreadMember, IsOwner))), )
+    serializer_class = {
+        'default': ThreadPostSerializer,
+        'nested': ThreadPostNestedSerializer
+    }
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOrReadOnly,
+                          IsThreadMember
+                          )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        threads_joined = ThreadUser.objects\
-            .filter(user=self.request.user, is_joined=True)\
-            .values('thread')
-        queryset = ThreadPost.objects.filter(thread__in=threads_joined)
+        if self.action == 'list':
+            threads_joined = ThreadUser.objects\
+                .filter(user=self.request.user, is_joined=True)\
+                .values('thread')
+            queryset = ThreadPost.objects.filter(thread__in=threads_joined)
 
-        # filter based on ?thread_id
-        thread_id = self.request.query_params.get('thread_id', None)
-        if thread_id is not None:
-            queryset = queryset.filter(thread_id=thread_id)
+            # filter based on ?thread_id
+            thread_id = self.request.query_params.get('thread_id', None)
+            if thread_id is not None:
+                queryset = queryset.filter(thread_id=thread_id)
 
-        return queryset
+            return queryset
+        return ThreadPost.objects.all()
 
 
-class ThreadCommentViewSet(ListRetrieveNestedMixin, viewsets.ModelViewSet):
+class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     """
-    Returns a list of all visible comments for user
+    Thread Comment: Comments on thread post
+
+    ### Routes ###
+
+    * [GET, POST] /comments/: List of comments
+    * [GET, PUT, PATCH] /comments/<id\>/: Comment instance
 
     ### Optional Kwargs ###
 
-    ** All: **
+    ** Detail:**
 
-    * view=(str): Reformat output. choices: 'nested',
+    * ?view=(str): Reformat output. choices: 'nested',
 
     ** List: **
 
-    * post_id=(int): Filter comments related to post
+    * ?view=(str): Reformat output. choices: 'nested',
+    * ?post_id=(int): Filter comments related to Post post_id
 
     """
 
     queryset = ThreadComment.objects.filter()
-    serializer_class = ThreadCommentSerializer
-    serializer_nested_class = ThreadCommentNestedSerializer
-    permission_classes = (And(permissions.IsAuthenticated,
-                              Or(And(IsReadOnlyRequest, IsThreadMember),
-                                 And(IsPostRequest, IsThreadMember),
-                                 And(IsPutPatchRequest, IsThreadMember, IsOwner))), )
+    serializer_class = {
+        'default': ThreadCommentSerializer,
+        'nested': ThreadCommentNestedSerializer
+    }
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOrReadOnly,
+                          IsThreadMember
+                          )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        threads_joined = ThreadUser.objects\
-            .filter(user=self.request.user, is_joined=True)\
-            .values('thread')
+        if self.action == 'list':
+            threads_joined = ThreadUser.objects\
+                .filter(user=self.request.user, is_joined=True)\
+                .values('thread')
 
-        queryset = ThreadComment.objects.filter(post__thread__in=threads_joined)
+            queryset = ThreadComment.objects.filter(post__thread__in=threads_joined)
 
-        # filter based on ?post_id
-        post_id = self.request.query_params.get('post_id', None)
-        if post_id is not None:
-            queryset = queryset.filter(post_id=post_id)
+            # filter based on ?post_id
+            post_id = self.request.query_params.get('post_id', None)
+            if post_id is not None:
+                queryset = queryset.filter(post_id=post_id)
 
-        return queryset
+            return queryset
+        return ThreadComment.objects.all()
 
 
-class ThreadUserViewSet(viewsets.ModelViewSet):
+class ThreadUserViewSet(MultiSerializerMixin,
+                        mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    """
+    Thread User state: Relation between a [User][ref1] and a [Thread][ref2]
+
+    ### Routes ###
+
+    * [GET, POST] /states/: List of Thread User states
+    * [GET] /states/<id\>/: Thread User state instance
+    * [PUT] /states/<id\>/join: User **join** thread
+    * [PUT] /states/<id\>/leave: User **leave** thread
+    * [PUT] /states/<id\>/pin: User **pin** thread
+    * [PUT] /states/<id\>/ban: User **ban** thread
+
+    [ref1]: /api/v1/user/users/
+    [ref2]: /api/v1/thread/threads/
+
+    """
+
 
     queryset = ThreadUser.objects.filter()
-    serializer_class = ThreadUserSerializer
-    permission_classes = (And(permissions.IsAuthenticated, IsReadOnlyRequest), )
+    serializer_class = {
+        'default': ThreadUserSerializer,
+    }
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,
+                          )
 
     def get_queryset(self):
-        return ThreadUser.objects.filter(user=self.request.user)
+        # to raise proper 403 status code on not allowed access
+        if self.action == 'list':
+            return ThreadUser.objects.filter(user=self.request.user)
+        return ThreadUser.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @detail_route(methods=['put'],
+                  permission_classes=(IsNOTThreadMember, ))
+    def join(self, request, pk=None):
+        return self.perform_threaduser_action(request, 'join')
+
+    @detail_route(methods=['put'],
+                  permission_classes=(IsThreadMember, ))
+    def leave(self, request, pk=None):
+        return self.perform_threaduser_action(request, 'leave')
+
+    @detail_route(methods=['put'])
+    def pin(self, request, pk=None):
+        return self.perform_threaduser_action(request, 'pin')
+
+    @detail_route(methods=['put'])
+    def ban(self, request, pk=None):
+        return self.perform_threaduser_action(request, 'ban')
+
+    def perform_threaduser_action(self, request, action):
+        """Perform ThreadUser related action (join, pin, etc.)"""
+        instance = self.get_object()
+        self.check_object_permissions(request, instance)
+        method = getattr(instance, action)
+        method()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # def partial_update(self, request, *args, **kwargs):
+    #     kwargs['context'] = self.get_serializer_context()
+    #     try:  # pop pk, unrelevant for patch
+    #         kwargs.pop('pk')
+    #     except KeyError:
+    #         pass
+    #     serializer_class = self.serializer_class['patch']
+    #     serializer = serializer_class(data=request.data, **kwargs)
+    #     serializer.is_valid(raise_exception=True)
+    #     instance = self.get_object()
+    #     self.perform_patch_update(serializer, instance)
+    #     serializer = self.get_serializer(instance)
+    #     return Response(serializer.data)
+
+
 

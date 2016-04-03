@@ -7,8 +7,9 @@ from etalia.core.api.router import SharedAPIRootRouter
 from . import views
 
 router = SharedAPIRootRouter()
-router.register(r'papers', views.PaperViewSet)
-router.register(r'journals', views.JournalViewSet)
+router.register(r'library/papers', views.PaperViewSet)
+router.register(r'library/journals', views.JournalViewSet)
+router.register(r'library/authors', views.AuthorViewSet)
 
 urlpatterns = [
     url(r'', include(router.urls)),

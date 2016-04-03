@@ -232,6 +232,7 @@ class ThreadUser(TimeStampedModel):
 
     class Meta:
         ordering = ['-num_comments', 'first_joined_at']
+        unique_together = (('thread', 'user'), )
 
     def join(self):
         self.is_joined = True

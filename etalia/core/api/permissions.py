@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+
+from django.contrib.auth import get_user_model
 from rest_framework import permissions
 
 from etalia.threads.models import Thread, ThreadPost, ThreadComment
+from etalia.users.models import UserLibPaper, Relationship
+
+User = get_user_model()
 
 
 class IsReadOnlyRequest(permissions.BasePermission):
@@ -18,10 +23,22 @@ class IsPostRequest(permissions.BasePermission):
         return request.method == "POST"
 
 
-class IsPutPatchRequest(permissions.BasePermission):
+class IsPatchRequest(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.method in ["PUT", "PATCH"]
+        return request.method == "PATCH"
+
+
+class IsPutRequest(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.method == "PUT"
+
+
+class IsPutRequest(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.method == "PUT"
 
 
 class IsDeleteRequest(permissions.BasePermission):
@@ -57,7 +74,36 @@ class IsOwner(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        if obj.__class__ == UserLibPaper:
+            return request.user == obj.userlib.user
+        if obj.__class__ == User:
+            return request.user == obj
         return obj.user == request.user
+
+
+class IsOwnerOrReadOnly(IsOwner):
+    """
+    Custom permission to only allow owners of an object to edit it.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowed to the owner of the snippet.
+        return super(IsOwnerOrReadOnly, self).has_object_permission(request, view, obj)
+
+
+class IsInRelationship(IsOwner):
+    """
+    Custom permission to only allow user involved in the relationship.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if obj.__class__ == Relationship:
+            return request.user in [obj.from_user, obj.to_user]
 
 
 class IsStateAction(permissions.BasePermission):

@@ -66,7 +66,6 @@ Url: ```[GET] /threads/<pk>/```
             "is_left": (bool),
             "first_joined_at": (string),
             "last_left_at": (string),
-            "num_comments": ing
         },
         "members": [
             {

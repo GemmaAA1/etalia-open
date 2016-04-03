@@ -6,44 +6,85 @@ from rest_framework import serializers
 from ..models import Paper, Journal, Author
 
 
-class JournalSerializer(serializers.ModelSerializer):
-
+class JournalSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Journal
-        fields = ('id',
-                  'title',
-                  'short_title',
-                  'url',
-                  )
+        extra_kwargs = {
+            'link': {'view_name': 'api:journal-detail'}
+        }
+        fields = (
+            'id',
+            'link',
+            'title',
+            'short_title',
+            'url',
+        )
 
 
-class AuthorSerializer(serializers.ModelSerializer):
-
+class AuthorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Author
-        fields = ('id',
-                  'first_name',
-                  'last_name',)
+        extra_kwargs = {
+            'link': {'view_name': 'api:author-detail'}
+        }
+        fields = (
+            'id',
+            'link',
+            'first_name',
+            'last_name',
+        )
 
 
-class PaperSerializer(serializers.ModelSerializer):
+class PaperSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = Paper
+        extra_kwargs = {
+            'link': {'view_name': 'api:paper-detail'},
+            'journal': {'view_name': 'api:journal-detail'},
+            'authors': {'view_name': 'api:author-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'id_doi',
+            'id_pmi',
+            'id_arx',
+            'id_pii',
+            'id_oth',
+            'title',
+            'journal',
+            'authors',
+            'url'
+        )
+        read_only_fields = (
+            '__all__',
+        )
+
+
+class PaperNestedSerializer(serializers.HyperlinkedModelSerializer):
 
     authors = AuthorSerializer(many=True, read_only=True)
     journal = JournalSerializer(many=False, read_only=True)
 
     class Meta:
         model = Paper
-        fields = ('id',
-                  'id_doi',
-                  'id_pmi',
-                  'id_arx',
-                  'id_pii',
-                  'id_oth',
-                  'title',
-                  'journal',
-                  'authors',
-                  'url')
-
-
-
-
+        extra_kwargs = {
+            'link': {'view_name': 'api:paper-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'id_doi',
+            'id_pmi',
+            'id_arx',
+            'id_pii',
+            'id_oth',
+            'title',
+            'journal',
+            'authors',
+            'url'
+        )
+        read_only_fields = (
+            '__all__',
+        )
