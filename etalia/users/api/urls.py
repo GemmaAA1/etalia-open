@@ -9,8 +9,8 @@ from . import views
 router = SharedAPIRootRouter()
 
 router.register(r'user/users', views.UserViewSet)
-router.register(r'user/libraries', views.UserLibViewSet)
-router.register(r'user/userlibpapers', views.UserLibPaperViewSet)
+router.register(r'user/user-libs', views.UserLibViewSet)
+router.register(r'user/user-lib-papers', views.UserLibPaperViewSet)
 router.register(r'user/relationships', views.RelationshipViewSet)
 
 urlpatterns = [
