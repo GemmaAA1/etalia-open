@@ -22,7 +22,9 @@ class Thread(TimeStampedModel):
                                null=False, blank=False, verbose_name='Type')
 
     # User who create thread
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads_owned')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             related_name='threads_owned',
+                             null=True)
 
     # Privacy
     privacy = models.IntegerField(choices=THREAD_PRIVACIES,
