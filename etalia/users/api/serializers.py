@@ -36,7 +36,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-
 class UserLibPaperSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
@@ -84,7 +83,9 @@ class UserLibSerializer(serializers.HyperlinkedModelSerializer):
 
     user = serializers.HyperlinkedRelatedField(view_name='api:user-detail',
                                                read_only=True)
-    userlib_paper = UserLibPaperSerializer(many=True, read_only=True)
+    user_lib_papers = UserLibPaperSerializer(many=True, read_only=True,
+                                             source='userlib_paper')
+    id = serializers.IntegerField(source='user_id')
 
     class Meta:
         model = UserLib
@@ -92,9 +93,10 @@ class UserLibSerializer(serializers.HyperlinkedModelSerializer):
             'link': {'view_name': 'api:userlib-detail'},
         }
         fields = (
+            'id',
             'link',
             'user',
-            'userlib_paper',
+            'user_lib_papers',
         )
         read_only_fields = (
             '__all__'
@@ -104,7 +106,9 @@ class UserLibSerializer(serializers.HyperlinkedModelSerializer):
 class UserLibNestedSerializer(serializers.HyperlinkedModelSerializer):
 
     user = UserSerializer(many=False, read_only=True)
-    userlib_paper = UserLibPaperNestedSerializer(many=True, read_only=True)
+    user_lib_papers = UserLibPaperNestedSerializer(many=True, read_only=True,
+                                                   source='userlib_paper')
+    id = serializers.IntegerField(source='user_id')
 
     class Meta:
         model = UserLib
@@ -112,9 +116,10 @@ class UserLibNestedSerializer(serializers.HyperlinkedModelSerializer):
             'link': {'view_name': 'api:userlib-detail'},
         }
         fields = (
+            'id',
             'link',
             'user',
-            'userlib_paper',
+            'user_lib_paper',
         )
         read_only_fields = (
             '__all__'
