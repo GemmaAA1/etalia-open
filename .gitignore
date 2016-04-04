@@ -79,6 +79,7 @@ deploy/.*
 deploy/notes.txt
 scripts/tmp
 config/settings/common.py
+config/settings/*.bk
 
 # redis
 *.rdb

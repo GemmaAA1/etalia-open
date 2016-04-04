@@ -9,6 +9,7 @@ from rest_condition import And, Or
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
+from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
@@ -42,6 +43,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * ?pinned=(int): Fetch only **pinned** threads for logged user if 1 (default = 0)
     * ?joined=(int): Fetch only **joined** threads for logged user if 1 (default = 0)
     * ?left=(int): Fetch only **left** threads for logged user if 1 (default = 0)
+    * ?banned=(int): Fetch only **banned** threads for logged user if 1 (default = 0)
 
     """
 
@@ -66,21 +68,23 @@ class ThreadViewSet(MultiSerializerMixin,
         joined = self.request.query_params.get('joined', False)
         if joined:
             queryset = queryset.filter(threaduser__user=self.request.user,
-                                       threaduser__is_joined=True)
+                                       threaduser__participate=THREAD_JOINED)
         # filter pinned threads for user
         pinned = self.request.query_params.get('pinned', False)
         if pinned:
             queryset = queryset.filter(threaduser__user=self.request.user,
-                                       threaduser__is_pinned=True)
+                                       threaduser__watch=THREAD_PINNED)
         # filter left threads for user
         left = self.request.query_params.get('left', False)
         if left:
             queryset = queryset.filter(threaduser__user=self.request.user,
-                                       threaduser__is_left=True)
-        if left and joined:
-            Response({'errors': 'cannot get <joined> and <left> simultaneously'},
-                     status=status.HTTP_400_BAD_REQUEST)
+                                       threaduser__participate=THREAD_LEFT)
 
+        # filter banned threads for user
+        banned = self.request.query_params.get('banned', False)
+        if banned:
+            queryset = queryset.filter(threaduser__user=self.request.user,
+                                       threaduser__participate=THREAD_BANNED)
         return queryset
 
 
@@ -123,7 +127,7 @@ class ThreadPostViewSet(MultiSerializerMixin,
     def get_queryset(self):
         if self.action == 'list':
             threads_joined = ThreadUser.objects\
-                .filter(user=self.request.user, is_joined=True)\
+                .filter(user=self.request.user, participate=True)\
                 .values('thread')
             queryset = ThreadPost.objects.filter(thread__in=threads_joined)
 
@@ -175,7 +179,7 @@ class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'list':
             threads_joined = ThreadUser.objects\
-                .filter(user=self.request.user, is_joined=True)\
+                .filter(user=self.request.user, participate=THREAD_JOINED)\
                 .values('thread')
 
             queryset = ThreadComment.objects.filter(post__thread__in=threads_joined)
