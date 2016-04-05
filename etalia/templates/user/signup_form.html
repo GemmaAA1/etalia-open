@@ -32,7 +32,13 @@
             </div>
 
             <div class="text-center submit">
-                <button id="signup" type="submit" class="btn btn-primary btn-lg">Sign-in</button>
+                <button id="signup" type="submit" class="btn btn-primary btn-lg">
+                    {% if has_email %}
+                        Yes
+                    {% else %}
+                        Sign-in
+                    {% endif %}
+                </button>
             </div>
         </form>
 

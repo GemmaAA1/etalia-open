@@ -131,22 +131,11 @@ class Scoring(object):
 
     def get_auth_data(self, pks):
         """Get author data and group them by paper_pk and sort by pks"""
-        auth_data = Paper.objects \
-            .filter(pk__in=pks) \
-            .values('pk', 'authors')
-
-        auth_dic = {}
-        for x in auth_data:
-            if auth_dic.get(x['pk']):
-                if x.get('authors'):
-                    auth_dic[x['pk']] += [x['authors']]
-            else:
-                if x.get('authors'):
-                    auth_dic[x['pk']] = [x['authors']]
-
-        # convert to list (and sort btw)
-        data = [auth_dic[pk] for pk in pks]
-
+        papers = Paper.objects\
+            .filter(pk__in=pks)\
+            .prefetch_related('authors')
+        mapping = dict((p.pk, p.authors.all()) for p in papers)
+        data = [mapping[x] for x in pks]
         return data
 
     def build_paper_vec_mat(self, data):
@@ -602,110 +591,3 @@ class TrendScoring(Scoring):
         res = self.order_and_trim_results(target_pks_reduced, score)
 
         return res, self.target_date
-
-
-        # class SimpleMax(StreamScoring):
-        #
-        #     def _run(self):
-        #         seed_mat = self.build_mat(self.seed_data)
-        #         targ_mat = self.build_mat(self.target_data)
-        #         scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
-        #         return self.target_pks, scores
-        #
-        #
-        # class SimpleAverage(StreamScoring):
-        #
-        #     def _run(self):
-        #         seed_mat = self.build_mat(self.seed_data)
-        #         targ_mat = self.build_mat(self.target_data)
-        #         scores = np.average(np.dot(targ_mat, seed_mat.T), axis=1)
-        #         return self.target_pks, scores
-        #
-        #
-        # class ThresholdAverage(StreamScoring):
-        #
-        #     def __init__(self, **kwargs):
-        #         super(ThresholdAverage, self).__init__(**kwargs)
-        #         self.threshold = kwargs.get('threshold', 0.25)
-        #
-        #     def _run(self):
-        #         seed_mat = self.build_mat(self.seed_data)
-        #         targ_mat = self.build_mat(self.target_data)
-        #         dis = np.dot(targ_mat, seed_mat.T)
-        #         dis = np.where(dis > self.threshold, dis, 0)
-        #         scores = np.sum(dis, axis=1)
-        #
-        #         return self.target_pks, scores
-        #
-        #
-        # class WeightedJournalAverage(StreamScoring):
-        #
-        #     def _run(self):
-        #         seed_mat = self.build_mat(self.seed_data)
-        #         targ_mat = self.build_mat(self.target_data)
-        #         # weight with journal
-        #         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-        #         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
-        #         scores = np.max(np.dot(targ_mat, seed_mat.T), axis=1)
-        #         return self.target_pks, scores
-        #
-        #
-        # class WeightedJournalCreatedDateAverage(StreamScoring):
-        #
-        #     def __init__(self, **kwargs):
-        #         super(WeightedJournalCreatedDateAverage, self).__init__(**kwargs)
-        #         self.threshold = kwargs.get('threshold', 0.25)
-        #
-        #     def _run(self):
-        #         seed_mat = self.build_mat(self.seed_data)
-        #         targ_mat = self.build_mat(self.target_data)
-        #         # weight with journal
-        #         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-        #         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
-        #         date_vec = self.build_created_date_vec(self.seed_data)
-        #
-        #         dis = np.dot(targ_mat, seed_mat.T)
-        #         dis = np.where(dis > self.threshold, dis, 0)
-        #         scores = np.average(dis, weights=date_vec, axis=1)
-        #
-        #         return self.target_pks, scores
-        #
-        #
-        # class OccurrenceCount(StreamScoring):
-        #
-        #     def __init__(self, **kwargs):
-        #         super(OccurrenceCount, self).__init__(**kwargs)
-        #         user = kwargs.get('user')
-        #         if user:
-        #             # number of closest neighbors to keep per seed paper
-        #             self.cutoff = 5 + 3 * user.settings.stream_narrowness
-        #
-        #     def _run(self):
-        #         seed_mat = self.build_mat(self.seed_data)
-        #         targ_mat = self.build_mat(self.target_data)
-        #         # weight with journal
-        #         seed_mat = self.weight_with_journal(self.seed_data, seed_mat)
-        #         targ_mat = self.weight_with_journal(self.target_data, targ_mat)
-        #         # build date vector
-        #         # date_vec = self.build_created_date_vec(self.seed_data)
-        #         date_vec = np.ones((len(self.seed_data), ))
-        #
-        #         dis = 1.0 - np.dot(targ_mat, seed_mat.T)
-        #         ind = np.argpartition(dis, self.cutoff, axis=0)[:self.cutoff, :][:]
-        #
-        #         ind_unique = np.unique(ind[:])
-        #
-        #         # count occurrences
-        #         occ = []
-        #         # replicate date_vec for computation ease
-        #         date_mat = np.tile(date_vec, (ind.shape[0], 1))
-        #         for i, idx in enumerate(ind_unique):
-        #             occ.append((idx, np.sum(date_mat[ind == idx])))
-        #         # normalize by number of paper in user lib
-        #         occ = list(map(lambda x: (x[0], x[1]/(seed_mat.shape[0]*self.cutoff)), occ))
-        #         occ_sorted = sorted(occ, key=lambda x: x[1], reverse=True)
-        #
-        #         scores = [x[1] for x in occ_sorted]
-        #         scores_pks = [self.target_pks[x[0]] for x in occ_sorted]
-        #
-        #         return scores_pks, scores

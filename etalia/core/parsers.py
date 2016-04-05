@@ -82,8 +82,7 @@ class Parser(object):
         str_ = ''
         str_ += paper.get('title', '')
         str_ += ' '.join([author['last_name'] for author in authors])
-        if 'title' not in journal:
-            str_ += ''
-        else:
-            str_ += journal.get('title', '')
+        title = journal.get('title', '')
+        if title:
+            str_ += title
         return hashlib.sha1(str_.encode('utf-8')).hexdigest()
