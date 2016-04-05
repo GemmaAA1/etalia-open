@@ -210,7 +210,7 @@ class Stream(TimeStampedModel):
         self.set_state('IDL')
         self.log('info', 'Updating', 'done')
 
-    @atomic
+    # @atomic
     def atomic_update(self, delete_objs, update_objs, create_objs, last_seen=None):
         if delete_objs:
             delete_objs.delete()
@@ -422,7 +422,7 @@ class Trend(TimeStampedModel):
         self.set_state('IDL')
         self.log('info', 'Updating', 'done')
 
-    @atomic
+    # @atomic
     def atomic_update(self, delete_objs, update_objs, create_objs, last_seen=None):
         if delete_objs:
             delete_objs.delete()
