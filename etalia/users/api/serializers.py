@@ -14,14 +14,15 @@ User = get_user_model()
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     photo_url = serializers.URLField(read_only=True, source='photo.name')
-    lib = serializers.HyperlinkedRelatedField(read_only=True,
-                                              view_name='api:userlib-detail')
+    user_lib = serializers.HyperlinkedRelatedField(read_only=True,
+                                              view_name='api:userlib-detail',
+                                              source='lib')
 
     class Meta:
         model = User
         extra_kwargs = {
             'link': {'view_name': 'api:user-detail'},
-            'lib': {'view_name': 'api:userlib-detail'},
+            'user_lib': {'view_name': 'api:userlib-detail'},
         }
         fields = (
             'id',
@@ -30,7 +31,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'first_name',
             'last_name',
             'photo_url',
-            'lib')
+            'user_lib')
         read_only_fields = (
             '__all__'
         )
@@ -38,19 +39,22 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserLibPaperSerializer(serializers.HyperlinkedModelSerializer):
 
+    user_lib = serializers.HyperlinkedRelatedField(source='userlib',
+                                                   view_name='api:userlib-detail',
+                                                   read_only=True)
+
     class Meta:
         model = UserLibPaper
         extra_kwargs = {
             'link': {'view_name': 'api:userlibpaper-detail'},
             'paper': {'view_name': 'api:paper-detail'},
-            'userlib': {'view_name': 'api:userlib-detail'}
         }
         fields = (
             'id',
             'link',
             'date_created',
             'authored',
-            'userlib',
+            'user_lib',
             'paper')
         read_only_fields = (
             '__all__'
@@ -61,18 +65,21 @@ class UserLibPaperNestedSerializer(serializers.HyperlinkedModelSerializer):
 
     paper = PaperNestedSerializer(many=False, read_only=True)
 
+    user_lib = serializers.HyperlinkedRelatedField(source='userlib',
+                                                   view_name='api:userlib-detail',
+                                                   read_only=True)
+
     class Meta:
         model = UserLibPaper
         extra_kwargs = {
             'link': {'view_name': 'api:userlibpaper-detail'},
-            'userlib': {'view_name': 'api:userlib-detail'}
         }
         fields = (
             'id',
             'link',
             'date_created',
             'authored',
-            'userlib',
+            'user_lib',
             'paper')
         read_only_fields = (
             '__all__'
