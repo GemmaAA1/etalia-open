@@ -8,50 +8,56 @@
 
 
 {% block content %}
-{% spaceless %}
-<div class="document">
-    <div id="signup-form">
-        <h3>
-            {% if has_email %}
-                Is that you ?
-            {% else %}
-                Please, fill up this short form
-            {% endif %}
-        </h3>
-
-        <form role="form" method="POST" data-async action="{% url 'user:require-basic-info' %}">
-            {% csrf_token %}
-            <span id="id_errors"></span>
-
-            <div class="form-inner">
-                {% for field in form %}
-                <div class="form-group">
-                    {{ field }}
-                </div>
-                {% endfor %}
-            </div>
-
-            <div class="text-center submit">
-                <button id="signup" type="submit" class="btn btn-primary btn-lg">
+    {% spaceless %}
+        <div class="document">
+            <div id="signup-form">
+                <h3>
                     {% if has_email %}
-                        Yes
+                        Is that you ?
                     {% else %}
-                        Sign-in
+                        Please, fill up this short form
                     {% endif %}
-                </button>
-            </div>
-        </form>
+                </h3>
 
-        <div class="form-footer">
-            By signing-in, your are allowing Etalia to access the data that you store in your reference software manager.
-            This information will not be shared with any other entity without your consent.
+                <form role="form" method="POST" data-async
+                      action="{% url 'user:require-basic-info' %}">
+                    {% csrf_token %}
+                    <span id="id_errors"></span>
+
+                    <div class="form-inner">
+                        {% for field in form %}
+                            <div class="form-group">
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="text-center submit">
+                        <button id="signup" type="submit"
+                                class="btn btn-primary btn-lg">
+                            {% if has_email %}
+                                Yes
+                            {% else %}
+                                Sign-in
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+
+                <div class="form-footer">
+                    By signing-in, your are allowing Etalia to access the data
+                    that you store in your reference manager.
+                    This information will not be shared with any other entity
+                    without your consent. Your are also accepting
+                    the Terms of Service for using Etalia that can be reviewed
+                    at any time at: <a href="{% url 'core:terms' %}">https://etalia.io/terms</a>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-{% endspaceless %}
+    {% endspaceless %}
 {% endblock content %}
 
 
 {% block javascript %}
-<script>requirejs(['app/user/signup']);</script>
+    <script>requirejs(['app/user/signup']);</script>
 {% endblock javascript %}

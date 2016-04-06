@@ -61,8 +61,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("stack", help="(str) stack name to be deploy", type=str)
     parser.add_argument("-p", "--parallel", help="deploy in parallel", action="store_true")
-    parser.add_argument("-s", "--slack", help="deploy in parallel", action="store_true")
-    parser.add_argument("-np", "--no-push", help="deploy in parallel", action="store_true",
+    parser.add_argument("-s", "--slack", help="verbose to Slack", action="store_true")
+    parser.add_argument("-np", "--no-push", help="do not push to git", action="store_true",
                         dest='no_push')
     parser.add_argument("-a", "--amis", help="create AMIs", action="store_true")
     args = parser.parse_args()

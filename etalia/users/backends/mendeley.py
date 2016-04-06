@@ -144,7 +144,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             user=user.email,
                             backend=self.name))
                     new = self.associate_paper(paper, user, entry['user_info'],
-                                               item.id) and new
+                                               item.id)
                     if new:
                         count += 1
                         not_new_stack_count = 0
@@ -161,7 +161,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
             if not full:
                 if not_new_stack_count > 50:
-                    break  # exit when reaching 10 already uploaded references
+                    break  # exit when reaching 50 already uploaded references
 
             if page.next_page:
                 page = page.next_page

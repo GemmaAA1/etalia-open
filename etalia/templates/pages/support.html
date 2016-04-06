@@ -51,13 +51,13 @@
                 support for OAuth is implemented.
             </p>
         </div>
-        <h2><a href="#faq4">What  personal information does  Etalia ask me to provide and why?</a></h2>
+        <h2><a href="#faq4">What  personal information does  {{ brand }} ask me to provide and why?</a></h2>
         <div id="faq4" class="collapse">
             <p>
                 {{ brand }} needs your email address when you sign in with your reference manager account
                 and asks for your first name and last name. By granting access to your reference software
                 manager, you also allows {{ brand }} to get in sync with the publications you save in
-                your library. Etalia does not share any of this information with third parties.
+                your library. {{ brand }} does not share any of this information with third parties.
             </p>
         </div>
         <h2><a href="#faq5">Is my data secure?</a></h2>
@@ -74,20 +74,20 @@
                 We will never sell, rent or trade your personal information to others without your prior consent.
             </p>
         </div>
-        <h2><a href="#faq7">How  can I delete my account with  Etalia?</a></h2>
+        <h2><a href="#faq7">How  can I delete my account with  {{ brand }}?</a></h2>
         <div id="faq7" class="collapse">
             <p>
                 Under Settings, you find the option to delete your account.
             </p>
         </div>
 
-        <h2><a href="#faq8">{{ brand }} does not work</a></h2>
+        <h2><a href="#faq8">What if {{ brand }} does not work ?</a></h2>
         <div id="faq8" class="collapse">
             <p>
-                {{ brand }} might on maintenance and we apologize for any inconvenience. If {{ brand }}
+                {{ brand }} might be on maintenance and we apologize for any inconvenience. If {{ brand }}
                 is up and running and you cannot access your account, most likely cookies are disabled
                 in your web browser and you have to enable them. Cookies are used to make sign-in to
-                {{ brand }} seamless, that is you will not have to sign-in again if you go back to etalia
+                {{ brand }} seamless, that is you will not have to sign-in again if you go back to {{ brand }}
                 the next day.
             </p>
         </div>
@@ -134,6 +134,29 @@
                 such as comments on a pre-print you may have uploaded.  Select “My Threads” to monitor
                 your communications with a circle of experts who started with you discussion.
                 <b>This service is not yet released and we will roll it out soon. stay tuned.</b>
+            </p>
+        </div>
+
+        <h2><a href="#faq14">Why the suggested papers are not matching my interest?</a></h2>
+        <div id="faq14" class="collapse">
+            <p>
+                We are trying our best to improve our recommendation engine so that it
+                provides you with accurate and relevant suggestions. This is not an easy
+                task, we may be off sometimes but we are improving based on your feedback.
+                You can do 3 things to help us:
+                <ol>
+                    <li>You can provide feedback directly under
+                        <a href="{% url 'feeds:stream' %}">My Stream</a>
+                        or <a href="{% url 'feeds:trend' %}">Trend</a> using the
+                        ban (<span class="eai eai-remove"></span>) icon.
+                    </li>
+                    <li>Under settings, you can tuned {{ brand }}'s
+                        recommendation engine to your need.
+                    </li>
+                    <li>You can make sure that the references that your store in
+                        reference manager are relevant to your interest.
+                    </li>
+                </ol>
             </p>
         </div>
 

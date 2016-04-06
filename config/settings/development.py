@@ -81,7 +81,7 @@ CACHES = {
 #                                      #
 ########################################
 
-#
+
 # NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
 # NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
 # NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
@@ -93,5 +93,22 @@ CACHES = {
 #         'PASSWORD': env.str('AWS_RDS_PASSWORD'),
 #         'HOST': env.str('AWS_RDS_HOSTNAME'),
 #         'PORT': env.str('AWS_RDS_PORT'),
+#     }
+# }
+#
+# CACHE_FILE_DIR = str((ROOT_DIR-1).path('cache_files'))
+# # Create directory to store cache files if does not exists
+# if not os.path.exists(CACHE_FILE_DIR):
+#     os.mkdir(CACHE_FILE_DIR)
+#
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'TIMEOUT': 60*5,     # 5 min
+#     },
+#     'files': {
+#         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+#         'LOCATION': CACHE_FILE_DIR,
+#         'TIMEOUT': 60 * 60,     # 1 h
 #     }
 # }
