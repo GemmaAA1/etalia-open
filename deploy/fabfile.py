@@ -509,7 +509,8 @@ def update_redis_cache():
                                   'REDIS_DIR': redis_dir},
                               use_sudo=True,
                               use_jinja=True)
-        # run_as_root("/etc/init.d/redis-server restart")
+        # flush cache
+        run("redis-cli flushall")
 
 # SPOT
 # ----------

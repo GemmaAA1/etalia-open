@@ -134,7 +134,8 @@ class Scoring(object):
         papers = Paper.objects\
             .filter(pk__in=pks)\
             .prefetch_related('authors')
-        mapping = dict((p.pk, p.authors.all()) for p in papers)
+        mapping = dict((p.pk, p.authors.all().values_list('pk', flat=True))
+                       for p in papers)
         data = [mapping[x] for x in pks]
         return data
 
@@ -305,7 +306,7 @@ class ContentBasedScoring(Scoring):
 
     def build_profile_ind2authpk(self):
         """Build array of author_pk based on occurrence of author_pk in seeds"""
-        seed_auth = [pk for l in self.seed_auth_data for pk in l]
+        seed_auth = [auth.pk for l in self.seed_auth_data for auth in l]
         # compute occurrences
         seed_occ = collections.Counter(seed_auth)
         # populate seed_ind2authpk
