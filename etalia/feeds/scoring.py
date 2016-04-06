@@ -278,8 +278,10 @@ class ContentBasedScoring(Scoring):
 
     MAX_SEED_AUTH_PK = 300
     MAX_SEED_JOUR_PK = 100
-    MIN_OCC_SEED_AUTH = 2
-    MIN_OCC_SEED_JOUR = 1
+    MIN_OCC_SEED_AUTH = 3
+    MIN_OCC_SEED_JOUR = 2
+    MAX_OCC_SEED_AUTH = 30
+    MAX_OCC_SEED_JOUR = 30
     DEFAULT_VECTOR_WEIGHT = 1.
     DEFAULT_AUTHOR_WEIGHT = 1.
     DEFAULT_JOURNAL_WEIGHT = 1.
@@ -380,17 +382,29 @@ class ContentBasedScoring(Scoring):
         seed_auth_av = np.average(seed_auth_mat, weights=date_vec, axis=0)
         seed_jour_av = np.average(seed_jour_mat, weights=date_vec, axis=0)
 
+        # getting some stats on seed_vec_av
+        dot_prod = np.dot(seed_vec_mat, seed_vec_mat.T)
+        auto_distances = dot_prod[np.where(np.eye(seed_vec_mat.shape[0]) < 1)]
+        mean_distance = np.mean(auto_distances)
+
         # Squashing journal using softmax
-        seed_jour_av = np.exp(seed_jour_av) / np.sum(np.exp(seed_jour_av))
-        # Squashing authors using softmax
-        seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
+        # seed_jour_av = np.exp(seed_jour_av) / np.sum(np.exp(seed_jour_av))
+        # # Squashing authors using softmax
+        # seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
+        seed_jour_av = seed_jour_av / np.sum(seed_jour_av) * mean_distance
+        # # Squashing authors using softmax
+        # seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
+        seed_auth_av = seed_auth_av / np.sum(seed_auth_av) * mean_distance
 
         # concatenate with weight
+        # self.profile = np.hstack((self.vec_w * seed_vec_av,
+        #                           self.auth_w * seed_auth_av *
+        #                           seed_vec_av.shape[0],
+        #                           self.jour_w * seed_jour_av *
+        #                           seed_vec_av.shape[0]))
         self.profile = np.hstack((self.vec_w * seed_vec_av,
-                                  self.auth_w * seed_auth_av *
-                                  seed_vec_av.shape[0],
-                                  self.jour_w * seed_jour_av *
-                                  seed_vec_av.shape[0]))
+                                  self.auth_w * seed_auth_av,
+                                  self.jour_w * seed_jour_av))
 
         # # normalize
         # norm = np.linalg.norm(seed_av, axis=0)
