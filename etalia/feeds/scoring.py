@@ -190,7 +190,7 @@ class Scoring(object):
         """Build created_date_vec an array of weights related to created_date
         ordered by seed_pks"""
         # init
-        date_vec = np.zeros(len(self.seed_pks), dtype=np.float)
+        self.created_date_vec = []
 
         # Get date data
         created_date = self.stream.user.lib.userlib_paper \
@@ -375,12 +375,7 @@ class ContentBasedScoring(Scoring):
         # build journal mat
         seed_jour_mat = self.build_jour_utility_mat(self.seed_data)
 
-        # concatenate these 3 mats
-        # seed_mat = np.hstack((self.vec_w * seed_vec_mat,
-        #                       self.auth_w * seed_auth_mat,
-        #                       self.jour_w * seed_jour_mat))
-
-        # average with time-stamps logistic weights
+        # average with time-stampsn weights
         seed_vec_av = np.average(seed_vec_mat, weights=date_vec, axis=0)
         seed_auth_av = np.average(seed_auth_mat, weights=date_vec, axis=0)
         seed_jour_av = np.average(seed_jour_mat, weights=date_vec, axis=0)
