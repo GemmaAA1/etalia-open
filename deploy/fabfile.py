@@ -869,6 +869,9 @@ def deploy():
     update_supervisor_conf()
     restart_supervisor()
 
+    # restart services
+    restart_all()
+
     if reb:
         reboot_instance()
 
