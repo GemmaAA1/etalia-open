@@ -306,7 +306,7 @@ class ContentBasedScoring(Scoring):
 
     def build_profile_ind2authpk(self):
         """Build array of author_pk based on occurrence of author_pk in seeds"""
-        seed_auth = [auth.pk for l in self.seed_auth_data for auth in l]
+        seed_auth = [pk for l in self.seed_auth_data for pk in l]
         # compute occurrences
         seed_occ = collections.Counter(seed_auth)
         # populate seed_ind2authpk
