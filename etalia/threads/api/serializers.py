@@ -93,8 +93,8 @@ class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):
 
     def validate(self, data):
         """User is a member of thread"""
-        thread = data['thread']
-        if not self.context['request'].user in thread.members:
+        post = data['post']
+        if not self.context['request'].user in post.thread.members:
             raise serializers.ValidationError(
                 "user is not a member of this thread")
         return data
