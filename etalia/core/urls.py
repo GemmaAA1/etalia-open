@@ -7,7 +7,8 @@ from . import views
 urlpatterns = [
     url(r'^$', views.home, name='home'),
     url(r'^about/$', views.about, name='about'),
-    url(r'^terms/$', views.terms, name='terms'),
+    url(r'^terms-of-use/$', views.terms_use, name='terms_use'),
+    url(r'^terms-of-privacy/$', views.terms_privacy, name='terms_privacy'),
     url(r'^support/$', views.support, name='support'),
     url(r'^help/$', views.help, name='help'),
     url(r'^test-failing-task$', views.test_failing_task)

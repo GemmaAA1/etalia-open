@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import caches
 
 from etalia.nlp.models import PaperVectors, Model
-from etalia.library.models import Paper
+from etalia.library.models import Paper, Author
 
 from etalia.altmetric.models import AltmetricModel
 
@@ -134,7 +134,12 @@ class Scoring(object):
         papers = Paper.objects\
             .filter(pk__in=pks)\
             .prefetch_related('authors')
-        mapping = dict((p.pk, p.authors.all().values_list('pk', flat=True))
+        author_null_id = Author.objects.get(first_name='',
+                                            last_name='',
+                                            email='').pk
+        mapping = dict((p.pk, p.authors.all()
+                        .exclude(id=author_null_id)
+                        .values_list('pk', flat=True))
                        for p in papers)
         data = [mapping[x] for x in pks]
         return data
