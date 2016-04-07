@@ -40,10 +40,13 @@ def about(request):
     return render(request, 'pages/about.html', context=context)
 
 
-def terms(request):
+def terms_service(request):
     context = {}
-    return render(request, 'pages/terms.html', context=context)
+    return render(request, 'pages/terms-service.html', context=context)
 
+def terms_privacy(request):
+    context = {}
+    return render(request, 'pages/terms-privacy.html', context=context)
 
 def support(request):
     context = {}
