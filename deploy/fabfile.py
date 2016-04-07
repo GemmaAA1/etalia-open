@@ -30,6 +30,7 @@ import re
 import string
 import random
 import itertools
+from time import sleep
 
 from boto import utils
 from boto.ec2 import connect_to_region, instance
@@ -869,11 +870,11 @@ def deploy():
     update_supervisor_conf()
     restart_supervisor()
 
-    # restart services
-    restart_all()
-
     if reb:
         reboot_instance()
+    else:
+        sleep(5)
+        restart_all()
 
 
 @task
