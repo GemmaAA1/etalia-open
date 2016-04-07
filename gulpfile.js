@@ -174,7 +174,8 @@ gulp.task('styles', function() {
             config.src + '/css/app/list.css',
             config.src + '/css/app/card.css',
             config.src + '/css/app/detail.css',
-            config.src + '/css/app/threads.css'
+            config.src + '/css/app/thread.css',
+            config.src + '/css/app/thread-content.css'
         ])
         .pipe(concat('elements.css'))
         .pipe(minify({compatibility: 'ie8'}))

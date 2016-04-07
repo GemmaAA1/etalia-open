@@ -218,14 +218,14 @@ class User(AbstractBaseUser, PermissionsMixin):
             from_user=self,
             to_user=user,
             status=status)
-        return relationship
+        return relationship, created
 
     def remove_relationship(self, user, status):
         Relationship.objects.filter(
             from_user=self,
             to_user=user,
             status=status).delete()
-        return
+        return _, False
 
     def get_relationships(self, status):
         return self.relationships.filter(
@@ -240,6 +240,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_following(self):
         return self.get_relationships(RELATIONSHIP_FOLLOWING)
 
+    def get_blocked(self):
+        return self.get_relationships(RELATIONSHIP_BLOCKED)
+
     def get_followers(self):
         return self.get_related_to(RELATIONSHIP_FOLLOWING)
 
@@ -249,6 +252,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def block(self, user):
         return self.add_relationship(user, RELATIONSHIP_BLOCKED)
 
+    def unfollow(self, user):
+        return self.remove_relationship(user, RELATIONSHIP_FOLLOWING)
+
+    def unblock(self, user):
+        return self.remove_relationship(user, RELATIONSHIP_BLOCKED)
+
     @property
     def followers(self):
         return self.get_followers()
@@ -256,6 +265,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def following(self):
         return self.get_following()
+
+    @property
+    def blocked(self):
+        return self.get_blocked()
 
 
 class UserLib(TimeStampedModel):

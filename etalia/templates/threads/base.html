@@ -4,9 +4,131 @@
 {% load staticfiles %}
 
 
+{% block top-bar_controls %}
+{% spaceless %}
+<div class="wrap">
+
+    {% block toggle-pinned %}
+    <button id="toggle-pinned" class="btn-circle{% if control_session.pin %} active{% endif %}" type="button" title="Pinned items">
+        <span class="eai eai-pin"></span>
+    </button>
+    {% endblock toggle-pinned %}
+
+    {% block cluster-selector %}
+    {% if not hide_cluster_icon %}
+    <div id="cluster" class="selector" title="Clusters">
+        <button id="toggle-cluster" class="btn-circle" type="button">
+            {# {% if 0 < control_session.cluster %} #}
+            {# <span id="cluster-selection" class="cluster-value cluster-{{ control_session.cluster - 1 }}" data-value="{{ control_session.cluster }}"></span> #}
+            {# {% else %} #}
+            <span id="cluster-selection" class="cluster-value" style="display:none"></span>
+            {# {% endif %} #}
+            <span class="cluster-icon"{% if not 0 < control_session.cluster %} style="display: none"{% endif %}>
+                <span class="cluster-0"></span>
+                <span class="cluster-1"></span>
+                <span class="cluster-2"></span>
+                <span class="cluster-3"></span>
+            </span>
+        </button>
+        <div class="choices">
+            <ul>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-0" data-cluster="1"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-1" data-cluster="2"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-2" data-cluster="3"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-3" data-cluster="4"></a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" class="cluster-value cluster-none" data-cluster="0">
+                        <span class="cluster-icon">
+                            <span class="cluster-0"></span>
+                            <span class="cluster-1"></span>
+                            <span class="cluster-2"></span>
+                            <span class="cluster-3"></span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    {% endblock cluster-selector %}
+
+    {% block timespan-selector %}
+    <div id="timespan" class="selector" title="Time span">
+        <button id="toggle-timespan" class="btn-circle" type="button">
+            <span class="eai eai-clock"></span>
+            <span id="timespan-selection" class="timespan-value" data-value="{{ control_session.time_span }}">
+                {% if control_session.time_span == 7 %}
+                    W
+                {% elif control_session.time_span == 30 %}
+                    1m
+                {% elif control_session.time_span == 60 %}
+                    2m
+                {% else %}
+                    1m
+                {% endif %}
+            </span>
+        </button>
+        <div class="choices">
+            <ul>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="7">
+                        <span class="timespan-value">W</span> <strong>W</strong>eek
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="30">
+                        <span class="timespan-value">1m</span> <strong>1 m</strong>onth
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript: void(0)" data-timespan="60">
+                        <span class="timespan-value">2m</span> <strong>2 m</strong>onths
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endblock timespan-selector %}
+
+    <button id="toggle-search" class="btn-circle" type="button">
+        <span class="eai eai-search"></span>
+    </button>
+
+    <div id="search">
+        <button id="close-search" class="btn-circle" type="button">
+            <span class="eai eai-close"></span>
+        </button>
+        <form id="search-bar" onsubmit="return false;">
+            <button type="submit">
+                <span class="eai eai-search"></span>
+            </button>
+            <label for="search-input">
+                <input type="text" id="search-input" name="search" placeholder="Search..." value="{{ control_session.search_query }}">
+            </label>
+        </form>
+    </div>
+
+</div>
+{% endspaceless %}
+{% endblock top-bar_controls %}
+
+
 {% block left-flap %}
     {% include '_fragment/nav-flap.html' %}
 {% endblock left-flap %}
+
+
+{% block right-flap %}
+{% include '_fragment/filter-flap.html' %}
+{% endblock right-flap %}
 
 
 {% block stylesheets %}
@@ -17,7 +139,8 @@
 <link href="{% static 'css/app/list.css' %}" rel="stylesheet" type="text/css">
 <link href="{% static 'css/app/card.css' %}" rel="stylesheet" type="text/css">
 <link href="{% static 'css/app/detail.css' %}" rel="stylesheet" type="text/css">
-<link href="{% static 'css/app/threads.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/thread.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/thread-content.css' %}" rel="stylesheet" type="text/css">
 {% endif %}
 {% endblock stylesheets %}
 

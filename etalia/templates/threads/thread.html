@@ -1,134 +1,275 @@
-{% extends 'layout.html' %}
-
-
-{% load staticfiles %}
-
-
-{% block title %}{{ block.super }} - Thread{% endblock %}
-
-
-{% block content %}
 {% spaceless %}
-    <div style="padding-top: 100px"></div>
-    <h4 class="title">
-        title: {{ thread.title }}
-    </h4>
-    <h4>
-        type: {{ thread.type }}
-    </h4>
-    <h4>
-        owner: {{ thread.owner }}
-    </h4>
-    <h4>
-        content: {{ thread.content }}
-    </h4>
-    <a href="{% url 'threads:update_thread' thread.id %}">edit Thread</a>
-    <h4>
-        privacy: {{ thread.privacy }}
-    </h4>
-    <h4>
-        # posts: {{ nb_posts }}
-    </h4>
-    <h4>
-        # members: {{ nb_members }}
-    </h4>
-    <h4>
-        has_joined: {{ state.is_joined }}
-    </h4>
-    <h4>
-        following: {{ following }}
-    </h4>
 
-    Pin: {{ state.is_pinned }}
-    <form role="form" method="POST" action="{% url 'threads:state' %}">
-        {% csrf_token %}
-        <input type="text" name="action" value="pin" hidden>
-        <input type="text" name="thread" value="{{ thread.id }}" hidden>
-        <button id="signup" type="submit" class="btn btn-primary">Pin</button>
-    </form>
-    Ban: {{ state.is_banned }}
-    <form role="form" method="POST" action="{% url 'threads:state' %}">
-        {% csrf_token %}
-        <input type="text" name="action" value="ban" hidden>
-        <input type="text" name="thread" value="{{ thread.id }}" hidden>
-        <button id="signup" type="submit" class="btn btn-primary">Ban</button>
-    </form>
+<div id="detail-actions" class="actions">
+    <div class="card">
+        {% if user.is_authenticated %}
+        <!--<a href="javascript: void(0)" class="detail-pin{% if is_pinned %} active {% endif %}" title="Pin/Unpin">-->
+        <a href="javascript: void(0)"
+           class="detail-pin"
+           title="Pin/Unpin">
+            <span class="eai eai-pin"></span>
+        </a>
+        <a href="javascript: void(0)"
+           class="detail-ban"
+           title="Remove from feed">
+            <span class="eai eai-remove"></span>
+        </a>
+        <!--<a href="javascript: void(0)" class="detail-library-{% if is_in_lib %}trash{% elif is_in_trash %}restore{% else %}add{% endif %} loading-button" title="{% if is_in_lib %}Move to trash{% else %}Add to library{% endif %}">-->
+        <a href="javascript: void(0)"
+           class="detail-library-trash loading-button"
+           title="Move to trash">
+            <!--<span class="eai eai-library-{% if is_in_lib %}trash{% else %}add{% endif %}"></span>-->
+            <span class="eai eai-library-trash"></span>
+        </a>
 
-    {% if state.is_joined %}
-        <h4>
-            members:
-            {% for member in members %}
-                {{ member }}
-                {% if member in following %}
-                    (followed)
-                {% elif %}
-                    <a href="{% url 'users:follow'  %}">(follow)</a>
-                {% endif %}
-
-            {% endfor %}
-        </h4>
-        <div>
-            {% for member in members %}
-                <img style="height: 50px;" src="{{ member.photo.name }}"/>
-            {% endfor %}
-        </div>
-
-        <h4>
-            posts:
-        </h4>
-        {% if posts %}
-            {% for post in posts %}
-                <div style="padding: 5px 0 5px 0;">
-                    {{ post.created }}
-                    {{ post.author }}
-                    {{ post.content }}
-                    {% if post.author == user %}
-                        <a href="{% url 'threads:edit_post' post.id %}">Edit </a>
-                        <a href="{% url 'threads:delete_post' post.id %}">Delete</a>
-                    {% endif %}
-                    <div style="padding-left: 20px">comment: <br>
-                    {% for comment in post.comments.all %}
-                        <div>
-                        {{ comment.created }} {{ comment.author }} {{ comment.content }}
-                        {% if comment.author == user %}
-                            <a href="{% url 'threads:edit_comment' comment.id %}">Edit </a>
-                            <a href="{% url 'threads:delete_comment' comment.id %}">Delete</a>
-                        </div>
-                    {% endif %}
-                    {% endfor %}
-                    <a href="{% url 'threads:new_comment' post.id %}">Add comment</a>
-                    </div>
-                </div>
-            {% endfor %}
+        <!--<a href="mailto:?subject=&body={{ paper.title }}%0D%0A{{ paper.print_compact_authors }}%0D%0A{{ paper.journal.title }}.%20{{ paper.print_date }}%0D%0A{{ paper.url }}"-->
+        <a href="javascript: void(0)"
+           class="detail-mail" title="Email">
+            <span class="eai eai-mail"></span>
+        </a>
+        <a href="javascript: void(0)" class="detail-twitter" title="Share on twitter">
+            <span class="eai eai-twitter"></span>
+        </a>
+        <a href="javascript: void(0)" class="detail-google-plus" title="Share on Google+">
+            <span class="eai eai-google-plus"></span>
+        </a>
         {% else %}
-            No posts yet
+        <!--<a href="{{ paper.url }}" target="_blank" class="detail-pdf" title="Go to PDF">-->
+        <a href="javascript: void(0)" target="_blank" class="detail-pdf" title="Go to PDF">
+            <span class="eai eai-pdf"></span>
+        </a>
         {% endif %}
+    </div>
+</div>
 
-        <div style="padding-top: 10px;">
-            <a href="{% url 'threads:new_post' thread.id%}">New Post</a>
+<div class="content">
+    <div class="card">
+
+        {% include 'user/thumb.html' with user_id=1 user_followed=1 %}
+
+        <p class="title">
+            <a href="javascript: void(0)">
+                <span>new</span>
+                Fusce faucibus magna quam, dictum pellentesque lorem venenatis id. Vestibulum sodales imperdiet enim ?
+            </a>
+        </p>
+        <div class="infos">
+            <p>
+                <strong>John Doe</strong> - <em>Sep 25, 2015</em>
+            </p>
+            <p class="icons">
+                <span class="comment">
+                    <span class="count">16</span>
+                    <span class="eai eai-comment"></span>
+                </span>
+                <span class="member">
+                    <span class="count">16</span>
+                    <span class="eai eai-user"></span>
+                </span>
+            </p>
         </div>
-        <h4>
-            <form role="form" method="POST" action="{% url 'threads:state' %}">
-                {% csrf_token %}
-                <input type="text" name="action" value="leave" hidden>
-                <input type="text" name="thread" value="{{ thread.id }}" hidden>
-                <button id="signup" type="submit" class="btn btn-primary">Leave</button>
-            </form>
-        </h4>
+        <div class="materials">
+            <p>
+                <span class="eai eai-pdf"></span>
+                On <a href="javascript: void(0)">Related paper’s title (+author)</a>
+            </p>
+        </div>
+    </div>
 
-    {% else %}
-        <h4>
-            members: {{ members }}
-        </h4>
-        <h4>
-            <form role="form" method="POST" action="{% url 'threads:state' %}">
-                {% csrf_token %}
-                <input type="text" name="action" value="join" hidden>
-                <input type="text" name="thread" value="{{ thread.id }}" hidden>
-                <button type="submit" class="btn btn-primary">Join</button>
+    <div class="thread thread-box">
+        <div class="thread-content">
+            <p>
+                Ut interdum est non eros auctor laoreet. <strong>Ut lorem libero, vehicula sit amet nisi a</strong>,
+                rhoncus venenatis nisi. Pellentesque iaculis aliquet risus non cursus. <em>In ut erat vulputate, blandit mauris sed</em>,
+                egestas turpis. Curabitur efficitur, lacus vitae laoreet imperdiet, orci lorem varius mi, et gravida massa ex
+                vel nulla. Praesent laoreet nisi ac aliquam tincidunt.
+            </p>
+            <p>
+                <a href="javascript: void(0)">Quisque porta eleifend dolor placerat hendrerit</a>.
+            </p>
+            <p>
+                Morbi sollicitudin est ut purus dignissim cursus. <strong>Duis posuere dignissim purus id auctor</strong>. Fusce tincidunt enim
+                sit amet nisl ultricies elementum. Nullam a ultricies urna. Cras at orci nec lacus fermentum imperdiet.
+            </p>
+        </div>
+        <p class="thread-info">
+            <strong>John Doe</strong> - <em>Sep 25, 2015</em>
+            - <a href="javascript: void(0)">edit</a>
+            - <a href="javascript: void(0)">delete</a>
+        </p>
+    </div>
+
+    <div class="thread-members thread-box">
+        {% for i in "012345678901" %}
+            {% if forloop.counter0|divisibleby:4 %}
+                {% include 'user/thumb.html' with user_id=forloop.counter user_followed=1 %}
+            {% else %}
+                {% include 'user/thumb.html' with user_id=forloop.counter user_followed=0 %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="thread-members-toggle">
+        <a href="javascript: void(0)">
+            <span class="eai eai-down"></span>
+        </a>
+    </div>
+
+
+    <div class="thread-posts">
+
+        <div class="thread-post">
+            {% include 'user/thumb.html' with user_id=2 user_followed=0 %}
+            <div class="thread-content">
+                <p>
+                    Ut interdum est non eros auctor laoreet. <strong>Ut lorem libero, vehicula sit amet nisi a</strong>,
+                    rhoncus venenatis nisi. Pellentesque iaculis aliquet risus non cursus. <em>In ut erat vulputate, blandit mauris sed</em>,
+                    egestas turpis. Curabitur efficitur, lacus vitae laoreet imperdiet, orci lorem varius mi, et gravida massa ex
+                    vel nulla. Praesent laoreet nisi ac aliquam tincidunt.
+                </p>
+            </div>
+            <p class="thread-info">
+                <strong>John Doe</strong> - <em>Sep 25, 2015</em>
+                - <a href="javascript: void(0)">edit</a>
+                - <a href="javascript: void(0)">delete</a>
+            </p>
+
+            <div class="thread-comments">
+
+                <div class="thread-comment">
+                    {% include 'user/thumb.html' with user_id=3 user_followed=0 %}
+                    <div class="thread-content">
+                        <p>
+                            Ut interdum est non eros auctor laoreet, praesent laoreet nisi ac aliquam tincidunt.
+                        </p>
+                    </div>
+                    <p class="thread-info">
+                        <strong>John Doe</strong> - <em>Sep 25, 2015</em>
+                        - <a href="javascript: void(0)">edit</a>
+                        - <a href="javascript: void(0)">delete</a>
+                    </p>
+                </div>
+
+                <div class="thread-comment">
+                    {% include 'user/thumb.html' with user_id=4 user_followed=0 %}
+                    <div class="thread-content">
+                        <p>
+                            Ut interdum est non eros auctor laoreet, praesent laoreet nisi ac aliquam tincidunt.
+                        </p>
+                    </div>
+                    <p class="thread-info">
+                        <strong>John Doe</strong> - <em>Sep 25, 2015</em>
+                        - <a href="javascript: void(0)">edit</a>
+                        - <a href="javascript: void(0)">delete</a>
+                    </p>
+                </div>
+
+                <div class="thread-comment">
+                    <a href="javascript: void(0)">Add a comment</a>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="thread-post">
+            {% include 'user/thumb.html' with user_id=5 user_followed=1 %}
+            <div class="thread-content">
+                <p>
+                    Ut interdum est non eros auctor laoreet. <strong>Ut lorem libero, vehicula sit amet nisi a</strong>,
+                    rhoncus venenatis nisi. Pellentesque iaculis aliquet risus non cursus. <em>In ut erat vulputate, blandit mauris sed</em>,
+                    egestas turpis. Curabitur efficitur, lacus vitae laoreet imperdiet, orci lorem varius mi, et gravida massa ex
+                    vel nulla. Praesent laoreet nisi ac aliquam tincidunt.
+                </p>
+            </div>
+            <p class="thread-info">
+                <strong>John Doe</strong> - <em>Sep 25, 2015</em> - <a href="javascript: void(0)">edit</a>
+            </p>
+
+            <div class="thread-comments">
+
+                <div class="thread-comment">
+                    {% include 'user/thumb.html' with user_id=6 user_followed=0 %}
+                    <div class="thread-content">
+                        <p>
+                            Ut interdum est non eros auctor laoreet, praesent laoreet nisi ac aliquam tincidunt.
+                        </p>
+                    </div>
+                    <p class="thread-info">
+                        <strong>John Doe</strong> - <em>Sep 25, 2015</em> - <a href="javascript: void(0)">edit</a>
+                    </p>
+                </div>
+
+                <div class="thread-comment">
+                    {% include 'user/thumb.html' with user_id=7 user_followed=0 %}
+                    <div class="thread-content">
+                        <p>
+                            Ut interdum est non eros auctor laoreet, praesent laoreet nisi ac aliquam tincidunt.
+                        </p>
+                    </div>
+                    <p class="thread-info">
+                        <strong>John Doe</strong> - <em>Sep 25, 2015</em> - <a href="javascript: void(0)">edit</a>
+                    </p>
+                </div>
+
+                <div class="thread-comment">
+                    <!--<a href="javascript: void(0)">Add a comment</a>-->
+                    <form class="tread-comment-add form-horizontal">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="eai eai-tick"></span>
+                        </button>
+                        <button type="button" class="btn btn-primary">
+                            <span class="eai eai-remove"></span>
+                        </button>
+                        <div class="form-group">
+                            <label for="comment-content" class="col-sm-2 control-label">Your comment</label>
+                            <div class="col-sm-10">
+                                <textarea id="comment-content" name="comment[content]" class="form-control"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="thread-post">
+            {% include 'user/thumb.html' with user_id=8 user_followed=0 %}
+
+            <form class="tread-post-add">
+                <div class="form-group">
+                    <label for="post-content" class="col-sm-2 control-label hidden">Your post</label>
+                    <textarea id="post-content" name="post[content]" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Post
+                </button>
             </form>
-        </h4>
-    {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="neighbors-thumbs">
+        <h2>Similar threads</h2>
+        <ul class="neighbors-timespan-selector">
+            <li>
+                <a href="javascript: void(0)" data-value="365">1 year</a>
+            </li>
+            <li class="active">
+                <a href="javascript: void(0)" data-value="30">1 month</a>
+            </li>
+            <li>
+                <a href="javascript: void(0)" data-value="7">Week</a>
+            </li>
+        </ul>
+        <div class="thumb-list async-content">
+            {% for t in "01234" %}
+                {% include 'threads/thumb.html' with user_id=forloop.counter %}
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
 
 {% endspaceless %}
-{% endblock content %}

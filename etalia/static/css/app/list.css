@@ -469,19 +469,24 @@
 
 /* ------------------------------------ THUMB ------------------------------------ */
 
-.list-title {
+.list-title .btn {
+    margin: 0 10px 10px 0;
+}
+
+.list-title p {
     color: #7a7d80;
     font-size: 16px;
     font-style: italic;
     border-bottom: 1px solid #dfe2e6;
-    padding-bottom: 16px;
+    padding-bottom: 10px;
     margin-bottom: 16px;
+    line-height: 34px;
 }
 
 .thumb {
     margin-bottom: 20px;
-    padding-bottom: 20px;
-    overflow: hidden;
+    padding-bottom: 10px;
+    /*overflow: hidden;*/
     border-bottom: 1px solid #dfe2e6;
 }
 
@@ -524,8 +529,21 @@
 
 /* ------------------------------------ RESPONSIVE ------------------------------------ */
 
-@media (min-width: 400px) {
+/* Landscape smartphones */
+@media (min-width: 480px) {
 
+}
+
+/* Portrait small table */
+@media (min-width: 600px) {
+    .list-title .btn {
+        float: right;
+        margin: 0 10px 0 0;
+    }
+
+    .list-title .btn:first-child {
+        margin-right: 0;
+    }
 }
 
 /* Small devices (tablets, 768px and up) */

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import json
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
-from django.db.models import F
-from django.utils import timezone
 
 from etalia.core.models import TimeStampedModel
 from etalia.library.models import Paper
+from .mixins import ModelDiffMixin
 from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
     THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, THREAD_QUESTION,\
-    THREAD_PRIVACIES, THREAD_PUBLIC
+    THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PARTICIPATE, THREAD_WATCH, \
+    THREAD_JOINED, THREAD_BANNED, THREAD_PINNED, THREAD_LEFT
 
 
 class Thread(TimeStampedModel):
@@ -21,7 +22,9 @@ class Thread(TimeStampedModel):
                                null=False, blank=False, verbose_name='Type')
 
     # User who create thread
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threads_owned')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             related_name='threads_owned',
+                             null=True)
 
     # Privacy
     privacy = models.IntegerField(choices=THREAD_PRIVACIES,
@@ -53,7 +56,9 @@ class Thread(TimeStampedModel):
         return '{0}@{1}'.format(self.short_title, self.user)
 
     def get_active_members(self):
-        tus = self.threaduser_set.filter(is_joined=True).select_related('user')
+        tus = self.threaduser_set\
+            .filter(participate=THREAD_JOINED)\
+            .select_related('user')
         return [tu.user for tu in tus]
 
     def is_owner(self, user):
@@ -63,10 +68,10 @@ class Thread(TimeStampedModel):
             return False
 
     def save(self, *args, **kwargs):
+        super(Thread, self).save(*args, **kwargs)
         if not self.threaduser_set.exists():
             tu = self.threaduser_set.create(user=self.user)
             tu.join()
-        super(Thread, self).save(*args, **kwargs)
 
     def state(self, user):
         if ThreadUser.objects.filter(user=user, thread=self).exists():
@@ -92,21 +97,6 @@ class ThreadPost(TimeStampedModel):
 
     def __str__(self):
         return '{0} {1}'.format(self.created, self.user)
-
-    def save(self, **kwargs):
-        if not self.id:
-            # increment ThreadUser post count
-            self.user.threaduser_set\
-                .filter(thread=self.thread)\
-                .update(num_comments=F('num_comments') + 1)
-        super(ThreadPost, self).save(**kwargs)
-
-    def delete(self, **kwargs):
-        # decrement ThreadUser post count
-        self.user.threaduser_set\
-            .filter(thread=self.thread)\
-            .update(num_comments=F('num_comments') - 1)
-        super(ThreadPost, self).delete(**kwargs)
 
 
 class ThreadComment(TimeStampedModel):
@@ -201,7 +191,7 @@ class ThreadNeighbor(TimeStampedModel):
                            null=True, blank=True)
 
 
-class ThreadUser(TimeStampedModel):
+class ThreadUser(ModelDiffMixin, TimeStampedModel):
 
     # user
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -209,55 +199,47 @@ class ThreadUser(TimeStampedModel):
     # thread
     thread = models.ForeignKey(Thread)
 
-    # thread is pinned
-    is_pinned = models.BooleanField(default=False)
+    # thread watch (pinned or left
+    watch = models.PositiveIntegerField(null=True, default=None,
+                                        choices=THREAD_WATCH)
 
     # thread is banned
-    is_banned = models.BooleanField(default=False)
-
-    # thread is added
-    is_joined = models.BooleanField(default=False)
-
-    # thread is trashed
-    is_left = models.BooleanField(default=False)
-
-    # First time joined the thread
-    first_joined_at = models.DateTimeField(null=True, blank=True, default=None)
-
-    # When user left the thread, is any
-    last_left_at = models.DateTimeField(null=True, blank=True, default=None)
-
-    # Number of comments posted in thread
-    num_comments = models.PositiveIntegerField(default=0)
+    participate = models.PositiveIntegerField(null=True, default=None,
+                                              choices=THREAD_PARTICIPATE)
 
     class Meta:
-        ordering = ['-num_comments', 'first_joined_at']
+        unique_together = (('thread', 'user'), )
 
     def join(self):
-        self.is_joined = True
-        self.is_left = False
-        self.is_banned = False
-        if not self.first_joined_at:
-            self.first_joined_at = timezone.now()
-        self.last_left_at = None
+        self.participate = THREAD_JOINED
         self.save()
 
     def leave(self):
-        self.is_joined = False
-        self.is_banned = False
-        self.is_left = True
-        self.last_left_at = timezone.now()
+        self.participate = THREAD_LEFT
         self.save()
 
     def pin(self):
-        self.is_pinned = not self.is_pinned
-        self.is_banned = False
+        self.watch = THREAD_PINNED
         self.save()
 
     def ban(self):
-        self.is_pinned = False
-        self.is_banned = True
+        self.watch = THREAD_BANNED
         self.save()
+
+    def save(self, **kwargs):
+        super(ThreadUser, self).save(**kwargs)
+        ThreadUserHistory.objects.create(threaduser=self,
+                                         difference=json.dumps(self.diff))
+
+
+class ThreadUserHistory(TimeStampedModel):
+
+    threaduser = models.ForeignKey(ThreadUser)
+
+    difference = models.CharField(max_length=256, default='')
+
+    date = models.DateTimeField(auto_now_add=True)
+
 
 
 
