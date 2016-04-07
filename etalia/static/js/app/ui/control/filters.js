@@ -180,6 +180,12 @@ define(['jquery', 'app/util/templates', 'app/util/utils'], function ($, Template
         throw 'Not implemented';
     };
 
+    Filters.prototype.resetSelection = function() {
+        this.$element
+            .find('.filter-group li a.active')
+            .removeClass('active');
+    };
+
     Filters.prototype.getValue = function() {
         var value = [];
         this.$element.find('.filter-group').each(function(i, group) {
