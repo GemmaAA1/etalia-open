@@ -1,0 +1,117 @@
+<div id="detail-actions" class="actions">
+    <div class="card">
+
+        <a href="javascript: void(0)"
+           class="detail-pin{{thread_pin_class}}"
+           title="Pin/Unpin">
+            <span class="eai eai-pin"></span>
+        </a>
+        <a href="javascript: void(0)"
+           class="detail-ban{{thread_ban_class}}"
+           title="Remove from feed">
+            <span class="eai eai-remove"></span>
+        </a>
+        <a href="javascript: void(0)"
+           class="detail-library-trash loading-button"
+           title="Move to trash">
+            <span class="eai eai-library-trash"></span>
+        </a>
+
+        <a href="javascript: void(0)"
+           class="detail-mail" title="Email">
+            <span class="eai eai-mail"></span>
+        </a>
+        <a href="javascript: void(0)" class="detail-twitter" title="Share on twitter">
+            <span class="eai eai-twitter"></span>
+        </a>
+        <a href="javascript: void(0)" class="detail-google-plus" title="Share on Google+">
+            <span class="eai eai-google-plus"></span>
+        </a>
+
+    </div>
+</div>
+
+<div class="content">
+    <div class="card">
+
+        <div data-user-placeholder></div>
+
+        <p class="title">
+            <a href="javascript: void(0)">
+                {{!<span>new</span>}}
+                {{title}}
+            </a>
+        </p>
+        <div class="infos">
+            <p>
+                <strong>{{full_name user}}</strong> -
+                <em>{{date created}}</em>
+            </p>
+            <p class="icons">
+                <span class="comment">
+                    <span class="count">16</span>
+                    <span class="eai eai-comment"></span>
+                </span>
+                <span class="member">
+                    <span class="count">16</span>
+                    <span class="eai eai-user"></span>
+                </span>
+            </p>
+        </div>
+        <div class="materials">
+            {{#if paper}}
+            <p>
+                <span class="eai eai-pdf"></span>
+                On <a href="javascript: void(0)">{{paper_title_authors paper}}</a>
+            </p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="thread thread-box">
+        <div class="thread-content element-content">
+            {{#if content}}
+                {{{content}}}
+            {{else}}
+            <p style="padding:50px 0;text-align:center">
+                <button type="button" class="btn btn-primary btn-lg thread-edit">
+                    Start writing !
+                </button>
+            </p>
+            {{/if}}
+        </div>
+
+        <p class="thread-info element-info">
+            <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
+            - <a href="javascript: void(0)" class="thread-edit">edit</a>
+            - <a href="javascript: void(0)" class="thread-delete">delete</a>
+        </p>
+
+        <div data-thread-edit-form></div>
+    </div>
+
+    <div data-members-placeholder></div>
+
+    <div data-posts-placeholder></div>
+
+    <div class="neighbors-thumbs">
+        <h2>Similar threads</h2>
+        <ul class="neighbors-timespan-selector">
+            <li>
+                <a href="javascript: void(0)" data-value="365">1 year</a>
+            </li>
+            <li class="active">
+                <a href="javascript: void(0)" data-value="30">1 month</a>
+            </li>
+            <li>
+                <a href="javascript: void(0)" data-value="7">Week</a>
+            </li>
+        </ul>
+        <div class="thumb-list async-content">
+
+            <!-- TODO -->
+
+        </div>
+    </div>
+
+</div>

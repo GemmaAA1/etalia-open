@@ -10,29 +10,44 @@ requirejs.config({
         'jquery-ui': {
             deps: ['jquery']
         },
-        'backbone-modal': {
-            deps: ['backbone']
+        tinymce: {
+            exports: 'tinymce'
         }
     },
     map: {
         '*': {
-            'backbone-forms': 'lib/backbone-forms-bootstrap'
+            'backbone/forms': 'lib/backbone/forms-bootstrap'
         },
-        'lib/backbone-forms-bootstrap': {
-            'backbone-forms': 'lib/extend/backbone-forms'
+        'lib/backbone/forms-bootstrap': {
+            'backbone-forms': 'lib/backbone/forms'
         }
     },
+    packages: [
+        {
+            name: 'app',
+            main: 'app'
+        },
+        {
+            name: 'backbone',
+            main: 'backbone',
+            location: 'lib/backbone'
+        }
+    ],
     paths: {
         altmetric: 'https://d1bxh8uas1mnw7.cloudfront.net/assets/embed',
-        backbone: 'lib/extend/backbone',
-        'backbone-modal': 'lib/backbone-modal',
-        'backbone-relational': 'lib/backbone-relational',
         bootstrap: 'lib/bootstrap',
         endless: 'lib/endless-pagination',
         handlebars: 'lib/handlebars',
         hogan: 'lib/hogan',
         jquery: 'lib/jquery',
         'jquery-ui': 'lib/jquery-ui',
+        moment: 'lib/moment/moment',
+        tinymce: 'lib/tinymce/tinymce',
         underscore: 'lib/underscore'
+    },
+    config: {
+        moment: {
+            noGlobal: true
+        }
     }
 });

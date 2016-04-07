@@ -4,9 +4,20 @@
     text-align: center;
 }
 
+/* ---- COMMONS ---- */
+
+.element-content {
+
+}
+
+.element-info {
+    color: #86b5b0;
+}
+
 /* ---- USER ---- */
 
 .user {
+    display: none;
     position: relative;
     width: 50px;
     height: 50px;
@@ -79,10 +90,16 @@
     z-index: 98;
 }
 
+/* Small devices */
+@media (min-width: 768px) {
+    .user {
+        display: block;
+    }
+}
+
 /* -------------------------- LIST -------------------------- */
 
 .card .user {
-    display: none;
     float:left;
     width: 50px;
     min-height: 90px;
@@ -98,13 +115,6 @@
     height: 50px;
     border-radius: 25px;
     margin-bottom: 12px;
-}
-
-/* Small devices */
-@media (min-width: 768px) {
-    .card .user {
-        display: block;
-    }
 }
 
 .thumb .card .user {
@@ -170,25 +180,16 @@
     border-top: 1px solid #e1e3e6;
 }
 
-.thread-content {
-
-}
-
-.thread-info {
-    color: #86b5b0;
-}
-
 /* ---- THREAD MEMBERS ---- */
 
-.thread-members {
+.thread-members-list {
     position: relative;
     overflow: hidden;
-    padding-top: 15px;
-    height: 95px;
+    height: 80px;
     transition:height 1s ease;
 }
 
-.thread-members.expended {
+.thread-members-list.expanded {
     height: auto;
 }
 
@@ -237,7 +238,7 @@
 .thread-post {
     border-top: 1px solid #e1e3e6;
     margin-top: 16px;
-    padding: 16px 0 0 70px;
+    padding: 16px 0 0 0;
     position: relative;
 }
 
@@ -247,9 +248,17 @@
     left: 0;
 }
 
+.thread-post .post-content {
+    min-height: 32px;
+}
+
 .thread-post:first-child {
     margin-top: 0;
     border-top: none;
+}
+
+.thread-post-form .form-group {
+    margin-bottom: 5px;
 }
 
 /* ---- THREAD COMMENTS ---- */
@@ -262,7 +271,7 @@
 .thread-comment {
     border-top: 1px solid #e1e3e6;
     margin-top: 12px;
-    padding: 12px 0 0 52px;
+    padding: 12px 0 0 20px;
     position: relative;
 }
 
@@ -274,18 +283,26 @@
     height: 32px;
 }
 
+.thread-post .comment-content {
+    min-height: 24px;
+}
+
 .thread-comment > .user.hover img,
 .thread-comment > .user:hover img {
     width: 50px;
     height: 50px;
 }
 
-.tread-comment-add {
+.thread-comment-form {
     position: relative;
     padding: 0 30px 0 0;
 }
 
-.tread-comment-add button {
+.thread-comment-form .form-group {
+    margin-bottom: 5px;
+}
+
+.thread-comment-form button {
     position: absolute;
     top: 0;
     right: 0;
@@ -299,14 +316,27 @@
     z-index: 2;
 }
 
-.tread-comment-add button[type="button"] {
+.thread-comment-form button[type="button"] {
     top: 30px;
 }
 
-.tread-comment-add label {
-
+.thread-comment-form textarea {
+    resize: none;
 }
 
-.tread-comment-add textarea {
-    resize: none;
+/* ---- RESPONSIVE ---- */
+
+/* Small devices */
+@media (min-width: 768px) {
+    .user {
+        display: block;
+    }
+
+    .thread-post {
+        padding: 16px 0 0 70px;
+    }
+
+    .thread-comment {
+        padding: 12px 0 0 52px;
+    }
 }

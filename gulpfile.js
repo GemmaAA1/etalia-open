@@ -18,9 +18,18 @@ var config = {
 
 
 /**
+ * Clean compiled directory.
+ */
+gulp.task('clean-libraries', function () {
+    return gulp
+        .src(config.src + '/js/lib', {read: false})
+        .pipe(clean());
+});
+
+/**
  * (build) and copy libraries
  */
-gulp.task('libraries', function() {
+gulp.task('libraries', ['clean-libraries'], function() {
     var libs = [
         {
             src: 'node_modules/requirejs/require.js',
@@ -49,28 +58,31 @@ gulp.task('libraries', function() {
         {
             src: 'bower_components/backbone/backbone.js',
             base: 'bower_components/backbone',
-            dest: '/js/lib'
+            dest: '/js/lib/backbone'
         },
         {
             src: 'bower_components/backbone-relational/backbone-relational.js',
             base: 'bower_components/backbone-relational',
-            dest: '/js/lib'
+            rename: 'relational.js',
+            dest: '/js/lib/backbone'
         },
         {
-            src: 'bower_components/backbone-bootstrap-widgets/src/backbone-modal.js',
-            base: 'bower_components/backbone-bootstrap-widgets/src',
-            dest: '/js/lib'
+            src: 'bower_components/backbone.paginator/lib/backbone.paginator.js',
+            base: 'bower_components/backbone.paginator',
+            rename: 'paginator.js',
+            dest: '/js/lib/backbone'
         },
         {
             src: 'bower_components/backbone-forms/distribution.amd/backbone-forms.js',
             base: 'bower_components/backbone-forms/distribution.amd',
-            dest: '/js/lib'
+            rename: 'forms.js',
+            dest: '/js/lib/backbone'
         },
         {
             src: 'bower_components/backbone-forms/distribution.amd/templates/bootstrap3.js',
             base: 'bower_components/backbone-forms/distribution.amd/templates',
-            rename: 'backbone-forms-bootstrap.js',
-            dest: '/js/lib'
+            rename: 'forms-bootstrap.js',
+            dest: '/js/lib/backbone'
         },
         {
             src: 'bower_components/backbone-forms/distribution.amd/templates/bootstrap3.css',
@@ -111,6 +123,28 @@ gulp.task('libraries', function() {
             base: 'bower_components/bootstrap-sass/assets/javascripts/bootstrap',
             concat: 'bootstrap.js',
             dest: '/js/lib'
+        },
+        {
+            src: [
+                'bower_components/tinymce/plugins/lists/plugin.js',
+                'bower_components/tinymce/plugins/paste/plugin.js',
+                'bower_components/tinymce/plugins/link/plugin.js',
+                'bower_components/tinymce/plugins/searchreplace/plugin.js',
+                'bower_components/tinymce/plugins/hr/plugin.js',
+                //'bower_components/tinymce/skins/**/*',
+                'bower_components/tinymce/themes/**/*',
+                'bower_components/tinymce/tinymce.js'
+            ],
+            base: 'bower_components/tinymce',
+            dest: '/js/lib/tinymce'
+        },
+        {
+            src: [
+                'bower_components/moment/moment.js'
+                //'bower_components/moment/locale/*'
+            ],
+            base: 'bower_components/moment',
+            dest: '/js/lib/moment'
         },
         {
             src: 'node_modules/hogan.js/dist/hogan-3.0.2.amd.js',
@@ -186,10 +220,16 @@ gulp.task('styles', function() {
         .src([
             config.src + '/css/*.css',
             config.src + '/css/lib/*.css',
+            config.src + '/css/app/content.css',
             config.src + '/css/app/root.css'
         ])
         .pipe(concat('main.css'))
         .pipe(replace(/..\/..\/([a-z]+)/g, '../$1')) // Fix bootstrap and jquery-ui fonts/img paths
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest(config.dest + '/css'));
+
+    var content = gulp
+        .src(config.src + '/css/app/content.css')
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(gulp.dest(config.dest + '/css'));
 
@@ -208,8 +248,7 @@ gulp.task('styles', function() {
             config.src + '/css/app/list.css',
             config.src + '/css/app/card.css',
             config.src + '/css/app/detail.css',
-            config.src + '/css/app/thread.css',
-            config.src + '/css/app/thread-content.css'
+            config.src + '/css/app/thread.css'
         ])
         .pipe(concat('elements.css'))
         .pipe(minify({compatibility: 'ie8'}))
@@ -220,7 +259,7 @@ gulp.task('styles', function() {
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(gulp.dest(config.dest + '/css'));
 
-    return merge(main, page, landing, elements, user);
+    return merge(main, content, page, landing, elements, user);
 });
 
 

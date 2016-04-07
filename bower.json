@@ -11,7 +11,9 @@
     "backbone-relational": "^0.10.0",
     "handlebars": "^4.0.5",
     "text": "requirejs-text#^2.0.14",
-    "backbone-bootstrap-widgets": "*",
-    "backbone-forms": "^0.14.1"
+    "backbone-forms": "^0.14.1",
+    "backbone.paginator": "^2.0.5",
+    "tinymce": "^4.3.8",
+    "moment": "^2.12.0"
   }
 }
