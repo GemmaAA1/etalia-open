@@ -33,7 +33,10 @@ define([
                 'etalia.control.cluster.change ' +
                 'etalia.control.pinned.change ' +
                 'etalia.control.filters.change',
-            function() {
+            function(e) {
+                if (e.namespace != 'change.control.filters') {
+                    controls.filters.resetSelection();
+                }
                 list.load(controls.getStates());
             })
             .on('etalia.publication.pin', function(e, result) {
