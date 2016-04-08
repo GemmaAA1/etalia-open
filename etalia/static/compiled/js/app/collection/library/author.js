@@ -1,0 +1,1 @@
+define(["app","app/model/library/author"],function(o){return o.Collection.Authors=o.Backbone.Collection.extend({url:o.config.api_root+"/library/authors",model:o.Model.Author})});

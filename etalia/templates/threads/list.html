@@ -23,26 +23,25 @@
 
 
             <div class="list-title">
-                <button type="button" class="btn btn-default">2 pending invitation</button>
-                <button type="button" class="btn btn-primary">Start a new thread</button>
+                <button id="thread-invitation-modal" type="button" class="btn btn-default">2 pending invitation</button>
+                <button id="thread-create-modal" type="button" class="btn btn-primary">Start a new thread</button>
                 <p><span>23</span> threads</p>
             </div>
 
 
-            <div class="thumb-list async-content">
+            <div id="thread-list-container"></div>
 
-                {% for t in "0123456789" %}
-                    {% include 'threads/thumb.html' with user_id=forloop.counter %}
-                {% endfor %}
-
-            </div>
         </div>
     </div>
 </div>
 <!-- end list -->
 
-{% include 'feeds/detail.html' %}
+<detail-placeholder></detail-placeholder>
+{#{% include 'feeds/detail.html' %}#}
 
 {% endspaceless %}
 {% endblock content %}
 
+{% block javascript %}
+<script>requirejs(['app/thread/list']);</script>
+{% endblock javascript %}

@@ -42,6 +42,10 @@
         {
             name: 'app/user/library',
             exclude: ['jquery', 'bootstrap']
+        },
+        {
+            name: 'app/thread/list',
+            exclude: ['jquery', 'bootstrap', 'underscore', 'backbone']
         }
     ]
 })
