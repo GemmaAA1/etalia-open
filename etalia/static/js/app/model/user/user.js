@@ -42,9 +42,9 @@ define(['app', 'app/model/user/user-lib'], function (App) {
      * @TODO fetch current (authenticated) user id
      */
     App.Model.User.getCurrent = function() {
-        var user = App.Model.User.find(21);
+        var user = App.Model.User.find(57);
         if (!user) {
-            user = new App.Model.User({id: 21});
+            user = new App.Model.User({id: 57});
             user.fetch();
         }
         return user;
