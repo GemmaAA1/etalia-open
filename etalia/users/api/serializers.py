@@ -14,9 +14,32 @@ User = get_user_model()
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     photo_url = serializers.URLField(read_only=True, source='photo.name')
-    user_lib = serializers.HyperlinkedRelatedField(read_only=True,
-                                              view_name='api:userlib-detail',
-                                              source='lib')
+
+    class Meta:
+        model = User
+        extra_kwargs = {
+            'link': {'view_name': 'api:user-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'email',
+            'first_name',
+            'last_name',
+            'photo_url')
+        read_only_fields = (
+            '__all__'
+        )
+
+
+class UserFullSerializer(serializers.HyperlinkedModelSerializer):
+    photo_url = serializers.URLField(read_only=True, source='photo.name')
+    user_lib = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='api:userlib-detail',
+        source='lib')
+    following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -31,10 +54,34 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'first_name',
             'last_name',
             'photo_url',
-            'user_lib')
+            'user_lib',
+            'following',
+            'followers')
         read_only_fields = (
             '__all__'
         )
+
+    def get_following(self, obj):
+        following = obj.following
+        following_list = []
+        for user in following:
+            following_list.append(
+                UserSerializer(
+                    instance=user,
+                    context={'request': self.context['request']}).data
+            )
+        return following_list
+
+    def get_followers(self, obj):
+        followers = obj.followers
+        followers_list = []
+        for user in followers:
+            followers_list.append(
+                UserSerializer(
+                    instance=user,
+                    context={'request': self.context['request']}).data
+            )
+        return followers_list
 
 
 class UserLibPaperSerializer(serializers.HyperlinkedModelSerializer):

@@ -96,6 +96,19 @@ class IsOwnerOrReadOnly(IsOwner):
         return super(IsOwnerOrReadOnly, self).has_object_permission(request, view, obj)
 
 
+class IsOwnerIfViewFull(IsOwner):
+    """
+    Custom permission to only allow owners of an object to edit it
+    GIVEN THAT user is an attribute of the object pointing to owner
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.query_params.get('view', None) == 'full':
+            return obj == request.user
+        else:
+            return True
+
+
 class IsInRelationship(IsOwner):
     """
     Custom permission to only allow user involved in the relationship.
@@ -149,3 +162,12 @@ class IsPinBanAction(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return view.action in ['pin', 'ban']
+
+
+class ThreadIsNotYetPublished(permissions.BasePermission):
+    """
+    Custom permission to check if Thread has yet been published
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.published_at is None

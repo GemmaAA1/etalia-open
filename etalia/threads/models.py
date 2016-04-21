@@ -3,19 +3,24 @@ from __future__ import unicode_literals, absolute_import
 
 import json
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+
 from django.conf import settings
+from django.utils import timezone
 
 from etalia.core.models import TimeStampedModel
+
 from etalia.library.models import Paper
 from .mixins import ModelDiffMixin
 from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
-    THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, THREAD_QUESTION,\
+    THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, \
+    THREAD_QUESTION, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PARTICIPATE, THREAD_WATCH, \
     THREAD_JOINED, THREAD_BANNED, THREAD_PINNED, THREAD_LEFT
 
 
 class Thread(TimeStampedModel):
+
+    TOKENIZED_FIELDS = ['title', 'content']
 
     # type of thread
     type = models.IntegerField(choices=THREAD_TYPES, default=THREAD_QUESTION,
@@ -41,8 +46,12 @@ class Thread(TimeStampedModel):
     content = models.TextField(null=True, blank=True, default='',
                                verbose_name='Content')
 
+    # published at
+    published_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
-        unique_together = (('type', 'user', 'title', 'paper'), )
+        unique_together = (('type', 'user', 'title', 'paper'),)
+        ordering = ('-published_at',)
 
     @property
     def short_title(self):
@@ -56,8 +65,8 @@ class Thread(TimeStampedModel):
         return '{0}@{1}'.format(self.short_title, self.user)
 
     def get_active_members(self):
-        tus = self.threaduser_set\
-            .filter(participate=THREAD_JOINED)\
+        tus = self.threaduser_set \
+            .filter(participate=THREAD_JOINED) \
             .select_related('user')
         return [tu.user for tu in tus]
 
@@ -79,9 +88,15 @@ class Thread(TimeStampedModel):
         else:
             return None
 
+    def publish(self):
+        self.published_at = timezone.now()
+        self.save(update_fields=['published_at'])
+
+    def embed(self):
+        pass
+
 
 class ThreadPost(TimeStampedModel):
-
     # thread
     thread = models.ForeignKey(Thread, related_name='posts')
 
@@ -92,15 +107,14 @@ class ThreadPost(TimeStampedModel):
     content = models.TextField(null=False, blank=True, default='')
 
     class Meta:
-        unique_together = (('thread', 'content', 'user'), )
-        ordering = ('created', )
+        unique_together = (('thread', 'content', 'user'),)
+        ordering = ('created',)
 
     def __str__(self):
         return '{0} {1}'.format(self.created, self.user)
 
 
 class ThreadComment(TimeStampedModel):
-
     # thread
     post = models.ForeignKey(ThreadPost, related_name='comments')
 
@@ -111,15 +125,14 @@ class ThreadComment(TimeStampedModel):
     content = models.TextField(null=False, blank=True, default='')
 
     class Meta:
-        unique_together = (('post', 'user', 'content'), )
-        ordering = ('created', )
+        unique_together = (('post', 'user', 'content'),)
+        ordering = ('created',)
 
     def __str__(self):
         return '{0} {1}'.format(self.created.ctime(), self.user)
 
 
 class ThreadUserInvite(TimeStampedModel):
-
     # thread
     thread = models.ForeignKey(Thread)
 
@@ -137,7 +150,6 @@ class ThreadUserInvite(TimeStampedModel):
 
 
 class ThreadFeed(TimeStampedModel):
-
     # User
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
@@ -153,11 +165,10 @@ class ThreadFeed(TimeStampedModel):
                               choices=THREADFEED_STATUS_CHOICES)
 
     # threads
-    threads = models.ManyToManyField(Thread, through='ThreadFeedThread')
+    thread_scores = models.ManyToManyField(Thread, through='ThreadScore')
 
 
-class ThreadFeedThread(TimeStampedModel):
-
+class ThreadScore(TimeStampedModel):
     # thread
     thread = models.ForeignKey(Thread)
 
@@ -172,27 +183,10 @@ class ThreadFeedThread(TimeStampedModel):
 
     class Meta:
         ordering = ['-score']
-        unique_together = (('thread', 'thread_feed'), )
-
-
-class ThreadNeighbor(TimeStampedModel):
-
-    # thread
-    thread = models.ForeignKey(Thread)
-
-    # Time lapse for neighbors match
-    time_lapse = models.IntegerField(default=-1,
-                                     choices=THREAD_TIME_LAPSE_CHOICES,
-                                     verbose_name='Days from right now')
-
-    # Primary keys of the k-nearest neighbors matches
-    neighbors = ArrayField(models.IntegerField(null=True),
-                           size=settings.NLP_MAX_KNN_NEIGHBORS,
-                           null=True, blank=True)
+        unique_together = (('thread', 'thread_feed'),)
 
 
 class ThreadUser(ModelDiffMixin, TimeStampedModel):
-
     # user
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
@@ -208,7 +202,7 @@ class ThreadUser(ModelDiffMixin, TimeStampedModel):
                                               choices=THREAD_PARTICIPATE)
 
     class Meta:
-        unique_together = (('thread', 'user'), )
+        unique_together = (('thread', 'user'),)
 
     def join(self):
         self.participate = THREAD_JOINED
@@ -233,13 +227,9 @@ class ThreadUser(ModelDiffMixin, TimeStampedModel):
 
 
 class ThreadUserHistory(TimeStampedModel):
-
     threaduser = models.ForeignKey(ThreadUser)
 
     difference = models.CharField(max_length=256, default='')
 
     date = models.DateTimeField(auto_now_add=True)
-
-
-
 

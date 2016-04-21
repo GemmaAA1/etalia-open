@@ -10,18 +10,20 @@ from rest_framework import viewsets, permissions, mixins, status
 from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly, \
     IsInRelationship
 
-from etalia.core.api.permissions import IsOwner
+from etalia.core.api.permissions import IsOwner, IsOwnerIfViewFull
 from etalia.core.api.mixins import MultiSerializerMixin
 from etalia.library.api.serializers import PaperSerializer, \
     PaperNestedSerializer
 
-from .serializers import UserLibSerializer, UserSerializer, \
+from etalia.core.api.mixins import MultiSerializerMixin
+from .serializers import UserLibSerializer, UserSerializer, UserFullSerializer, \
     UserLibNestedSerializer, UserLibPaperSerializer, RelationshipSerializer
 
 from ..models import UserLib, User, Relationship, UserLibPaper
 
 
-class UserViewSet(mixins.ListModelMixin,
+class UserViewSet(MultiSerializerMixin,
+                  mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
                   viewsets.GenericViewSet):
@@ -36,12 +38,23 @@ class UserViewSet(mixins.ListModelMixin,
     * [GET] /users/<id\>/following/: List of following users
     * [GET] /users/<id\>/blocked/: List of blocked users
 
+    ** Detail: **
+
+    * view=(str): Reformat output. choices: 'full',
+
     """
 
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOrReadOnly)
+                          IsOwnerOrReadOnly,
+                          IsOwnerIfViewFull)
+    serializer_class = {
+        'default': UserSerializer,
+        'full': UserFullSerializer,
+    }
+    exclude_action_serializers = {
+        'list': 'full',
+    }
 
     def render_list(self, queryset):
         page = self.paginate_queryset(queryset)
@@ -73,19 +86,19 @@ class UserLibViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET] /libraries/: List of papers in user libraries
-    * [GET] /libraries/<id\>/: User Library instance
-    * [GET] /libraries/<id\>/papers: List of papers in user library
+    * [GET] /user-libs/: List of papers in user libraries
+    * [GET] /user-libs/<id\>/: User Library instance
+    * [GET] /user-libs/<id\>/papers: List of papers in user library
 
     ### Optional Kwargs ###
 
     ** Detail: **
 
-    * ?view=(str): Reformat output. choices: 'nested',
+    * view=(str): Reformat output. choices: 'nested',
 
     ** List: **
 
-    * ?view=(str): Reformat output. choices: 'nested',
+    * view=(str): Reformat output. choices: 'nested',
 
     """
 
@@ -128,20 +141,20 @@ class UserLibPaperViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET] /userlibpapers/: List of User Lib Paper
-    * [GET] /userlibpapers/<id\>/: User Lib Paper instance
+    * [GET] /user-lib-papers/: List of User Lib Paper
+    * [GET] /user-lib-papers/<id\>/: User Lib Paper instance
 
     ### Optional Kwargs ###
 
     ** Detail: **
 
-    * ?view=(str): Reformat output. choices: 'nested',
+    * view=(str): Reformat output. choices: 'nested',
 
     ** List: **
 
-    * ?view=(str): Reformat output. choices: 'nested',
+    * view=(str): Reformat output. choices: 'nested',
 
-    [ref1]: /api/v1/user/libraries/
+    [ref1]: /api/v1/user/user-libs/
     [ref2]: /api/v1/library/papers/
 
     """

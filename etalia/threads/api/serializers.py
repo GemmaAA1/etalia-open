@@ -208,7 +208,8 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             'members',
             'posts',
             'created',
-            'modified'
+            'modified',
+            'published_at'
         )
         read_only_fields = (
             'id',
@@ -217,7 +218,8 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             'members',
             'posts',
             'created',
-            'modified'
+            'modified',
+            'published_at'
         )
 
     def get_state(self, obj):
@@ -323,7 +325,8 @@ class ThreadNestedSerializer(serializers.HyperlinkedModelSerializer):
             'members',
             'posts',
             'created',
-            'modified'
+            'modified',
+            'published_at'
         )
         read_only_fields = (
             '__all__',

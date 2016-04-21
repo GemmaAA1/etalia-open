@@ -6,42 +6,38 @@ import logging
 import glob
 import pickle
 from random import shuffle
-import numpy as np
 import collections
 
+import numpy as np
 from gensim import matutils
 from sklearn.externals import joblib
-
+from progressbar import ProgressBar, Percentage, Bar, ETA
 from django.db import models
-from django.db.models import Q, QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
+from django.db.models import QuerySet
 from django.utils import timezone
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator
 from django.core.exceptions import ValidationError
-from django.db.models.expressions import RawSQL
-
-from progressbar import ProgressBar, Percentage, Bar, ETA
 from gensim.models import Doc2Vec
+
 from gensim.models import Phrases
 
-from .constants import FIELDS_FOR_MODEL
-from .utils import paper2tokens, TaggedDocumentsIterator, model_attr_getter, \
-    model_attr_setter
-from .mixins import S3Mixin
-
 from etalia.core.models import TimeStampedModel
+from etalia.core.constants import NLP_TIME_LAPSE_CHOICES
 from etalia.core.utils import pad_vector, pad_neighbors
 from etalia.library.models import Paper, Journal
-from etalia.core.constants import NLP_TIME_LAPSE_CHOICES
+from .constants import FIELDS_FOR_MODEL
+from .utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
+    model_attr_setter
+from .mixins import S3Mixin
 from .constants import NLP_JOURNAL_RATIO_CHOICES
-
+from .threads_models import ThreadVectors, ThreadNeighbor, ModelThreadMixin
 
 logger = logging.getLogger(__name__)
 
 
 class ModelManager(models.Manager):
-
     def create(self, **kwargs):
         # starting popping text_fields key if any
         default_text_fields = [field[0] for field in FIELDS_FOR_MODEL]
@@ -56,7 +52,8 @@ class ModelManager(models.Manager):
         if not isinstance(text_fields, list):
             raise ValidationError('<text_fields> must be list of field strings')
         if not set(text_fields).issubset(default_text_fields):
-            raise ValidationError('<text_fields> not subset of FIELDS_FOR_MODEL')
+            raise ValidationError(
+                '<text_fields> not subset of FIELDS_FOR_MODEL')
 
         for text_field in text_fields:
             fuim, _ = TextField.objects.get_or_create(text_field=text_field)
@@ -83,15 +80,15 @@ class ModelManager(models.Manager):
                     obj.pull_from_s3()
             obj._doc2vec = Doc2Vec.load(os.path.join(
                 settings.NLP_MODELS_PATH, '{0}.mod'.format(obj.name)))
-        except EnvironmentError:      # OSError or IOError...
+        except EnvironmentError:  # OSError or IOError...
             raise
         return obj
 
 
-class Model(TimeStampedModel, S3Mixin):
+class Model(ModelThreadMixin, S3Mixin, TimeStampedModel):
     """Natural Language Processing Class based on Doc2Vec from Gensim
     """
-
+    # TODO: Refactor paper related embedding similarly to Thread
     # For S3 Mixin
     BUCKET_NAME = getattr(settings, 'NLP_MODELS_BUCKET_NAME', '')
     PATH = getattr(settings, 'NLP_MODELS_PATH', '')
@@ -128,7 +125,8 @@ class Model(TimeStampedModel, S3Mixin):
 
     # `size` is the dimensionality of the feature vectors.
     _size = models.IntegerField(default=128,
-            validators=[MaxValueValidator(settings.NLP_MAX_VECTOR_SIZE)])
+                                validators=[MaxValueValidator(
+                                    settings.NLP_MAX_VECTOR_SIZE)])
 
     # `window` is the maximum distance between the predicted word and context
     # words used for prediction within a document.
@@ -270,7 +268,8 @@ class Model(TimeStampedModel, S3Mixin):
     def delete(self, s3=False, **kwargs):
         try:
             for filename in glob.glob(os.path.join(settings.NLP_MODELS_PATH,
-                                                   '{0}.mod*'.format(self.name))):
+                                                   '{0}.mod*'.format(
+                                                       self.name))):
                 os.remove(filename)
         except IOError:
             pass
@@ -313,7 +312,7 @@ class Model(TimeStampedModel, S3Mixin):
 
         sub_update_step = 20
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=int(tot/sub_update_step),
+                           maxval=int(tot / sub_update_step),
                            redirect_stderr=True).start()
 
         for count, paper in enumerate(papers):
@@ -340,7 +339,7 @@ class Model(TimeStampedModel, S3Mixin):
             fid.write('{pk}, j_{j_pk}: '.format(pk=paper.pk, j_pk=j_pk))
 
             # line body
-            line_val = paper2tokens(paper, fields=text_fields)
+            line_val = obj2tokens(paper, fields=text_fields)
 
             # write to file
             # fid.write(u' '.join(line_val).strip().encode('utf-8'))
@@ -351,7 +350,7 @@ class Model(TimeStampedModel, S3Mixin):
 
             # update progress bar
             if not count % sub_update_step:
-                pbar.update(count/sub_update_step)
+                pbar.update(count / sub_update_step)
         # close progress bar
         pbar.finish()
         if fid:
@@ -499,22 +498,24 @@ class Model(TimeStampedModel, S3Mixin):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001, passes=10):  # seed=seed)
+    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001,
+                    passes=10):  # seed=seed)
         """Infer model vector for paper"""
 
         # sanity checks
         self.check_active()
         if not isinstance(paper_pk, int):
-            raise TypeError('paper_pk must be int, found {0} instead'.format(type(paper_pk)))
+            raise TypeError('paper_pk must be int, found {0} instead'.format(
+                type(paper_pk)))
 
         text_fields = [tx.text_field for tx in self.text_fields.all()]
 
         pv, _ = PaperVectors.objects.get_or_create(model=self,
                                                    paper_id=paper_pk)
         paper = Paper.objects.get(id=paper_pk)
-        doc_words = paper2tokens(paper, fields=text_fields)
+        doc_words = obj2tokens(paper, fields=text_fields)
 
-        # NB: infer_vector user explicit alpha-reduction with multi-passes
+        # NB: infer_vector uses explicit alpha-reduction with multi-passes
         vector = self._doc2vec.infer_vector(doc_words,
                                             alpha=alpha,
                                             min_alpha=min_alpha,
@@ -547,7 +548,6 @@ class Model(TimeStampedModel, S3Mixin):
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
                            maxval=nb_papers, redirect_stderr=True).start()
 
-
         for count, paper_pk in enumerate(paper_pks):
             self.infer_paper(paper_pk, **kwargs)
             if not (nb_papers // nb_pbar_updates) == 0:
@@ -555,6 +555,29 @@ class Model(TimeStampedModel, S3Mixin):
                     pbar.update(count)
         # close progress bar
         pbar.finish()
+
+    def infer_object(self, cls, pk, fields, **kwargs):
+
+        # sanity checks
+        self.check_active()
+        # get object
+        obj = cls.objects.get(id=pk)
+        # tokenize fields
+        obj_tokens = obj2tokens(obj, fields=fields)
+        # Embed
+        return self.embed(obj_tokens, **kwargs)
+
+    def embed(self, tokens, alpha=0.1, min_alpha=0.001, passes=10):
+
+        vector = self._doc2vec.infer_vector(tokens,
+                                            alpha=alpha,
+                                            min_alpha=min_alpha,
+                                            steps=passes)
+        # normalize
+        vector /= np.linalg.norm(vector)
+
+        return vector
+
 
     def activate(self):
         """Set model to active"""
@@ -590,7 +613,7 @@ class Model(TimeStampedModel, S3Mixin):
 
     def get_words_vec(self, vec, topn=20):
         """retrieve closest top_n word from vector"""
-        res = self._doc2vec.most_similar((vec, ), topn=topn)
+        res = self._doc2vec.most_similar((vec,), topn=topn)
         closest_words = [r[0] for r in res]
         dist = [r[1] for r in res]
         return closest_words, dist
@@ -607,7 +630,7 @@ class Model(TimeStampedModel, S3Mixin):
         papers = Paper.objects.filter(pk__in=paper_pks)
         for paper in papers:
             vec = np.array(paper.vectors.get(model=self).get_vector())
-            res = self._doc2vec.most_similar((vec, ), topn=topn)
+            res = self._doc2vec.most_similar((vec,), topn=topn)
             words += [r[0] for r in res]
 
         # count occurences
@@ -620,21 +643,26 @@ class Model(TimeStampedModel, S3Mixin):
 
     def tasks(self, task, **kwargs):
         """Task dispatcher. See comments on MostSimilar.tasks method for rational"""
-
+        super(Model, self).tasks(task, **kwargs)
         if task == 'infer_paper':
             paper_pk = kwargs.pop('paper_pk')
             return self.infer_paper(paper_pk, **kwargs)
-        elif task == 'infer_papers':
+        if task == 'infer_papers':
             paper_pk = kwargs.pop('paper_pk')
             return self.infer_papers(paper_pk, **kwargs)
-        elif task == 'get_words_vec':
+        if task == 'get_words_vec':
             vec = kwargs.pop('vec')
             return self.get_words_vec(vec, **kwargs)
-        elif task == 'get_words_paper':
+        if task == 'get_words_paper':
             paper_pk = kwargs.pop('paper_pk')
             return self.get_words_paper(paper_pk, **kwargs)
-        else:
-            raise ValueError('Unknown task action: {0}'.format(task))
+        if task == 'infer_object':
+            class_name = kwargs.pop('class_name')
+            pk = kwargs.pop('pk')
+            fields = kwargs.pop('fields')
+            return self.infer_object(class_name, pk, fields, **kwargs)
+
+        raise ValueError('Unknown task action: {0}'.format(task))
 
 
 class TextField(TimeStampedModel):
@@ -649,12 +677,11 @@ class TextField(TimeStampedModel):
 
 
 class PaperVectorsManager(models.Manager):
-
     def create(self, **kwargs):
         # enforce that model is active
         if not kwargs.get('model').is_active:
             raise ValidationError('model {0} is not active'
-                             .format(kwargs.get('model').name))
+                                  .format(kwargs.get('model').name))
 
         return super(PaperVectorsManager, self).create(**kwargs)
 
@@ -695,12 +722,11 @@ class PaperVectors(TimeStampedModel):
 
 
 class JournalVectorsManager(models.Manager):
-
     def create(self, **kwargs):
         # enforce that model is active
         if not kwargs.get('model').is_active:
             raise ValidationError('model {0} is not active'
-                             .format(kwargs.get('model').name))
+                                  .format(kwargs.get('model').name))
 
         return super(JournalVectorsManager, self).create(**kwargs)
 
@@ -729,7 +755,7 @@ class JournalVectors(TimeStampedModel):
         unique_together = ('journal', 'model')
 
     def __str__(self):
-        return '{short_title}/{name}'\
+        return '{short_title}/{name}' \
             .format(short_title=self.journal.short_title, name=self.model.name)
 
     def set_vector(self, vector):
@@ -801,7 +827,6 @@ class JournalNeighbors(TimeStampedModel):
 
 
 class MostSimilarManager(models.Manager):
-
     def load(self, **kwargs):
         """Get MostSimilar instance and load corresponding data"""
         obj = super(MostSimilarManager, self).get(**kwargs)
@@ -814,13 +839,17 @@ class MostSimilarManager(models.Manager):
 
             obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
                                                 '{0}.ms_data'.format(obj.name)))
-            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2pk'), 'rb') as f:
+            with open(
+                    os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2pk'),
+                    'rb') as f:
                 obj.index2pk = pickle.load(f)
-            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2journalpk'), 'rb') as f:
+            with open(os.path.join(settings.NLP_MS_PATH,
+                                   obj.name + '.ms_ind2journalpk'), 'rb') as f:
                 obj.index2journalpk = pickle.load(f)
-            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_date'), 'rb') as f:
+            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_date'),
+                      'rb') as f:
                 obj.date = pickle.load(f)
-        except EnvironmentError:      # OSError or IOError...
+        except EnvironmentError:  # OSError or IOError...
             raise
 
         return obj
@@ -860,20 +889,20 @@ class MostSimilar(TimeStampedModel, S3Mixin):
     objects = MostSimilarManager()
 
     class Meta:
-        unique_together = (('model', 'journal_ratio'), )
+        unique_together = (('model', 'journal_ratio'),)
 
     @property
     def name(self):
         return '{model_name}-jr{journal_ratio:.0f}perc'.format(
             model_name=self.model.name,
-            journal_ratio=self.journal_ratio*100)
+            journal_ratio=self.journal_ratio * 100)
 
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)
 
     def activate(self):
         """Set model to active. Only on model can be active at once"""
-        MostSimilar.objects.all()\
+        MostSimilar.objects.all() \
             .update(is_active=False)
         self.is_active = True
         self.save_db_only()
@@ -892,12 +921,16 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         if not os.path.exists(settings.NLP_MS_PATH):
             os.makedirs(settings.NLP_MS_PATH)
         # use joblib for numpy array pickling optimization
-        joblib.dump(self.data, os.path.join(settings.NLP_MS_PATH, self.name + '.ms_data'))
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2pk'), 'wb') as f:
+        joblib.dump(self.data,
+                    os.path.join(settings.NLP_MS_PATH, self.name + '.ms_data'))
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2pk'),
+                  'wb') as f:
             pickle.dump(self.index2pk, f)
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2journalpk'), 'wb') as f:
+        with open(os.path.join(settings.NLP_MS_PATH,
+                               self.name + '.ms_ind2journalpk'), 'wb') as f:
             pickle.dump(self.index2journalpk, f)
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_date'), 'wb') as f:
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_date'),
+                  'wb') as f:
             pickle.dump(self.date, f)
 
         # push files to s3
@@ -960,9 +993,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             "    AND abstract <> ''"
             "ORDER BY date ASC", (a_year_ago, self.model.pk)))
 
-        data_journal = dict(JournalVectors.objects\
-            .filter(model=self.model)\
-            .values_list('journal_id', 'vector'))
+        data_journal = dict(JournalVectors.objects \
+                            .filter(model=self.model) \
+                            .values_list('journal_id', 'vector'))
 
         # Reshape data
         nb_items = len(data)
@@ -979,8 +1012,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 self.index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
                 if dat.journal_id in data_journal:
-                    self.data[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
-                        self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
+                    self.data[i, :] = (1 - self.journal_ratio) * np.array(
+                        dat.vector[:vec_size]) + \
+                                      self.journal_ratio * np.array(
+                                          data_journal[dat.journal_id][
+                                          :vec_size])
                 else:
                     self.data[i, :] = np.array(dat.vector[:vec_size])
 
@@ -1016,11 +1052,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             "    AND is_trusted=TRUE "
             "    AND abstract <> ''"
             "    AND nlp_papervectors.paper_id NOT IN %s"
-            "ORDER BY date ASC", (a_year_ago, self.model.pk, tuple(self.index2pk))))
+            "ORDER BY date ASC",
+            (a_year_ago, self.model.pk, tuple(self.index2pk))))
 
-        data_journal = dict(JournalVectors.objects\
-            .filter(model=self.model)\
-            .values_list('journal_id', 'vector'))
+        data_journal = dict(JournalVectors.objects \
+                            .filter(model=self.model) \
+                            .values_list('journal_id', 'vector'))
 
         # Reshape data
         nb_items = len(data)
@@ -1038,8 +1075,11 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                 index2journalpk.append(dat.journal_id)
                 # build input matrix for fit
                 if dat.journal_id in data_journal:
-                    data_mat[i, :] = (1 - self.journal_ratio) * np.array(dat.vector[:vec_size]) + \
-                        self.journal_ratio * np.array(data_journal[dat.journal_id][:vec_size])
+                    data_mat[i, :] = (1 - self.journal_ratio) * np.array(
+                        dat.vector[:vec_size]) + \
+                                     self.journal_ratio * np.array(
+                                         data_journal[dat.journal_id][
+                                         :vec_size])
                 else:
                     data_mat[i, :] = np.array(dat.vector[:vec_size])
 
@@ -1077,30 +1117,32 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         if time_lapse == -1:
             return 0
         else:
-            cutoff_date = (timezone.now() - timezone.timedelta(days=time_lapse)).date()
-            if max(np.array(self.date) > cutoff_date): # at least one in True
+            cutoff_date = (
+            timezone.now() - timezone.timedelta(days=time_lapse)).date()
+            if max(np.array(self.date) > cutoff_date):  # at least one in True
                 return np.argmax(np.array(self.date) > cutoff_date)
             else:
                 return len(self.date)
 
     def get_knn(self, paper_pk, time_lapse=-1, k=1):
 
-        pv = PaperVectors.objects\
-            .filter(paper_id=paper_pk, model=self.model)\
+        pv = PaperVectors.objects \
+            .filter(paper_id=paper_pk, model=self.model) \
             .select_related('paper__journal')[0]
         # get related journal vector
         jv = None
         if pv.paper.journal:
             try:
-                jv = JournalVectors.objects\
-                        .get(model=self.model, journal_id=pv.paper.journal.id)
+                jv = JournalVectors.objects \
+                    .get(model=self.model, journal_id=pv.paper.journal.id)
             except JournalVectors.DoesNotExist:
                 pass
 
         # build weighted vector
         if jv:
-            vec = (1. - self.journal_ratio) * np.array(pv.vector[:self.model.size]) + \
-                self.journal_ratio * np.array(jv.vector[:self.model.size])
+            vec = (1. - self.journal_ratio) * np.array(
+                pv.vector[:self.model.size]) + \
+                  self.journal_ratio * np.array(jv.vector[:self.model.size])
         else:
             vec = np.array(pv.vector[:self.model.size])
 
@@ -1139,25 +1181,29 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         """
 
         # get seed data
-        data = list(PaperVectors.objects\
-            .filter(paper_id__in=paper_pks, model=self.model)\
-            .select_related('paper__journal')\
-            .values('vector', 'paper__journal_id'))
+        data = list(PaperVectors.objects \
+                    .filter(paper_id__in=paper_pks, model=self.model) \
+                    .select_related('paper__journal') \
+                    .values('vector', 'paper__journal_id'))
 
         # Get corresponding journal data
         j_pks = [d.get('paper__journal_id') for d in data]
-        data_journal = dict(JournalVectors.objects\
-            .filter(model=self.model, journal_id__in=j_pks)\
-            .values_list('journal_id', 'vector'))
+        data_journal = dict(JournalVectors.objects \
+                            .filter(model=self.model, journal_id__in=j_pks) \
+                            .values_list('journal_id', 'vector'))
 
         # Build the corresponding matrix data (paper weighted by journal in
         # agreement with the journal ratio current used in the active
         # MostSimilar object
         mat = np.zeros((self.model.size, len(data)))
         for i, d in enumerate(data):
-            if 'paper__journal_id' in d and d['paper__journal_id'] in data_journal:
-                mat[:, i] = (1. - self.journal_ratio) * np.array(d['vector'][:self.model.size]) + \
-                    self.journal_ratio * np.array(data_journal[d['paper__journal_id']][:self.model.size])
+            if 'paper__journal_id' in d and d[
+                'paper__journal_id'] in data_journal:
+                mat[:, i] = (1. - self.journal_ratio) * np.array(
+                    d['vector'][:self.model.size]) + \
+                            self.journal_ratio * np.array(
+                                data_journal[d['paper__journal_id']][
+                                :self.model.size])
             else:
                 mat[:, i] = np.array(d['vector'][:self.model.size])
 
@@ -1169,10 +1215,12 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                                            journal_pks=journal_pks)
 
         # ignore paper_pks
-        neighbors_pks_multi = [nei for nei in res_search if nei not in paper_pks]
+        neighbors_pks_multi = [nei for nei in res_search if
+                               nei not in paper_pks]
         return neighbors_pks_multi
 
-    def partition_search(self, seeds, clip_start=0, top_n=5, clip_start_reverse=False,
+    def partition_search(self, seeds, clip_start=0, top_n=5,
+                         clip_start_reverse=False,
                          journal_pks=None):
         """Return the unsorted list of paper pk that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
@@ -1208,7 +1256,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # reverse order
         dists = - dists
         # get partition
-        arg_part = np.argpartition(dists, top_n+1, axis=0)[:top_n:, :]
+        arg_part = np.argpartition(dists, top_n + 1, axis=0)[:top_n:, :]
         # reshape and return unique
         result = [index2pk[ind] for ind in arg_part.flatten()]
         return list(set(result))
@@ -1270,3 +1318,5 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             return self.get_recent_pks(**kwargs)
         else:
             raise ValueError('Unknown task action: {0}'.format(task))
+
+
