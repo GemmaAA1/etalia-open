@@ -7,6 +7,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
 
 from etalia.core.models import TimeStampedModel
 
@@ -234,3 +235,18 @@ class ThreadUserHistory(TimeStampedModel):
 
     date = models.DateTimeField(auto_now_add=True)
 
+
+class ThreadNeighbor(TimeStampedModel):
+    """Table for Thread neighbors"""
+    # thread
+    thread = models.ForeignKey(Thread)
+
+    # Time lapse for neighbors match
+    time_lapse = models.IntegerField(default=-1,
+                                     choices=THREAD_TIME_LAPSE_CHOICES,
+                                     verbose_name='Days from right now')
+
+    # Primary keys of the k-nearest neighbors matches
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)

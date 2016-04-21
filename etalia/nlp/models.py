@@ -26,13 +26,13 @@ from gensim.models import Phrases
 from etalia.core.models import TimeStampedModel
 from etalia.core.constants import NLP_TIME_LAPSE_CHOICES
 from etalia.core.utils import pad_vector, pad_neighbors
+from etalia.core.mixins import ModelThreadMixin
 from etalia.library.models import Paper, Journal
 from .constants import FIELDS_FOR_MODEL
 from .utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
     model_attr_setter
 from .mixins import S3Mixin
 from .constants import NLP_JOURNAL_RATIO_CHOICES
-from .threads_models import ThreadVectors, ThreadNeighbor, ModelThreadMixin
 
 logger = logging.getLogger(__name__)
 
@@ -1318,5 +1318,6 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             return self.get_recent_pks(**kwargs)
         else:
             raise ValueError('Unknown task action: {0}'.format(task))
+
 
 
