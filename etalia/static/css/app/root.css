@@ -471,6 +471,11 @@ a.btn-provider:hover {
     /*border-radius: 3px;*/
 }
 
+.btn:active, .btn.active {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
 .btn-default {
     color: #7a7d80;
     background-color: #ffffff;
@@ -492,6 +497,38 @@ a.btn-provider:hover {
 }
 
 .btn-primary:hover {
+    background-color: #86b5b0;
+    border-color: #004f46;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.open > .dropdown-toggle.btn-primary {
+    color: #fff;
+    background-color: #004f46;
+    border-color: #004f46;
+}
+
+.btn-default:active,
+.btn-default.active,
+.open > .dropdown-toggle.btn-default {
+    color: #ffffff;
+    background-color: #86b5b0;
+    border-color: #86b5b0;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(0, 105, 92, .5);
+}
+
+.btn-default:active:hover,
+.btn-default.active:hover,
+.open > .dropdown-toggle.btn-default:hover,
+.btn-default:active:focus,
+.btn-default.active:focus,
+.open > .dropdown-toggle.btn-default:focus,
+.btn-default:active.focus,
+.btn-default.active.focus,
+.open > .dropdown-toggle.btn-default.focus {
+    color: #ffffff;
     background-color: #86b5b0;
     border-color: #004f46;
 }

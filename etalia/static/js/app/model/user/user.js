@@ -1,4 +1,4 @@
-define(['app', 'app/model/user/user-lib'], function (App) {
+define(['jquery', 'app', 'app/model/user/user-lib'], function ($, App) {
 
     App.Model.User = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + '/user/users',
@@ -34,6 +34,8 @@ define(['app', 'app/model/user/user-lib'], function (App) {
         }
     });
 
+    var currentUser = null;
+
     /**
      * Returns the current (authenticated) user.
      *
@@ -42,12 +44,19 @@ define(['app', 'app/model/user/user-lib'], function (App) {
      * @TODO fetch current (authenticated) user id
      */
     App.Model.User.getCurrent = function() {
-        var user = App.Model.User.find(57);
-        if (!user) {
-            user = new App.Model.User({id: 57});
-            user.fetch();
+        if (!currentUser) {
+            var id = $('body').data('user-id');
+            if (!id) {
+                // TODO throw 'Failed to determine user id';
+                id = 21;
+            }
+            currentUser = App.Model.User.find(id);
+            if (!currentUser) {
+                currentUser = new App.Model.User({id: id});
+                currentUser.fetch();
+            }
         }
-        return user;
+        return currentUser;
     };
 
     return App.Model.User;

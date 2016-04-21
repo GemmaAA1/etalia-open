@@ -14,7 +14,9 @@ define([
         template: App.Handlebars.compile(template),
 
         events: {
-            "click #detail-close": "close"
+            "click #detail-close": "close",
+            "click #detail-prev": "prev",
+            "click #detail-next": "next"
         },
 
         initialize: function (options) {
@@ -26,14 +28,33 @@ define([
         },
 
         render: function () {
+            var prev = this.model.get('prev'),
+                next = this.model.get('next');
 
-            $('detail-placeholder').replaceWith(this.$el.html(this.template({})));
+            $('detail-placeholder').replaceWith(this.$el.html(this.template({
+                prev: prev ? prev.attributes : null,
+                next: next ? next.attributes : null
+            })));
 
             this.model
                 .get('view').render().$el
                 .appendTo(this.$('.document .wrapper'));
 
             return this.open();
+        },
+
+        prev: function() {
+            var prev = this.model.get('prev');
+            if (prev) {
+                this.trigger('detail:prev', prev, this);
+            }
+        },
+
+        next: function() {
+            var next = this.model.get('next');
+            if (next) {
+                this.trigger('detail:next', next, this);
+            }
         },
 
         open: function() {

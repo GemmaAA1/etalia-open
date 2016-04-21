@@ -7,7 +7,7 @@ define([
     App.View.Thread.EditForm = App.Backbone.Form.extend({
 
         schema: {
-            content: {type: 'Tinymce', validators: ['required'], title: false, settings: {height: 400}}
+            content: {type: 'Tinymce', title: false, settings: {height: 400}}
         },
 
         template: _.template('\

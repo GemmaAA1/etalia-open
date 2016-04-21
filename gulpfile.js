@@ -115,6 +115,7 @@ gulp.task('libraries', ['clean-libraries'], function() {
             src: [
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/affix.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/alert.js',
+                'bower_components/bootstrap-sass/assets/javascripts/bootstrap/button.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/collapse.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/modal.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/tooltip.js',

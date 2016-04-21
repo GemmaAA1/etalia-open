@@ -46,8 +46,15 @@ define([
         openDetail: function (model) {
             App.log('ThreadListView::onModelDetail');
 
+            var modelIndex = this.collection.fullCollection.indexOf(model);
+            if (0 > modelIndex) {
+                throw 'Unexpected index';
+            }
+
             var detailModel = new App.Model.Detail({
                 list: this,
+                prev: 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null,
+                next: this.collection.fullCollection.at(modelIndex + 1),
                 view: new App.View.Thread.Detail({
                     model: model
                 })
@@ -60,6 +67,9 @@ define([
                     model: detailModel
                 })
             }
+
+            this.listenToOnce(this.detailView, "detail:prev", this.openDetail);
+            this.listenToOnce(this.detailView, "detail:next", this.openDetail);
 
             this.detailView.render();
         },

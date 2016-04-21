@@ -16,7 +16,7 @@
     </p>
     <div class="infos">
         <p class="truncate">
-            {{paper_title_authors paper}}
+            {{#if paper}}{{paper_title_authors paper}}{{/if}}
             <em>{{date created}}</em>
         </p>
         <p class="icons">

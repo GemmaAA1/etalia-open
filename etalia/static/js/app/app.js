@@ -160,6 +160,22 @@ define([
     </div>\
   ');
 
+    Backbone.Form.editors.Radio = Backbone.Form.editors.Radio.extend({
+        tagName: 'div',
+        className: 'btn-group',
+        attributes: {
+            'data-toggle': 'buttons'
+        }
+    }, {
+        template: _.template('\
+    <% _.each(items, function(item) { %>\
+      <label for="<%= item.id %>" class="btn btn-default">\
+        <input type="radio" name="<%= item.name %>" value="<%= item.value %>" id="<%= item.id %>" autocomplete="off"> <%= item.label %>\
+      </label>\
+    <% }); %>\
+  ', null, Backbone.Form.templateSettings)
+    });
+
     Backbone.Form.editors.Tinymce = Backbone.Form.editors.TextArea.extend({
 
         /*tagName: 'textarea',
@@ -334,6 +350,7 @@ define([
         Layout: Layout,
         Controls: Controls,
 
+        Const: {},
         Model: {},
         Collection: {},
         View: {

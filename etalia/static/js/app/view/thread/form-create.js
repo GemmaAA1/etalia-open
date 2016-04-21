@@ -2,28 +2,57 @@ define([
     'underscore',
     'app',
     'app/collection/library/paper',
+    'app/model/thread/thread',
     'app/model/thread/post'
 ], function (_, App) {
 
     App.View.Thread.CreateForm = App.Backbone.Form.extend({
 
         schema: {
-            title: {type: 'Text', validators: ['required']},
+            privacy: {
+                type: "Radio",
+                options: [
+                    { label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
+                    { label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
+                ],
+                help: 'Interdum et malesuada fames ac ante ipsum primis in faucibus. ' +
+                    'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
+                    'Integer sit amet egestas tortor.'
+            },
 
-            paper: {type: 'Select', options: function(callback) {
-                var user = App.Model.User.getCurrent(),
-                    papers = new App.Collection.Papers();
+            type: {
+                type: "Radio",
+                options: [
+                    { label: "Question", val: App.Model.Thread.TYPE_QUESTION},
+                    { label: "Paper", val: App.Model.Thread.TYPE_PAPER}
+                ]
+            },
 
-                papers.url = App.config.api_root + '/user/user-libs/' + user.get('id') + '/papers';
-                papers
-                    .fetch()
-                    .then(function() {
-                        callback(papers);
-                    }, function(jqXHR, textStatus, errorThrown) {
-                        throw textStatus + ' ' + errorThrown;
-                    });
+            paper: {
+                type: 'Select',
+                options: function(callback) {
+                    var user = App.Model.User.getCurrent(),
+                        papers = new App.Collection.Papers();
 
-            }, validators: ['required']}
+                    // TODO none choice + validation
+
+                    papers.url = App.config.api_root + '/user/user-libs/' + user.get('id') + '/papers';
+                    papers
+                        .fetch()
+                        .then(function() {
+                            var options = [{val: null, label: 'None'}];
+                            papers.each(function (paper) {
+                                options.push({val: paper.get('id'), label: paper.get('title')});
+                            });
+                            callback(options);
+                        }, function(jqXHR, textStatus, errorThrown) {
+                            throw textStatus + ' ' + errorThrown;
+                        });
+
+                }
+            },
+
+            title: {type: 'Text'}
         },
 
         template: _.template('\
@@ -51,6 +80,16 @@ define([
             App.Backbone.Form.prototype.initialize.apply(this, arguments);
 
             this.listenTo(this, "submit", this._onSubmit);
+
+            this.listenTo(this, "type:change", this._onTypeChange);
+        },
+
+        _onTypeChange: function(form, titleEditor) {
+            if (titleEditor.getValue() == App.Model.Thread.TYPE_PAPER) {
+                this.$('.field-paper').show();
+            } else {
+                this.$('.field-paper').hide();
+            }
         },
 
         _onSubmit: function(e) {
