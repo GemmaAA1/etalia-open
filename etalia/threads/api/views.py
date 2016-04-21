@@ -63,7 +63,7 @@ class ThreadViewSet(MultiSerializerMixin,
         'nested': ThreadNestedSerializer
     }
     exclude_action_serializers = {
-        # 'list': ['nested'],
+        'list': ['nested'],
     }
     permission_classes = (permissions.IsAuthenticated,
                           IsOwnerOrReadOnly)

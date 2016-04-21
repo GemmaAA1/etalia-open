@@ -187,6 +187,8 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
+    user = UserSerializer(many=False, read_only=True)
+    paper = PaperNestedSerializer(many=False, read_only=True)
 
     class Meta:
         model = Thread
