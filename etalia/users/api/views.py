@@ -32,15 +32,15 @@ class UserViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET] /users/: List of user
-    * [GET] /users/<id\>/: User instance
-    * [GET] /users/<id\>/followers/: List of followers users
-    * [GET] /users/<id\>/following/: List of following users
-    * [GET] /users/<id\>/blocked/: List of blocked users
+    * **[GET] /users/**: List of user
+    * **[GET] /users/<id\>/**: User instance
+    * **[GET] /users/<id\>/followers/**: List of followers users
+    * **[GET] /users/<id\>/following/**: List of following users
+    * **[GET] /users/<id\>/blocked/**: List of blocked users
 
     ** Detail: **
 
-    * view=(str): Reformat output. choices: 'full',
+    * **view=(str)**: Reformat output. choices: 'full',
 
     """
 
@@ -86,19 +86,19 @@ class UserLibViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET] /user-libs/: List of papers in user libraries
-    * [GET] /user-libs/<id\>/: User Library instance
-    * [GET] /user-libs/<id\>/papers: List of papers in user library
+    * **[GET] /user-libs/**: List of papers in user libraries
+    * **[GET] /user-libs/<id\>/**: User Library instance
+    * **[GET] /user-libs/<id\>/papers**: List of papers in user library
 
     ### Optional Kwargs ###
 
     ** Detail: **
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     ** List: **
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     """
 
@@ -141,18 +141,18 @@ class UserLibPaperViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET] /user-lib-papers/: List of User Lib Paper
-    * [GET] /user-lib-papers/<id\>/: User Lib Paper instance
+    * **[GET] /user-lib-papers/**: List of User Lib Paper
+    * **[GET] /user-lib-papers/<id\>/**: User Lib Paper instance
 
     ### Optional Kwargs ###
 
     ** Detail: **
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     ** List: **
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     [ref1]: /api/v1/user/user-libs/
     [ref2]: /api/v1/library/papers/
@@ -181,8 +181,8 @@ class RelationshipViewSet(viewsets.ModelViewSet):
 
     ### Routes ###
 
-    * [GET] /relationships/: List of relationship for user
-    * [GET] /relationships/<id\>/: Relationship instance for user
+    * **[GET] /relationships/**: List of relationship for user
+    * **[GET] /relationships/<id\>/**: Relationship instance for user
 
     """
     queryset = Relationship.objects.all()

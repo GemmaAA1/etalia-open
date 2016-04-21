@@ -18,8 +18,8 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ReadOnlyModelViewSet):
 
     ### Routes ###
 
-    * [GET] /papers/: List of papers
-    * [GET] /papers/<id\>/: Paper instance
+    * **[GET] /papers/**: List of papers
+    * **[GET] /papers/<id\>/**: Paper instance
     """
 
     queryset = Paper.objects.all()
@@ -36,8 +36,8 @@ class JournalViewSet(viewsets.ReadOnlyModelViewSet):
 
     ### Routes ###
 
-    * [GET] /journals/: List of journals
-    * [GET] /journals/<id\>/: Journal instance
+    * **[GET] /journals/**: List of journals
+    * **[GET] /journals/<id\>/**: Journal instance
     """
     queryset = Journal.objects.all()
     serializer_class = JournalSerializer

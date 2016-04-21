@@ -4,11 +4,10 @@ from __future__ import unicode_literals, absolute_import
 import operator
 from functools import reduce
 
-from rest_framework import viewsets, permissions, mixins, status, serializers
+from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
-from rest_condition import And, Or
 
 from django.db.models import Q
 from django.utils import timezone
@@ -20,7 +19,7 @@ from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadCommentNestedSerializer, PatchSerializer
+    ThreadCommentNestedSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
 
 
@@ -35,26 +34,27 @@ class ThreadViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET, POST] /threads/: List of threads
-    * [GET, PUT, PATCH] /threads/<id\>/: Thread instance
-    * [PUT, PATCH] /threads/<id\>publish: Publish Thread
+    * **[GET, POST] /threads/**: List of threads
+    * **[GET, PUT, PATCH] /threads/<id\>/**: Thread instance
+    * **[PUT, PATCH] /threads/<id\>/publish**: Publish Thread
 
     ### Optional Kwargs ###
 
     ** Detail: **
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     ** List: **
 
-    * view=(str): Reformat output. choices: 'nested',
-    * pinned=(int): Fetch only **pinned** (if 1) or **non pinned** (if 0) threads for logged user (default = Null)
-    * joined=(int): Fetch only **joined** (if 1) or **non joined** (if 0) threads for logged user (default = Null)
-    * left=(int): Fetch only **left** (if 1) or **non left** (if 0) threads for logged user (default = Null)
-    * banned=(int): Fetch only **banned** (if 1) or **non banned** (if 0) threads for logged user (default = Null)
-    * published=(int): Fetch only **published** (if 1) or **non published** (if 0) threads for logged user (default = Null)
-    * scored=(int)&feed=(str): Fetch only **scored** (if 1) or **non scored** (if 0) threads for logged user and specific feed (default = (Null, 'main')
-    * time-span=(int): Fetch only threads published in the past time-span days
+    * **view=(str)**: Reformat output. choices: 'nested',
+    * **pinned=(int)**: Fetch only **pinned** (if 1) or **non pinned** (if 0) threads for logged user (default = Null)
+    * **joined=(int)**: Fetch only **joined** (if 1) or **non joined** (if 0) threads for logged user (default = Null)
+    * **left=(int)**: Fetch only **left** (if 1) or **non left** (if 0) threads for logged user (default = Null)
+    * **banned=(int)**: Fetch only **banned** (if 1) or **non banned** (if 0) threads for logged user (default = Null)
+    * **published=(int)**: Fetch only **published** (if 1) or **non published** (if 0) threads for logged user (default = Null)
+    * **scored=(int)&feed=(str)**: Fetch only **scored** (if 1) or **non scored** (if 0) threads for logged user and specific feed (default = (Null, 'main')
+    * **time-span=(int)**: Fetch only threads published in the past time-span days
+    * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
     """
 
     queryset = Thread.objects.all()
@@ -106,6 +106,9 @@ class ThreadViewSet(MultiSerializerMixin,
         },
         'view': {
             'type': str,
+        },
+        'sort-by': {
+            'type': str,
         }
     }
 
@@ -137,42 +140,54 @@ class ThreadViewSet(MultiSerializerMixin,
         # validate query_params
         self.validate_query_params()
 
+        # Bool filters definition
+        feed_name = self.request.query_params.get('feed', 'main')
+        bool_filters_def = {
+            'joined': {
+                'query': [Q(threaduser__user=self.request.user),
+                          Q(threaduser__participate=THREAD_JOINED)],
+            },
+            'pinned': {
+                'query': [Q(threaduser__user=self.request.user),
+                          Q(threaduser__watch=THREAD_PINNED)],
+            },
+            'left': {
+                'query': [Q(threaduser__user=self.request.user),
+                          Q(threaduser__participate=THREAD_LEFT)],
+            },
+            'banned': {
+                'query': [Q(threaduser__user=self.request.user),
+                          Q(threaduser__watch=THREAD_BANNED)],
+            },
+            'published': {
+                'query': [Q(user=self.request.user),
+                          ~Q(published_at=None)],
+            },
+            'scored': {
+                'query': [Q(threadscore__thread_feed__name=feed_name),
+                          Q(threadscore__thread_feed__user=self.request.user)],
+            }
+        }
+
+        # ordering mapping
+        order_by_map = {
+            'published-date': '-published_at',
+            'date': '-threaduser__modified',
+            'score': '-threadscore__score',
+        }
+
         # base queryset
         queryset = Thread.objects.exclude(
             Q(published_at=None) &
             ~Q(user=self.request.user))
 
-        # ThreadUser filters
-        bool_filters_def = {
-            'joined': [Q(threaduser__user=self.request.user),
-                       Q(threaduser__participate=THREAD_JOINED)],
-            'pinned': [Q(threaduser__user=self.request.user),
-                       Q(threaduser__watch=THREAD_PINNED)],
-            'left': [Q(threaduser__user=self.request.user),
-                     Q(threaduser__participate=THREAD_LEFT)],
-            'banned': [Q(threaduser__user=self.request.user),
-                       Q(threaduser__watch=THREAD_BANNED)],
-            'published': [Q(user=self.request.user),
-                          ~Q(published_at=None)],
-        }
-        for key, q in bool_filters_def.items():
+        # boolean filters
+        for key, props in bool_filters_def.items():
             param = self.request.query_params.get(key, None)
-            query = reduce(operator.and_, q)
+            query = reduce(operator.and_, props['query'])
             if param == '1':
                 queryset = queryset.filter(query)
             elif param == '0':
-                queryset = queryset.exclude(query)
-
-        # ThreadScore filter
-        scored = self.request.query_params.get('scored', None)
-        feed_name = self.request.query_params.get('feed', 'main')
-        query = reduce(operator.and_,
-                       [Q(threadscore__thread_feed__name=feed_name),
-                        Q(threadscore__thread_feed__user=self.request.user)]),
-        if scored is not None:
-            if scored == '1':
-                queryset = queryset.filter(query)
-            elif scored == '0':
                 queryset = queryset.exclude(query)
 
         # time-span filter
@@ -181,6 +196,10 @@ class ThreadViewSet(MultiSerializerMixin,
             cutoff_datetime = timezone.now() - timezone.timedelta(
                 days=int(time_span))
             queryset = queryset.filter(published_at__gt=cutoff_datetime)
+
+        order_by = self.request.query_params.get('sort-by', None)
+        if order_by:
+            queryset = queryset.order_by(order_by_map.get(order_by))
 
         return queryset
 
@@ -201,19 +220,19 @@ class ThreadPostViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET, POST] /posts/: List of posts
-    * [GET, PUT, PATCH] /posts/<id\>/: Post instance
+    * **[GET, POST] /posts/**: List of posts
+    * **[GET, PUT, PATCH] /posts/<id\>/**: Post instance
 
     ### Optional Kwargs ###
 
     ** Detail:**
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     ** List: **
 
-    * view=(str): Reformat output. choices: 'nested',
-    * thread_id=(int): Filter comments related to Thread thread_id
+    * **view=(str)**: Reformat output. choices: 'nested',
+    * **thread_id=(int)**: Filter comments related to Thread thread_id
 
     """
     queryset = ThreadPost.objects.all()
@@ -251,19 +270,19 @@ class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     ### Routes ###
 
-    * [GET, POST] /comments/: List of comments
-    * [GET, PUT, PATCH] /comments/<id\>/: Comment instance
+    * **[GET, POST] /comments/**: List of comments
+    * **[GET, PUT, PATCH] /comments/<id\>/**: Comment instance
 
     ### Optional Kwargs ###
 
     ** Detail:**
 
-    * view=(str): Reformat output. choices: 'nested',
+    * **view=(str)**: Reformat output. choices: 'nested',
 
     ** List: **
 
-    * view=(str): Reformat output. choices: 'nested',
-    * post_id=(int): Filter comments related to Post post_id
+    * **view=(str)**: Reformat output. choices: 'nested',
+    * **post_id=(int)**: Filter comments related to Post post_id
 
     """
 
@@ -309,15 +328,15 @@ class ThreadUserViewSet(MultiSerializerMixin,
 
     ### Routes ###
 
-    * [GET, POST] /states/: List of Thread User states
-    * [GET, PUT, PATCH] /states/<id\>/: Thread User state instance
+    * **[GET, POST] /states/**: List of Thread User states
+    * **[GET, PUT, PATCH] /states/<id\>/**: Thread User state instance
 
     **Deprecated**:
 
-    * [PUT, PATCH] /states/<id\>/join: User **join** thread
-    * [PUT, PATCH] /states/<id\>/leave: User **leave** thread
-    * [PUT, PATCH] /states/<id\>/pin: User **pin** thread
-    * [PUT, PATCH] /states/<id\>/ban: User **ban** thread
+    * **[PUT, PATCH] /states/<id\>/join**: User **join** thread
+    * **[PUT, PATCH] /states/<id\>/leave**: User **leave** thread
+    * **[PUT, PATCH] /states/<id\>/pin**: User **pin** thread
+    * **[PUT, PATCH] /states/<id\>/ban**: User **ban** thread
 
     [ref1]: /api/v1/user/users/
     [ref2]: /api/v1/thread/threads/

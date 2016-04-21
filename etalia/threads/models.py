@@ -20,8 +20,6 @@ from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
 
 class Thread(TimeStampedModel):
 
-    TOKENIZED_FIELDS = ['title', 'content']
-
     # type of thread
     type = models.IntegerField(choices=THREAD_TYPES, default=THREAD_QUESTION,
                                null=False, blank=False, verbose_name='Type')
@@ -51,7 +49,7 @@ class Thread(TimeStampedModel):
 
     class Meta:
         unique_together = (('type', 'user', 'title', 'paper'),)
-        ordering = ('-published_at',)
+        ordering = ('-published_at', '-modified')
 
     @property
     def short_title(self):
