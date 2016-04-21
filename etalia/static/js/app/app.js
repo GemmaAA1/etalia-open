@@ -306,6 +306,32 @@ define([
     /**
      * Handlebars helpers
      */
+    Handlebars.registerHelper('ifCond', function (a, operator, b, options) {
+        switch (operator) {
+            case '==':
+                return (a == b) ? options.fn(this) : options.inverse(this);
+            case '===':
+                return (a === b) ? options.fn(this) : options.inverse(this);
+            case '<':
+                return (a < b) ? options.fn(this) : options.inverse(this);
+            case '<=':
+                return (a <= b) ? options.fn(this) : options.inverse(this);
+            case '>':
+                return (a > b) ? options.fn(this) : options.inverse(this);
+            case '>=':
+                return (a >= b) ? options.fn(this) : options.inverse(this);
+            case 'and':
+                return (a && b) ? options.fn(this) : options.inverse(this);
+            case 'andNot':
+                return (a && !b) ? options.fn(this) : options.inverse(this);
+            case 'or':
+                return (a || b) ? options.fn(this) : options.inverse(this);
+            case 'orNot':
+                return (a || !b) ? options.fn(this) : options.inverse(this);
+            default:
+                return options.inverse(this);
+        }
+    });
     Handlebars.registerHelper('thread_pin_class', function() {
         if (this.state && this.state.get('watch') === App.Model.State.WATCH_PINNED) {
             return ' active';

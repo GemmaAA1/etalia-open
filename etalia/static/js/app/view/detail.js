@@ -14,9 +14,10 @@ define([
         template: App.Handlebars.compile(template),
 
         events: {
-            "click #detail-close": "close",
-            "click #detail-prev": "prev",
-            "click #detail-next": "next"
+            "click #detail-close": "onCloseClick",
+            "click #detail-prev": "onPrevClick",
+            "click #detail-next": "onNextClick",
+            "click": 'onClick'
         },
 
         initialize: function (options) {
@@ -43,18 +44,28 @@ define([
             return this.open();
         },
 
-        prev: function() {
+        onPrevClick: function() {
             var prev = this.model.get('prev');
             if (prev) {
                 this.trigger('detail:prev', prev, this);
             }
         },
 
-        next: function() {
+        onNextClick: function() {
             var next = this.model.get('next');
             if (next) {
                 this.trigger('detail:next', next, this);
             }
+        },
+
+        onClick: function(e) {
+            if ($(e.target).attr('id') === 'detail-document') {
+                this.close();
+            }
+        },
+
+        onCloseClick: function() {
+            this.close();
         },
 
         open: function() {

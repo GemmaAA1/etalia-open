@@ -16,9 +16,9 @@ define([
             privacy: null,
             title: null,
             content: null,
-            state: null,
             created: null,
-            modified: null
+            modified: null,
+            published_at: null
         },
 
         relations: [
@@ -82,14 +82,31 @@ define([
                         errors.paper = 'Please select a paper.';
                     }
                 }
-                if (attrs.hasOwnProperty('type') && attrs.title.length < 10) {
+                if (attrs.hasOwnProperty('title') && attrs.title.length < 10) {
                     errors.title = 'Please provide a title (min. 10 chars).';
                 }
                 if (attrs.hasOwnProperty('content') && attrs.content.length < 50) {
-                    errors.title = 'Please provide a content (min. 50 chars).';
+                    errors.content = 'Please provide a content (min. 50 chars).';
                 }
                 return errors;
             }
+        },
+
+        publish: function() {
+            var options = {
+                type: 'PATCH',
+                dataType: 'json',
+                url: _.result(this, 'url') + '/publish'
+            };
+
+            var model = this;
+            App.Backbone.ajax(options).then(function(resp) {
+                var serverAttrs = options.parse ? model.parse(resp, options) : resp;
+                if (!model.set(serverAttrs, options)) return false;
+                model.trigger('sync', model, resp, options);
+            });
+
+            return this;
         },
 
         getState: function() {

@@ -84,11 +84,24 @@
         <p class="thread-info element-info">
             <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
             - <a href="javascript: void(0)" class="thread-edit">edit</a>
-            - <a href="javascript: void(0)" class="thread-delete">delete</a>
+            {{!-- - <a href="javascript: void(0)" class="thread-delete">delete</a> --}}
         </p>
 
         <div data-thread-edit-form></div>
+
+        {{#ifCond content 'andNot' published_at}}
+        <div class="alert alert-info thread-info">
+            <button type="button" class="btn btn-primary thread-publish" style="float:right; margin: 0 0 0 15px;">
+                Publish
+            </button>
+            <p style="line-height: 34px">
+                When you will be ready, don't forget to publish your thread !
+            </p>
+        </div>
+        {{/ifCond}}
     </div>
+
+    {{#if published_at}}
 
     <div data-members-placeholder></div>
 
@@ -113,5 +126,6 @@
 
         </div>
     </div>
+    {{/if}}
 
 </div>

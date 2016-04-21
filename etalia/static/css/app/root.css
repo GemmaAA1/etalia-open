@@ -442,6 +442,11 @@ a.btn-provider:hover {
 }
 
 /* ------------------------------------ BOOTSTRAP ------------------------------------ */
+
+p:empty {
+    margin: 0;
+}
+
 .btn {
     font-size: 16px;
     padding: 5px 10px;
@@ -531,6 +536,10 @@ a.btn-provider:hover {
     color: #ffffff;
     background-color: #86b5b0;
     border-color: #004f46;
+}
+
+form {
+    margin-bottom: 15px;
 }
 
 .form-footer button,

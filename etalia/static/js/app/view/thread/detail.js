@@ -17,7 +17,8 @@ define([
         template: App.Handlebars.compile(template),
 
         events: {
-            "click .thread-edit": "onEditClick"
+            "click .thread-edit": "onEditClick",
+            "click .thread-publish": "onPublishClick"
         },
 
         initialize: function () {
@@ -46,6 +47,12 @@ define([
             });
         },
 
+        onPublishClick: function(e) {
+            e.preventDefault();
+
+            this.model.publish();
+        },
+
         render: function() {
             App.log('ThreadDetailView::render');
 
@@ -57,6 +64,7 @@ define([
             }, {
                 $target: this.$('[data-user-placeholder]')
             });
+
 
             // Members list
             App.View.User.List.create({
@@ -71,6 +79,8 @@ define([
             }, {
                 $target: this.$('[data-posts-placeholder]')
             });
+
+
 
             return this;
         }
