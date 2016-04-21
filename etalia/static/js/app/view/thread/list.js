@@ -109,7 +109,16 @@ define([
         },
 
         onNextPageClick: function () {
-            this.collection.getNextPage(null);
+            var that = this;
+            if (this.collection.hasNextPage()) {
+                this.collection.getNextPage(null).then(function() {
+                    if (that.collection.hasNextPage()) {
+                        that.$('#thread-next-page').show();
+                    } else {
+                        that.$('#thread-next-page').hide();
+                    }
+                });
+            }
         },
 
         render: function () {
@@ -117,6 +126,15 @@ define([
             this.$el.html(this.template({}));
 
             this.$thumbList = this.$('.thumb-list');
+
+            var that = this;
+            this.collection.fetch().then(function() {
+                if (that.collection.hasNextPage()) {
+                    that.$('#thread-next-page').show();
+                } else {
+                    that.$('#thread-next-page').hide();
+                }
+            });
 
             return this;
         }

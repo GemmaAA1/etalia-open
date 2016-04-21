@@ -13,7 +13,6 @@ define([
         });
 
     list.render();
-    list.collection.fetch();
 
 
     var form, modal;
