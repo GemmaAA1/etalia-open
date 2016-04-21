@@ -228,10 +228,9 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
         """Get state based on ThreadUser instance if exists"""
         threaduser = obj.state(self.context['request'].user)
         if threaduser:
-            return reverse('api:threaduser-detail',
-                           kwargs={'pk': threaduser.id},
-                           request=self.context['request'],
-                           format=self.context['format'])
+            return ThreadUserSerializer(
+                instance=threaduser,
+                context={'request': self.context['request']}).data
         return None
 
     def get_members(self, obj):
