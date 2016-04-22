@@ -26,8 +26,9 @@ from gensim.models import Phrases
 from etalia.core.models import TimeStampedModel
 from etalia.core.constants import NLP_TIME_LAPSE_CHOICES
 from etalia.core.utils import pad_vector, pad_neighbors
-from etalia.core.mixins import ModelThreadMixin
 from etalia.library.models import Paper, Journal
+from etalia.threads.models import Thread
+from etalia.threads.constant import THREAD_TIME_LAPSE_CHOICES
 from .constants import FIELDS_FOR_MODEL
 from .utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
     model_attr_setter
@@ -37,6 +38,308 @@ from .constants import NLP_JOURNAL_RATIO_CHOICES
 logger = logging.getLogger(__name__)
 
 
+# ------------------------------------------------------------------------------
+# THREADS/NLP RELATED
+# ------------------------------------------------------------------------------
+
+class ThreadVectors(TimeStampedModel):
+    """ Table Thread - NLP Model relationship
+
+    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
+    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
+    Shorter vectors are pad with None
+
+    Use setter/getter functions to set and get vector
+    """
+
+    thread = models.ForeignKey(Thread,
+                               related_name='vectors')
+
+    model = models.ForeignKey('Model')
+
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True, db_index=True)
+
+    class Meta:
+        unique_together = ('thread', 'model')
+
+    def __str__(self):
+        return '{thread_pk}/{name}'.format(paper_pk=self.thread.pk,
+                                           name=self.model.name)
+
+    def set_vector(self, vector):
+        self.vector = pad_vector(vector)
+        self.save()
+
+    def get_vector(self):
+        return self.vector[:self.model.size]
+
+
+class ThreadNeighbor(TimeStampedModel):
+    """Table for Thread neighbors"""
+    # thread
+    thread = models.ForeignKey(Thread)
+
+    # Time lapse for neighbors match
+    time_lapse = models.IntegerField(default=-1,
+                                     choices=THREAD_TIME_LAPSE_CHOICES,
+                                     verbose_name='Days from right now')
+
+    # Primary keys of the k-nearest neighbors matches
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)
+
+
+class ModelThreadMixin(object):
+    """Mixin to Model to add Thread support"""
+    THREAD_TOKENIZED_FIELDS = ['title', 'content']
+
+    def infer_thread(self, thread_pk, **kwargs):
+        """
+        Infer vector for model and thread instance
+        """
+        vector = self.infer_object(Thread, thread_pk,
+                                   self.THREAD_TOKENIZED_FIELDS, **kwargs)
+
+        pv, _ = ThreadVectors.objects.get_or_create(model=self,
+                                                    thread_id=thread_pk)
+
+        # store
+        pv.set_vector(vector.tolist())
+
+        return thread_pk
+
+    def infer_threads(self, thread_pks, **kwargs):
+        """Infer vector for model and all thread in thread_pks list
+        """
+        # Check inputs
+        if isinstance(thread_pks, models.QuerySet):
+            thread_pks = list(thread_pks)
+        if not isinstance(thread_pks, list):
+            raise TypeError(
+                'thread_pks must be list or QuerySet, found {0} instead'.format(
+                    type(thread_pks)))
+
+        # setup progressbar
+        nb_pbar_updates = 100
+        nb_threads = len(thread_pks)
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=nb_threads, redirect_stderr=True).start()
+
+        for count, thread_pk in enumerate(thread_pks):
+            self.infer_thread(thread_pk, **kwargs)
+            if not (nb_threads // nb_pbar_updates) == 0:
+                if not count % (nb_threads // nb_pbar_updates):
+                    pbar.update(count)
+        # close progress bar
+        pbar.finish()
+
+    def tasks(self, task, **kwargs):
+        if task == 'infer_thread':
+            thread_pk = kwargs.pop('thread_pk')
+            return self.infer_thread(thread_pk, **kwargs)
+        if task == 'infer_threads':
+            thread_pks = kwargs.pop('thread_pks')
+            return self.infer_threads(thread_pks, **kwargs)
+        return super(ModelThreadMixin, self).tasks(task, **kwargs)
+
+    def infer_object(self, cls, pk, fields, **kwargs):
+        raise NotImplemented
+
+
+# ------------------------------------------------------------------------------
+# LIBRARY/NLP RELATED
+# ------------------------------------------------------------------------------
+
+class PaperVectors(TimeStampedModel):
+    """ Table Paper - NLP Model relationship
+
+    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
+    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
+    Shorter vectors are pad with None
+
+    Use set_vector() to pad and set vector list
+    """
+
+    paper = models.ForeignKey(Paper, related_name='vectors')
+
+    model = models.ForeignKey('Model')
+
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True, db_index=True)
+
+    class Meta:
+        unique_together = ('paper', 'model')
+
+    def __str__(self):
+        return '{paper_pk}/{name}'.format(paper_pk=self.paper.pk,
+                                          name=self.model.name)
+
+    def set_vector(self, vector):
+        self.vector = pad_vector(vector)
+        self.save()
+
+    def get_vector(self):
+        return self.vector[:self.model.size]
+
+
+class JournalVectors(TimeStampedModel):
+    """ Table Journal - NLP Model relationship
+
+    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
+    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
+    Shorter vectors are pad with None.
+
+    Use set_vector() to pad and set vector list
+    """
+
+    journal = models.ForeignKey(Journal, related_name='vectors')
+
+    model = models.ForeignKey('Model')
+
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True, db_index=True)
+
+    class Meta:
+        unique_together = ('journal', 'model')
+
+    def __str__(self):
+        return '{short_title}/{name}' \
+            .format(short_title=self.journal.short_title, name=self.model.name)
+
+    def set_vector(self, vector):
+        self.vector = pad_vector(vector)
+        self.save()
+
+    def get_vector(self):
+        return self.vector[:self.model.size]
+
+
+class PaperNeighbors(TimeStampedModel):
+    """ Table of matches nearest neighbors"""
+
+    paper = models.ForeignKey(Paper, related_name='neighbors')
+
+    ms = models.ForeignKey('MostSimilar')
+
+    time_lapse = models.IntegerField(default=-1,
+                                     choices=NLP_TIME_LAPSE_CHOICES,
+                                     verbose_name='Days from right now')
+
+    # Primary keys of the k-nearest neighbors matches
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)
+
+    def __str__(self):
+        return '{ms}/{time_lapse}'.format(
+            ms=self.ms.name,
+            time_lapse=self.time_lapse)
+
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
+
+    def get_neighbors(self):
+        return self.neighbors[:self.ms.model.size]
+
+    class Meta:
+        unique_together = ('time_lapse', 'paper', 'ms')
+
+
+class JournalNeighbors(TimeStampedModel):
+    """ Table of matches nearest neighbors"""
+
+    journal = models.ForeignKey(Journal, related_name='neighbors')
+
+    ms = models.ForeignKey('MostSimilar')
+
+    # Primary keys of the k-nearest neighbors matches
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)
+
+    def __str__(self):
+        return '{ms}/{time_lapse}'.format(
+            ms=self.ms.name,
+            time_lapse=self.time_lapse)
+
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
+
+    def get_neighbors(self):
+        return self.neighbors[:self.ms.model.size]
+
+    class Meta:
+        unique_together = ('journal', 'ms')
+
+
+class ModelLibraryMixin(object):
+    """Mixin to Model to add Thread support"""
+
+    PAPER_TOKENIZED_FIELDS = ['title', 'abstract']
+
+    def infer_paper(self, paper_pk, **kwargs):
+        """
+        Infer vector for model and thread instance
+        """
+        vector = self.infer_object(Paper, paper_pk,
+                                   self.PAPER_TOKENIZED_FIELDS, **kwargs)
+
+        pv, _ = PaperVectors.objects.get_or_create(model=self,
+                                                   paper_id=paper_pk)
+
+        # store
+        pv.set_vector(vector.tolist())
+
+        return paper_pk
+
+    def infer_papers(self, paper_pks, **kwargs):
+        """Infer vector for model and all thread in thread_pks list
+        """
+        # Check inputs
+        if isinstance(paper_pks, models.QuerySet):
+            paper_pks = list(paper_pks)
+        if not isinstance(paper_pks, list):
+            raise TypeError(
+                'thread_pks must be list or QuerySet, found {0} instead'.format(
+                    type(paper_pks)))
+
+        # setup progressbar
+        nb_pbar_updates = 100
+        nb_papers = len(paper_pks)
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=nb_papers, redirect_stderr=True).start()
+
+        for count, paper_pk in enumerate(paper_pks):
+            self.infer_paper(paper_pk, **kwargs)
+            if not (nb_papers // nb_pbar_updates) == 0:
+                if not count % (nb_papers // nb_pbar_updates):
+                    pbar.update(count)
+        # close progress bar
+        pbar.finish()
+
+    def tasks(self, task, **kwargs):
+        if task == 'infer_paper':
+            paper_pk = kwargs.pop('paper_pk')
+            return self.infer_paper(paper_pk, **kwargs)
+        if task == 'infer_papers':
+            paper_pks = kwargs.pop('paper_pks')
+            return self.infer_papers(paper_pks, **kwargs)
+        return super(ModelLibraryMixin, self).tasks(task, **kwargs)
+
+    def infer_object(self, cls, pk, fields, **kwargs):
+        raise NotImplemented
+
+
+# ------------------------------------------------------------------------------
+# NLP MAIN
+# ------------------------------------------------------------------------------
 class ModelManager(models.Manager):
     def create(self, **kwargs):
         # starting popping text_fields key if any
@@ -85,7 +388,7 @@ class ModelManager(models.Manager):
         return obj
 
 
-class Model(ModelThreadMixin, S3Mixin, TimeStampedModel):
+class Model(ModelThreadMixin, ModelLibraryMixin, S3Mixin, TimeStampedModel):
     """Natural Language Processing Class based on Doc2Vec from Gensim
     """
     # TODO: Refactor paper related embedding similarly to Thread
@@ -498,64 +801,6 @@ class Model(ModelThreadMixin, S3Mixin, TimeStampedModel):
         self.save_paper_vec_from_bulk()
         self.save_journal_vec_from_bulk()
 
-    def infer_paper(self, paper_pk, alpha=0.1, min_alpha=0.001,
-                    passes=10):  # seed=seed)
-        """Infer model vector for paper"""
-
-        # sanity checks
-        self.check_active()
-        if not isinstance(paper_pk, int):
-            raise TypeError('paper_pk must be int, found {0} instead'.format(
-                type(paper_pk)))
-
-        text_fields = [tx.text_field for tx in self.text_fields.all()]
-
-        pv, _ = PaperVectors.objects.get_or_create(model=self,
-                                                   paper_id=paper_pk)
-        paper = Paper.objects.get(id=paper_pk)
-        doc_words = obj2tokens(paper, fields=text_fields)
-
-        # NB: infer_vector uses explicit alpha-reduction with multi-passes
-        vector = self._doc2vec.infer_vector(doc_words,
-                                            alpha=alpha,
-                                            min_alpha=min_alpha,
-                                            steps=passes)
-        # normalize
-        vector /= np.linalg.norm(vector)
-        # store
-        pv.set_vector(vector.tolist())
-
-        return paper_pk
-
-    def infer_papers(self, paper_pks, **kwargs):
-        """Infer model vector for matches
-
-        Args:
-            paper_pks (list or QuerySet): List of Paper primary keys
-        """
-        # sanity check
-        self.check_active()
-        if isinstance(paper_pks, QuerySet):
-            paper_pks = list(paper_pks)
-        if not isinstance(paper_pks, list):
-            raise TypeError(
-                'paper_pks must be list or QuerySet, found {0} instead'.format(
-                    type(paper_pks)))
-
-        # setup progressbar
-        nb_pbar_updates = 100
-        nb_papers = len(paper_pks)
-        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
-                           maxval=nb_papers, redirect_stderr=True).start()
-
-        for count, paper_pk in enumerate(paper_pks):
-            self.infer_paper(paper_pk, **kwargs)
-            if not (nb_papers // nb_pbar_updates) == 0:
-                if not count % (nb_papers // nb_pbar_updates):
-                    pbar.update(count)
-        # close progress bar
-        pbar.finish()
-
     def infer_object(self, cls, pk, fields, **kwargs):
 
         # sanity checks
@@ -578,7 +823,6 @@ class Model(ModelThreadMixin, S3Mixin, TimeStampedModel):
 
         return vector
 
-
     def activate(self):
         """Set model to active"""
         self.is_active = True
@@ -592,24 +836,6 @@ class Model(ModelThreadMixin, S3Mixin, TimeStampedModel):
     def check_active(self):
         if not self.is_active:
             raise ValidationError('model is not active')
-
-    @classmethod
-    def infer_paper_all_models(cls, paper, **kwargs):
-        """Infer all model vector for paper
-        """
-        model_names = list(cls.objects.all().values_list('name', flat='True'))
-        for model_name in model_names:
-            model = cls.objects.get(name=model_name)
-            model.infer_paper(paper, **kwargs)
-
-    @classmethod
-    def infer_papers_all_models(cls, papers, **kwargs):
-        """Infer all model vector for all matches
-        """
-        model_names = list(cls.objects.all().values_list('name', flat='True'))
-        for model_name in model_names:
-            model = cls.objects.get(name=model_name)
-            model.infer_papers(papers, **kwargs)
 
     def get_words_vec(self, vec, topn=20):
         """retrieve closest top_n word from vector"""
@@ -644,12 +870,6 @@ class Model(ModelThreadMixin, S3Mixin, TimeStampedModel):
     def tasks(self, task, **kwargs):
         """Task dispatcher. See comments on MostSimilar.tasks method for rational"""
         super(Model, self).tasks(task, **kwargs)
-        if task == 'infer_paper':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.infer_paper(paper_pk, **kwargs)
-        if task == 'infer_papers':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.infer_papers(paper_pk, **kwargs)
         if task == 'get_words_vec':
             vec = kwargs.pop('vec')
             return self.get_words_vec(vec, **kwargs)
@@ -674,156 +894,6 @@ class TextField(TimeStampedModel):
 
     def __str__(self):
         return self.text_field
-
-
-class PaperVectorsManager(models.Manager):
-    def create(self, **kwargs):
-        # enforce that model is active
-        if not kwargs.get('model').is_active:
-            raise ValidationError('model {0} is not active'
-                                  .format(kwargs.get('model').name))
-
-        return super(PaperVectorsManager, self).create(**kwargs)
-
-
-class PaperVectors(TimeStampedModel):
-    """ Table Paper - NLP Model relationship
-
-    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
-    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
-    Shorter vectors are pad with None
-
-    Use set_vector() to pad and set vector list
-    """
-
-    paper = models.ForeignKey(Paper, related_name='vectors')
-
-    model = models.ForeignKey(Model)
-
-    vector = ArrayField(models.FloatField(null=True),
-                        size=settings.NLP_MAX_VECTOR_SIZE,
-                        null=True, db_index=True)
-
-    objects = PaperVectorsManager()
-
-    class Meta:
-        unique_together = ('paper', 'model')
-
-    def __str__(self):
-        return '{paper_pk}/{name}'.format(paper_pk=self.paper.pk,
-                                          name=self.model.name)
-
-    def set_vector(self, vector):
-        self.vector = pad_vector(vector)
-        self.save()
-
-    def get_vector(self):
-        return self.vector[:self.model.size]
-
-
-class JournalVectorsManager(models.Manager):
-    def create(self, **kwargs):
-        # enforce that model is active
-        if not kwargs.get('model').is_active:
-            raise ValidationError('model {0} is not active'
-                                  .format(kwargs.get('model').name))
-
-        return super(JournalVectorsManager, self).create(**kwargs)
-
-
-class JournalVectors(TimeStampedModel):
-    """ Table Journal - NLP Model relationship
-
-    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
-    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
-    Shorter vectors are pad with None.
-
-    Use set_vector() to pad and set vector list
-    """
-
-    journal = models.ForeignKey(Journal, related_name='vectors')
-
-    model = models.ForeignKey(Model)
-
-    vector = ArrayField(models.FloatField(null=True),
-                        size=settings.NLP_MAX_VECTOR_SIZE,
-                        null=True, db_index=True)
-
-    objects = JournalVectorsManager()
-
-    class Meta:
-        unique_together = ('journal', 'model')
-
-    def __str__(self):
-        return '{short_title}/{name}' \
-            .format(short_title=self.journal.short_title, name=self.model.name)
-
-    def set_vector(self, vector):
-        self.vector = pad_vector(vector)
-        self.save()
-
-    def get_vector(self):
-        return self.vector[:self.model.size]
-
-
-class PaperNeighbors(TimeStampedModel):
-    """ Table of matches nearest neighbors"""
-
-    paper = models.ForeignKey(Paper, related_name='neighbors')
-
-    ms = models.ForeignKey('MostSimilar')
-
-    time_lapse = models.IntegerField(default=-1,
-                                     choices=NLP_TIME_LAPSE_CHOICES,
-                                     verbose_name='Days from right now')
-
-    # Primary keys of the k-nearest neighbors matches
-    neighbors = ArrayField(models.IntegerField(null=True),
-                           size=settings.NLP_MAX_KNN_NEIGHBORS,
-                           null=True, blank=True)
-
-    def __str__(self):
-        return '{ms}/{time_lapse}'.format(
-            ms=self.ms.name,
-            time_lapse=self.time_lapse)
-
-    def set_neighbors(self, vector):
-        self.neighbors = pad_neighbors(vector)
-        self.save()
-
-    def get_neighbors(self):
-        return self.neighbors[:self.ms.model.size]
-
-    class Meta:
-        unique_together = ('time_lapse', 'paper', 'ms')
-
-
-class JournalNeighbors(TimeStampedModel):
-    """ Table of matches nearest neighbors"""
-
-    journal = models.ForeignKey(Journal, related_name='neighbors')
-
-    ms = models.ForeignKey('MostSimilar')
-
-    # Primary keys of the k-nearest neighbors matches
-    neighbors = ArrayField(models.IntegerField(null=True),
-                           size=settings.NLP_MAX_KNN_NEIGHBORS,
-                           null=True, blank=True)
-
-    def __str__(self):
-        return '{ms}/{time_lapse}'.format(
-            ms=self.ms.name,
-            time_lapse=self.time_lapse)
-
-    def set_neighbors(self, vector):
-        self.neighbors = pad_neighbors(vector)
-        self.save()
-
-    def get_neighbors(self):
-        return self.neighbors[:self.ms.model.size]
-
-    class Meta:
-        unique_together = ('journal', 'ms')
 
 
 class MostSimilarManager(models.Manager):
@@ -1318,6 +1388,3 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             return self.get_recent_pks(**kwargs)
         else:
             raise ValueError('Unknown task action: {0}'.format(task))
-
-
-

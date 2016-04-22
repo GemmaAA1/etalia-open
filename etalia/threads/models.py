@@ -92,10 +92,8 @@ class Thread(TimeStampedModel):
         self.save(update_fields=['published_at'])
 
     def embed(self):
-        pass
-
-    def get_members_per_post_count(self):
-        pass
+        from .tasks import embed_thread
+        embed_thread(self.id)
 
 
 class ThreadPost(TimeStampedModel):
@@ -234,19 +232,3 @@ class ThreadUserHistory(TimeStampedModel):
     difference = models.CharField(max_length=256, default='')
 
     date = models.DateTimeField(auto_now_add=True)
-
-
-class ThreadNeighbor(TimeStampedModel):
-    """Table for Thread neighbors"""
-    # thread
-    thread = models.ForeignKey(Thread)
-
-    # Time lapse for neighbors match
-    time_lapse = models.IntegerField(default=-1,
-                                     choices=THREAD_TIME_LAPSE_CHOICES,
-                                     verbose_name='Days from right now')
-
-    # Primary keys of the k-nearest neighbors matches
-    neighbors = ArrayField(models.IntegerField(null=True),
-                           size=settings.NLP_MAX_KNN_NEIGHBORS,
-                           null=True, blank=True)

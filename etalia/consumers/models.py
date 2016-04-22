@@ -23,7 +23,7 @@ from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 from etalia.library.forms import PaperFormFillBlanks
 from etalia.core.models import TimeStampedModel
-from etalia.core.tasks import embed_all_models
+from etalia.library.tasks import embed_paper
 
 from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
 from .constants import CONSUMER_TYPE
@@ -284,7 +284,7 @@ class Consumer(TimeStampedModel):
                     paper_added += 1
 
                     # Embed paper
-                    embed_all_models(paper.pk)
+                    embed_paper(paper.pk)
 
             # Update consumer_journal
             cj = self.consumerjournal_set.get(journal=journal)

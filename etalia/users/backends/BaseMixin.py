@@ -6,7 +6,7 @@ from django.db.models import Q
 from etalia.library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
     CorpAuthorPaper
 from etalia.library.forms import PaperFormFillBlanks
-from etalia.core.tasks import embed_all_models
+from etalia.library.tasks import embed_paper
 
 from ..models import UserLibPaper, UserLibJournal
 from ..models import UserTaste
@@ -110,7 +110,7 @@ class BackendLibMixin(object):
         paper, journal = self.get_or_create_entry(entry)
 
         if paper:
-            embed_all_models(paper.pk)
+            embed_paper(paper.pk)
 
         return paper, journal
 

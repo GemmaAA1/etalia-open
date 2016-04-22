@@ -6,7 +6,7 @@ from django.utils import timezone
 from config.celery import celery_app as app
 from etalia.core.constants import NLP_TIME_LAPSE_CHOICES
 from etalia.library.models import Paper
-from etalia.core.tasks import embed_all_models
+from library.tasks import embed_paper
 
 from ..tasks import EmbedPaperTask, MostSimilarTask, register_nlp_tasks
 
@@ -73,12 +73,12 @@ class EmbedTaskTest(NLPDataExtendedTestCase):
         self.assertIsNotNone(self.new_paper.vectors.first().get_vector())
 
     def test_can_run_all_embeddings_paper(self):
-        embed_all_models(self.new_paper.pk)
+        embed_paper(self.new_paper.pk)
         print(Model.objects.all().values_list('name', flat=True))
         self.assertEqual(self.new_paper.vectors.count(), 2)
 
     def test_vectors_have_correct_size(self):
-        embed_all_models(self.new_paper.pk)
+        embed_paper(self.new_paper.pk)
         vector_len = set([len(vec.get_vector())
                           for vec in self.new_paper.vectors.all()])
         size_len = set([model.size for model in Model.objects.all()])

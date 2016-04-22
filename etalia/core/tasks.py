@@ -2,8 +2,8 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
+
 from config.celery import celery_app as app
-from etalia.nlp.models import Model
 
 logger = logging.getLogger(__name__)
 
@@ -15,44 +15,7 @@ def add_core(x, y):
     return x + y
 
 
-def embed_all_models(paper_pk):
-    """Send chain task to embed paper
-    """
-    model_names = Model.objects\
-        .filter(is_active=True)\
-        .values_list('name', flat=True)
-    for model_name in model_names:
-        # Send task for embedding
-        try:
-            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
-                model_name=model_name)]
-        except KeyError:
-            logger.error('Model task for {model_name} not defined'.format(
-                model_name=model_name))
-            continue
-
-        model_task.delay('infer_paper', paper_pk=paper_pk)
-
-
 @app.task()
 def failing_task():
     """For email error testing"""
     raise AssertionError
-
-
-def embed_thread(thread_pk):
-    """Send task to embed thread
-    """
-    model_names = Model.objects\
-        .filter(is_active=True)\
-        .values_list('name', flat=True)
-    for model_name in model_names:
-        # Send task for embedding
-        try:
-            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
-                model_name=model_name)]
-        except KeyError:
-            logger.error('Model task for {model_name} not defined'.format(
-                model_name=model_name))
-            continue
-        model_task.delay('infer_thread', thread_pk=thread_pk)
