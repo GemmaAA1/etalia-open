@@ -65,7 +65,7 @@ class ThreadVectors(TimeStampedModel):
         unique_together = ('thread', 'model')
 
     def __str__(self):
-        return '{thread_pk}/{name}'.format(paper_pk=self.thread.pk,
+        return '{thread_pk}/{name}'.format(thread_pk=self.thread.pk,
                                            name=self.model.name)
 
     def set_vector(self, vector):
@@ -340,6 +340,27 @@ class ModelLibraryMixin(object):
 # ------------------------------------------------------------------------------
 # NLP MAIN
 # ------------------------------------------------------------------------------
+class ModelBase(TimeStampedModel):
+
+    def tasks(self, task, **kwargs):
+        """Task dispatcher"""
+        if task == 'get_words_vec':
+            vec = kwargs.pop('vec')
+            return self.get_words_vec(vec, **kwargs)
+        if task == 'get_words_paper':
+            paper_pk = kwargs.pop('paper_pk')
+            return self.get_words_paper(paper_pk, **kwargs)
+        if task == 'infer_object':
+            class_name = kwargs.pop('class_name')
+            pk = kwargs.pop('pk')
+            fields = kwargs.pop('fields')
+            return self.infer_object(class_name, pk, fields, **kwargs)
+        raise ValueError('Unknown task action: {0}'.format(task))
+
+    class Meta:
+        abstract = True
+
+
 class ModelManager(models.Manager):
     def create(self, **kwargs):
         # starting popping text_fields key if any
@@ -388,10 +409,12 @@ class ModelManager(models.Manager):
         return obj
 
 
-class Model(ModelThreadMixin, ModelLibraryMixin, S3Mixin, TimeStampedModel):
+class Model(ModelThreadMixin,
+            ModelLibraryMixin,
+            S3Mixin,
+            ModelBase):
     """Natural Language Processing Class based on Doc2Vec from Gensim
     """
-    # TODO: Refactor paper related embedding similarly to Thread
     # For S3 Mixin
     BUCKET_NAME = getattr(settings, 'NLP_MODELS_BUCKET_NAME', '')
     PATH = getattr(settings, 'NLP_MODELS_PATH', '')
@@ -866,23 +889,6 @@ class Model(ModelThreadMixin, ModelLibraryMixin, S3Mixin, TimeStampedModel):
         dist = dict((k, v) for k, v in dist.items() if v > 1)
 
         return dist
-
-    def tasks(self, task, **kwargs):
-        """Task dispatcher. See comments on MostSimilar.tasks method for rational"""
-        super(Model, self).tasks(task, **kwargs)
-        if task == 'get_words_vec':
-            vec = kwargs.pop('vec')
-            return self.get_words_vec(vec, **kwargs)
-        if task == 'get_words_paper':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.get_words_paper(paper_pk, **kwargs)
-        if task == 'infer_object':
-            class_name = kwargs.pop('class_name')
-            pk = kwargs.pop('pk')
-            fields = kwargs.pop('fields')
-            return self.infer_object(class_name, pk, fields, **kwargs)
-
-        raise ValueError('Unknown task action: {0}'.format(task))
 
 
 class TextField(TimeStampedModel):
