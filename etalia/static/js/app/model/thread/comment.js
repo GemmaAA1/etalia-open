@@ -25,7 +25,7 @@ define([
 
     App.Model.Comment.createNew = function() {
         return new App.Model.Comment({
-            'author': App.Model.User.getCurrent()
+            'author': App.getCurrentUser()
         });
     };
 

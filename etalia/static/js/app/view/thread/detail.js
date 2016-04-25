@@ -1,10 +1,12 @@
 define([
     'app',
     'text!app/templates/thread/detail.html',
+    'app/view/modal',
     'app/view/user/thumb',
     'app/view/user/list',
     'app/view/thread/post/list',
-    'app/view/thread/form-edit'
+    'app/view/thread/form-edit',
+    'app/view/thread/form-content-edit'
 ], function (App, template) {
 
     App.View.Thread = App.View.Thread || {};
@@ -18,7 +20,8 @@ define([
 
         events: {
             "click .thread-edit": "onEditClick",
-            "click .thread-publish": "onPublishClick"
+            "click .thread-publish": "onPublishClick",
+            "click .thread-content-edit": "onContentEditClick"
         },
 
         initialize: function () {
@@ -29,9 +32,44 @@ define([
         onEditClick: function(e) {
             e.preventDefault();
 
+            var form = App.View.Thread.EditForm.create({
+                    model: this.model
+                }),
+                modal = new App.View.Modal({
+                    title: 'Edit your thread',
+                    content: form,
+                    footer: false
+                });
+
+            form.once('validation_success', function () {
+                form.model.save(null, {
+                    success: function () {
+                        modal.close();
+                    },
+                    error: function () {
+                        // TODO
+                    }
+                });
+            });
+
+            form.once('cancel', function () {
+                modal.close();
+            });
+
+            modal.once('hidden', function () {
+                form = null;
+                modal = null;
+            });
+
+            modal.render();
+        },
+
+        onContentEditClick: function(e) {
+            e.preventDefault();
+
             var $contents = this.$('.thread-content, .thread-info').hide();
 
-            var form = App.View.Thread.EditForm.create({
+            var form = App.View.Thread.EditContentForm.create({
                 model: this.model
             },{
                 $target: this.$('[data-thread-edit-form]')

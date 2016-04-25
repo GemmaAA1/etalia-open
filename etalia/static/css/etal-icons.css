@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'etalia';
-    src:    url('../fonts/etalia.eot?wbvy4m');
-    src:    url('../fonts/etalia.eot?wbvy4m#iefix') format('embedded-opentype'),
-        url('../fonts/etalia.ttf?wbvy4m') format('truetype'),
-        url('../fonts/etalia.woff?wbvy4m') format('woff'),
-        url('../fonts/etalia.svg?wbvy4m#etalia') format('svg');
+    src:    url('../fonts/etalia.eot?2w4y3v');
+    src:    url('../fonts/etalia.eot?2w4y3v#iefix') format('embedded-opentype'),
+        url('../fonts/etalia.ttf?2w4y3v') format('truetype'),
+        url('../fonts/etalia.woff?2w4y3v') format('woff'),
+        url('../fonts/etalia.svg?2w4y3v#etalia') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -24,6 +24,18 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+.eai-locked:before {
+    content: "\e917";
+}
+.eai-paper:before {
+    content: "\e918";
+}
+.eai-question:before {
+    content: "\e919";
+}
+.eai-user:before {
+    content: "\e91a";
+}
 .eai-library-trash:before {
     content: "\e916";
 }

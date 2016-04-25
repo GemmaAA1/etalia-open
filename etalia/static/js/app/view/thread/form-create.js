@@ -2,9 +2,10 @@ define([
     'underscore',
     'app',
     'app/collection/library/paper',
-    'app/model/thread/thread',
-    'app/model/thread/post'
+    'app/model/thread/thread'
 ], function (_, App) {
+
+    App.View.Thread = App.View.Thread || {};
 
     App.View.Thread.CreateForm = App.Backbone.Form.extend({
 
@@ -31,7 +32,7 @@ define([
             paper: {
                 type: 'Select',
                 options: function(callback) {
-                    var user = App.Model.User.getCurrent(),
+                    var user = App.getCurrentUser(),
                         papers = new App.Collection.Papers();
 
                     // TODO none choice + validation
@@ -84,8 +85,20 @@ define([
             this.listenTo(this, "type:change", this._onTypeChange);
         },
 
-        _onTypeChange: function(form, titleEditor) {
-            if (titleEditor.getValue() == App.Model.Thread.TYPE_PAPER) {
+        render: function () {
+            App.Backbone.Form.prototype.render.apply(this, arguments);
+
+            if (this.getEditor('type').getValue() == App.Model.Thread.TYPE_PAPER) {
+                this.$('.field-paper').show();
+            } else {
+                this.$('.field-paper').hide();
+            }
+
+            return this;
+        },
+
+        _onTypeChange: function(form, typeEditor) {
+            if (typeEditor.getValue() == App.Model.Thread.TYPE_PAPER) {
                 this.$('.field-paper').show();
             } else {
                 this.$('.field-paper').hide();

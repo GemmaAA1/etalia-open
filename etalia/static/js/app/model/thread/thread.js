@@ -12,8 +12,8 @@ define([
 
         defaults: {
             link: null,
-            type: null,
-            privacy: null,
+            type: 1,
+            privacy: 1,
             title: null,
             content: null,
             created: null,
@@ -113,7 +113,7 @@ define([
             var state = this.get('state');
             if (!state) {
                 state = new App.Model.State({
-                    user: App.Model.User.getCurrent(),
+                    user: App.getCurrentUser(),
                     thread: this
                 });
                 this.set({state: state});
@@ -130,7 +130,7 @@ define([
 
     App.Model.Thread.createNew = function() {
         return new App.Model.Thread({
-            user: App.Model.User.getCurrent()
+            user: App.getCurrentUser()
         });
     };
 

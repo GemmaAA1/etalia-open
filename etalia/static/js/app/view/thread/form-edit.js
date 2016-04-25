@@ -1,25 +1,64 @@
 define([
     'underscore',
     'app',
-    'app/model/thread/post'
+    'app/model/thread/thread'
 ], function (_, App) {
+
+    App.View.Thread = App.View.Thread || {};
 
     App.View.Thread.EditForm = App.Backbone.Form.extend({
 
         schema: {
-            content: {type: 'Tinymce', title: false, settings: {height: 400}}
+            privacy: {
+                type: "Radio",
+                options: [
+                    { label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
+                    { label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
+                ],
+                help: 'Interdum et malesuada fames ac ante ipsum primis in faucibus. ' +
+                'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
+                'Integer sit amet egestas tortor.'
+            },
+
+            paper: {
+                type: 'Select',
+                options: function(callback) {
+                    var user = App.getCurrentUser(),
+                        papers = new App.Collection.Papers();
+
+                    // TODO none choice + validation
+
+                    papers.url = App.config.api_root + '/user/user-libs/' + user.get('id') + '/papers';
+                    papers
+                        .fetch()
+                        .then(function() {
+                            var options = [{val: null, label: 'None'}];
+                            papers.each(function (paper) {
+                                options.push({val: paper.get('id'), label: paper.get('title')});
+                            });
+                            callback(options);
+                        }, function(jqXHR, textStatus, errorThrown) {
+                            throw textStatus + ' ' + errorThrown;
+                        });
+
+                }
+            },
+
+            title: {type: 'Text'}
         },
 
         template: _.template('\
             <form class="thread-create-form form-horizontal" role="form">\
                 <div data-fieldsets></div>\
-                <div class="form-footer">\
-                    <button type="submit" class="btn btn-primary form-submit">\
-                        Update\
-                    </button>\
-                    <button type="button" class="btn btn-default form-cancel">\
-                        Cancel\
-                    </button>\
+                <div class="form-group form-footer">\
+                    <div class="col-sm-offset-2 col-sm-10">\
+                        <button type="submit" class="btn btn-primary form-submit">\
+                            Update\
+                        </button>\
+                        <button type="button" class="btn btn-default form-cancel">\
+                            Cancel\
+                        </button>\
+                    </div>\
                 </div>\
             </form>\
         '),

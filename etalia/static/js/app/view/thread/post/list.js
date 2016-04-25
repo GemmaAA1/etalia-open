@@ -50,7 +50,7 @@ define([
         submitForm: function () {
             var that = this;
             this.form.model.save({
-                user: App.Model.User.getCurrent(),
+                user: App.getCurrentUser(),
                 thread: this.thread
             }, {
                 success: function () {
@@ -75,7 +75,7 @@ define([
             });
 
             App.View.User.Thumb.create({
-                model: App.Model.User.getCurrent()
+                model: App.getCurrentUser()
             }, {
                 $target: this.$('.user-placeholder')
             });

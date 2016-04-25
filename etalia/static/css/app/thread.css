@@ -75,7 +75,7 @@
     color: #86b5b0;
 }
 
-.user-card .user-actions a:first-child {
+.user-card .user-action-follow {
     float: right;
 }
 

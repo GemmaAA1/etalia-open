@@ -1,8 +1,11 @@
-define(['jquery', 'app', 'app/model/user/user-lib'], function ($, App) {
+define([
+    'jquery',
+    'app',
+    'app/model/user/user-lib'
+], function ($, App) {
 
     App.Model.User = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + '/user/users',
-        //urlRoot: 'http://sf-demo.jessie.dev/app_dev.php/user/users',
 
         defaults: {
             email: null,
@@ -31,7 +34,46 @@ define(['jquery', 'app', 'app/model/user/user-lib'], function ($, App) {
             first_name: {type: 'Text', validators: ['required']},
             last_name: {type: 'Text', validators: ['required']}
             //photo_url: {type: 'Text', validators: ['required']}
-        }
+        },
+
+        /*constructor: function() {
+            App.Backbone.RelationalModel.apply(this, arguments);
+
+            var that = this,
+                followers, followed, blocked;
+
+            function createRelationshipPromise(type, storage) {
+                return new Promise(function(resolve, reject) {
+                    if (!storage) {
+                        storage = new App.Collection.Users({
+                            url: App.config.api_root + '/user/users/' + this.get('id') + '/' + type
+                        });
+                        storage.fetch()
+                            .done(function() {
+                                resolve(storage);
+                            })
+                            .fail(function() {
+                                reject('Failed to fetch ' + type + ' relationship.');
+                            });
+                    } else {
+                        resolve(storage);
+                    }
+                });
+            }
+
+            this.getFollowed = function() {
+                return createRelationshipPromise('following', followed);
+            };
+
+            this.isFollowed = function(user) {
+                if (!user) {
+                    throw 'Expected user as first argument';
+                }
+                this.getFollowed().then(function(followed) {
+
+                })
+            };
+        } */
     });
 
     var currentUser = null;
@@ -40,15 +82,12 @@ define(['jquery', 'app', 'app/model/user/user-lib'], function ($, App) {
      * Returns the current (authenticated) user.
      *
      * @return UserModel
-     *
-     * @TODO fetch current (authenticated) user id
      */
-    App.Model.User.getCurrent = function() {
+    App.getCurrentUser = function() {
         if (!currentUser) {
-            var id = $('body').data('user-id');
+            var id = parseInt($('body').data('user-id'));
             if (!id) {
-                // TODO throw 'Failed to determine user id';
-                id = 21;
+                throw 'Failed to determine user id';
             }
             currentUser = App.Model.User.find(id);
             if (!currentUser) {

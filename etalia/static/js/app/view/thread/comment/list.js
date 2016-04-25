@@ -47,7 +47,7 @@ define([
             this.listenToOnce(form, 'cancel', cancel);
             this.listenToOnce(form, 'validation_success', function() {
                 form.model.save({
-                    user: App.Model.User.getCurrent(),
+                    user: App.getCurrentUser(),
                     post: that.post
                 },{
                     success: cancel

@@ -38,16 +38,22 @@
 
         <p class="title">
             <a href="javascript: void(0)">
-                {{!<span>new</span>}}
+                {{thread_privacy_icon}}
                 {{title}}
             </a>
         </p>
         <div class="infos">
             <p>
-                <strong>{{full_name user}}</strong> -
-                <em>{{date created}}</em>
+                <strong>{{full_name user}}</strong>
+                - <em>{{date created}}</em>
+                {{#isCurrentUser user}}
+                - <a href="javascript: void(0)" class="thread-edit">edit</a>
+                {{/isCurrentUser}}
             </p>
             <p class="icons">
+                <span class="type">
+                    {{thread_type_icon}}
+                </span>
                 <span class="comment">
                     <span class="count">16</span>
                     <span class="eai eai-comment"></span>
@@ -73,18 +79,21 @@
             {{#if content}}
                 {{{content}}}
             {{else}}
-            <p style="padding:50px 0;text-align:center">
-                <button type="button" class="btn btn-primary btn-lg thread-edit">
-                    Start writing !
-                </button>
-            </p>
+                {{#isCurrentUser user}}
+                <p style="padding:50px 0;text-align:center">
+                    <button type="button" class="btn btn-primary btn-lg thread-edit">
+                        Start writing !
+                    </button>
+                </p>
+                {{/isCurrentUser}}
             {{/if}}
         </div>
 
         <p class="thread-info element-info">
             <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
+            {{#isCurrentUser user}}
             - <a href="javascript: void(0)" class="thread-edit">edit</a>
-            {{!-- - <a href="javascript: void(0)" class="thread-delete">delete</a> --}}
+            {{/isCurrentUser}}
         </p>
 
         <div data-thread-edit-form></div>
