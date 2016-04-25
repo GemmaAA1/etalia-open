@@ -8,7 +8,8 @@ from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 from etalia.nlp.models import Model
-from etalia.nlp.tasks_class import EmbedPaperTask, MostSimilarTask
+from etalia.nlp.tasks_class import EmbedPaperTask, MostSimilarTask, \
+    MostSimilarThreadTask
 from django.conf import settings
 from celery import bootsteps
 from celery.bin import Option
@@ -35,8 +36,10 @@ celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 # -----------------------------------------------------------------------------
 # Add user options to control for nlp / mostsimilar registration of tasks
 celery_app.user_options['worker'].add(
-    Option('--init', dest='init', default=None, help='init MostSimilar (ms) or Model based tasks (nlp)')
+    Option('--init', dest='init', default=None,
+           help='init MostSimilar (ms) or Model based tasks (nlp)')
 )
+
 
 class NLPBootstep(bootsteps.Step):
     """Bootstep to register task with or without initializing data upload depending
@@ -57,8 +60,8 @@ class NLPBootstep(bootsteps.Step):
 def register_model_tasks(init=False):
     """Register Model tasks
     """
-    model_names = Model.objects\
-        .filter(is_active=True)\
+    model_names = Model.objects \
+        .filter(is_active=True) \
         .values_list('name', flat=True)
     for model_name in model_names:
         cls = EmbedPaperTask(model_name=model_name, init=init)
@@ -69,17 +72,33 @@ def register_model_tasks(init=False):
 def register_mostsimilar_tasks(init=False):
     """Register MostSimilar tasks
     """
-    model_names = Model.objects\
-        .filter(is_active=True)\
+    model_names = Model.objects \
+        .filter(is_active=True) \
         .values_list('name', flat=True)
     for model_name in model_names:
         cls = MostSimilarTask(model_name=model_name,
                               init=init)
-        celery_app.task(cls, name='etalia.nlp.tasks.mostsimilar_{model_name}'.format(
-            model_name=model_name))
+        celery_app.task(cls,
+                        name='etalia.nlp.tasks.mostsimilar_{model_name}'.format(
+                            model_name=model_name))
+
+
+def register_mostsimilarthread_tasks(init=False):
+    """Register MostSimilar tasks
+    """
+    model_names = Model.objects \
+        .filter(is_active=True) \
+        .values_list('name', flat=True)
+    for model_name in model_names:
+        cls = MostSimilarThreadTask(model_name=model_name,
+                                    init=init)
+        celery_app.task(cls,
+                        name='etalia.nlp.tasks.mostsimilarthread_{model_name}'.format(
+                            model_name=model_name))
 
 
 celery_app.steps['worker'].add(NLPBootstep)
+
 
 @celery_app.task(bind=True)
 def debug_task(self):

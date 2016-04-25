@@ -76,7 +76,7 @@ class ThreadVectors(TimeStampedModel):
         return self.vector[:self.model.size]
 
 
-class ThreadNeighbor(TimeStampedModel):
+class ThreadNeighbors(TimeStampedModel):
     """Table for Thread neighbors"""
     # thread
     thread = models.ForeignKey(Thread)
@@ -86,10 +86,28 @@ class ThreadNeighbor(TimeStampedModel):
                                      choices=THREAD_TIME_LAPSE_CHOICES,
                                      verbose_name='Days from right now')
 
+    # MostSimilarThread
+    ms = models.ForeignKey('MostSimilarThread')
+
     # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
                            size=settings.NLP_MAX_KNN_NEIGHBORS,
                            null=True, blank=True)
+
+    def __str__(self):
+        return '{ms}/{time_lapse}'.format(
+            ms=self.ms.name,
+            time_lapse=self.time_lapse)
+
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
+
+    def get_neighbors(self):
+        return self.neighbors[:self.ms.model.size]
+
+    class Meta:
+        unique_together = ('time_lapse', 'thread', 'ms')
 
 
 class ModelThreadMixin(object):
@@ -341,7 +359,6 @@ class ModelLibraryMixin(object):
 # NLP MAIN
 # ------------------------------------------------------------------------------
 class ModelBase(TimeStampedModel):
-
     def tasks(self, task, **kwargs):
         """Task dispatcher"""
         if task == 'get_words_vec':
@@ -1194,7 +1211,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             return 0
         else:
             cutoff_date = (
-            timezone.now() - timezone.timedelta(days=time_lapse)).date()
+                timezone.now() - timezone.timedelta(days=time_lapse)).date()
             if max(np.array(self.date) > cutoff_date):  # at least one in True
                 return np.argmax(np.array(self.date) > cutoff_date)
             else:
@@ -1387,6 +1404,404 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         elif task == 'get_partition':
             paper_pks = kwargs.pop('paper_pks')
             return self.get_partition(paper_pks, **kwargs)
+        elif task == 'knn_search':
+            seed = kwargs.pop('seed')
+            return self.knn_search(seed, **kwargs)
+        elif task == 'get_recent_pks':
+            return self.get_recent_pks(**kwargs)
+        else:
+            raise ValueError('Unknown task action: {0}'.format(task))
+
+
+class MostSimilarThreadManager(models.Manager):
+    def load(self, **kwargs):
+        """Get MostSimilar instance and load corresponding data"""
+        obj = super(MostSimilarThreadManager, self).get(**kwargs)
+        try:
+            # if not on volume try download from s3
+            if not os.path.isfile(os.path.join(settings.NLP_MS_PATH,
+                                               '{0}.ms_data'.format(obj.name))):
+                if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
+                    obj.pull_from_s3()
+
+            obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
+                                                '{0}.ms_data'.format(obj.name)))
+            with open(
+                    os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2pk'),
+                    'rb') as f:
+                obj.index2pk = pickle.load(f)
+            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_date'),
+                      'rb') as f:
+                obj.date = pickle.load(f)
+        except EnvironmentError:  # OSError or IOError...
+            raise
+
+        return obj
+
+
+class MostSimilarThread(TimeStampedModel, S3Mixin):
+    """Most Similar class to perform k-nearest neighbors search based on
+    simple dot product. This is working because thread vector are normalized"""
+
+    # For S3 Mixin
+    BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
+    PATH = getattr(settings, 'NLP_MS_PATH', '')
+    AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
+
+    model = models.ForeignKey(Model, related_name='ms_thread')
+
+    upload_state = models.CharField(max_length=3,
+                                    choices=(('IDL', 'Idle'),
+                                             ('ING', 'Uploading')),
+                                    default='IDL ')
+
+    # 2D array of # matches x vector size
+    data = np.empty(0)
+    # data index to thread pk
+    index2pk = []
+    # index date
+    date = []
+    # make instance active (use when linking task)
+    is_active = models.BooleanField(default=False)
+
+    objects = MostSimilarThreadManager()
+
+    @property
+    def name(self):
+        return 'thread-{model_name}'.format(
+            model_name=self.model.name)
+
+    def __str__(self):
+        return '{id}/{name}'.format(id=self.id, name=self.name)
+
+    def activate(self):
+        """Set model to active. Only on model can be active at once"""
+        MostSimilarThread.objects.all() \
+            .update(is_active=False)
+        self.is_active = True
+        self.save_db_only()
+
+    def deactivate(self):
+        """Set model to inactive"""
+        self.is_active = False
+        self.save_db_only()
+
+    def save(self, *args, **kwargs):
+
+        logger.info('Saving MS Thread ({pk}/{name})'.format(pk=self.id,
+                                                            name=self.name))
+
+        # save files to local volume
+        if not os.path.exists(settings.NLP_MS_PATH):
+            os.makedirs(settings.NLP_MS_PATH)
+        # use joblib for numpy array pickling optimization
+        joblib.dump(self.data,
+                    os.path.join(settings.NLP_MS_PATH, self.name + '.ms_data'))
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2pk'),
+                  'wb') as f:
+            pickle.dump(self.index2pk, f)
+        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_date'),
+                  'wb') as f:
+            pickle.dump(self.date, f)
+
+        # push files to s3
+        if self.BUCKET_NAME:
+            self.upload_state = 'ING'
+            self.save_db_only()
+            self.push_to_s3(ext='ms')
+            self.upload_state = 'IDL'
+        # save to db
+        self.save_db_only()
+
+    def save_db_only(self, *args, **kwargs):
+        super(MostSimilarThread, self).save(*args, **kwargs)
+
+    def delete(self, s3=False, **kwargs):
+        # delete on local volume
+        try:
+            # remove local
+            rm_files = glob.glob(
+                os.path.join(settings.NLP_MS_PATH, '{0}.ms*'.format(self.name)))
+            for file in rm_files:
+                os.remove(file)
+        except IOError:
+            pass
+
+        # delete on amazon s3
+        if s3:
+            try:
+                if self.BUCKET_NAME:
+                    self.delete_on_s3()
+            except IOError:
+                pass
+        super(MostSimilarThread, self).delete(**kwargs)
+
+    def full_update(self):
+        """Full update data for knn search
+        """
+
+        logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
+            pk=self.id, name=self.name))
+
+        # size of the model space used for truncation of vector
+        vec_size = self.model.size
+
+        # query
+        data = list(ThreadVectors.objects.raw(
+            "SELECT nlp_threadvectors.id, "
+            "       nlp_threadvectors.thread_id, "
+            "       vector, "
+            "       published_at"
+            "        "
+            "FROM nlp_threadvectors LEFT JOIN threads_thread "
+            "ON nlp_threadvectors.thread_id=threads_thread.id "
+            "WHERE model_id=%s "
+            "    AND published_at IS NOT NULL "
+            "ORDER BY published_at ASC", (self.model.pk, )))
+
+        # Reshape data
+        nb_items = len(data)
+        self.date = []
+        self.index2pk = []
+        self.data = np.zeros((nb_items, vec_size))
+        for i, dat in enumerate(data):
+            if dat.vector:
+                self.date.append(dat.published_at)
+                # store thread pk
+                self.index2pk.append(dat.thread_id)
+                # build input matrix for fit
+                self.data[i, :] = np.array(dat.vector[:vec_size])
+
+        # Store
+        self.save()
+
+    def update(self):
+        """Update data for knn search for new thread
+        """
+
+        if not self.index2pk:
+            raise ValueError('Looks like you should run full_update instead')
+
+        logger.info('Updating MS ({pk}/{name}) - fetching new data...'.format(
+            pk=self.id, name=self.name))
+
+        # size of the model space used for truncation of vector
+        vec_size = self.model.size
+
+        data = list(ThreadVectors.objects.raw(
+            "SELECT nlp_threadvectors.id, "
+            "       nlp_threadvectors.thread_id, "
+            "       vector, "
+            "       published_at"
+            "        "
+            "FROM nlp_threadvectors LEFT JOIN threads_thread "
+            "ON nlp_threadvectors.thread_id=threads_thread.id "
+            "WHERE model_id=%s"
+            "    AND published_at IS NOT NULL "
+            "    AND nlp_threadvectors.thread_id NOT IN %s"
+            "ORDER BY published_at ASC",
+            (self.model.pk, tuple(self.index2pk))))
+
+        # Reshape data
+        nb_items = len(data)
+        date = []
+        index2pk = []
+        data_mat = np.zeros((nb_items, vec_size))
+        for i, dat in enumerate(data):
+            if dat.vector:
+                # get min date
+                date.append(dat.published_at)
+                # store thread pk
+                index2pk.append(dat.thread_id)
+                # build input matrix for fit
+                data_mat[i, :] = np.array(dat.vector[:vec_size])
+
+        # concatenate
+        self.date += date
+        self.index2pk += index2pk
+        self.data = np.vstack((self.data, data_mat))
+
+        # reorder data by date
+        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
+        self.date = [self.date[i] for i in idx]
+        self.index2pk = [self.index2pk[i] for i in idx]
+        self.data = self.data[idx, :]
+
+        # save
+        self.save()
+
+    def populate_neighbors(self, thread_pk, time_lapse=-1):
+        """Populate neighbors of thread
+        """
+
+        neighbors_pks = self.get_knn(thread_pk, time_lapse=time_lapse,
+                                     k=settings.NLP_MAX_KNN_NEIGHBORS)
+
+        pn, _ = ThreadNeighbors.objects.get_or_create(ms=self,
+                                                      time_lapse=time_lapse,
+                                                      thread_id=thread_pk)
+        pn.set_neighbors(neighbors_pks)
+
+        return neighbors_pks
+
+    def get_clip_start(self, time_lapse):
+        if time_lapse == -1:
+            return 0
+        else:
+            cutoff_date = (
+                timezone.now() - timezone.timedelta(days=time_lapse))
+            if max(np.array(self.date) > cutoff_date):  # at least one in True
+                return np.argmax(np.array(self.date) > cutoff_date)
+            else:
+                return len(self.date)
+
+    def get_knn(self, thread_pk, time_lapse=-1, k=1):
+
+        pv = ThreadVectors.objects \
+            .filter(thread_id=thread_pk, model=self.model)[0]
+
+        # build weighted vector
+        vec = np.array(pv.vector[:self.model.size])
+
+        res_search = self.knn_search(vec, time_lapse=time_lapse, top_n=k)
+
+        neighbors_pks = [item[0] for item in res_search
+                         if item[0] not in [thread_pk]]
+
+        return neighbors_pks[:k]
+
+    def knn_search(self, seed, time_lapse=-1, top_n=5):
+
+        # check seed
+        if isinstance(seed, list):
+            seed = np.array(seed).squeeze()
+        if seed.ndim == 1:
+            assert len(seed) == self.model.size
+        else:
+            assert seed.shape[1] == self.model.size
+
+        # get clip
+        clip_start = self.get_clip_start(time_lapse)
+
+        # compute distance
+        dists = np.dot(self.data[clip_start:, :], seed)
+        # clip index
+        index2pk = self.index2pk[clip_start:]
+        # sort (NB: +1 because likely will return input seed as closest item)
+        best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
+        # return thread pk and distances
+        result = [(index2pk[ind], float(dists[ind])) for ind in best]
+        return result
+
+    def get_partition(self, thread_pks, time_lapse=-1, k=1):
+        """
+        """
+
+        # get seed data
+        data = list(ThreadVectors.objects \
+                    .filter(thread_id__in=thread_pks, model=self.model) \
+                    .values('vector'))
+
+        # Build the corresponding matrix data
+        mat = np.zeros((self.model.size, len(data)))
+        for i, d in enumerate(data):
+                mat[:, i] = np.array(d['vector'][:self.model.size])
+
+        # find clip
+        clip_start = self.get_clip_start(time_lapse)
+
+        # get partition
+        res_search = self.partition_search(mat, clip_start=clip_start, top_n=k)
+
+        # ignore thread_pks
+        neighbors_pks_multi = [nei for nei in res_search if
+                               nei not in thread_pks]
+        return neighbors_pks_multi
+
+    def partition_search(self, seeds, clip_start=0, top_n=5,
+                         clip_start_reverse=False):
+        """Return the unsorted list of thread pk that are in the top_n neighbors
+        of vector defined as columns of 2d array seeds
+
+        Args:
+            seeds (np.array): 2d array, vector size x # of matches
+        """
+
+        # check seeds
+        if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
+            seeds = np.array(seeds)
+        assert seeds.shape[0] == self.model.size
+
+        # Reverse clip_start if flagged
+        if clip_start_reverse:
+            clip_start = len(self.index2pk) - clip_start
+
+        # clip
+        data = self.data[clip_start:, :]
+        index2pk = self.index2pk[clip_start:]
+
+        # compute distance
+        dists = np.dot(data, seeds)
+
+        # reverse order
+        dists = - dists
+        # get partition
+        arg_part = np.argpartition(dists, top_n + 1, axis=0)[:top_n:, :]
+        # reshape and return unique
+        result = [index2pk[ind] for ind in arg_part.flatten()]
+        return list(set(result))
+
+    def get_recent_pks(self, time_lapse=30):
+        """Return last found/published thread pk"""
+        clip_start = self.get_clip_start(time_lapse)
+        return self.index2pk[clip_start:], self.date[clip_start:]
+
+    def tasks(self, task, **kwargs):
+        """Wrapper around MostSimilar tasks
+
+        Use from tasks.py for calling task while object remains in-memory.
+        Possibly an awkward design.
+
+        This method dispatches tasks that can be run from MostSimilar.
+        It is so because we want to have the MostSimilar instance in-memory
+        to avoid over-head of loading from file. Given the Task class of Celery
+        the work-around to define this wrapper that dispatches to sub tasks.
+
+        Args:
+            task (string): A string defining the task. 'update', 'populate_neighbors',
+                'get_knn', 'knn_search', 'init'
+
+            Optional kwargs:
+            'populate_neighbors':
+                thread_pk (int): The primary key of a Paper instance
+                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
+            'get_knn':
+                thread_pk (int): The primary key of a Paper instance
+                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
+                k (int): number of neighbors
+            'get_partition':
+                thread_pks (list): List of primary key of Paper instances
+                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
+                k (int): number of neighbors
+            'knn_search':
+                seed (np.array or list): An array of length corresponding to model
+                clip_start (int): Where to start in self.data (see get_clip_start method)
+                top_n (int): the top n results
+
+        """
+
+        if task == 'update':
+            self.update()
+        elif task == 'populate_neighbors':
+            thread_pk = kwargs.pop('thread_pk')
+            return self.populate_neighbors(thread_pk, **kwargs)
+        elif task == 'get_knn':
+            thread_pk = kwargs.pop('thread_pk')
+            return self.get_knn(thread_pk, **kwargs)
+        elif task == 'get_partition':
+            thread_pks = kwargs.pop('thread_pks')
+            return self.get_partition(thread_pks, **kwargs)
         elif task == 'knn_search':
             seed = kwargs.pop('seed')
             return self.knn_search(seed, **kwargs)

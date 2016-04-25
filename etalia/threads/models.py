@@ -95,6 +95,10 @@ class Thread(TimeStampedModel):
         from .tasks import embed_thread
         embed_thread(self.id)
 
+    def get_neighbors(self, time_span):
+        from .tasks import get_neighbors_threads
+        return get_neighbors_threads(self.id, time_span)
+
 
 class ThreadPost(TimeStampedModel):
     # thread

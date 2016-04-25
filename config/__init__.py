@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 from django.db import connection
 from django.db.utils import ProgrammingError, OperationalError
-from .celery import celery_app, register_model_tasks, register_mostsimilar_tasks
+from .celery import celery_app, register_model_tasks, register_mostsimilar_tasks, \
+    register_mostsimilarthread_tasks
 
 # To import tasks when running outside of celery
 # Only register task if database has been created
@@ -13,5 +14,6 @@ try:
         celery_app.loader.import_default_modules()
         register_model_tasks()
         register_mostsimilar_tasks()
+        register_mostsimilarthread_tasks()
 except ProgrammingError or OperationalError:
     pass

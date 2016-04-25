@@ -8,7 +8,7 @@ from celery import Task
 from django.db.models.query import QuerySet
 from django.conf import settings
 
-from .models import Model, MostSimilar
+from .models import Model, MostSimilar, MostSimilarThread
 
 
 class EmbedPaperTask(Task):
@@ -56,15 +56,16 @@ class EmbedPaperTask(Task):
         return self.model.tasks(*args, **kwargs)
 
 
-class MostSimilarTask(Task):
+class MostSimilarBaseTask(Task):
     """Abstract task for MostSimilar model
-    Use to load MostSimilar instance in __init__ so that it is cached for subsequent call
-    to task
+    Use to load MostSimilar type of instance in __init__ so that it is cached
+    for subsequent call to task
     """
     ignore_result = False
     model_name = None
     _ms = None
     init = False
+    ms_class = None
 
     def __init__(self, *args, **kwargs):
         if 'model_name' in kwargs:
@@ -81,19 +82,19 @@ class MostSimilarTask(Task):
         # init task
         self.init = kwargs.get('init', False)
         if self.init:
-            self._ms = MostSimilar.objects.load(model__name=self.model_name,
-                                                is_active=True)
+            self._ms = self.ms_class.objects.load(model__name=self.model_name,
+                                                  is_active=True)
 
     @property
     def ms(self):
         if self._ms is None:
-            self._ms = MostSimilar.objects.load(model__name=self.model_name,
-                                                is_active=True)
+            self._ms = self.ms_class.objects.load(model__name=self.model_name,
+                                                  is_active=True)
             return self._ms
         # if MostSimilar has been modified and MostSimilar not
         # uploading/downloading, or has been deactivated: reload
-        ms_now = MostSimilar.objects.get(model__name=self.model_name,
-                                         is_active=True)
+        ms_now = self.ms_class.objects.get(model__name=self.model_name,
+                                           is_active=True)
         last_modified = ms_now.modified
         upload_state = ms_now.upload_state
         active_now = ms_now.is_active
@@ -106,9 +107,17 @@ class MostSimilarTask(Task):
             for file in rm_files:
                 os.remove(file)
 
-            self._ms = MostSimilar.objects.load(model__name=self.model_name,
-                                                is_active=True)
+            self._ms = self.ms_class.objects.load(model__name=self.model_name,
+                                                  is_active=True)
         return self._ms
 
     def run(self, *args, **kwargs):
         return self.ms.tasks(*args, **kwargs)
+
+
+class MostSimilarTask(MostSimilarBaseTask):
+    ms_class = MostSimilar
+
+
+class MostSimilarThreadTask(MostSimilarBaseTask):
+    ms_class = MostSimilarThread
