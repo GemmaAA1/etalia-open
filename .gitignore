@@ -1,4 +1,3 @@
-/config/settings/common.py
 .idea
 */__pychache__
 __pycache__
@@ -78,8 +77,9 @@ staticfiles/
 deploy/.*
 deploy/notes.txt
 scripts/tmp
-config/settings/common.py
 config/settings/*.bk
+config/settings/common.py
+etalia/static/compiled
 
 # redis
 *.rdb
