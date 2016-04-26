@@ -6,6 +6,7 @@ from django.db.models import Q
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, mixins, status
+from rest_framework.exceptions import ParseError
 
 from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly, \
     IsInRelationship
@@ -20,7 +21,8 @@ from .serializers import UserLibSerializer, UserSerializer, UserFullSerializer, 
     UserLibNestedSerializer, UserLibPaperSerializer, RelationshipSerializer
 
 from ..models import UserLib, User, Relationship, UserLibPaper
-
+from etalia.users.constants import RELATIONSHIP_BLOCKED, RELATIONSHIP_FOLLOWING, \
+    RELATIONSHIP_STATUSES
 
 class UserViewSet(MultiSerializerMixin,
                   mixins.ListModelMixin,
@@ -184,18 +186,56 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     * **[GET] /relationships/**: List of relationship for user
     * **[GET] /relationships/<id\>/**: Relationship instance for user
 
+    ### Optional Kwargs ###
+
+    ** List: **
+
+    * **status=(int)**: Fetch only corresponding status
+    * **from_user=(int)**: Fetch only relationships from user <id>
+    * **to_user=(int)**: Fetch only relationships to user <id>
+
     """
     queryset = Relationship.objects.all()
     serializer_class = RelationshipSerializer
     permissions_classes = (permissions.IsAuthenticated,
                            IsInRelationship)
 
+    def validate_query_params(self):
+        for key, props in self.query_params_props.items():
+            param = self.request.query_params.get(key, None)
+            if param:
+                try:
+                    val = props['type'](param)
+                    if 'min' in props:
+                        assert val >= props['min'], \
+                            'is inferior to allowed min ({min})'.format(
+                                min=props['min'])
+                    if 'max' in props:
+                        assert val <= props['max'], \
+                            'is superior to allowed max ({max})'.format(
+                                max=props['max'])
+                except (ValueError, AssertionError) as err:
+                    raise ParseError('{key}: {err}'.format(key=key, err=err))
+
     def get_queryset(self):
+
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return Relationship.objects.\
+            queryset = Relationship.objects.\
                 filter(Q(from_user=self.request.user) |
                        Q(to_user=self.request.user))
+
+            if 'status' in self.request.query_params.keys():
+                param = self.request.query_params.get('status', None)
+                queryset = queryset.filter(status=param)
+            if 'from_user' in self.request.query_params.keys():
+                param = self.request.query_params.get('from_user', None)
+                queryset = queryset.filter(from_user=param)
+            if 'to_user' in self.request.query_params.keys():
+                param = self.request.query_params.get('to_user', None)
+                queryset = queryset.filter(to_user=param)
+
+            return queryset
         return Relationship.objects.all()
 
     def perform_create(self, serializer):
