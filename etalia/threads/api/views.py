@@ -60,7 +60,7 @@ class ThreadViewSet(MultiSerializerMixin,
     queryset = Thread.objects.all()
     serializer_class = {
         'default': ThreadSerializer,
-        'nested': ThreadNestedSerializer
+        'nested': ThreadNestedSerializer,
     }
     exclude_action_serializers = {
         'list': ['nested'],

@@ -12,6 +12,9 @@ from etalia.library.api.serializers import PaperSerializer, PaperNestedSerialize
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES
 
+WRITE_METHODS = ('PATCH', 'POST', 'PUT')
+READ_METHODS = ('GET', 'HEAD', 'OPTIONS')
+
 
 class PatchSerializer(serializers.Serializer):
 
@@ -187,8 +190,6 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
-    user = UserSerializer(many=False, read_only=True)
-    paper = PaperNestedSerializer(many=False, read_only=True)
 
     class Meta:
         model = Thread
@@ -223,6 +224,22 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             'modified',
             'published_at'
         )
+
+    def get_fields(self, *args, **kwargs):
+        """Limit paper queryset to user library paper"""
+        fields = super(ThreadSerializer, self).get_fields(*args, **kwargs)
+        method = self.context['request'].method
+        if method in READ_METHODS:
+            fields['user'] = UserSerializer(many=False, read_only=True)
+            fields['paper'] = PaperNestedSerializer(many=False, read_only=True)
+        else:
+            # attached paper queryset form user lib
+            fields['paper'] = serializers.HyperlinkedRelatedField(
+                many=False,
+                view_name=self.Meta.extra_kwargs['paper']['view_name'],
+                allow_null=True,
+                queryset=self.context['request'].user.lib.papers.all())
+        return fields
 
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""
@@ -268,14 +285,6 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
                 )
         return posts_urls
 
-    def get_fields(self, *args, **kwargs):
-        """Limit paper queryset to user library paper"""
-        fields = super(ThreadSerializer, self).get_fields(*args, **kwargs)
-        if self.context.get('request'):
-            fields['paper'].queryset = self.context[
-                'request'].user.lib.papers.all()
-        return fields
-
     def validate_user(self, value):
         if not value == self.context['request'].user:
             raise serializers.ValidationError(
@@ -286,15 +295,16 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
         """Integrity of thread <type> and <paper>
         """
         # Check that paper is in user library if <type>='Paper'
-        paper = data['paper']
-        if dict(THREAD_TYPES).get(data['type']).lower() == 'paper':
-            if paper not in self.context['request'].user.lib.papers.all():
-                raise serializers.ValidationError(
-                    "Related paper must be in user library")
-        elif dict(THREAD_TYPES).get(data['type']).lower() == 'question':
-            if paper is not None:
-                raise serializers.ValidationError(
-                    "Thread type <Question> cannot have related paper")
+        if 'paper' in data:
+            paper = data.get('paper', None)
+            if dict(THREAD_TYPES).get(data.get('type', '')).lower() == 'paper':
+                if paper not in self.context['request'].user.lib.papers.all():
+                    raise serializers.ValidationError(
+                        "Related paper must be in user library")
+            elif dict(THREAD_TYPES).get(data.get('type', '')).lower() == 'question':
+                if paper is not None:
+                    raise serializers.ValidationError(
+                        "Thread type <Question> cannot have related paper")
         return data
 
 

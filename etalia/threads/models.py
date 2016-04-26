@@ -48,7 +48,6 @@ class Thread(TimeStampedModel):
     published_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = (('type', 'user', 'title', 'paper'),)
         ordering = ('-published_at', '-modified')
 
     @property
