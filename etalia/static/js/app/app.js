@@ -1,5 +1,6 @@
 define([
     'require',
+    'jquery',
     'underscore',
     'backbone',
     'handlebars',
@@ -9,7 +10,7 @@ define([
     'backbone/relational',
     'backbone/paginator',
     'backbone/forms'
-], function(require, _, Backbone, Handlebars, Moment, Layout, Controls) {
+], function(require, $, _, Backbone, Handlebars, Moment, Layout, Controls) {
 
     /**
      * Backbone
@@ -17,7 +18,7 @@ define([
     var _sync = Backbone.sync;
     Backbone.sync = function (method, model, options) {
         // Add trailing slash to backbone model views
-        var _url = _.isFunction(model.url) ? model.url() : model.url;
+        var _url = options.url ? options.url : _.isFunction(model.url) ? model.url() : model.url;
         _url += _url.charAt(_url.length - 1) == '/' ? '' : '/';
         options = _.extend(options, {
             url: _url
@@ -31,6 +32,24 @@ define([
         return response;
     };
 
+    Backbone.View.prototype.__remove = Backbone.View.prototype.remove;
+    Backbone.View = Backbone.View.extend({
+        pushSubView: function(view) {
+            if (!this.subViews) {
+                this.subViews = [];
+            }
+            this.subViews.push(view);
+        },
+        remove: function() {
+            if (this.subViews) {
+                _.each(this.subViews, function (view) {
+                    view.remove();
+                });
+                this.subViews = null;
+            }
+            Backbone.View.prototype.__remove.call(this, arguments);
+        }
+    });
 
     /**
      * Backbone Relational
@@ -160,11 +179,29 @@ define([
     </div>\
   ');
 
+    Backbone.Form.editors.Select.prototype.__setValue = Backbone.Form.editors.Select.prototype.setValue;
+    Backbone.Form.editors.Select = Backbone.Form.editors.Select.extend({
+        setValue: function(value) {
+            if (typeof value === 'object') {
+                try {
+                    value = value.get('id');
+                } catch(e) {
+                }
+            }
+            this.__setValue(value);
+        }
+    });
+
+    Backbone.Form.editors.Radio.prototype.__setValue = Backbone.Form.editors.Radio.prototype.setValue;
     Backbone.Form.editors.Radio = Backbone.Form.editors.Radio.extend({
         tagName: 'div',
         className: 'btn-group',
         attributes: {
             'data-toggle': 'buttons'
+        },
+        setValue: function(value) {
+            this.__setValue(value);
+            this.$('input[type=radio]:checked').closest('label').addClass('active');
         }
     }, {
         template: _.template('\
@@ -306,6 +343,7 @@ define([
     /**
      * Handlebars helpers
      */
+
     Handlebars.registerHelper('ifCond', function (a, operator, b, options) {
         switch (operator) {
             case '==':
@@ -332,6 +370,10 @@ define([
                 return options.inverse(this);
         }
     });
+    Handlebars.registerHelper('date', function(date) {
+        return Moment(date).format('MMM D, YYYY');
+    });
+
     Handlebars.registerHelper('thread_pin_class', function() {
         if (this.state && this.state.get('watch') === App.Model.State.WATCH_PINNED) {
             return ' active';
@@ -344,16 +386,31 @@ define([
         }
         return '';
     });
+    Handlebars.registerHelper('thread_privacy_icon', function() {
+        if (this.privacy && this.privacy === App.Model.Thread.PRIVACY_PRIVATE) {
+            return new Handlebars.SafeString('<span class="eai eai-locked"></span>');
+        }
+        return '';
+    });
+    Handlebars.registerHelper('thread_type_icon', function() {
+        var icon = '<span class="eai eai-question"></span>';
+        if (this.type && this.type === App.Model.Thread.TYPE_PAPER) {
+            icon = '<span class="eai eai-paper"></span>';
+        }
+        return new Handlebars.SafeString(icon);
+    });
+
     Handlebars.registerHelper('full_name', function(user) {
-        /*if (!user) {
-            return '';
-        }*/
+        if (!user) {
+            return 'Expected user as first argument';
+        }
         return user.get('first_name') + " " + user.get('last_name');
     });
+
     Handlebars.registerHelper('paper_title_authors', function(paper) {
-        /*if (!paper) {
-            return '';
-        }*/
+        if (!paper) {
+            return 'Expected paper as first argument';
+        }
         var authors = paper.get('authors').map(function (author) {
             return author.get('first_name') + " " + author.get('last_name');
         });
@@ -361,15 +418,15 @@ define([
 
         return new Handlebars.SafeString(output);
     });
-    Handlebars.registerHelper('date', function(date) {
-        return Moment(date).format('MMM D, YYYY');
-    });
+
 
 
     /**
      * App
      */
     window.App = App = {
+        $: $,
+        _: _,
         Backbone: Backbone,
         Handlebars: Handlebars,
 

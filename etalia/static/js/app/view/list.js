@@ -3,9 +3,6 @@ define([
     'text!app/templates/list.html'
 ], function (App, template) {
 
-    //var defaults = {};
-
-
     return App.View.List = App.Backbone.View.extend({
         tagName: 'div',
         class: 'thumb-list',
@@ -16,14 +13,11 @@ define([
             "click #thread-next-page": "onNextPageClick"
         },
 
-        /*initialize: function (options) {
-            //App.defaults(options, defaults);
-        },*/
-
         render: function () {
+
             this.$el.html(this.template({}));
 
-            this.mode.view
+            this.model.view
                 .render()
                 .appendTo(this.$('.document .inner'));
 

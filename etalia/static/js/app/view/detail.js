@@ -1,9 +1,8 @@
 define([
-    'jquery',
     'app',
     'text!app/templates/detail.html',
     'app/model/detail'
-], function ($, App, template) {
+], function (App, template) {
 
     var defaults = {};
 
@@ -32,7 +31,7 @@ define([
             var prev = this.model.get('prev'),
                 next = this.model.get('next');
 
-            $('detail-placeholder').replaceWith(this.$el.html(this.template({
+            App.$('detail-placeholder').replaceWith(this.$el.html(this.template({
                 prev: prev ? prev.attributes : null,
                 next: next ? next.attributes : null
             })));
@@ -59,7 +58,7 @@ define([
         },
 
         onClick: function(e) {
-            if ($(e.target).attr('id') === 'detail-document') {
+            if (App.$(e.target).attr('id') === 'detail-document') {
                 this.close();
             }
         },
@@ -69,13 +68,15 @@ define([
         },
 
         open: function() {
-            $('body').addClass('detail-opened');
+            App.$('body').addClass('detail-opened');
 
             return this;
         },
 
         close: function() {
-            $('body').removeClass('detail-opened');
+            App.$('body').removeClass('detail-opened');
+
+            this.model.get('view').remove();
 
             return this;
         }

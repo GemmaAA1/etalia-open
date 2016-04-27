@@ -94,31 +94,40 @@ define([
         render: function() {
             App.log('ThreadDetailView::render');
 
-            this.$el.html(this.template(this.model.attributes));
+            var user = this.model.get('user'),
+                attributes = App._.extend(this.model.attributes, {
+                    isCurrentUser: user.get('id') === App.getCurrentUser().get('id')
+                });
+
+            this.$el.html(this.template(attributes));
 
             // User thumb
-            App.View.User.Thumb.create({
-                model: this.model.get('user')
-            }, {
-                $target: this.$('[data-user-placeholder]')
-            });
+            this.pushSubView(
+                App.View.User.Thumb.create({
+                    model: this.model.get('user')
+                }, {
+                    $target: this.$('[data-user-placeholder]')
+                })
+            );
 
 
             // Members list
-            App.View.User.List.create({
-                model: this.model.get('members')
-            }, {
-                $target: this.$('[data-members-placeholder]')
-            });
+            this.pushSubView(
+                App.View.User.List.create({
+                    model: this.model.get('members')
+                }, {
+                    $target: this.$('[data-members-placeholder]')
+                })
+            );
 
             // Posts list
-            App.View.Thread.PostList.create({
-                thread: this.model
-            }, {
-                $target: this.$('[data-posts-placeholder]')
-            });
-
-
+            this.pushSubView(
+                App.View.Thread.PostList.create({
+                    thread: this.model
+                }, {
+                    $target: this.$('[data-posts-placeholder]')
+                })
+            );
 
             return this;
         }

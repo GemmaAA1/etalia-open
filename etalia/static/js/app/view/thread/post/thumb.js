@@ -64,17 +64,21 @@ define([
 
             this.$el.html(this.template(this.model.attributes));
 
-            App.View.User.Thumb.create({
-                model: this.model.get('user')
-            }, {
-                $target: this.$('[data-user-thumb]')
-            });
+            this.pushSubView(
+                App.View.User.Thumb.create({
+                    model: this.model.get('user')
+                }, {
+                    $target: this.$('[data-user-thumb]')
+                })
+            );
 
-            App.View.Thread.CommentList.create({
-                post: this.model
-            }, {
-                $target: this.$('[data-comment-list]')
-            });
+            this.pushSubView(
+                App.View.Thread.CommentList.create({
+                    post: this.model
+                }, {
+                    $target: this.$('[data-comment-list]')
+                })
+            );
 
             return this;
         }

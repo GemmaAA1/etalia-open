@@ -1,20 +1,13 @@
 define(['app', 'app/model/user/user'], function (App) {
 
-    /*var defaults = {
-        query: {
-            view: 'nested'
-        }
-    };*/
+    App.Collection.Relationships = App.Backbone.Collection.extend({
+        url: App.config.api_root + '/user/relationships',
+        model: App.Model.Relationship
+    });
 
     return App.Collection.Users = App.Backbone.PageableCollection.extend({
         url: App.config.api_root + '/user/users',
-        //mode: 'infinite',
-        model: App.Model.User,
-
-        initialize: function() {
-            //options = App.defaults(defaults, options);
-            //this.queryParams = options.query;
-        }
+        model: App.Model.User
     });
 
 });

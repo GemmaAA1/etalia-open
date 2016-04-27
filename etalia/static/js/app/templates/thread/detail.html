@@ -46,9 +46,9 @@
             <p>
                 <strong>{{full_name user}}</strong>
                 - <em>{{date created}}</em>
-                {{#isCurrentUser user}}
+                {{#if isCurrentUser}}
                 - <a href="javascript: void(0)" class="thread-edit">edit</a>
-                {{/isCurrentUser}}
+                {{/if}}
             </p>
             <p class="icons">
                 <span class="type">
@@ -79,22 +79,24 @@
             {{#if content}}
                 {{{content}}}
             {{else}}
-                {{#isCurrentUser user}}
+                {{#if isCurrentUser}}
                 <p style="padding:50px 0;text-align:center">
-                    <button type="button" class="btn btn-primary btn-lg thread-edit">
+                    <button type="button" class="btn btn-primary btn-lg thread-content-edit">
                         Start writing !
                     </button>
                 </p>
-                {{/isCurrentUser}}
+                {{/if}}
             {{/if}}
         </div>
 
+        {{#if content}}
         <p class="thread-info element-info">
             <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
-            {{#isCurrentUser user}}
-            - <a href="javascript: void(0)" class="thread-edit">edit</a>
-            {{/isCurrentUser}}
+            {{#if isCurrentUser}}
+            - <a href="javascript: void(0)" class="thread-content-edit">edit</a>
+            {{/if}}
         </p>
+        {{/if}}
 
         <div data-thread-edit-form></div>
 

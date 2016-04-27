@@ -13,30 +13,51 @@ define([
         template: App.Handlebars.compile(template),
 
         // TODO click img : onImgClick (add 'hover' class)
-        /*events: {
-            "click .thumb-pin": "onPinClick",
-            "click .thumb-ban": "onBanClick"
-        },*/
+        events: {
+            "click .user-follow": "onFollowClick",
+            "click .user-unfollow": "onUnFollowClick"
+        },
 
         initialize: function () {
             this.listenTo(this.model, "change", this.render);
         },
 
         render: function() {
-            this.$el.html(this.template(this.model.attributes));
+            var that = this;
 
-            // TODO this.$el.addClass('followed');
+            App.getCurrentUser()
+                .isFollowed(that.model)
+                .then(function (followed) {
+                    var attributes = that.model.attributes;
+
+                    App._.extend(attributes, {
+                        followed: followed,
+                        current: App.getCurrentUser().get('id') === attributes.id
+                    });
+
+                    that.$el.html(that.template(attributes));
+
+                    if (followed) {
+                        that.$el.addClass('followed');
+                    } else {
+                        that.$el.removeClass('followed');
+                    }
+                });
 
             return this;
-        }
-
-        /*onPinClick: function(e) {
-            e.preventDefault();
         },
 
-        onBanClick: function(e) {
+        onFollowClick: function(e) {
             e.preventDefault();
-        }*/
+
+            App.getCurrentUser().follow(this.model);
+        },
+
+        onUnFollowClick: function(e) {
+            e.preventDefault();
+
+            App.getCurrentUser().unfollow(this.model);
+        }
     });
 
     App.View.User.Thumb.create = function(options, createOptions) {
@@ -48,12 +69,12 @@ define([
             options.id = 'user-thumb-' + options.model.get('id');
         }
 
-        var thumb = new App.View.User.Thumb(options);
+        var view = new App.View.User.Thumb(options);
         if (createOptions) {
-            App.View.create(thumb, createOptions);
+            App.View.create(view, createOptions);
         }
 
-        return thumb;
+        return view;
     };
 
     return App.View.User.Thumb;

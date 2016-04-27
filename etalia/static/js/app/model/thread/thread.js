@@ -1,11 +1,10 @@
 define([
-    'underscore',
     'app',
     'app/model/user/user',
     'app/model/thread/state',
     'app/collection/thread/post',
     'app/collection/user/user'
-], function (_, App) {
+], function (App) {
 
     App.Model.Thread = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + '/thread/threads',
@@ -72,11 +71,11 @@ define([
 
             } else { // Form validation
                 var errors = {};
-                if (attrs.hasOwnProperty('privacy') && 0 > _.indexOf([App.Model.Thread.PRIVACY_PUBLIC, App.Model.Thread.PRIVACY_PRIVATE], parseInt(attrs.privacy))) {
+                if (attrs.hasOwnProperty('privacy') && 0 > App._.indexOf([App.Model.Thread.PRIVACY_PUBLIC, App.Model.Thread.PRIVACY_PRIVATE], parseInt(attrs.privacy))) {
                     errors.privacy = 'Please select a privacy.';
                 }
                 if (attrs.hasOwnProperty('type')) {
-                    if (0 > _.indexOf([App.Model.Thread.TYPE_QUESTION, App.Model.Thread.TYPE_PAPER], parseInt(attrs.type))) {
+                    if (0 > App._.indexOf([App.Model.Thread.TYPE_QUESTION, App.Model.Thread.TYPE_PAPER], parseInt(attrs.type))) {
                         errors.type = 'Please select a type.';
                     } else if (attrs.type == App.Model.Thread.TYPE_PAPER && !attrs.paper) {
                         errors.paper = 'Please select a paper.';
@@ -96,7 +95,7 @@ define([
             var options = {
                 type: 'PATCH',
                 dataType: 'json',
-                url: _.result(this, 'url') + '/publish'
+                url: App._.result(this, 'url') + '/publish'
             };
 
             var model = this;
@@ -119,6 +118,12 @@ define([
                 this.set({state: state});
             }
             return state;
+        },
+
+        isMember: function (user) {
+            return this.get('members').some(function (member) {
+                return member.get('id') === user.get('id');
+            })
         }
     });
 

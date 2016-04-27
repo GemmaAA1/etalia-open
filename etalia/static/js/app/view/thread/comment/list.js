@@ -58,16 +58,21 @@ define([
         render: function() {
             App.log('CommentListView::render');
 
-            this.$el.html(this.template());
+            this.$el.html(this.template({
+                isMember: this.post.get('thread').isMember(App.getCurrentUser())
+            }));
 
-            var $list = this.$('.thread-comments-list');
+            var that = this,
+                $list = this.$('.thread-comments-list');
             this.model.each(function(comment) {
-                App.View.Thread.CommentThumb.create({
-                    model: comment
-                }, {
-                    $target: $list,
-                    append: true
-                });
+                that.pushSubView(
+                    App.View.Thread.CommentThumb.create({
+                        model: comment
+                    }, {
+                        $target: $list,
+                        append: true
+                    })
+                );
             });
 
             return this;

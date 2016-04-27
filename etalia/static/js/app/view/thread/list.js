@@ -61,15 +61,16 @@ define([
             });
 
             if (this.detailView) {
+                this.detailView.model.get('view').remove();
+                this.detailView.model.destroy();
                 this.detailView.model = detailModel;
             } else {
                 this.detailView = new App.View.Detail({
                     model: detailModel
-                })
+                });
+                this.listenTo(this.detailView, "detail:prev", this.openDetail);
+                this.listenTo(this.detailView, "detail:next", this.openDetail);
             }
-
-            this.listenToOnce(this.detailView, "detail:prev", this.openDetail);
-            this.listenToOnce(this.detailView, "detail:next", this.openDetail);
 
             this.detailView.render();
         },
@@ -123,18 +124,21 @@ define([
 
         render: function () {
             App.log('ThreadListView::render');
+
+            var that = this;
+
             this.$el.html(this.template({}));
 
             this.$thumbList = this.$('.thumb-list');
 
-            var that = this;
-            this.collection.fetch().then(function() {
-                if (that.collection.hasNextPage()) {
-                    that.$('#thread-next-page').show();
-                } else {
-                    that.$('#thread-next-page').hide();
-                }
-            });
+            this.collection.fetch()
+                .then(function() {
+                    if (that.collection.hasNextPage()) {
+                        that.$('#thread-next-page').show();
+                    } else {
+                        that.$('#thread-next-page').hide();
+                    }
+                });
 
             return this;
         }

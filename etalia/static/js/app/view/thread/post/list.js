@@ -55,6 +55,9 @@ define([
             }, {
                 success: function () {
                     that.renderForm();
+                },
+                error: function() {
+                    that.form.model.destroy();
                 }
             });
         },
@@ -62,24 +65,33 @@ define([
         render: function () {
             App.log('PostListView::render');
 
-            this.$el.html(this.template()); // this.model.toJSON()
+            // TODO memberOfThread
+            this.$el.html(this.template({
+                isMember: this.thread.isMember(App.getCurrentUser())
+            }));
 
-            var $list = this.$('.thread-posts-list');
+            var that = this,
+                $list = this.$('.thread-posts-list');
             this.model.each(function (post) {
-                App.View.Thread.PostThumb.create({
-                    model: post
+                that.pushSubView(
+                    App.View.Thread.PostThumb.create({
+                        model: post
+                    }, {
+                        $target: $list,
+                        append: true
+                    })
+                );
+            });
+
+            this.pushSubView(
+                App.View.User.Thumb.create({
+                    model: App.getCurrentUser()
                 }, {
-                    $target: $list,
-                    append: true
-                });
-            });
+                    $target: this.$('.user-placeholder')
+                })
+            );
 
-            App.View.User.Thumb.create({
-                model: App.getCurrentUser()
-            }, {
-                $target: this.$('.user-placeholder')
-            });
-
+            // TODO only if member of the thread
             this.renderForm();
 
             return this;

@@ -1,11 +1,10 @@
 define([
-    'jquery',
     'app',
     'app/view/modal',
     'app/view/thread/list',
     'app/view/thread/form-create',
     'bootstrap'
-], function ($, App) {
+], function (App) {
 
     // Thread list
     var list = new App.View.Thread.List({
@@ -16,7 +15,7 @@ define([
 
 
     var form, modal;
-    $('#thread-create-modal').on('click', function () {
+    App.$('#thread-create-modal').on('click', function () {
         form = App.View.Thread.CreateForm.create();
 
         modal = new App.View.Modal({

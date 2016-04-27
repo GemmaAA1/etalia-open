@@ -1,11 +1,7 @@
-define([
-    'jquery',
-    'underscore',
-    'app',
-    'bootstrap'
-], function ($, _, App) {
+define(['app', 'bootstrap'], function (App) {
 
-    var defaultButton = {
+    var _ = App._,
+        defaultButton = {
             label: 'Button',
             attr: {
                 'type': 'button',
@@ -71,7 +67,8 @@ define([
         },
 
         render: function () {
-            var renderFooter = _.isObject(this.footer) && _.isObject(this.footer.buttons);
+            var that = this,
+                renderFooter = _.isObject(this.footer) && _.isObject(this.footer.buttons);
 
             this.$el.html(this.template({
                 title: this.title,
@@ -88,8 +85,7 @@ define([
 
             // Renders the footer
             if (renderFooter) {
-                var that = this,
-                    $footer = this.$('.modal-footer');
+                var $footer = this.$('.modal-footer');
                 _.each(this.footer.buttons, function (button) {
                     _.defaults(button, defaultButton);
                     $footer.append(that.buttonTemplate(button));

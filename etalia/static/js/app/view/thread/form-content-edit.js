@@ -1,9 +1,8 @@
 define([
-    'underscore',
     'app',
     'app/collection/library/paper',
     'app/model/thread/thread'
-], function (_, App) {
+], function (App) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -13,7 +12,7 @@ define([
             content: {type: 'Tinymce', title: false, settings: {height: 400}}
         },
 
-        template: _.template('\
+        template: App._.template('\
             <form class="thread-create-form form-horizontal" role="form">\
                 <div data-fieldsets></div>\
                 <div class="form-footer">\
