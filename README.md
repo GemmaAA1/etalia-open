@@ -58,6 +58,14 @@ This script updates the database and related object with new data.
 ./scripts/routines/update.py
 `
 
+### Frontend dev ###
+
+During development, use ```gulp``` to copy librairies from *nodes_modules/* and *bower_components/* to *static/js/lib/*.
+
+For production, use ```gulp prod``` to build compiled assets. 
+
+New librairies must be configured in *static/js/*
+
 ### Etalia team ###
 
 * Etienne Dauvergne

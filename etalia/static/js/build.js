@@ -44,8 +44,12 @@
             exclude: ['jquery', 'bootstrap']
         },
         {
+            name: 'app',
+            exclude: ['require', 'jquery', 'underscore', 'backbone', 'handlebars', 'moment', 'bootstrap']
+        },
+        {
             name: 'app/thread/list',
-            exclude: ['jquery', 'bootstrap', 'underscore', 'backbone']
+            exclude: ['app/app']
         }
     ]
 })

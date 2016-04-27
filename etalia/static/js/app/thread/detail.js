@@ -1,8 +1,7 @@
 define([
-    'jquery',
+    'app',
     'app/ui/layout',
-    'app/ui/controls',
-    'bootstrap'
-], function($, layout, controls) {
+    'app/ui/controls'
+], function(App, layout, controls) {
 
 });

@@ -2,8 +2,7 @@ define([
     'app',
     'app/view/modal',
     'app/view/thread/list',
-    'app/view/thread/form-create',
-    'bootstrap'
+    'app/view/thread/form-create'
 ], function (App) {
 
     // Thread list

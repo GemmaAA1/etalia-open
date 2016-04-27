@@ -7,6 +7,7 @@ define([
     'moment',
     'app/ui/layout',
     'app/ui/controls',
+    'bootstrap',
     'backbone/relational',
     'backbone/paginator',
     'backbone/forms'
