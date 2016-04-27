@@ -2,15 +2,19 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework.fields import empty
 
+from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.users.api.serializers import UserSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES
+
+User = get_user_model()
 
 WRITE_METHODS = ('PATCH', 'POST', 'PUT')
 READ_METHODS = ('GET', 'HEAD', 'OPTIONS')
@@ -64,7 +68,8 @@ class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
         return value
 
 
-class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):
+class ThreadCommentSerializer(One2OneNestedLinkSwitchMixin,
+                              serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ThreadComment
         extra_kwargs = {
@@ -86,6 +91,10 @@ class ThreadCommentSerializer(serializers.HyperlinkedModelSerializer):
             'link',
             'created',
             'modified')
+
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer},
+        }
 
     def validate_user(self, value):
         """User passed is same as user login"""
@@ -124,7 +133,8 @@ class ThreadCommentNestedSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class ThreadPostSerializer(serializers.HyperlinkedModelSerializer):
+class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
+                           serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ThreadPost
         extra_kwargs = {
@@ -148,6 +158,10 @@ class ThreadPostSerializer(serializers.HyperlinkedModelSerializer):
             'created',
             'modified',
             'comments')
+
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer}
+        }
 
     def validate_user(self, value):
         """User passed is same as user login"""
@@ -186,7 +200,8 @@ class ThreadPostNestedSerializer(serializers.HyperlinkedModelSerializer):
             '__all__')
 
 
-class ThreadSerializer(serializers.HyperlinkedModelSerializer):
+class ThreadSerializer(One2OneNestedLinkSwitchMixin,
+                       serializers.HyperlinkedModelSerializer):
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
@@ -224,22 +239,15 @@ class ThreadSerializer(serializers.HyperlinkedModelSerializer):
             'modified',
             'published_at'
         )
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer},
+            'paper': {'serializer': PaperNestedSerializer,
+                      'queryset': 'get_paper_queryset',
+                      'allow_null': True}
+        }
 
-    def get_fields(self, *args, **kwargs):
-        """Limit paper queryset to user library paper"""
-        fields = super(ThreadSerializer, self).get_fields(*args, **kwargs)
-        method = self.context['request'].method
-        if method in READ_METHODS:
-            fields['user'] = UserSerializer(many=False, read_only=True)
-            fields['paper'] = PaperNestedSerializer(many=False, read_only=True)
-        else:
-            # attached paper queryset form user lib
-            fields['paper'] = serializers.HyperlinkedRelatedField(
-                many=False,
-                view_name=self.Meta.extra_kwargs['paper']['view_name'],
-                allow_null=True,
-                queryset=self.context['request'].user.lib.papers.all())
-        return fields
+    def get_paper_queryset(self):
+        return self.context['request'].user.lib.papers.all()
 
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""

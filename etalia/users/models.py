@@ -704,5 +704,8 @@ class Relationship(TimeStampedModel):
         self.status = RELATIONSHIP_BLOCKED
         self.save()
 
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
 
 

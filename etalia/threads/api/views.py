@@ -15,7 +15,9 @@ from django.utils import timezone
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
-from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED
+from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
+    THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
+    THREAD_INVITE_DECLINED, THREAD_INVITE_ACCEPTED
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
@@ -47,12 +49,17 @@ class ThreadViewSet(MultiSerializerMixin,
     ** List: **
 
     * **view=(str)**: Reformat output. choices: 'nested',
-    * **pinned=(int)**: Fetch only **pinned** (if 1) or **non pinned** (if 0) threads for logged user (default = Null)
-    * **joined=(int)**: Fetch only **joined** (if 1) or **non joined** (if 0) threads for logged user (default = Null)
-    * **left=(int)**: Fetch only **left** (if 1) or **non left** (if 0) threads for logged user (default = Null)
-    * **banned=(int)**: Fetch only **banned** (if 1) or **non banned** (if 0) threads for logged user (default = Null)
-    * **published=(int)**: Fetch only **published** (if 1) or **non published** (if 0) threads for logged user (default = Null)
-    * **scored=(int)&feed=(str)**: Fetch only **scored** (if 1) or **non scored** (if 0) threads for logged user and specific feed (default = (Null, 'main')
+    * **pinned=(int)**: Fetch only **pinned** (if 1) or **non pinned** (if 0) threads for current user (default = Null)
+    * **joined=(int)**: Fetch only **joined** (if 1) or **non joined** (if 0) threads for current user (default = Null)
+    * **left=(int)**: Fetch only **left** (if 1) or **non left** (if 0) threads for current user (default = Null)
+    * **banned=(int)**: Fetch only **banned** (if 1) or **non banned** (if 0) threads for current user (default = Null)
+    * **published=(int)**: Fetch only **published** (if 1) or **non published** (if 0) threads for current user (default = Null)
+    * **scored=(int)&feed=(str)**: Fetch only **scored** (if 1) or **non scored** (if 0) threads for current user and specific feed (default = (Null, 'main')
+    * **private=(int)**: Fetch only **private** (if 1) or **non private** (if 0) threads for current user (default = Null)    
+    * **public=(int)**: Fetch only **public** (if 1) or **non public** (if 0) threads (default = Null)
+    * **invited=(int)**: Fetch only **invited** (if 1) or **non invited** (if 0) threads for current user (default = Null)
+    * **invited-pending=(int)**: Fetch only **pending invites** (if 1) or **non invites** (if 0) threads for current user (default = Null)
+    * **invited-accepted=(int)**: Fetch only **accepted invite** (if 1) or **declined** (if 0) threads for current user (default = Null)
     * **time-span=(int)**: Fetch only threads published in the past time-span days
     * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
     """
@@ -69,47 +76,20 @@ class ThreadViewSet(MultiSerializerMixin,
                           IsOwnerOrReadOnly)
 
     query_params_props = {
-        'joined': {
-            'type': int,
-            'min': 0,
-            'max': 1
-        },
-        'pinned': {
-            'type': int,
-            'min': 0,
-            'max': 1
-        },
-        'left': {
-            'type': int,
-            'min': 0,
-            'max': 1
-        },
-        'banned': {
-            'type': int,
-            'min': 0,
-            'max': 1
-        },
-        'published': {
-            'type': int,
-            'min': 0,
-            'max': 1
-        },
-        'scored': {
-            'type': int,
-            'min': 0,
-            'max': 1
-        },
-        'time-span': {
-            'type': int,
-            'min': 0,
-            'max': 1e6
-        },
-        'view': {
-            'type': str,
-        },
-        'sort-by': {
-            'type': str,
-        }
+        'joined': {'type': int, 'min': 0, 'max': 1},
+        'pinned': {'type': int, 'min': 0, 'max': 1},
+        'left': {'type': int, 'min': 0, 'max': 1},
+        'banned': {'type': int, 'min': 0, 'max': 1},
+        'published': {'type': int, 'min': 0, 'max': 1},
+        'scored': {'type': int, 'min': 0, 'max': 1},
+        'private': {'type': int, 'min': 0, 'max': 1},
+        'public': {'type': int, 'min': 0, 'max': 1},
+        'invited': {'type': int, 'min': 0, 'max': 1},
+        'invited-pending': {'type': int, 'min': 0, 'max': 1},
+        'invited-accepted': {'type': int, 'min': 0, 'max': 1},
+        'time-span': {'type': int, 'min': 0, 'max': 1e6},
+        'view': {'type': str},
+        'sort-by': {'type': str}
     }
 
     def get_thread_id(self):
@@ -166,7 +146,24 @@ class ThreadViewSet(MultiSerializerMixin,
             'scored': {
                 'query': [Q(threadscore__thread_feed__name=feed_name),
                           Q(threadscore__thread_feed__user=self.request.user)],
-            }
+            },
+            'private': {
+                'query': [Q(privacy=THREAD_PRIVATE)],
+            },
+            'public': {
+                'query': [Q(privacy=THREAD_PUBLIC)],
+            },
+            'invited': {
+                'query': [Q(threaduserinvite__to_user=self.request.user)],
+            },
+            'invited-pending': {
+                'query': [Q(threaduserinvite__to_user=self.request.user),
+                          Q(threaduserinvite__status=THREAD_INVITE_PENDING)],
+            },
+            'invited-accepted': {
+                'query': [Q(threaduserinvite__to_user=self.request.user),
+                          Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED)],
+            },
         }
 
         # ordering mapping
@@ -177,9 +174,11 @@ class ThreadViewSet(MultiSerializerMixin,
         }
 
         # base queryset
-        queryset = Thread.objects.exclude(
-            Q(published_at=None) &
-            ~Q(user=self.request.user))
+        queryset = Thread.objects.all() \
+            .exclude(Q(published_at=None) & ~Q(user=self.request.user)) \
+            .exclude(Q(privacy=THREAD_PRIVATE) & ~(
+            Q(threaduser__user=self.request.user) & Q(
+                threaduser__participate=THREAD_JOINED)))
 
         # boolean filters
         for key, props in bool_filters_def.items():
@@ -204,7 +203,7 @@ class ThreadViewSet(MultiSerializerMixin,
         return queryset
 
     @detail_route(methods=['put', 'patch'],
-                  permission_classes=(ThreadIsNotYetPublished, ))
+                  permission_classes=(ThreadIsNotYetPublished,))
     def publish(self, request, pk=None):
         instance = self.get_object()
         self.check_object_permissions(request, instance)
