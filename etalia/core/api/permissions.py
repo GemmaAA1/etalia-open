@@ -176,3 +176,12 @@ class ThreadIsNotYetPublished(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.published_at is None
+
+
+class ThreadIsPublished(permissions.BasePermission):
+    """
+    Custom permission to check if Thread has yet been published
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.published_at is not None

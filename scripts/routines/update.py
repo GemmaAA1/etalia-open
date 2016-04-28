@@ -19,6 +19,10 @@ def update():
     from etalia.altmetric.models import AltmetricModel
     from etalia.feeds.tasks import reset_stream, reset_trend
     from etalia.nlp.tasks import mostsimilar_full_update_all
+    from etalia.nlp.models import MostSimilarThread, MostSimilar, Model
+    from etalia.threads.tasks import mostsimilarthread_full_update_all, \
+        embed_threads
+    from etalia.threads.models import Thread
 
     User = get_user_model()
 
@@ -51,7 +55,24 @@ def update():
             setattr(altmetric, key, value)
 
     # update mostsimilar
+    if not MostSimilar.objects.filter(is_active=True).exists():
+        model = Model.objects.get(is_active=True)
+        ms = MostSimilar.objects.create(model=model)
+        ms.activate()
     mostsimilar_full_update_all()
+
+    # Embed threads
+    pks = Thread.objects.all().exclude(published_at=None).values_list('pk', flat=True)
+    model = Model.objects.load(is_active=True)
+    model.infer_threads(pks)
+    # embed_threads(pks, model.name)
+
+    # update mostsimilarthread
+    if not MostSimilarThread.objects.filter(is_active=True).exists():
+        model = Model.objects.get(is_active=True)
+        mst = MostSimilarThread.objects.create(model=model)
+        mst.activate()
+    mostsimilarthread_full_update_all()
 
     # Update users stream
     us_pk = User.objects.all().values_list('pk', flat=True)

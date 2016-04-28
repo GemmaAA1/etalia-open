@@ -26,7 +26,7 @@ def embed_thread(thread_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
+            model_task = app.tasks['etalia.nlp.tasks.mostsimilarthread_{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Model task for {model_name} not defined'.format(
@@ -37,7 +37,7 @@ def embed_thread(thread_pk):
 
 def embed_threads(pks, model_name, batch_size=1000):
     try:
-        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
+        model_task = app.tasks['etalia.nlp.tasks.mostsimilarthread_{model_name}'.format(
             model_name=model_name)]
     except KeyError:
         logger.error('Embeding task for {model_name} not defined'.format(
@@ -94,3 +94,13 @@ def get_neighbors_threads(thread_pk, time_span):
     ordering = 'CASE %s END' % clauses
     return Thread.objects.filter(pk__in=neigh_pk_list).extra(
         select={'ordering': ordering}, order_by=('ordering',))
+
+
+@app.task()
+def mostsimilarthread_full_update_all():
+    models = Model.objects.filter(is_active=True)
+    for model in models:
+        ms = MostSimilarThread.objects.load(model=model,
+                                            is_active=True)
+        ms.full_update()
+        ms.activate()

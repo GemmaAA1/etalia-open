@@ -15,7 +15,8 @@ from django.db.models import Q
 from django.utils import timezone
 
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
-    IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished
+    IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
+    ThreadIsPublished
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -41,9 +42,10 @@ class ThreadViewSet(MultiSerializerMixin,
     ### Routes ###
 
     * **[GET, POST] /threads/**: List of threads
+    * **[GET] /threads/filters**: Filter list for request threads list
     * **[GET, PUT, PATCH] /threads/<id\>/**: Thread instance
     * **[PUT, PATCH] /threads/<id\>/publish**: Publish Thread
-    * **[GET] /threads/filters**: Filter list for request threads list
+    * **[GET] /threads/<id\>/neighbors**: Thread neighbors
 
     ### Optional Kwargs ###
 
@@ -67,6 +69,12 @@ class ThreadViewSet(MultiSerializerMixin,
     * **invited-accepted=(int)**: Fetch only **accepted invite** (if 1) or **declined** (if 0) threads for current user (default = Null)
     * **time-span=(int)**: Fetch only threads published in the past time-span days
     * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
+
+    ** Sub-routes: **
+
+    * **[GET] /threads/<id\>/neighbors**: Thread neighbors:
+
+        * **time-span=(int)**: Fetch neighbors threads published in the past time-span days (default=60)
     """
 
     queryset = Thread.objects.all()
@@ -98,6 +106,7 @@ class ThreadViewSet(MultiSerializerMixin,
     }
 
     size_max_user_filter = 40
+    neighbors_time_span = 60
 
     def get_thread_id(self):
         return self.kwargs['pk']
@@ -216,6 +225,17 @@ class ThreadViewSet(MultiSerializerMixin,
         self.check_object_permissions(request, instance)
         instance.publish()
         serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @detail_route(methods=['get'],
+                  permission_classes=(ThreadIsPublished, ))
+    def neighbors(self, request, pk=None):
+        time_span = self.request.query_params.get('time-span',
+                                                  self.neighbors_time_span)
+        instance = self.get_object()
+        self.check_object_permissions(request, instance)
+        neighbors = instance.get_neighbors(time_span)
+        serializer = self.get_serializer(neighbors, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @list_route(methods=['get'])

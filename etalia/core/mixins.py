@@ -2,17 +2,12 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
-from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from django.http import JsonResponse
-from django.db import models
 
 from etalia.users.mixins import ProfileModalFormsMixin
 from etalia.feeds.mixins import CreateFeedModalMixin
 from etalia.feeds.models import StreamMatches, TrendMatches
-from etalia.threads.models import Thread
-
-from .models import ThreadVectors
 
 
 class AjaxableResponseMixin(object):

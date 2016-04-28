@@ -372,6 +372,7 @@ class ModelBase(TimeStampedModel):
             pk = kwargs.pop('pk')
             fields = kwargs.pop('fields')
             return self.infer_object(class_name, pk, fields, **kwargs)
+        print('unknown')
         raise ValueError('Unknown task action: {0}'.format(task))
 
     class Meta:
