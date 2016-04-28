@@ -34,6 +34,30 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
+class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
+    photo_url = serializers.URLField(read_only=True, source='photo.name')
+    count = serializers.IntegerField(read_only=True)
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        extra_kwargs = {
+            'link': {'view_name': 'api:user-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'name',
+            'photo_url',
+            'count')
+        read_only_fields = (
+            '__all__'
+        )
+
+    def get_name(self, obj):
+        return '{0} {1}'.format(obj.first_name, obj.last_name)
+
+
 class UserFullSerializer(serializers.HyperlinkedModelSerializer):
     photo_url = serializers.URLField(read_only=True, source='photo.name')
     user_lib = serializers.HyperlinkedRelatedField(

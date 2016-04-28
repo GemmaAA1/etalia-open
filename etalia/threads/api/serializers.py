@@ -9,10 +9,10 @@ from rest_framework.reverse import reverse
 from rest_framework.fields import empty
 
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
-from etalia.users.api.serializers import UserSerializer
+from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
-from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
-from ..constant import THREAD_PRIVACIES, THREAD_TYPES
+from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
+from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE
 
 User = get_user_model()
 
@@ -38,7 +38,17 @@ class PatchSerializer(serializers.Serializer):
         )
 
 
-class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
+class ThreadFilterSerializer(serializers.BaseSerializer):
+
+    def to_representation(self, instance):
+        return {
+            'users': [UserFilterSerializer(instance=user, context=self.context).data
+                      for user in instance.get('users', None)]
+        }
+
+
+class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
+                           serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = ThreadUser
@@ -59,12 +69,26 @@ class ThreadUserSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'link',
         )
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer},
+        }
 
     def validate_user(self, value):
         """User passed is same as user login"""
         if not value == self.context['request'].user:
             raise serializers.ValidationError(
                 "user deserialized and user logged are different")
+        return value
+
+    def validate_thread(self, value):
+        if not value.published_at:
+            raise serializers.ValidationError("Thread is not yet published")
+        if value.privacy == THREAD_PRIVATE:
+            # User must have received an invite to interact with thread or be the owner
+            if not ThreadUserInvite.objects.exists(thread=value,
+                                                   to_user=self.context['request'].user) \
+                    or value.user == self.context['request'].user:
+                raise serializers.ValidationError("Thread is private. You need an invite to join")
         return value
 
 

@@ -3,17 +3,20 @@ from __future__ import unicode_literals, absolute_import
 
 import operator
 from functools import reduce
+from collections import Counter
+from django.contrib.auth import get_user_model
 
 from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 
 from django.db.models import Q
 from django.utils import timezone
 
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished
+from etalia.users.api.serializers import UserFilterSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -21,8 +24,10 @@ from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED,
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadCommentNestedSerializer
+    ThreadCommentNestedSerializer, ThreadFilterSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
+
+User = get_user_model()
 
 
 class ThreadViewSet(MultiSerializerMixin,
@@ -39,6 +44,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **[GET, POST] /threads/**: List of threads
     * **[GET, PUT, PATCH] /threads/<id\>/**: Thread instance
     * **[PUT, PATCH] /threads/<id\>/publish**: Publish Thread
+    * **[GET] /threads/filters**: Filter list for request threads list
 
     ### Optional Kwargs ###
 
@@ -91,6 +97,8 @@ class ThreadViewSet(MultiSerializerMixin,
         'view': {'type': str},
         'sort-by': {'type': str}
     }
+
+    size_max_user_filter = 40
 
     def get_thread_id(self):
         return self.kwargs['pk']
@@ -210,6 +218,32 @@ class ThreadViewSet(MultiSerializerMixin,
         instance.publish()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @list_route(methods=['get'])
+    def filters(self, request):
+        queryset = self.get_queryset()
+        ids = []
+        ids += queryset.values_list('posts__user', flat=True)
+        ids += queryset.values_list('posts__comments__user', flat=True)
+        ids = [id for id in ids if id is not None]
+        ids_count = Counter(ids)
+
+        clauses = ' '.join(['WHEN id=%s THEN %s' %
+                            (pk, count) for pk, count in enumerate(ids_count)])
+        ordering = 'CASE %s END' % clauses
+        users_ordered = list(User.objects\
+            .filter(pk__in=ids_count.keys())\
+            .extra(select={'ordering': ordering},
+                   order_by=('ordering',))[:self.size_max_user_filter])
+        for user in users_ordered:
+            user.count = ids_count[user.id]
+        kwargs = {'context': self.get_serializer_context()}
+        # user_serializer = UserFilterSerializer(many=True,
+        #                                        read_only=True,
+        #                                        instance=users_ordered,
+        #                                        **kwargs)
+        serializer = ThreadFilterSerializer({'users': users_ordered}, **kwargs)
+        return Response(serializer.data,  status=status.HTTP_200_OK)
 
 
 class ThreadPostViewSet(MultiSerializerMixin,

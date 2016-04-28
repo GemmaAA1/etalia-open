@@ -6,8 +6,10 @@ from django.db import models
 
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from etalia.core.models import TimeStampedModel
+
 
 from etalia.library.models import Paper
 from .mixins import ModelDiffMixin
@@ -62,10 +64,9 @@ class Thread(TimeStampedModel):
         return '{0}@{1}'.format(self.short_title, self.user)
 
     def get_active_members(self):
-        tus = self.threaduser_set \
-            .filter(participate=THREAD_JOINED) \
-            .select_related('user')
-        return [tu.user for tu in tus]
+        User = get_user_model()
+        return User.objects.filter(threaduser__thread_id=self.id,
+                                   threaduser__participate=THREAD_JOINED)
 
     def is_owner(self, user):
         if user == self.user:
@@ -90,6 +91,9 @@ class Thread(TimeStampedModel):
         self.save(update_fields=['published_at'])
 
     def embed(self):
+        pass
+
+    def get_members_per_post_count(self):
         pass
 
 

@@ -12,7 +12,7 @@ from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly, \
     IsInRelationship
 
 from etalia.core.api.permissions import IsOwner, IsOwnerIfViewFull
-from etalia.core.api.mixins import MultiSerializerMixin
+from etalia.core.api.mixins import MultiSerializerMixin, One2OneNestedLinkSwitchMixin
 from etalia.library.api.serializers import PaperSerializer, \
     PaperNestedSerializer
 
