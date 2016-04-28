@@ -28,7 +28,9 @@ define([
             this.list = options.list;
 
             this.listenTo(this.model, "change:state", this.onThreadStateChange);
-            this.listenTo(this.model, "sync change", this.render);
+            this.listenTo(this.model, "change", this.render);
+            this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
+            this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
         },
 
         onTitleClick: function(e) {
@@ -50,7 +52,7 @@ define([
 
             this.model.getState()
                 .togglePinned()
-                .save();
+                .save(null, {wait:true});
         },
 
         onBanClick: function(e) {
@@ -60,18 +62,26 @@ define([
 
             thread.getState()
                 .toggleBanned()
-                .save()
-                .then(function() {
-                    if (thread.get('state').get('watch') == App.Model.State.WATCH_BANNED) {
+                .save(null, {wait:true});
+        },
 
-                    }
-                });
+        updateMembersCount: function() {
+            this.$('.icons .member .count').text(this.model.getMembersCount());
+        },
+
+        updatePostsCount: function() {
+            this.$('.icons .comment .count').text(this.model.getPostsCount());
         },
 
         render: function() {
             App.log('ThreadThumbView::render');
 
-            this.$el.html(this.template(this.model.attributes));
+            var attributes = App._.extend(this.model.attributes, {
+                members_count: this.model.getMembersCount(),
+                posts_count: this.model.getPostsCount()
+            });
+
+            this.$el.html(this.template(attributes));
 
             this.pushSubView(
                 App.View.User.Thumb.create({

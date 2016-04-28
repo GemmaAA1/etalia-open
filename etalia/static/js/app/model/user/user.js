@@ -247,5 +247,15 @@ define(['app', 'app/model/user/user-lib'], function (App) {
         return currentUser;
     };
 
+    /**
+     * Handlebars helpers.
+     */
+    App.Handlebars.registerHelper('full_name', function(user) {
+        if (!user) {
+            return 'Expected user as first argument';
+        }
+        return user.get('first_name') + " " + user.get('last_name');
+    });
+
     return App.Model.User;
 });

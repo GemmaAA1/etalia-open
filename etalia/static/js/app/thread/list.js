@@ -26,7 +26,7 @@ define([
         form.once('validation_success', function () {
             form.model.save(null, {
                 success: function () {
-                    list.collection.add(form.model);
+                    list.collection.add(form.model, {at: 0});
                     modal.close();
                     list.openDetail(form.model);
                 },

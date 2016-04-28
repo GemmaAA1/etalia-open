@@ -15,12 +15,6 @@ define([
         thread: null,
         form: null,
 
-        /*events: {
-         "click .title a": "onTitleClick",
-         "click .thumb-pin": "onPinClick",
-         "click .thumb-ban": "onBanClick"
-         },*/
-
         initialize: function (options) {
             if (!options.thread) {
                 throw 'Expected instance of App.Model.Thread';
@@ -28,7 +22,6 @@ define([
 
             this.thread = options.thread;
 
-            //this.listenTo(this.model, "change:state", this.onThreadStateChange);
             this.listenTo(this.model, "sync", this.render);
         },
 
@@ -40,9 +33,6 @@ define([
             this.form = App.View.Thread.PostForm.create({}, {
                 $target: this.$('[data-post-add-form]')
             });
-            /*this.$('.thread-post-form').html(
-             this.form.render().$el
-             );*/
 
             this.listenToOnce(this.form, 'validation_success', this.submitForm);
         },

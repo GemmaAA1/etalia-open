@@ -5,7 +5,7 @@ define(['app', 'app/model/user/user'], function (App) {
         model: App.Model.Relationship
     });
 
-    return App.Collection.Users = App.Backbone.PageableCollection.extend({
+    return App.Collection.Users = App.Backbone.Collection.extend({
         url: App.config.api_root + '/user/users',
         model: App.Model.User
     });

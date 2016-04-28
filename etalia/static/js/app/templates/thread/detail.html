@@ -1,6 +1,5 @@
 <div id="detail-actions" class="actions">
     <div class="card">
-
         <a href="javascript: void(0)"
            class="detail-pin{{thread_pin_class}}"
            title="Pin/Unpin">
@@ -46,7 +45,7 @@
             <p>
                 <strong>{{full_name user}}</strong>
                 - <em>{{date created}}</em>
-                {{#if isCurrentUser}}
+                {{#if is_owner}}
                 - <a href="javascript: void(0)" class="thread-edit">edit</a>
                 {{/if}}
             </p>
@@ -55,11 +54,11 @@
                     {{thread_type_icon}}
                 </span>
                 <span class="comment">
-                    <span class="count">16</span>
+                    <span class="count">{{posts_count}}</span>
                     <span class="eai eai-comment"></span>
                 </span>
                 <span class="member">
-                    <span class="count">16</span>
+                    <span class="count">{{members_count}}</span>
                     <span class="eai eai-user"></span>
                 </span>
             </p>
@@ -79,7 +78,7 @@
             {{#if content}}
                 {{{content}}}
             {{else}}
-                {{#if isCurrentUser}}
+                {{#if is_owner}}
                 <p style="padding:50px 0;text-align:center">
                     <button type="button" class="btn btn-primary btn-lg thread-content-edit">
                         Start writing !
@@ -92,7 +91,7 @@
         {{#if content}}
         <p class="thread-info element-info">
             <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
-            {{#if isCurrentUser}}
+            {{#if is_owner}}
             - <a href="javascript: void(0)" class="thread-content-edit">edit</a>
             {{/if}}
         </p>
@@ -115,6 +114,20 @@
     {{#if published_at}}
 
     <div data-members-placeholder></div>
+
+    {{#if can_join}}
+    <p style="padding:20px 0;text-align:center">
+        <button type="button" class="btn btn-primary btn-lg thread-join">
+            Join this thread
+        </button>
+    </p>
+    {{!-- {{else}}
+    <p style="padding:20px 0;text-align:center">
+        <button type="button" class="btn btn-primary thread-leave">
+            Leave this thread
+        </button>
+    </p> --}}
+    {{/if}}
 
     <div data-posts-placeholder></div>
 

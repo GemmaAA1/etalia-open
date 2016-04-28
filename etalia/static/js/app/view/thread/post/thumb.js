@@ -19,7 +19,7 @@ define([
         },
 
         initialize: function () {
-            this.listenTo(this.model, "sync", this.render);
+            this.listenTo(this.model, "change", this.render);
         },
 
         onEditClick: function(e) {

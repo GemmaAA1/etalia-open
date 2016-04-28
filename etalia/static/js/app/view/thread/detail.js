@@ -21,12 +21,15 @@ define([
         events: {
             "click .thread-edit": "onEditClick",
             "click .thread-publish": "onPublishClick",
-            "click .thread-content-edit": "onContentEditClick"
+            "click .thread-content-edit": "onContentEditClick",
+            "click .thread-join": "onJoinClick",
+            "click .thread-leave": "onLeaveClick"
         },
 
         initialize: function () {
-            //this.listenTo(this.model, "change:state", this.onThreadStateChange);
-            this.listenTo(this.model, "sync", this.render);
+            this.listenTo(this.model, "sync change", this.render);
+            this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
+            this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
         },
 
         onEditClick: function(e) {
@@ -43,6 +46,7 @@ define([
 
             form.once('validation_success', function () {
                 form.model.save(null, {
+                    wait: true,
                     success: function () {
                         modal.close();
                     },
@@ -76,7 +80,7 @@ define([
             });
 
             this.listenToOnce(form, 'validation_success', function() {
-                form.model.save();
+                form.model.save(null, {wait: true});
             });
             this.listenToOnce(form, 'cancel', function() {
                 form.$el.replaceWith('<div data-thread-edit-form></div>');
@@ -91,13 +95,51 @@ define([
             this.model.publish();
         },
 
+        onJoinClick: function(e) {
+            e.preventDefault();
+
+            var that = this;
+            this.model.getState()
+                .join()
+                .then(function() {
+                    that.model.fetch();
+                });
+        },
+
+        onLeaveClick: function(e) {
+            e.preventDefault();
+
+            var that = this;
+            this.model.getState()
+                .leave()
+                .then(function() {
+                    that.model.fetch();
+                });
+        },
+
+        updatePostsCount: function() {
+            this.$('.content > .card .icons .comment .count').text(this.model.getPostsCount());
+        },
+        updateMembersCount: function() {
+            this.$('.content > .card .icons .member .count').text(this.model.getMembersCount());
+        },
+
         render: function() {
             App.log('ThreadDetailView::render');
 
-            var user = this.model.get('user'),
-                attributes = App._.extend(this.model.attributes, {
-                    isCurrentUser: user.get('id') === App.getCurrentUser().get('id')
-                });
+            var is_owner = this.model.isOwner(App.getCurrentUser()),
+                is_member = this.model.isMember(App.getCurrentUser()),
+                is_public = this.model.isPublic();
+
+            var attributes = App._.extend(this.model.attributes, {
+                is_owner: is_owner,
+                is_member: is_member,
+
+                can_join: is_public && !is_member,
+
+                members_count: this.model.getMembersCount(),
+                posts_count: this.model.getPostsCount()
+            });
 
             this.$el.html(this.template(attributes));
 
@@ -110,7 +152,6 @@ define([
                 })
             );
 
-
             // Members list
             this.pushSubView(
                 App.View.User.List.create({
@@ -121,13 +162,15 @@ define([
             );
 
             // Posts list
-            this.pushSubView(
-                App.View.Thread.PostList.create({
-                    thread: this.model
-                }, {
-                    $target: this.$('[data-posts-placeholder]')
-                })
-            );
+            if (is_public || is_member) {
+                this.pushSubView(
+                    App.View.Thread.PostList.create({
+                        thread: this.model
+                    }, {
+                        $target: this.$('[data-posts-placeholder]')
+                    })
+                );
+            }
 
             return this;
         }

@@ -72,7 +72,12 @@ define([
                 this.listenTo(this.detailView, "detail:next", this.openDetail);
             }
 
-            this.detailView.render();
+            var that = this;
+            model
+                .fetch({data: {view: 'nested'}})
+                .done(function() {
+                    that.detailView.render();
+                });
         },
 
         onModelRemove: function (model) {

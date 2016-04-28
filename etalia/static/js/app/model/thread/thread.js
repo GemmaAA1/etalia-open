@@ -1,7 +1,7 @@
 define([
     'app',
-    'app/model/user/user',
     'app/model/thread/state',
+    'app/model/library/paper',
     'app/collection/thread/post',
     'app/collection/user/user'
 ], function (App) {
@@ -65,6 +65,19 @@ define([
             }
         ],
 
+        initialize: function() {
+            this.listenTo(this, 'change:posts', function() {
+                if (0 < this.get('posts').length) {
+                    this.set('posts_count', this.get('posts').length);
+                }
+            });
+            this.listenTo(this, 'change:members', function() {
+                if (0 < this.get('members').length) {
+                    this.set('members_count', this.get('members').length);
+                }
+            });
+        },
+
         validate: function(attrs, options) {
             //console.log(attrs, options);
             if (options && options.validate) { // Regular validation
@@ -99,11 +112,15 @@ define([
             };
 
             var model = this;
-            App.Backbone.ajax(options).then(function(resp) {
-                var serverAttrs = options.parse ? model.parse(resp, options) : resp;
-                if (!model.set(serverAttrs, options)) return false;
-                model.trigger('sync', model, resp, options);
-            });
+            App.Backbone.ajax(options)
+                .done(function(resp) {
+                    var serverAttrs = options.parse ? model.parse(resp, options) : resp;
+                    if (!model.set(serverAttrs, options)) return false;
+                    model.trigger('sync', model, resp, options);
+                })
+                .error(function() {
+                    // TODO
+                });
 
             return this;
         },
@@ -120,10 +137,30 @@ define([
             return state;
         },
 
+        isPrivate: function() {
+            return this.get('privacy') === App.Model.Thread.PRIVACY_PRIVATE;
+        },
+
+        isPublic: function() {
+            return this.get('privacy') === App.Model.Thread.PRIVACY_PUBLIC;
+        },
+
+        isOwner: function (user) {
+            return this.get('user').get('id') === user.get('id');
+        },
+
         isMember: function (user) {
             return this.get('members').some(function (member) {
                 return member.get('id') === user.get('id');
             })
+        },
+
+        getMembersCount: function() {
+            return this.getRelation('members').getCount()
+        },
+
+        getPostsCount: function() {
+            return this.getRelation('posts').getCount()
         }
     });
 
@@ -138,6 +175,35 @@ define([
             user: App.getCurrentUser()
         });
     };
+
+    /**
+     * Handlebars helpers
+     */
+    App.Handlebars.registerHelper('thread_pin_class', function() {
+        if (this.state && this.state.get('watch') === App.Model.State.WATCH_PINNED) {
+            return ' active';
+        }
+        return '';
+    });
+    App.Handlebars.registerHelper('thread_ban_class', function() {
+        if (this.state && this.state.get('watch') === App.Model.State.WATCH_BANNED) {
+            return ' active';
+        }
+        return '';
+    });
+    App.Handlebars.registerHelper('thread_privacy_icon', function() {
+        if (this.privacy && this.privacy === App.Model.Thread.PRIVACY_PRIVATE) {
+            return new App.Handlebars.SafeString('<span class="eai eai-locked"></span>');
+        }
+        return '';
+    });
+    App.Handlebars.registerHelper('thread_type_icon', function() {
+        var icon = '<span class="eai eai-question"></span>';
+        if (this.type && this.type === App.Model.Thread.TYPE_PAPER) {
+            icon = '<span class="eai eai-paper"></span>';
+        }
+        return new App.Handlebars.SafeString(icon);
+    });
 
     return App.Model.Thread;
 });

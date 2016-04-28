@@ -35,13 +35,27 @@ define([
         schema: {
             title: {type: 'Text', validators: ['required']},
             url: {type: 'Text', validators: ['required']}
+        },
+
+        toString: function() {
+            return this.get('title');
         }
     });
 
-    /* TODO move in extend() */
-    App.Model.Paper.prototype.toString = function() {
-        return this.get('title');
-    };
+    /**
+     * Handlebars helpers
+     */
+    App.Handlebars.registerHelper('paper_title_authors', function(paper) {
+        if (!paper) {
+            return 'Expected paper as first argument';
+        }
+        var authors = paper.get('authors').map(function (author) {
+            return author.get('first_name') + " " + author.get('last_name');
+        });
+        var output = paper.get('title') + " (" + authors.splice(0, 4).join(', ') + ")";
+
+        return new App.Handlebars.SafeString(output);
+    });
 
     return App.Model.Paper;
 });

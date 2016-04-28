@@ -123,6 +123,12 @@ define([
 
         hasManySetKeyContents.call( this, keyContents );
     };
+    Backbone.HasMany.prototype.getCount = function() {
+        var relatedCount = this.related.models.length,
+            idsCount     = this.keyIds.length;
+
+        return relatedCount > 0 ? relatedCount : idsCount;
+    };
 
 
     /**
@@ -374,52 +380,6 @@ define([
     Handlebars.registerHelper('date', function(date) {
         return Moment(date).format('MMM D, YYYY');
     });
-
-    Handlebars.registerHelper('thread_pin_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.State.WATCH_PINNED) {
-            return ' active';
-        }
-        return '';
-    });
-    Handlebars.registerHelper('thread_ban_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.State.WATCH_BANNED) {
-            return ' active';
-        }
-        return '';
-    });
-    Handlebars.registerHelper('thread_privacy_icon', function() {
-        if (this.privacy && this.privacy === App.Model.Thread.PRIVACY_PRIVATE) {
-            return new Handlebars.SafeString('<span class="eai eai-locked"></span>');
-        }
-        return '';
-    });
-    Handlebars.registerHelper('thread_type_icon', function() {
-        var icon = '<span class="eai eai-question"></span>';
-        if (this.type && this.type === App.Model.Thread.TYPE_PAPER) {
-            icon = '<span class="eai eai-paper"></span>';
-        }
-        return new Handlebars.SafeString(icon);
-    });
-
-    Handlebars.registerHelper('full_name', function(user) {
-        if (!user) {
-            return 'Expected user as first argument';
-        }
-        return user.get('first_name') + " " + user.get('last_name');
-    });
-
-    Handlebars.registerHelper('paper_title_authors', function(paper) {
-        if (!paper) {
-            return 'Expected paper as first argument';
-        }
-        var authors = paper.get('authors').map(function (author) {
-            return author.get('first_name') + " " + author.get('last_name');
-        });
-        var output = paper.get('title') + " (" + authors.splice(0, 4).join(', ') + ")";
-
-        return new Handlebars.SafeString(output);
-    });
-
 
 
     /**

@@ -1,8 +1,7 @@
 define([
     'app',
     'app/model/user/user',
-    'app/model/user/user-lib',
-    'app/model/library/paper'
+    'app/model/user/user-lib'
 ], function (App) {
 
     App.Model.State = App.Backbone.RelationalModel.extend({
@@ -64,9 +63,54 @@ define([
             }
 
             this.set({watch: watch});
-            // TODO this.save({watch: watch});
 
             return this;
+        },
+
+        join: function() {
+            return this._patchAction('join');
+        },
+
+        leave: function() {
+            return this._patchAction('leave');
+        },
+
+        _patchAction: function(action) {
+            var model = this;
+
+            return new Promise(function(resolve, reject) {
+                function doPatch() {
+                    var options = {
+                        type: 'PATCH',
+                        dataType: 'json',
+                        url: App._.result(model, 'url') + '/' + action
+                    };
+                    App.Backbone.ajax(options)
+                        .done(function(resp) {
+                            var serverAttrs = options.parse ? model.parse(resp, options) : resp;
+                            if (!model.set(serverAttrs, options)) return false;
+                            model.trigger('sync', model, resp, options);
+                            resolve(model);
+                        })
+                        .fail(function() {
+                            reject('Failed to patch state with action "' + action + '".');
+                        });
+                }
+
+                if (model.isNew()) {
+                    model.save({}, {
+                        wait:true,
+                        success: function() {
+                            doPatch();
+                        },
+                        error: function() {
+                            reject('Failed to create state.');
+                        }
+                    });
+                } else {
+                    doPatch();
+                }
+            });
         }
     });
 
