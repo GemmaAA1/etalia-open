@@ -25,6 +25,7 @@ define([
         $thumbList: null,
 
         events: {
+            "click #thread-create-modal": "onCreateModalClick",
             "click #thread-next-page": "onNextPageClick"
         },
 
@@ -114,7 +115,9 @@ define([
             }
         },
 
-        onNextPageClick: function () {
+        onNextPageClick: function (e) {
+            e.preventDefault();
+
             var that = this;
             if (this.collection.hasNextPage()) {
                 this.collection.getNextPage(null).then(function() {
@@ -125,6 +128,43 @@ define([
                     }
                 });
             }
+        },
+
+        onCreateModalClick: function(e) {
+            e.preventDefault();
+
+            var that = this,
+                form = App.View.Thread.CreateForm.create(),
+                modal = new App.View.Modal({
+                    title: 'Start a new thread',
+                    content: form,
+                    footer: false
+                });
+
+            form.once('validation_success', function () {
+                form.model.save(null, {
+                    wait: true,
+                    success: function () {
+                        that.collection.add(form.model, {at: 0});
+                        modal.close();
+                        that.openDetail(form.model);
+                    },
+                    error: function () {
+                        // TODO
+                    }
+                });
+            });
+
+            form.once('cancel', function () {
+                modal.close();
+            });
+
+            modal.once('hidden', function () {
+                form = null;
+                modal = null;
+            });
+
+            modal.render();
         },
 
         render: function () {

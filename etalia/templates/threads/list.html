@@ -10,28 +10,19 @@
 <!-- start list -->
 <div id="list" class="document">
     <div class="wrapper">
-        <div class="inner">
-            {% for message in messages %}
-            {% if 'stream' in message.extra_tags %}
-            <div class="alert alert-info">
-                {# close-href is used because href is used by bootstrap to closing other divs #}
-                <a class="close" data-dismiss="alert"{% if message.pk %} close-href="{% url 'message_extends:message_mark_read' message.pk %}"{% endif %}>×</a>
-                {{ message|safe }}
-            </div>
-            {% endif %}
-            {% endfor %}
+        <div id="thread-list-container"></div>
 
-
-            <div class="list-title">
-                <button id="thread-invitation-modal" type="button" class="btn btn-default">2 pending invitation</button>
-                <button id="thread-create-modal" type="button" class="btn btn-primary">Start a new thread</button>
-                <p><span>23</span> threads</p>
-            </div>
-
-
-            <div id="thread-list-container"></div>
-
-        </div>
+        {#<div class="inner">#}
+            {#{% for message in messages %}#}
+            {#{% if 'stream' in message.extra_tags %}#}
+            {#<div class="alert alert-info">#}
+                  {# close-href is used because href is used by bootstrap to closing other divs #}
+            {#    <a class="close" data-dismiss="alert"{% if message.pk %} close-href="{% url 'message_extends:message_mark_read' message.pk %}"{% endif %}>×</a>#}
+            {#    {{ message|safe }}#}
+            {#</div>#}
+            {#{% endif %}#}
+            {#{% endfor %}#}
+        {#</div>#}
     </div>
 </div>
 <!-- end list -->

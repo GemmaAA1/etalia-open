@@ -20,6 +20,7 @@ define([
 
         events: {
             "click .thread-edit": "onEditClick",
+            "click .thread-delete": "onDeleteClick",
             "click .thread-publish": "onPublishClick",
             "click .thread-content-edit": "onContentEditClick",
             "click .thread-join": "onJoinClick",
@@ -66,6 +67,17 @@ define([
             });
 
             modal.render();
+        },
+
+        onDeleteClick: function(e) {
+            e.preventDefault();
+
+            var that = this;
+            this.model
+                .destroy()
+                .done(function() {
+                    that.trigger('close');
+                });
         },
 
         onContentEditClick: function(e) {

@@ -36,9 +36,13 @@ define([
                 next: next ? next.attributes : null
             })));
 
-            this.model
-                .get('view').render().$el
-                .appendTo(this.$('.document .wrapper'));
+            var that = this,
+                view = this.model.get('view').render();
+            view.$el.appendTo(this.$('.document .wrapper'));
+
+            this.listenToOnce(view, 'close', function() {
+                that.close();
+            });
 
             return this.open();
         },

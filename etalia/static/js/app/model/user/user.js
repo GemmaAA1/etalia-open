@@ -72,7 +72,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
      * Returns the current (authenticated) user.
      *
      * @return UserModel
-     * @todo to Promise
+     * @todo Promise ?
      */
     App.getCurrentUser = function () {
         if (!currentUser) {
@@ -99,7 +99,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                 return new Promise(function (resolve, reject) {
                     if (!relationshipsXhr || fetch) {
                         relationshipsXhr = relationships.fetch({
-                            //url: App.config.api_root + '/user/users/' + that.get('id') + '/' + type
+                            data: {'from-user': currentUser.get('id')}
                         });
                     }
                     relationshipsXhr
@@ -117,7 +117,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                     throw 'Unexpected status';
                 }
                 var relationShips = currentUser.getRelationships(),
-                    fromUserId = currentUser.get('id'),
+                    //fromUserId = currentUser.get('id'),
                     toUserId = toUser.hasOwnProperty('get') ? toUser.get('id') : toUser.id;
 
                 return new Promise(function (resolve, reject) {
@@ -125,8 +125,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                         .then(function (relationships) {
                             resolve(relationships.find(function (relationship) {
                                 return relationship.get('status') === status
-                                        // TODO Remove as soon as we fetch only "this" user relationships
-                                    && relationship.get('from_user').get('id') === fromUserId
+                                    //&& relationship.get('from_user').get('id') === fromUserId
                                     && relationship.get('to_user').get('id') === toUserId;
                             }));
                         })

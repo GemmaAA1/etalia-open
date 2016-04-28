@@ -48,6 +48,9 @@
                 {{#if is_owner}}
                 - <a href="javascript: void(0)" class="thread-edit">edit</a>
                 {{/if}}
+                {{#ifCond is_owner 'andNot' published_at}}
+                - <a href="javascript: void(0)" class="thread-delete">delete</a>
+                {{/ifCond}}
             </p>
             <p class="icons">
                 <span class="type">
