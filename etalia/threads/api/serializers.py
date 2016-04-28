@@ -40,6 +40,7 @@ class PatchSerializer(serializers.Serializer):
 
 class ThreadFilterSerializer(serializers.BaseSerializer):
     """Serializer for filters on side panel of Threads list"""
+
     def to_representation(self, instance):
         return {
             'users': [UserFilterSerializer(instance=user, context=self.context).data

@@ -205,6 +205,14 @@ class ThreadViewSet(MultiSerializerMixin,
             elif param == '0':
                 queryset = queryset.exclude(query)
 
+        # Filters
+        uids = [int(id_) for id_ in self.request.query_params.getlist('user_id[]', None)]
+        if uids:
+            queryset = queryset.filter(
+                Q(user_id__in=uids) |
+                Q(posts__user_id__in=uids) |
+                Q(posts__comments__user_id__in=uids))
+
         # time-span filter
         time_span = self.request.query_params.get('time-span', None)
         if time_span:
@@ -243,6 +251,7 @@ class ThreadViewSet(MultiSerializerMixin,
         queryset = self.get_queryset().select_related('posts__user',
                                                       'posts__comments__user')
         ids = []
+        ids += queryset.values_list('user_id', flat=True)
         ids += queryset.values_list('posts__user', flat=True)
         ids += queryset.values_list('posts__comments__user', flat=True)
         ids = [id for id in ids if id is not None]
