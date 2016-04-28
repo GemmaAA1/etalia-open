@@ -28,15 +28,18 @@ define([
 
             this.$el.html(this.template({}));
 
-            var $list = this.$('.thread-members-list');
+            var that = this,
+                $list = this.$('.thread-members-list');
 
             this.model.each(function(user) {
-                App.View.User.Thumb.create({
-                    model: user
-                }, {
-                    $target: $list,
-                    append: true
-                });
+                that.pushSubView(
+                    App.View.User.Thumb.create({
+                        model: user
+                    }, {
+                        $target: $list,
+                        append: true
+                    })
+                );
             });
 
             return this;

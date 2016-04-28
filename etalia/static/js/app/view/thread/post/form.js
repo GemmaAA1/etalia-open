@@ -1,8 +1,7 @@
 define([
-    'underscore',
     'app',
     'app/model/thread/post'
-], function (_, App) {
+], function (App) {
 
     App.View.Thread.PostForm = App.Backbone.Form.extend({
 
@@ -10,7 +9,7 @@ define([
             content: {type: 'Tinymce', validators: ['required'], title: false}
         },
 
-        template: _.template('\
+        template: App._.template('\
             <form class="thread-post-form form-horizontal" role="form">\
                 <div data-fieldsets></div>\
                 <button type="submit" class="btn btn-primary thread-post-form-submit">\
@@ -28,7 +27,7 @@ define([
             App.Backbone.Form.prototype.initialize.apply(this, arguments);
 
             if (0 < this.model.get('id')) {
-                this.template = _.template('\
+                this.template = App._.template('\
                     <form class="thread-post-form form-horizontal" role="form">\
                         <div data-fieldsets></div>\
                         <button type="submit" class="btn btn-primary thread-post-form-submit">\

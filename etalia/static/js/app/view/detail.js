@@ -1,9 +1,8 @@
 define([
-    'jquery',
     'app',
     'text!app/templates/detail.html',
     'app/model/detail'
-], function ($, App, template) {
+], function (App, template) {
 
     var defaults = {};
 
@@ -14,7 +13,10 @@ define([
         template: App.Handlebars.compile(template),
 
         events: {
-            "click #detail-close": "close"
+            "click #detail-close": "onCloseClick",
+            "click #detail-prev": "onPrevClick",
+            "click #detail-next": "onNextClick",
+            "click": 'onClick'
         },
 
         initialize: function (options) {
@@ -26,24 +28,59 @@ define([
         },
 
         render: function () {
+            var prev = this.model.get('prev'),
+                next = this.model.get('next');
 
-            $('detail-placeholder').replaceWith(this.$el.html(this.template({})));
+            App.$('detail-placeholder').replaceWith(this.$el.html(this.template({
+                prev: prev ? prev.attributes : null,
+                next: next ? next.attributes : null
+            })));
 
-            this.model
-                .get('view').render().$el
-                .appendTo(this.$('.document .wrapper'));
+            var that = this,
+                view = this.model.get('view').render();
+            view.$el.appendTo(this.$('.document .wrapper'));
+
+            this.listenToOnce(view, 'close', function() {
+                that.close();
+            });
 
             return this.open();
         },
 
+        onPrevClick: function() {
+            var prev = this.model.get('prev');
+            if (prev) {
+                this.trigger('detail:prev', prev, this);
+            }
+        },
+
+        onNextClick: function() {
+            var next = this.model.get('next');
+            if (next) {
+                this.trigger('detail:next', next, this);
+            }
+        },
+
+        onClick: function(e) {
+            if (App.$(e.target).attr('id') === 'detail-document') {
+                this.close();
+            }
+        },
+
+        onCloseClick: function() {
+            this.close();
+        },
+
         open: function() {
-            $('body').addClass('detail-opened');
+            App.$('body').addClass('detail-opened');
 
             return this;
         },
 
         close: function() {
-            $('body').removeClass('detail-opened');
+            App.$('body').removeClass('detail-opened');
+
+            this.model.get('view').remove();
 
             return this;
         }

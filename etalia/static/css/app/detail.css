@@ -95,9 +95,11 @@ body.detail-opened #detail {
     overflow-y: auto;
 }
 
-#detail > .document > .wrapper > .inner {
+#detail > .document > .wrapper {
+    background-color: #ffffff;
     border-left: 1px solid #cbced1;
     border-right: 1px solid #cbced1;
+    min-height: 100%;
 }
 
 #detail > .document > .wrapper > .inner > .actions {

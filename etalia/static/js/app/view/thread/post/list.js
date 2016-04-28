@@ -15,12 +15,6 @@ define([
         thread: null,
         form: null,
 
-        /*events: {
-         "click .title a": "onTitleClick",
-         "click .thumb-pin": "onPinClick",
-         "click .thumb-ban": "onBanClick"
-         },*/
-
         initialize: function (options) {
             if (!options.thread) {
                 throw 'Expected instance of App.Model.Thread';
@@ -28,7 +22,6 @@ define([
 
             this.thread = options.thread;
 
-            //this.listenTo(this.model, "change:state", this.onThreadStateChange);
             this.listenTo(this.model, "sync", this.render);
         },
 
@@ -40,9 +33,6 @@ define([
             this.form = App.View.Thread.PostForm.create({}, {
                 $target: this.$('[data-post-add-form]')
             });
-            /*this.$('.thread-post-form').html(
-             this.form.render().$el
-             );*/
 
             this.listenToOnce(this.form, 'validation_success', this.submitForm);
         },
@@ -50,11 +40,14 @@ define([
         submitForm: function () {
             var that = this;
             this.form.model.save({
-                user: App.Model.User.getCurrent(),
+                user: App.getCurrentUser(),
                 thread: this.thread
             }, {
                 success: function () {
                     that.renderForm();
+                },
+                error: function() {
+                    that.form.model.destroy();
                 }
             });
         },
@@ -62,24 +55,33 @@ define([
         render: function () {
             App.log('PostListView::render');
 
-            this.$el.html(this.template()); // this.model.toJSON()
+            // TODO memberOfThread
+            this.$el.html(this.template({
+                isMember: this.thread.isMember(App.getCurrentUser())
+            }));
 
-            var $list = this.$('.thread-posts-list');
+            var that = this,
+                $list = this.$('.thread-posts-list');
             this.model.each(function (post) {
-                App.View.Thread.PostThumb.create({
-                    model: post
+                that.pushSubView(
+                    App.View.Thread.PostThumb.create({
+                        model: post
+                    }, {
+                        $target: $list,
+                        append: true
+                    })
+                );
+            });
+
+            this.pushSubView(
+                App.View.User.Thumb.create({
+                    model: App.getCurrentUser()
                 }, {
-                    $target: $list,
-                    append: true
-                });
-            });
+                    $target: this.$('.user-placeholder')
+                })
+            );
 
-            App.View.User.Thumb.create({
-                model: App.Model.User.getCurrent()
-            }, {
-                $target: this.$('.user-placeholder')
-            });
-
+            // TODO only if member of the thread
             this.renderForm();
 
             return this;

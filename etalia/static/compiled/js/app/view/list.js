@@ -1,1 +1,0 @@
-define(["app","text!app/templates/list.html"],function(e,t){return e.View.List=e.Backbone.View.extend({tagName:"div","class":"thumb-list",template:e.Handlebars.compile(t),events:{"click #thread-next-page":"onNextPageClick"},render:function(){return this.$el.html(this.template({})),this.mode.view.render().appendTo(this.$(".document .inner")),this}})});

@@ -1,6 +1,5 @@
 <div id="detail-actions" class="actions">
     <div class="card">
-
         <a href="javascript: void(0)"
            class="detail-pin{{thread_pin_class}}"
            title="Pin/Unpin">
@@ -38,22 +37,31 @@
 
         <p class="title">
             <a href="javascript: void(0)">
-                {{!<span>new</span>}}
+                {{thread_privacy_icon}}
                 {{title}}
             </a>
         </p>
         <div class="infos">
             <p>
-                <strong>{{full_name user}}</strong> -
-                <em>{{date created}}</em>
+                <strong>{{full_name user}}</strong>
+                - <em>{{date created}}</em>
+                {{#if is_owner}}
+                - <a href="javascript: void(0)" class="thread-edit">edit</a>
+                {{/if}}
+                {{#ifCond is_owner 'andNot' published_at}}
+                - <a href="javascript: void(0)" class="thread-delete">delete</a>
+                {{/ifCond}}
             </p>
             <p class="icons">
+                <span class="type">
+                    {{thread_type_icon}}
+                </span>
                 <span class="comment">
-                    <span class="count">16</span>
+                    <span class="count">{{posts_count}}</span>
                     <span class="eai eai-comment"></span>
                 </span>
                 <span class="member">
-                    <span class="count">16</span>
+                    <span class="count">{{members_count}}</span>
                     <span class="eai eai-user"></span>
                 </span>
             </p>
@@ -73,24 +81,56 @@
             {{#if content}}
                 {{{content}}}
             {{else}}
-            <p style="padding:50px 0;text-align:center">
-                <button type="button" class="btn btn-primary btn-lg thread-edit">
-                    Start writing !
-                </button>
-            </p>
+                {{#if is_owner}}
+                <p style="padding:50px 0;text-align:center">
+                    <button type="button" class="btn btn-primary btn-lg thread-content-edit">
+                        Start writing !
+                    </button>
+                </p>
+                {{/if}}
             {{/if}}
         </div>
 
+        {{#if content}}
         <p class="thread-info element-info">
             <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
-            - <a href="javascript: void(0)" class="thread-edit">edit</a>
-            - <a href="javascript: void(0)" class="thread-delete">delete</a>
+            {{#if is_owner}}
+            - <a href="javascript: void(0)" class="thread-content-edit">edit</a>
+            {{/if}}
         </p>
+        {{/if}}
 
         <div data-thread-edit-form></div>
+
+        {{#ifCond content 'andNot' published_at}}
+        <div class="alert alert-info thread-info">
+            <button type="button" class="btn btn-primary thread-publish" style="float:right; margin: 0 0 0 15px;">
+                Publish
+            </button>
+            <p style="line-height: 34px">
+                When you will be ready, don't forget to publish your thread !
+            </p>
+        </div>
+        {{/ifCond}}
     </div>
 
+    {{#if published_at}}
+
     <div data-members-placeholder></div>
+
+    {{#if can_join}}
+    <p style="padding:20px 0;text-align:center">
+        <button type="button" class="btn btn-primary btn-lg thread-join">
+            Join this thread
+        </button>
+    </p>
+    {{!-- {{else}}
+    <p style="padding:20px 0;text-align:center">
+        <button type="button" class="btn btn-primary thread-leave">
+            Leave this thread
+        </button>
+    </p> --}}
+    {{/if}}
 
     <div data-posts-placeholder></div>
 
@@ -113,5 +153,6 @@
 
         </div>
     </div>
+    {{/if}}
 
 </div>

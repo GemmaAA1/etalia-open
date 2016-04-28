@@ -25,6 +25,7 @@ define([
         $thumbList: null,
 
         events: {
+            "click #thread-create-modal": "onCreateModalClick",
             "click #thread-next-page": "onNextPageClick"
         },
 
@@ -46,22 +47,38 @@ define([
         openDetail: function (model) {
             App.log('ThreadListView::onModelDetail');
 
+            var modelIndex = this.collection.fullCollection.indexOf(model);
+            if (0 > modelIndex) {
+                throw 'Unexpected index';
+            }
+
             var detailModel = new App.Model.Detail({
                 list: this,
+                prev: 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null,
+                next: this.collection.fullCollection.at(modelIndex + 1),
                 view: new App.View.Thread.Detail({
                     model: model
                 })
             });
 
             if (this.detailView) {
+                this.detailView.model.get('view').remove();
+                this.detailView.model.destroy();
                 this.detailView.model = detailModel;
             } else {
                 this.detailView = new App.View.Detail({
                     model: detailModel
-                })
+                });
+                this.listenTo(this.detailView, "detail:prev", this.openDetail);
+                this.listenTo(this.detailView, "detail:next", this.openDetail);
             }
 
-            this.detailView.render();
+            var that = this;
+            model
+                .fetch({data: {view: 'nested'}})
+                .done(function() {
+                    that.detailView.render();
+                });
         },
 
         onModelRemove: function (model) {
@@ -98,15 +115,75 @@ define([
             }
         },
 
-        onNextPageClick: function () {
-            this.collection.getNextPage(null);
+        onNextPageClick: function (e) {
+            e.preventDefault();
+
+            var that = this;
+            if (this.collection.hasNextPage()) {
+                this.collection.getNextPage(null).then(function() {
+                    if (that.collection.hasNextPage()) {
+                        that.$('#thread-next-page').show();
+                    } else {
+                        that.$('#thread-next-page').hide();
+                    }
+                });
+            }
+        },
+
+        onCreateModalClick: function(e) {
+            e.preventDefault();
+
+            var that = this,
+                form = App.View.Thread.CreateForm.create(),
+                modal = new App.View.Modal({
+                    title: 'Start a new thread',
+                    content: form,
+                    footer: false
+                });
+
+            form.once('validation_success', function () {
+                form.model.save(null, {
+                    wait: true,
+                    success: function () {
+                        that.collection.add(form.model, {at: 0});
+                        modal.close();
+                        that.openDetail(form.model);
+                    },
+                    error: function () {
+                        // TODO
+                    }
+                });
+            });
+
+            form.once('cancel', function () {
+                modal.close();
+            });
+
+            modal.once('hidden', function () {
+                form = null;
+                modal = null;
+            });
+
+            modal.render();
         },
 
         render: function () {
             App.log('ThreadListView::render');
+
+            var that = this;
+
             this.$el.html(this.template({}));
 
             this.$thumbList = this.$('.thumb-list');
+
+            this.collection.fetch()
+                .then(function() {
+                    if (that.collection.hasNextPage()) {
+                        that.$('#thread-next-page').show();
+                    } else {
+                        that.$('#thread-next-page').hide();
+                    }
+                });
 
             return this;
         }

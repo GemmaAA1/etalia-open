@@ -1,7 +1,4 @@
-define([
-    'app',
-    'app/model/thread/comment'
-], function (App) {
+define(['app', 'app/model/thread/comment'], function (App) {
 
     App.View.Thread.CommentForm = App.Backbone.Form.extend({
 

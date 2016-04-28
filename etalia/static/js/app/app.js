@@ -1,15 +1,17 @@
 define([
     'require',
+    'jquery',
     'underscore',
     'backbone',
     'handlebars',
     'moment',
     'app/ui/layout',
     'app/ui/controls',
+    'bootstrap',
     'backbone/relational',
     'backbone/paginator',
     'backbone/forms'
-], function(require, _, Backbone, Handlebars, Moment, Layout, Controls) {
+], function(require, $, _, Backbone, Handlebars, Moment, Layout, Controls) {
 
     /**
      * Backbone
@@ -17,7 +19,7 @@ define([
     var _sync = Backbone.sync;
     Backbone.sync = function (method, model, options) {
         // Add trailing slash to backbone model views
-        var _url = _.isFunction(model.url) ? model.url() : model.url;
+        var _url = options.url ? options.url : _.isFunction(model.url) ? model.url() : model.url;
         _url += _url.charAt(_url.length - 1) == '/' ? '' : '/';
         options = _.extend(options, {
             url: _url
@@ -31,6 +33,24 @@ define([
         return response;
     };
 
+    Backbone.View.prototype.__remove = Backbone.View.prototype.remove;
+    Backbone.View = Backbone.View.extend({
+        pushSubView: function(view) {
+            if (!this.subViews) {
+                this.subViews = [];
+            }
+            this.subViews.push(view);
+        },
+        remove: function() {
+            if (this.subViews) {
+                _.each(this.subViews, function (view) {
+                    view.remove();
+                });
+                this.subViews = null;
+            }
+            Backbone.View.prototype.__remove.call(this, arguments);
+        }
+    });
 
     /**
      * Backbone Relational
@@ -103,6 +123,12 @@ define([
 
         hasManySetKeyContents.call( this, keyContents );
     };
+    Backbone.HasMany.prototype.getCount = function() {
+        var relatedCount = this.related.models.length,
+            idsCount     = this.keyIds.length;
+
+        return relatedCount > 0 ? relatedCount : idsCount;
+    };
 
 
     /**
@@ -159,6 +185,40 @@ define([
       </div>\
     </div>\
   ');
+
+    Backbone.Form.editors.Select.prototype.__setValue = Backbone.Form.editors.Select.prototype.setValue;
+    Backbone.Form.editors.Select = Backbone.Form.editors.Select.extend({
+        setValue: function(value) {
+            if (typeof value === 'object') {
+                try {
+                    value = value.get('id');
+                } catch(e) {
+                }
+            }
+            this.__setValue(value);
+        }
+    });
+
+    Backbone.Form.editors.Radio.prototype.__setValue = Backbone.Form.editors.Radio.prototype.setValue;
+    Backbone.Form.editors.Radio = Backbone.Form.editors.Radio.extend({
+        tagName: 'div',
+        className: 'btn-group',
+        attributes: {
+            'data-toggle': 'buttons'
+        },
+        setValue: function(value) {
+            this.__setValue(value);
+            this.$('input[type=radio]:checked').closest('label').addClass('active');
+        }
+    }, {
+        template: _.template('\
+    <% _.each(items, function(item) { %>\
+      <label for="<%= item.id %>" class="btn btn-default">\
+        <input type="radio" name="<%= item.name %>" value="<%= item.value %>" id="<%= item.id %>" autocomplete="off"> <%= item.label %>\
+      </label>\
+    <% }); %>\
+  ', null, Backbone.Form.templateSettings)
+    });
 
     Backbone.Form.editors.Tinymce = Backbone.Form.editors.TextArea.extend({
 
@@ -290,34 +350,32 @@ define([
     /**
      * Handlebars helpers
      */
-    Handlebars.registerHelper('thread_pin_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.State.WATCH_PINNED) {
-            return ' active';
-        }
-        return '';
-    });
-    Handlebars.registerHelper('thread_ban_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.State.WATCH_BANNED) {
-            return ' active';
-        }
-        return '';
-    });
-    Handlebars.registerHelper('full_name', function(user) {
-        /*if (!user) {
-            return '';
-        }*/
-        return user.get('first_name') + " " + user.get('last_name');
-    });
-    Handlebars.registerHelper('paper_title_authors', function(paper) {
-        /*if (!paper) {
-            return '';
-        }*/
-        var authors = paper.get('authors').map(function (author) {
-            return author.get('first_name') + " " + author.get('last_name');
-        });
-        var output = paper.get('title') + " (" + authors.splice(0, 4).join(', ') + ")";
 
-        return new Handlebars.SafeString(output);
+    Handlebars.registerHelper('ifCond', function (a, operator, b, options) {
+        switch (operator) {
+            case '==':
+                return (a == b) ? options.fn(this) : options.inverse(this);
+            case '===':
+                return (a === b) ? options.fn(this) : options.inverse(this);
+            case '<':
+                return (a < b) ? options.fn(this) : options.inverse(this);
+            case '<=':
+                return (a <= b) ? options.fn(this) : options.inverse(this);
+            case '>':
+                return (a > b) ? options.fn(this) : options.inverse(this);
+            case '>=':
+                return (a >= b) ? options.fn(this) : options.inverse(this);
+            case 'and':
+                return (a && b) ? options.fn(this) : options.inverse(this);
+            case 'andNot':
+                return (a && !b) ? options.fn(this) : options.inverse(this);
+            case 'or':
+                return (a || b) ? options.fn(this) : options.inverse(this);
+            case 'orNot':
+                return (a || !b) ? options.fn(this) : options.inverse(this);
+            default:
+                return options.inverse(this);
+        }
     });
     Handlebars.registerHelper('date', function(date) {
         return Moment(date).format('MMM D, YYYY');
@@ -328,12 +386,15 @@ define([
      * App
      */
     window.App = App = {
+        $: $,
+        _: _,
         Backbone: Backbone,
         Handlebars: Handlebars,
 
         Layout: Layout,
         Controls: Controls,
 
+        Const: {},
         Model: {},
         Collection: {},
         View: {

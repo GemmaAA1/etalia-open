@@ -42,7 +42,7 @@ define([
         }
         return new App.Model.Post({
             thread: thread,
-            user: App.Model.User.getCurrent()
+            user: App.getCurrentUser()
         });
     };
 

@@ -3,6 +3,8 @@ define(['app'], function (App) {
     return App.Model.Detail = App.Backbone.Model.extend({
         defaults: {
             list: null,
+            prev: null,
+            next: null,
             view: null
         },
 

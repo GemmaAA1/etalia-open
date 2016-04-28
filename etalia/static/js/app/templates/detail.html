@@ -1,18 +1,22 @@
 <div class="bar">
     <div class="wrapper">
         <div class="inner">
+            {{#if prev}}
             <div id="detail-prev" class="detail-nav">
                 <button class="btn-circle" type="button">
                     <span class="eai eai-left"></span>
                 </button>
-                <span></span>
+                <span>{{prev.title}}</span>
             </div>
+            {{/if}}
+            {{#if next}}
             <div id="detail-next" class="detail-nav">
                 <button class="btn-circle" type="button">
                     <span class="eai eai-right"></span>
                 </button>
-                <span></span>
+                <span>{{next.title}}</span>
             </div>
+            {{/if}}
             <button id="detail-close" class="btn-circle" type="button">
                 <span class="eai eai-close"></span>
             </button>
@@ -21,7 +25,5 @@
 </div>
 
 <div id="detail-document" class="document">
-    <div class="wrapper">
-        {{! <div class="inner"></div> }}
-    </div>
+    <div class="wrapper"></div>
 </div>

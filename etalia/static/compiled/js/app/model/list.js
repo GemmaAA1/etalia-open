@@ -1,1 +1,0 @@
-define(["app"],function(e){return e.Model.List=e.Backbone.Model.extend({defaults:{}})});

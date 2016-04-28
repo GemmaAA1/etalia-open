@@ -22,13 +22,19 @@
 }
 
 .card .title a span {
+    color: #00695c;
     display: inline-block;
-    font-size: 60%;
-    line-height: 0.7;
+    font-size: 70%;
+    vertical-align: 5%;
+}
+
+.card .title a span.new {
     color: #ffffff;
     background-color: #00695c;
     padding: 2px 3px 3px 3px;
     border-radius: 2px;
+    font-size: 60%;
+    line-height: 0.7;
     vertical-align: 40%;
 }
 
@@ -91,6 +97,7 @@
 
 }
 
+.card .type,
 .card .comment,
 .card .member {
     background-color: #ffffff;

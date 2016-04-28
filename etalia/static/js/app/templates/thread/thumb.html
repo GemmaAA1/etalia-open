@@ -10,22 +10,25 @@
     <div data-user-placeholder></div>
     <p class="title">
         <a href="javascript: void(0)">
-            <span>new</span>
+            {{thread_privacy_icon}}
             {{title}}
         </a>
     </p>
     <div class="infos">
         <p class="truncate">
-            {{paper_title_authors paper}}
+            {{#if paper}}{{paper_title_authors paper}}{{/if}}
             <em>{{date created}}</em>
         </p>
         <p class="icons">
+            <span class="type">
+                {{thread_type_icon}}
+            </span>
             <span class="comment">
-                <span class="count">16</span>
+                <span class="count">{{posts_count}}</span>
                 <span class="eai eai-comment"></span>
             </span>
             <span class="member">
-                <span class="count">16</span>
+                <span class="count">{{members_count}}</span>
                 <span class="eai eai-user"></span>
             </span>
         </p>
