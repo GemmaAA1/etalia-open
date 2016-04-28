@@ -47,6 +47,18 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
         }
 
 
+class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
+                                 serializers.HyperlinkedRelatedField):
+    """ThreadUserInvite serializer"""
+
+    class Meta:
+        model = ThreadUserInvite
+        extra_kwargs = {
+
+        }
+
+
+
 class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
                            serializers.HyperlinkedModelSerializer):
     """ThreadUser serializer"""

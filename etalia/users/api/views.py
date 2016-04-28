@@ -191,8 +191,8 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     ** List: **
 
     * **status=(int)**: Fetch only corresponding status
-    * **from_user=(int)**: Fetch only relationships from user <id>
-    * **to_user=(int)**: Fetch only relationships to user <id>
+    * **from-user=(int)**: Fetch only relationships from user <id>
+    * **to-user=(int)**: Fetch only relationships to user <id>
 
     """
     queryset = Relationship.objects.all()
@@ -229,10 +229,10 @@ class RelationshipViewSet(viewsets.ModelViewSet):
                 param = self.request.query_params.get('status', None)
                 queryset = queryset.filter(status=param)
             if 'from_user' in self.request.query_params.keys():
-                param = self.request.query_params.get('from_user', None)
+                param = self.request.query_params.get('from-user', None)
                 queryset = queryset.filter(from_user=param)
             if 'to_user' in self.request.query_params.keys():
-                param = self.request.query_params.get('to_user', None)
+                param = self.request.query_params.get('to-user', None)
                 queryset = queryset.filter(to_user=param)
 
             return queryset
