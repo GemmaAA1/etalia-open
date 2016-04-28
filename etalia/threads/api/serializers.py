@@ -21,7 +21,7 @@ READ_METHODS = ('GET', 'HEAD', 'OPTIONS')
 
 
 class PatchSerializer(serializers.Serializer):
-
+    """Serializer for PATCH update based on operations"""
     OPERATIONS = (
         "replace",
     )
@@ -39,7 +39,7 @@ class PatchSerializer(serializers.Serializer):
 
 
 class ThreadFilterSerializer(serializers.BaseSerializer):
-
+    """Serializer for filters on side panel of Threads list"""
     def to_representation(self, instance):
         return {
             'users': [UserFilterSerializer(instance=user, context=self.context).data
@@ -49,7 +49,7 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
 
 class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
                            serializers.HyperlinkedModelSerializer):
-
+    """ThreadUser serializer"""
     class Meta:
         model = ThreadUser
         extra_kwargs = {
@@ -94,6 +94,7 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
 
 class ThreadCommentSerializer(One2OneNestedLinkSwitchMixin,
                               serializers.HyperlinkedModelSerializer):
+    """ThreadComment serializer"""
     class Meta:
         model = ThreadComment
         extra_kwargs = {
@@ -137,6 +138,8 @@ class ThreadCommentSerializer(One2OneNestedLinkSwitchMixin,
 
 
 class ThreadCommentNestedSerializer(serializers.HyperlinkedModelSerializer):
+    """ThreadComment nested serializer"""
+
     user = UserSerializer(many=False, read_only=True)
 
     class Meta:
@@ -159,6 +162,7 @@ class ThreadCommentNestedSerializer(serializers.HyperlinkedModelSerializer):
 
 class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
                            serializers.HyperlinkedModelSerializer):
+    """ThreadPost serializer"""
     class Meta:
         model = ThreadPost
         extra_kwargs = {
@@ -204,6 +208,8 @@ class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
 
 
 class ThreadPostNestedSerializer(serializers.HyperlinkedModelSerializer):
+    """ThreadPost nested serializer"""
+
     comments = ThreadCommentNestedSerializer(many=True, read_only=True)
     user = UserSerializer(many=False, read_only=True)
 
@@ -226,6 +232,8 @@ class ThreadPostNestedSerializer(serializers.HyperlinkedModelSerializer):
 
 class ThreadSerializer(One2OneNestedLinkSwitchMixin,
                        serializers.HyperlinkedModelSerializer):
+    """Thread serializer"""
+
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
@@ -341,6 +349,8 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
 
 
 class ThreadNestedSerializer(serializers.HyperlinkedModelSerializer):
+    """Thread nested serializer"""
+
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()

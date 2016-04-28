@@ -7,6 +7,8 @@ from ..models import Paper, Journal, Author
 
 
 class JournalSerializer(serializers.HyperlinkedModelSerializer):
+    """Journal serializer"""
+
     class Meta:
         model = Journal
         extra_kwargs = {
@@ -22,6 +24,8 @@ class JournalSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class AuthorSerializer(serializers.HyperlinkedModelSerializer):
+    """Author serializer"""
+
     class Meta:
         model = Author
         extra_kwargs = {
@@ -36,6 +40,7 @@ class AuthorSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class PaperSerializer(serializers.HyperlinkedModelSerializer):
+    """Paper serializer"""
 
     class Meta:
         model = Paper
@@ -63,6 +68,7 @@ class PaperSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class PaperNestedSerializer(serializers.HyperlinkedModelSerializer):
+    """Paper nested serializer"""
 
     authors = AuthorSerializer(many=True, read_only=True)
     journal = JournalSerializer(many=False, read_only=True)

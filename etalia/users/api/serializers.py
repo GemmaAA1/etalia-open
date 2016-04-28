@@ -15,6 +15,8 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    """User serializer"""
+
     photo_url = serializers.URLField(read_only=True, source='photo.name')
 
     class Meta:
@@ -35,6 +37,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
+    """User serializer user in filter side panel"""
+
     photo_url = serializers.URLField(read_only=True, source='photo.name')
     count = serializers.IntegerField(read_only=True)
     name = serializers.SerializerMethodField()
@@ -59,6 +63,7 @@ class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class UserFullSerializer(serializers.HyperlinkedModelSerializer):
+    """User serializer with full representation """
     photo_url = serializers.URLField(read_only=True, source='photo.name')
     user_lib = serializers.HyperlinkedRelatedField(
         read_only=True,
@@ -90,6 +95,8 @@ class UserFullSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserLibPaperSerializer(One2OneNestedLinkSwitchMixin,
                              serializers.HyperlinkedModelSerializer):
+    """UserLibPaper serializer"""
+
     user_lib = serializers.HyperlinkedRelatedField(source='userlib',
                                                    view_name='api:userlib-detail',
                                                    read_only=True)
@@ -116,6 +123,8 @@ class UserLibPaperSerializer(One2OneNestedLinkSwitchMixin,
 
 class UserLibSerializer(One2OneNestedLinkSwitchMixin,
                         serializers.HyperlinkedModelSerializer):
+    """UserLib serializer"""
+
     user = serializers.HyperlinkedRelatedField(view_name='api:user-detail',
                                                read_only=True)
     user_lib_papers = UserLibPaperSerializer(many=True, read_only=True,
@@ -143,6 +152,8 @@ class UserLibSerializer(One2OneNestedLinkSwitchMixin,
 
 class UserLibNestedSerializer(One2OneNestedLinkSwitchMixin,
                               serializers.HyperlinkedModelSerializer):
+    """UserLib nested serializer"""
+
     user_lib_papers = UserLibPaperSerializer(many=True, read_only=True,
                                              source='userlib_paper')
     id = serializers.IntegerField(source='user_id')
@@ -168,6 +179,8 @@ class UserLibNestedSerializer(One2OneNestedLinkSwitchMixin,
 
 class RelationshipSerializer(One2OneNestedLinkSwitchMixin,
                              serializers.HyperlinkedModelSerializer):
+    """Relationship serializer"""
+
     class Meta:
         model = Relationship
         extra_kwargs = {
