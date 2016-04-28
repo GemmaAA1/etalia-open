@@ -16,14 +16,14 @@ from django.utils import timezone
 
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished
-from ..models import Thread, ThreadPost, ThreadComment, ThreadUser
+from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
     THREAD_INVITE_DECLINED, THREAD_INVITE_ACCEPTED
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadCommentNestedSerializer, ThreadFilterSerializer
+    ThreadCommentNestedSerializer, ThreadFilterSerializer, ThreadUserInviteSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
 
 User = get_user_model()
@@ -360,19 +360,12 @@ class ThreadUserViewSet(MultiSerializerMixin,
     * **[GET, POST] /states/**: List of Thread User states
     * **[GET, PUT, PATCH] /states/<id\>/**: Thread User state instance
 
-    **Deprecated**:
-
-    * **[PUT, PATCH] /states/<id\>/join**: User **join** thread
-    * **[PUT, PATCH] /states/<id\>/leave**: User **leave** thread
-    * **[PUT, PATCH] /states/<id\>/pin**: User **pin** thread
-    * **[PUT, PATCH] /states/<id\>/ban**: User **ban** thread
-
     [ref1]: /api/v1/user/users/
     [ref2]: /api/v1/thread/threads/
 
     """
 
-    queryset = ThreadUser.objects.filter()
+    queryset = ThreadUser.objects.all()
     serializer_class = {
         'default': ThreadUserSerializer,
     }
@@ -388,24 +381,6 @@ class ThreadUserViewSet(MultiSerializerMixin,
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-    @detail_route(methods=['put', 'patch'],
-                  permission_classes=(IsNOTThreadMember,))
-    def join(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'join')
-
-    @detail_route(methods=['put', 'patch'],
-                  permission_classes=(IsThreadMember,))
-    def leave(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'leave')
-
-    @detail_route(methods=['put', 'patch'])
-    def pin(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'pin')
-
-    @detail_route(methods=['put', 'patch'])
-    def ban(self, request, pk=None):
-        return self.perform_threaduser_action(request, 'ban')
 
     def perform_threaduser_action(self, request, action):
         """Perform ThreadUser related action (join, pin, etc.)"""
@@ -429,3 +404,37 @@ class ThreadUserViewSet(MultiSerializerMixin,
         #     self.perform_patch_update(serializer, instance)
         #     serializer = self.get_serializer(instance)
         #     return Response(serializer.data)
+
+
+class ThreadUserInviteViewSet(mixins.CreateModelMixin,
+                              mixins.ListModelMixin,
+                              mixins.UpdateModelMixin,
+                              mixins.RetrieveModelMixin,
+                              viewsets.GenericViewSet):
+
+    """
+    Thread from_user-to-to_user Invite
+
+    ### Routes ###
+
+    * **[GET, POST] /invites/**: List of Invite
+    * **[GET, PUT, PATCH] /invites/<id\>/**: Invite
+
+    """
+
+    queryset = ThreadUserInvite.objects.all()
+    serializer_class = ThreadUserInviteSerializer
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,
+                          )
+
+    def get_queryset(self):
+        # to raise proper 403 status code on not allowed access
+        if self.action == 'list':
+            return ThreadUserInvite.objects.filter(
+                Q(from_user=self.request.user) |
+                Q(to_user=self.request.user))
+        return ThreadUserInvite.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(from_user=self.request.user)

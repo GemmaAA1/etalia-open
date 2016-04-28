@@ -179,7 +179,7 @@ class UserLibPaperViewSet(MultiSerializerMixin,
 
 class RelationshipViewSet(viewsets.ModelViewSet):
     """
-    Relationship: between 2 users
+    Relationship between 2 users
 
     ### Routes ###
 
@@ -198,7 +198,7 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     queryset = Relationship.objects.all()
     serializer_class = RelationshipSerializer
     permissions_classes = (permissions.IsAuthenticated,
-                           IsInRelationship)
+                           IsOwner)
 
     def validate_query_params(self):
         for key, props in self.query_params_props.items():

@@ -47,18 +47,6 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
         }
 
 
-class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
-                                 serializers.HyperlinkedRelatedField):
-    """ThreadUserInvite serializer"""
-
-    class Meta:
-        model = ThreadUserInvite
-        extra_kwargs = {
-
-        }
-
-
-
 class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
                            serializers.HyperlinkedModelSerializer):
     """ThreadUser serializer"""
@@ -437,3 +425,60 @@ class ThreadNestedSerializer(serializers.HyperlinkedModelSerializer):
                         context={'request': self.context['request']}).data
                 )
         return posts_list
+
+
+class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
+                                 serializers.HyperlinkedModelSerializer):
+    """ThreadUserInvite serializer"""
+
+    class Meta:
+        model = ThreadUserInvite
+        extra_kwargs = {
+            'link': {'view_name': 'api:threaduserinvite-detail'},
+            'to_user': {'view_name': 'api:user-detail'},
+            'from_user': {'view_name': 'api:user-detail'},
+            'thread': {'view_name': 'api:thread-detail'},
+        }
+        fields = (
+            'link',
+            'id',
+            'thread',
+            'from_user',
+            'to_user',
+            'status',
+        )
+        switch_kwargs = {
+            'to_user': {'serializer': UserSerializer},
+            'from_user': {'serializer': UserSerializer},
+            'thread': {'serializer': ThreadSerializer},
+        }
+
+    def validate_thread(self, value):
+        if value.thread.privacy == THREAD_PRIVATE and \
+                        value.user is not self.context['request'].user:
+            raise serializers.ValidationError(
+                "You cannot invite another user to this thread. "
+                "This thread is private and your are not the owner")
+        if value.thread.published_at is None:
+            raise serializers.ValidationError(
+                "You cannot invite another user to this thread. "
+                "The thread is not yet published.")
+        if self.context['request'].user not in value.members:
+            raise serializers.ValidationError(
+                "You cannot invite another user to this thread. "
+                "Your are not a member of this thread")
+
+        return value
+
+    def validate_from_user(self, value):
+        """from_user must be the current user"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "from_user deserialized and current user are different")
+        return value
+
+    def validate_to_user(self, value):
+        """ Cannot have an invite to yourself, that would be awkward"""
+        if value == self.context['request'].user:
+            raise serializers.ValidationError("to_user cannot be current user")
+        return value

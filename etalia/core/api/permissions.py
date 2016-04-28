@@ -5,7 +5,8 @@ from __future__ import unicode_literals, absolute_import
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
 
-from etalia.threads.models import Thread, ThreadPost, ThreadComment
+from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
+    ThreadUserInvite
 from etalia.users.models import UserLibPaper, Relationship
 
 User = get_user_model()
@@ -78,6 +79,10 @@ class IsOwner(permissions.BasePermission):
             return request.user == obj.userlib.user
         if obj.__class__ == User:
             return request.user == obj
+        if obj.__class__ == ThreadUserInvite:
+            return request.user in [obj.from_user, obj.to_user]
+        if obj.__class__ == Relationship:
+            return request.user == obj.from_user
         return obj.user == request.user
 
 
