@@ -178,6 +178,18 @@ class ThreadIsNotYetPublished(permissions.BasePermission):
         return obj.published_at is None
 
 
+class ThreadIsNotYetPublishedIsOwnerIfDeleteMethod(IsOwner):
+    """
+    Custom permission to only allow owners of an object to edit it
+    GIVEN THAT user is an attribute of the object pointing to owner
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if view.action in ['destroy']:
+            return obj.published_at is None and obj == request.user
+        return True
+
+
 class ThreadIsPublished(permissions.BasePermission):
     """
     Custom permission to check if Thread has yet been published

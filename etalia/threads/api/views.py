@@ -16,7 +16,7 @@ from django.utils import timezone
 
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
-    ThreadIsPublished
+    ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -35,6 +35,7 @@ class ThreadViewSet(MultiSerializerMixin,
                     mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
                     viewsets.GenericViewSet):
     """
     Threads
@@ -86,7 +87,8 @@ class ThreadViewSet(MultiSerializerMixin,
         'list': ['nested'],
     }
     permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOrReadOnly)
+                          IsOwnerOrReadOnly,
+                          ThreadIsNotYetPublishedIsOwnerIfDeleteMethod)
 
     query_params_props = {
         'joined': {'type': int, 'min': 0, 'max': 1},
