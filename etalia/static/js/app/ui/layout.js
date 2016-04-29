@@ -41,18 +41,12 @@ define([
         };
     };
 
-    Layout.prototype.init = function () {
-        var that = this,
-            $body = $('body'),
-            $leftFlap = $(this.config.leftFlap),
-            $leftFlapButton = $(this.config.leftFlapButton),
-            $rightFlap = $(this.config.rightFlap),
-            $rightFlapButton = $(this.config.rightFlapButton),
-            attacheResizeHandler = false;
+    Layout.prototype.initLeftFlap = function () {
+        this.leftFlap = null;
 
-        this.log('Init');
+        var $leftFlap = $(this.config.leftFlap),
+            $leftFlapButton = $(this.config.leftFlapButton);
 
-        // Left Flap
         if ($leftFlap.length) {
             this.log('Left flap found');
             this.leftFlap = new Flap({
@@ -63,12 +57,19 @@ define([
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 992
             });
-            attacheResizeHandler = true;
+            $leftFlapButton.show();
+            this.leftFlap.init();
         } else {
             $leftFlapButton.hide();
         }
+    };
 
-        // Right flap
+    Layout.prototype.initRightFlap = function () {
+        this.rightFlap = null;
+
+        var $rightFlap = $(this.config.rightFlap),
+            $rightFlapButton = $(this.config.rightFlapButton);
+
         if ($rightFlap.length) {
             this.log('Right flap found');
             this.rightFlap = new Flap({
@@ -79,21 +80,31 @@ define([
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 1200
             });
-            attacheResizeHandler = true;
+            $rightFlapButton.show();
+            this.rightFlap.init();
         } else {
             $rightFlapButton.hide();
         }
+    };
+
+    Layout.prototype.init = function () {
+        var that = this,
+            $body = $('body');
+
+        this.log('Init');
+
+        // Flaps
+        this.initLeftFlap();
+        this.initRightFlap();
 
         // Resize handler
-        if (attacheResizeHandler) {
-            $(window).on('resize', function () {
-                if (that.resizeTimeout) {
-                    clearTimeout(that.resizeTimeout);
-                }
-                that.resizeTimeout = setTimeout(that.resizeHandler, 100);
-            });
-            that.resizeHandler();
-        }
+        $(window).on('resize', function () {
+            if (that.resizeTimeout) {
+                clearTimeout(that.resizeTimeout);
+            }
+            that.resizeTimeout = setTimeout(that.resizeHandler, 100);
+        });
+        that.resizeHandler();
 
         // Profile dropdown
         var $toggleProfile = $('#toggle-profile'),

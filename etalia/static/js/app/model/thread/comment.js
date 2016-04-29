@@ -20,7 +20,11 @@ define([
                 relatedModel: App.Model.User,
                 includeInJSON: 'link'
             }
-        ]
+        ],
+
+        isOwner: function (user) {
+            return this.get('user').get('id') === user.get('id');
+        }
     });
 
     App.Model.Comment.createNew = function() {

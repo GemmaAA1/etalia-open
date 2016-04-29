@@ -1,6 +1,6 @@
 define([
     'app',
-    'text!app/templates/thread/comment/thumb.html',
+    'text!app/templates/thread/comment/thumb.hbs',
     'app/model/thread/comment',
     'app/view/user/thumb',
     'app/view/thread/comment/form'
@@ -59,7 +59,11 @@ define([
         render: function () {
             App.log('CommentThumbView::render');
 
-            this.$el.html(this.template(this.model.attributes));
+            var attributes = App._.extend(this.model.attributes, {
+                is_owner: this.model.isOwner(App.getCurrentUser())
+            });
+
+            this.$el.html(this.template(attributes));
 
             this.pushSubView(
                 App.View.User.Thumb.create({

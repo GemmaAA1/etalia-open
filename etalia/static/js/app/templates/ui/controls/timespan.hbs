@@ -1,0 +1,15 @@
+<button id="toggle-timespan" class="btn-circle" type="button">
+    <span class="eai eai-clock"></span>
+        <span id="timespan-selection" class="timespan-value">{{value}}</span>
+</button>
+<div class="choices">
+    <ul>
+        {{#each values}}
+        <li>
+            <a href="javascript: void(0)" data-value="{{@key}}">
+                <span class="timespan-value">{{icon}}</span> {{{html}}}
+            </a>
+        </li>
+        {{/each}}
+    </ul>
+</div>

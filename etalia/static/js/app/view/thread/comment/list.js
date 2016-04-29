@@ -1,6 +1,6 @@
 define([
     'app',
-    'text!app/templates/thread/comment/list.html',
+    'text!app/templates/thread/comment/list.hbs',
     'app/view/thread/comment/thumb',
     'app/view/thread/comment/form'
 ], function (App, template) {
@@ -59,7 +59,7 @@ define([
             App.log('CommentListView::render');
 
             this.$el.html(this.template({
-                isMember: this.post.get('thread').isMember(App.getCurrentUser())
+                is_member: this.post.get('thread').isMember(App.getCurrentUser())
             }));
 
             var that = this,

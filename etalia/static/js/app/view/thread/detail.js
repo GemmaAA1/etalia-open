@@ -1,7 +1,7 @@
 define([
     'app',
-    'text!app/templates/thread/detail.html',
-    'app/view/modal',
+    'text!app/templates/thread/detail.hbs',
+    'app/view/ui/modal',
     'app/view/user/thumb',
     'app/view/user/list',
     'app/view/thread/post/list',
@@ -39,7 +39,7 @@ define([
             var form = App.View.Thread.EditForm.create({
                     model: this.model
                 }),
-                modal = new App.View.Modal({
+                modal = new App.View.Ui.Modal({
                     title: 'Edit your thread',
                     content: form,
                     footer: false
@@ -110,22 +110,22 @@ define([
         onJoinClick: function(e) {
             e.preventDefault();
 
-            var that = this;
-            this.model.getState()
+            var model = this.model;
+            model.getState()
                 .join()
-                .then(function() {
-                    that.model.fetch();
+                .done(function() {
+                    model.fetch();
                 });
         },
 
         onLeaveClick: function(e) {
             e.preventDefault();
 
-            var that = this;
-            this.model.getState()
+            var model = this.model;
+            model.getState()
                 .leave()
-                .then(function() {
-                    that.model.fetch();
+                .done(function() {
+                    model.fetch();
                 });
         },
 

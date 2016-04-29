@@ -45,10 +45,7 @@ define([
                 throw 'Unexpected watch state.';
             }
 
-            this.set({watch: watch});
-            // TODO this.save({watch: watch});
-
-            return this;
+            return this.save({watch: watch}, {wait: true});
         },
 
         toggleBanned: function() {
@@ -62,63 +59,39 @@ define([
                 throw 'Unexpected watch state.';
             }
 
-            this.set({watch: watch});
-
-            return this;
+            return this.save({watch: watch}, {wait: true});
         },
 
         join: function() {
-            return this._patchAction('join');
+            var participate = this.get('participate');
+
+            if (participate === null || App.Model.State.PARTICIPATE_LEFT) {
+                participate = App.Model.State.PARTICIPATE_JOINED;
+            } else {
+                throw 'Unexpected participate state.';
+            }
+
+            return this.save({participate: participate}, {wait: true});
         },
 
         leave: function() {
-            return this._patchAction('leave');
-        },
+            var participate = this.get('participate');
 
-        _patchAction: function(action) {
-            var model = this;
+            if (App.Model.State.PARTICIPATE_JOINED) {
+                participate = App.Model.State.PARTICIPATE_LEFT;
+            } else {
+                throw 'Unexpected participate state.';
+            }
 
-            return new Promise(function(resolve, reject) {
-                function doPatch() {
-                    var options = {
-                        type: 'PATCH',
-                        dataType: 'json',
-                        url: App._.result(model, 'url') + '/' + action
-                    };
-                    App.Backbone.ajax(options)
-                        .done(function(resp) {
-                            var serverAttrs = options.parse ? model.parse(resp, options) : resp;
-                            if (!model.set(serverAttrs, options)) return false;
-                            model.trigger('sync', model, resp, options);
-                            resolve(model);
-                        })
-                        .fail(function() {
-                            reject('Failed to patch state with action "' + action + '".');
-                        });
-                }
-
-                if (model.isNew()) {
-                    model.save({}, {
-                        wait:true,
-                        success: function() {
-                            doPatch();
-                        },
-                        error: function() {
-                            reject('Failed to create state.');
-                        }
-                    });
-                } else {
-                    doPatch();
-                }
-            });
+            return this.save({participate: participate}, {wait: true});
         }
     });
 
     App.Model.State.WATCH_PINNED = 1;
     App.Model.State.WATCH_BANNED = 2;
 
-    App.Model.State.PARTICIPATE_LEFT = 1;
-    App.Model.State.PARTICIPATE_JOINED = 2;
+    App.Model.State.PARTICIPATE_JOINED = 1;
+    App.Model.State.PARTICIPATE_LEFT = 2;
 
     return App.Model.State;
 });

@@ -1,4 +1,8 @@
-define(['app', 'bootstrap'], function (App) {
+define([
+    'app',
+    'text!app/templates/ui/modal.hbs',
+    'bootstrap'
+], function (App, template) {
 
     var _ = App._,
         defaultButton = {
@@ -17,22 +21,11 @@ define(['app', 'bootstrap'], function (App) {
             }
         };
 
-    App.View.Modal = App.Backbone.View.extend({
+    App.View.Ui = App.View.Ui || {};
 
-        template: App.Handlebars.compile('\
-            <div class="modal-dialog">\
-                <div class="modal-content">\
-                    <div class="modal-header">\
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
-                            <span aria-hidden="true">&times;</span>\
-                            </button>\
-                        <h4 class="modal-title">{{title}}</h4>\
-                    </div>\
-                    <div class="modal-body"></div>\
-                    {{#if footer}}<div class="modal-footer"></div>{{/if}}\
-                </div>\
-            </div>\
-        '),
+    App.View.Ui.Modal = App.Backbone.View.extend({
+
+        template: App.Handlebars.compile(template),
 
         buttonTemplate: App.Handlebars.compile(
             '<button{{#each attr}} {{@key}}="{{this}}"{{/each}}>{{label}}</button>'
@@ -119,7 +112,7 @@ define(['app', 'bootstrap'], function (App) {
         }
     });
 
-    App.View.Modal.defaultButton = closeButton;
+    App.View.Ui.Modal.defaultButton = closeButton;
 
-    return App.View.Modal;
+    return App.View.Ui.Modal;
 });
