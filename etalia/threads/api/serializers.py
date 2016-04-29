@@ -86,8 +86,8 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
             raise serializers.ValidationError("Thread is not yet published")
         if value.privacy == THREAD_PRIVATE:
             # User must have received an invite to interact with thread or be the owner
-            if not ThreadUserInvite.objects.exists(thread=value,
-                                                   to_user=self.context['request'].user) \
+            if not ThreadUserInvite.objects.filter(thread=value,
+                                                   to_user=self.context['request'].user).exists() \
                     or value.user == self.context['request'].user:
                 raise serializers.ValidationError("Thread is private. You need an invite to join")
         return value
