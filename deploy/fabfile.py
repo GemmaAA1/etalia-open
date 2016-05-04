@@ -889,7 +889,6 @@ def deploy():
         reboot_instance()
     else:
         sleep(5)
-        restart_all()
 
 
 @task
