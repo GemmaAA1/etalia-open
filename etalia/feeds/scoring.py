@@ -192,7 +192,7 @@ class Scoring(object):
         return (b0 + (1 - b0) / (1 + np.exp(- (day_lapse - d0) * k0))) * \
                (b1 + (1 - b1) / (1 + np.exp(- (score - d1) * k1)))
 
-    def build_date_vec(self):
+    def build_date_vec(self, logit=False):
         """Build created_date_vec an array of weights related to created_date
         ordered by seed_pks"""
         # init
@@ -206,18 +206,24 @@ class Scoring(object):
         # Convert date into integer number of days from now
         created_date_int = [(pk, self.convert_date(v)) for pk, v in
                             created_date]
-
-        # logist parameter
-        delay = - self.stream.user.settings.stream_roll_back_deltatime * 30
-        k = 0.1
-        baseline = 0
         created_date_int_d = dict(created_date_int)
-        for pk in self.seed_pks:
-            w = self.logist_weight(created_date_int_d[pk],
-                                   delay=delay,
-                                   k=k,
-                                   baseline=baseline)
-            self.created_date_vec.append(w)
+        delay = - self.stream.user.settings.stream_roll_back_deltatime * 30
+        if logit:   # sigmoid weighting
+            # logist parameter
+            k = 0.1
+            baseline = 0
+            for pk in self.seed_pks:
+                w = self.logist_weight(created_date_int_d[pk],
+                                       delay=delay,
+                                       k=k,
+                                       baseline=baseline)
+                self.created_date_vec.append(w)
+        else:   # step function
+            for pk in self.seed_pks:
+                if created_date_int_d[pk] >= delay:
+                    self.created_date_vec.append(1)
+                else:
+                    self.created_date_vec.append(0)
 
         return self.created_date_vec
 
@@ -240,7 +246,7 @@ class Scoring(object):
 
         # build time array
         if time_weight:
-            date_vec = self.build_date_vec()
+            date_vec = self.build_date_vec(logit=False)
         else:
             date_vec = np.ones((len(self.seed_data, )))
 
@@ -370,7 +376,7 @@ class ContentBasedScoring(Scoring):
 
         # build time array
         if time_weight:
-            date_vec = self.build_date_vec()
+            date_vec = self.build_date_vec(logit=False)
         else:
             date_vec = np.ones((len(self.seed_data, )))
 
@@ -383,7 +389,7 @@ class ContentBasedScoring(Scoring):
         # build journal mat
         seed_jour_mat = self.build_jour_utility_mat(self.seed_data)
 
-        # average with time-stampsn weights
+        # average with time-stamps weights
         seed_vec_av = np.average(seed_vec_mat, weights=date_vec, axis=0)
         seed_auth_av = np.average(seed_auth_mat, weights=date_vec, axis=0)
         seed_jour_av = np.average(seed_jour_mat, weights=date_vec, axis=0)
@@ -394,20 +400,21 @@ class ContentBasedScoring(Scoring):
         mean_distance = np.mean(auto_distances)
 
         # Squashing journal using softmax
-        # seed_jour_av = np.exp(seed_jour_av) / np.sum(np.exp(seed_jour_av))
+        seed_jour_av = np.exp(seed_jour_av) / np.sum(np.exp(seed_jour_av))
+        # # Squashing authors using softmax
+        seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
+        # seed_jour_av = seed_jour_av / np.sum(seed_jour_av) * mean_distance
         # # Squashing authors using softmax
         # seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
-        seed_jour_av = seed_jour_av / np.sum(seed_jour_av) * mean_distance
-        # # Squashing authors using softmax
-        # seed_auth_av = np.exp(seed_auth_av) / np.sum(np.exp(seed_auth_av))
-        seed_auth_av = seed_auth_av / np.sum(seed_auth_av) * mean_distance
+        # seed_auth_av = seed_auth_av / np.sum(seed_auth_av) * mean_distance
+
+        # rescaling in the range that makes sense...
+        if seed_jour_av.size:
+            seed_jour_av = seed_jour_av / np.max(seed_jour_av) * 0.2
+        if seed_auth_av.size:
+            seed_auth_av = seed_auth_av / np.max(seed_auth_av) * 0.2
 
         # concatenate with weight
-        # self.profile = np.hstack((self.vec_w * seed_vec_av,
-        #                           self.auth_w * seed_auth_av *
-        #                           seed_vec_av.shape[0],
-        #                           self.jour_w * seed_jour_av *
-        #                           seed_vec_av.shape[0]))
         self.profile = np.hstack((self.vec_w * seed_vec_av,
                                   self.auth_w * seed_auth_av,
                                   self.jour_w * seed_jour_av))
