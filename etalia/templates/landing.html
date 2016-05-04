@@ -221,7 +221,8 @@
                 <a href="{% url 'core:terms_privacy' %}">Privacy Policy</a>
             </li>
         </ul>
-        <p>&copy; 2015 etalia All rights reserved.</p>
+        <p>Copyright &copy; 2015-{% now "Y" %} Etalia.io. <br>
+            All rights reserved. version {{ version }}</p>
     </div>
 </div>
 {% endspaceless %}

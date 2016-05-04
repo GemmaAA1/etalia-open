@@ -140,6 +140,8 @@ def reset_stream_view(request, name):
                            restrict_journal=False)
         data = {'display_update_modal': True,
                 'message': 'Stream reset launched.'}
+        # reset stream session
+        request.session.pop('control_stream', None)
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')
@@ -152,6 +154,8 @@ def update_stream_view(request, name):
         update_stream.delay(request.user.pk, stream_name=stream_name)
         data = {'display_update_modal': True,
                 'message': 'Stream update launched.'}
+        # reset stream session
+        request.session.pop('control_stream', None)
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')
@@ -164,6 +168,8 @@ def update_trend_view(request, name):
         update_trend.delay(request.user.pk, trend_name=trend_name)
         data = {'display_update_modal': True,
                 'message': 'Trend update launched.'}
+        # reset stream session
+        request.session.pop('control_trend', None)
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')
@@ -176,6 +182,8 @@ def reset_trend_view(request, name):
         reset_trend.delay(request.user.pk, trend_name=trend_name)
         data = {'display_update_modal': True,
                 'message': 'Trend update launched.'}
+        # reset stream session
+        request.session.pop('control_trend', None)
         return JsonResponse(data)
     else:
         return redirect('feeds:stream')

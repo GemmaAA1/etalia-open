@@ -488,15 +488,15 @@ class UserSettings(TimeStampedModel):
                                         choices=STREAM_METHODS)
 
     # author weight
-    stream_author_weight = models.FloatField(default=0.1,
+    stream_author_weight = models.FloatField(default=0.5,
                                              verbose_name='Author weight')
 
     # journal weight
-    stream_journal_weight = models.FloatField(default=0.1,
+    stream_journal_weight = models.FloatField(default=0.5,
                                               verbose_name='Journal weight')
 
     # vector weight
-    stream_vector_weight = models.FloatField(default=1.0,
+    stream_vector_weight = models.FloatField(default=0.5,
                                              verbose_name='Content weight')
 
     # delta-time in MONTHS to roll back stream
@@ -542,11 +542,11 @@ class UserSettings(TimeStampedModel):
     trend_method_args = JSONField(null=True, default=None, blank=True)
 
     # doc vector weight
-    trend_doc_weight = models.FloatField(default=1.0,
+    trend_doc_weight = models.FloatField(default=0.5,
                                          verbose_name='Content weight')
 
     # altmetric vector weight
-    trend_altmetric_weight = models.FloatField(default=1.0,
+    trend_altmetric_weight = models.FloatField(default=0.5,
                                                verbose_name='Altmetric weight')
 
     # Email digest

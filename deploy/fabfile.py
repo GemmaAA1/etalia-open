@@ -385,6 +385,20 @@ def update_static_files():
 
 @task
 @roles('apps')
+def compiles_assets():
+    """Install requirements and compiled assets"""
+    if not files.exists('/usr/bin/npm'):
+        # install dependencies
+        run('curl -sL https://deb.nodesource.com/setup | sudo bash -')
+        fabtools.require.deb.packages(['nodejs', ])
+        run_as_root('npm install -g gulp')
+        run('npm install gulp --save-dev')
+        run_as_root('npm install -g bower')
+    run_as_root('cd {0} && gulp'.format(env.source_dir))
+
+
+@task
+@roles('apps')
 def create_ssl_certificates():
     # Require some Ubuntu packages
     fabtools.require.deb.packages(['openssl'], update=True)
@@ -850,6 +864,7 @@ def deploy():
 
     # apps related
     if 'apps' in roles:
+        compiles_assets()
         update_gunicorn_conf()
         update_nginx_conf()
         reload_nginx()
