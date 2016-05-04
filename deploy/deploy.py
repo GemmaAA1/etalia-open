@@ -96,4 +96,4 @@ if __name__ == '__main__':
                        channel="#general",
                        username="deployment-bot",
                        web_hook_url=SLACK_WEB_HOOK)
-        call(['fab', 'create_amis:{stack}'])
+        call(['fab', 'create_amis:{stack}'.format(stack=args.stack)])

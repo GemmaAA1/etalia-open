@@ -43,18 +43,23 @@ def get_tags_from_spot_request():
 
     # Generate unique name
     # grab base name from ami
-    base_name = ami.name
-    base_name = base_name.replace('.', '-')
-    base_name = base_name.replace('/', '-')
-    # fetch all current name
-    rs = conn.get_all_reservations()
-    inst_names = [r.instances[0].tags.get('Name') for r in rs]
-    # Compare names and increment
-    count = 0
-    inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
-    while inst_name in inst_names:
-        count += 1
+    if 'redis' not in ami.name:
+        base_name = ami.name
+        base_name = base_name.replace('.', '-')
+        base_name = base_name.replace('/', '-')
+        # fetch all current name
+        rs = conn.get_all_reservations()
+        inst_names = [r.instances[0].tags.get('Name') for r in rs]
+        # Compare names and increment
+        count = 0
         inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
+        while inst_name in inst_names:
+            count += 1
+            inst_name = '{base}.id{id:03d}'.format(base=base_name, id=count)
+
+    else:
+        inst_name = 'redis'
+
     inst.add_tags({'Name': inst_name})
 
 
