@@ -38,7 +38,6 @@ def send_deploy_version_message(stack, done=False):
                        username="deployment-bot",
                        web_hook_url=SLACK_WEB_HOOK)
 
-
 def get_version(package):
     """
     Return package version as listed in `__version__` in `init.py`.
@@ -58,16 +57,11 @@ if __name__ == '__main__':
     parser.add_argument("stack", help="(str) stack name to be deploy", type=str)
     parser.add_argument("-p", "--parallel", help="deploy in parallel", action="store_true")
     parser.add_argument("-s", "--slack", help="verbose to Slack", action="store_true")
-    parser.add_argument("-np", "--no-push", help="do not push to git", action="store_true",
-                        dest='no_push')
     parser.add_argument("-a", "--amis", help="create AMIs", action="store_true")
     args = parser.parse_args()
 
     if args.slack:
         send_deploy_version_message(args.stack)
-
-    if not args.no_push:
-        checkout_master()
 
     if args.parallel:
         # Go on maintenance

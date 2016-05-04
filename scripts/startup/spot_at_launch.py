@@ -32,15 +32,17 @@ def get_tags_from_spot_request():
     spot_id = inst.spot_instance_request_id
     # get tags from spot
     spot_request = conn.get_all_spot_instance_requests(request_ids=[spot_id])[0]
-    tags = spot_request.tags
+
+    # Get ami
+    ami = conn.get_all_images(image_ids=[inst.image_id])[0]
 
     # Add tags to instance
+    tags = ami.tags
     tags.pop('Name')
     inst.add_tags(tags)
 
     # Generate unique name
     # grab base name from ami
-    ami = conn.get_all_images(image_ids=[inst.image_id])[0]
     base_name = ami.name
     # fetch all current name
     rs = conn.get_all_reservations()
@@ -55,7 +57,8 @@ def get_tags_from_spot_request():
 
 
 if __name__ == '__main__':
-    get_tags_from_spot_request()
-    call(["sudo", "reboot"])
+    if not os.path.exists('/home/ubuntu/production/source/scripts/startup/spot_at_launch_has_run'):
+        get_tags_from_spot_request()
+        call(["sudo", "reboot"])
 
 
