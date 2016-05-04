@@ -47,13 +47,9 @@ def get_version(package):
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
 
-def checkout_master_and_push_recompiled_assets():
+def checkout_master():
     # Git checkout master
     call(["git", "checkout", "master"])
-    # Recompiled assets and push to repo
-    call('gulp')
-    call(['git', 'commit', '-am', 'recompiled assets prior deployment'])
-    call(['git', 'push'])
 
 
 if __name__ == '__main__':
@@ -71,7 +67,7 @@ if __name__ == '__main__':
         send_deploy_version_message(args.stack)
 
     if not args.no_push:
-        checkout_master_and_push_recompiled_assets()
+        checkout_master()
 
     if args.parallel:
         # Go on maintenance
