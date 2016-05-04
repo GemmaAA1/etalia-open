@@ -610,16 +610,14 @@ def update_hosts_file(stack=STACK):
 def update_rc_local():
     rc_local_path = '/etc/rc.local'
     insert =\
-        '# Run script for auto-tagging instance from ami in spot requests\n'\
+        '# Run script for auto-tagging instance from ami in spot requests\n' \
         'chmod o+x /home/ubuntu/production/source/scripts/startup/spot_at_launch.py\n'\
         '/home/ubuntu/production/source/scripts/startup/spot_at_launch.py\n'\
-        'touch /home/ubuntu/production/source/scripts/startup/spot_at_launch_has_run\n'
-
+        'touch /home/ubuntu/production/source/scripts/startup/spot_at_launch_has_run\n'\
+        'exit 0'
     if not files.contains(rc_local_path, 'spot_at_launch.py'):
-        run_as_root("sed -i '$i{insert}' {file}".format(
-            insert=insert,
-            file=rc_local_path)
-        )
+        run_as_root("sed -i 's/exit 0//' {file}".format(file=rc_local_path))
+        files.append(rc_local_path, insert, use_sudo=True)
 
 
 # ------------------------------------------------------------------------------
@@ -885,6 +883,10 @@ def deploy():
         update_nginx_conf()
         reload_nginx()
         update_static_files()
+
+    # spot related
+    if 'spot' in roles:
+        update_rc_local()
 
     # master
     if 'master' in roles:
