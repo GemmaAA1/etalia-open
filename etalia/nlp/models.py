@@ -956,8 +956,9 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             "ON nlp_papervectors.paper_id=library_paper.id "
             "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
             "    AND model_id=%s"
-            "    AND is_trusted=TRUE "
-            "    AND abstract <> ''"
+            "    AND is_trusted=TRUE"
+            "    AND abstract<>''"
+            "    AND vector IS NOT NULL "
             "ORDER BY date ASC", (a_year_ago, self.model.pk)))
 
         data_journal = dict(JournalVectors.objects\
@@ -971,7 +972,8 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.index2journalpk = []
         self.data = np.zeros((nb_items, vec_size))
         for i, dat in enumerate(data):
-            if dat.vector:
+            vector = dat.vector
+            if vector:
                 self.date.append(dat.date)
                 # store paper pk
                 self.index2pk.append(dat.paper_id)
@@ -1013,9 +1015,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             "ON nlp_papervectors.paper_id=library_paper.id "
             "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
             "    AND model_id=%s"
-            "    AND is_trusted=TRUE "
+            "    AND is_trusted=TRUE"
             "    AND abstract <> ''"
             "    AND nlp_papervectors.paper_id NOT IN %s"
+            "    AND vector IS NOT NULL "
             "ORDER BY date ASC", (a_year_ago, self.model.pk, tuple(self.index2pk))))
 
         data_journal = dict(JournalVectors.objects\
