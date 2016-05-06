@@ -12,7 +12,8 @@ from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
-from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE
+from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
+    THREAD_JOINED, THREAD_LEFT
 
 User = get_user_model()
 
@@ -80,6 +81,13 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
             raise serializers.ValidationError(
                 "user deserialized and user logged are different")
         return value
+
+    def validate_participate(self, value):
+        if self.initial_data:
+            if value == THREAD_LEFT and \
+                            self.initial_data['participate'] is not THREAD_JOINED:
+                raise serializers.ValidationError(
+                    "You cannot leave a thread that you have not joined")
 
     def validate_thread(self, value):
         if not value.published_at:
