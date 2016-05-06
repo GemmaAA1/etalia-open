@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 from rest_framework import serializers
 
 from ..models import Paper, Journal, Author
+from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 
 
 class JournalSerializer(serializers.HyperlinkedModelSerializer):
@@ -39,7 +40,8 @@ class AuthorSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class PaperSerializer(serializers.HyperlinkedModelSerializer):
+class PaperSerializer(One2OneNestedLinkSwitchMixin,
+                      serializers.HyperlinkedModelSerializer):
     """Paper serializer"""
 
     class Meta:
@@ -65,32 +67,17 @@ class PaperSerializer(serializers.HyperlinkedModelSerializer):
         read_only_fields = (
             '__all__',
         )
+        switch_kwargs = {
+            'journal': {'serializer': JournalSerializer},
+        }
 
 
-class PaperNestedSerializer(serializers.HyperlinkedModelSerializer):
+class PaperNestedSerializer(PaperSerializer):
     """Paper nested serializer"""
 
     authors = AuthorSerializer(many=True, read_only=True)
-    journal = JournalSerializer(many=False, read_only=True)
 
-    class Meta:
-        model = Paper
-        extra_kwargs = {
-            'link': {'view_name': 'api:paper-detail'},
-        }
-        fields = (
-            'id',
-            'link',
-            'id_doi',
-            'id_pmi',
-            'id_arx',
-            'id_pii',
-            'id_oth',
-            'title',
-            'journal',
-            'authors',
-            'url'
-        )
+    class Meta(PaperSerializer.Meta):
         read_only_fields = (
             '__all__',
         )

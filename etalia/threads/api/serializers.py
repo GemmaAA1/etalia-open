@@ -49,196 +49,6 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
         }
 
 
-class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
-                           serializers.HyperlinkedModelSerializer):
-    """ThreadUser serializer"""
-    class Meta:
-        model = ThreadUser
-        extra_kwargs = {
-            'link': {'view_name': 'api:threaduser-detail'},
-            'user': {'view_name': 'api:user-detail'},
-            'thread': {'view_name': 'api:thread-detail'},
-        }
-        fields = (
-            'id',
-            'link',
-            'user',
-            'thread',
-            'watch',
-            'participate'
-        )
-        read_only_fields = (
-            'id',
-            'link',
-        )
-        switch_kwargs = {
-            'user': {'serializer': UserSerializer},
-        }
-
-    def validate_user(self, value):
-        """User passed is same as user login"""
-        if not value == self.context['request'].user:
-            raise serializers.ValidationError(
-                "user deserialized and user logged are different")
-        return value
-
-    def validate_participate(self, value):
-        if self.initial_data:
-            if value == THREAD_LEFT and \
-                            self.initial_data['participate'] is not THREAD_JOINED:
-                raise serializers.ValidationError(
-                    "You cannot leave a thread that you have not joined")
-
-    def validate_thread(self, value):
-        if not value.published_at:
-            raise serializers.ValidationError("Thread is not yet published")
-        if value.privacy == THREAD_PRIVATE:
-            # User must have received an invite to interact with thread or be the owner
-            if not ThreadUserInvite.objects.filter(thread=value,
-                                                   to_user=self.context['request'].user).exists() \
-                    or value.user == self.context['request'].user:
-                raise serializers.ValidationError("Thread is private. You need an invite to join")
-        return value
-
-
-class ThreadCommentSerializer(One2OneNestedLinkSwitchMixin,
-                              serializers.HyperlinkedModelSerializer):
-    """ThreadComment serializer"""
-    class Meta:
-        model = ThreadComment
-        extra_kwargs = {
-            'link': {'view_name': 'api:threadcomment-detail'},
-            'user': {'view_name': 'api:user-detail'},
-            'post': {'view_name': 'api:threadpost-detail'}
-        }
-        fields = (
-            'id',
-            'link',
-            'user',
-            'post',
-            'content',
-            'created',
-            'modified',
-        )
-        read_only_fields = (
-            'id',
-            'link',
-            'created',
-            'modified')
-
-        switch_kwargs = {
-            'user': {'serializer': UserSerializer},
-        }
-
-    def validate_user(self, value):
-        """User passed is same as user login"""
-        if not value == self.context['request'].user:
-            raise serializers.ValidationError(
-                "user deserialized and user loged in are different")
-        return value
-
-    def validate(self, data):
-        """User is a member of thread"""
-        post = data['post']
-        if not self.context['request'].user in post.thread.members:
-            raise serializers.ValidationError(
-                "user is not a member of this thread")
-        return data
-
-
-class ThreadCommentNestedSerializer(serializers.HyperlinkedModelSerializer):
-    """ThreadComment nested serializer"""
-
-    user = UserSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = ThreadComment
-        extra_kwargs = {
-            'link': {'view_name': 'api:threadcomment-detail'},
-        }
-        fields = (
-            'id',
-            'link',
-            'user',
-            'content',
-            'created',
-            'modified',
-        )
-        read_only_fields = (
-            '__all__'
-        )
-
-
-class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
-                           serializers.HyperlinkedModelSerializer):
-    """ThreadPost serializer"""
-    class Meta:
-        model = ThreadPost
-        extra_kwargs = {
-            'link': {'view_name': 'api:threadpost-detail'},
-            'comments': {'view_name': 'api:threadcomment-detail'},
-            'user': {'view_name': 'api:user-detail', 'required': True},
-            'thread': {'view_name': 'api:thread-detail'}
-        }
-        fields = (
-            'id',
-            'link',
-            'thread',
-            'user',
-            'content',
-            'created',
-            'modified',
-            'comments')
-        read_only_fields = (
-            'id',
-            'link',
-            'created',
-            'modified',
-            'comments')
-
-        switch_kwargs = {
-            'user': {'serializer': UserSerializer}
-        }
-
-    def validate_user(self, value):
-        """User passed is same as user login"""
-        if not value == self.context['request'].user:
-            raise serializers.ValidationError(
-                "user deserialized and user logged in are different")
-        return value
-
-    def validate(self, data):
-        """User is a member of thread"""
-        thread = data['thread']
-        if not self.context['request'].user in thread.members:
-            raise serializers.ValidationError(
-                "user is not a member of this thread")
-        return data
-
-
-class ThreadPostNestedSerializer(serializers.HyperlinkedModelSerializer):
-    """ThreadPost nested serializer"""
-
-    comments = ThreadCommentNestedSerializer(many=True, read_only=True)
-    user = UserSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = ThreadPost
-        extra_kwargs = {
-            'link': {'view_name': 'api:threadpost-detail'},
-        }
-        fields = (
-            'id',
-            'link',
-            'user',
-            'content',
-            'created',
-            'modified',
-            'comments')
-        read_only_fields = (
-            '__all__')
-
-
 class ThreadSerializer(One2OneNestedLinkSwitchMixin,
                        serializers.HyperlinkedModelSerializer):
     """Thread serializer"""
@@ -284,7 +94,8 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
             'user': {'serializer': UserSerializer},
             'paper': {'serializer': PaperNestedSerializer,
                       'queryset': 'get_paper_queryset',
-                      'allow_null': True}
+                      'allow_null': True,
+                      }
         }
 
     def get_paper_queryset(self):
@@ -294,9 +105,17 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
         """Get state based on ThreadUser instance if exists"""
         threaduser = obj.state(self.context['request'].user)
         if threaduser:
-            return ThreadUserSerializer(
-                instance=threaduser,
-                context={'request': self.context['request']}).data
+            if self.one2one_nested:
+                return ThreadUserSerializer(
+                    instance=threaduser,
+                    context={'request': self.context['request']},
+                    one2one_nested=False
+                ).data
+            else:
+                return reverse('api:threaduser-detail',
+                               kwargs={'pk': threaduser.id},
+                               request=self.context.get('request', None),
+                               format=self.context.get('format', None))
         return None
 
     def get_members(self, obj):
@@ -308,16 +127,16 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
                 members_urls.append(
                     reverse('api:user-detail',
                             kwargs={'pk': member.id},
-                            request=self.context['request'],
-                            format=self.context['format'])
+                            request=self.context.get('request', None),
+                            format=self.context.get('format', None))
                 )
         else:
             for member in members[:settings.MAX_MEMBERS_NOT_JOINED]:
                 members_urls.append(
                     reverse('api:user-detail',
                             kwargs={'pk': member.id},
-                            request=self.context['request'],
-                            format=self.context['format'])
+                            request=self.context.get('request', None),
+                            format=self.context.get('format', None))
                 )
         return members_urls
 
@@ -329,8 +148,8 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
                 posts_urls.append(
                     reverse('api:threadpost-detail',
                             kwargs={'pk': post.id},
-                            request=self.context['request'],
-                            format=self.context['format'])
+                            request=self.context.get('request', None),
+                            format=self.context.get('format', None))
                 )
         return posts_urls
 
@@ -357,51 +176,181 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
         return data
 
 
-class ThreadNestedSerializer(serializers.HyperlinkedModelSerializer):
-    """Thread nested serializer"""
-
-    state = serializers.SerializerMethodField()
-    members = serializers.SerializerMethodField()
-    posts = serializers.SerializerMethodField()
-    user = UserSerializer(many=False, read_only=True)
-    paper = PaperNestedSerializer(many=False, read_only=True)
+class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
+                           serializers.HyperlinkedModelSerializer):
+    """ThreadUser serializer"""
 
     class Meta:
-        model = Thread
+        model = ThreadUser
         extra_kwargs = {
-            'link': {'view_name': 'api:thread-detail'},
+            'link': {'view_name': 'api:threaduser-detail'},
             'user': {'view_name': 'api:user-detail'},
-            'paper': {'view_name': 'api:paper-detail'},
-            'posts': {'view_name': 'api:threadpost-detail'},
+            'thread': {'view_name': 'api:thread-detail'},
         }
         fields = (
             'id',
             'link',
             'user',
-            'type',
-            'privacy',
-            'title',
+            'thread',
+            'watch',
+            'participate'
+        )
+        read_only_fields = (
+            'id',
+            'link',
+        )
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer,
+                     'one2one_nested': False},
+            'thread': {'serializer': ThreadSerializer,
+                       'one2one_nested': False},
+        }
+
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user logged are different")
+        return value
+
+    def validate_participate(self, value):
+        if self.initial_data:
+            if value == THREAD_LEFT and \
+                            self.initial_data['participate'] is not THREAD_JOINED:
+                raise serializers.ValidationError(
+                    "You cannot leave a thread that you have not joined")
+
+    def validate_thread(self, value):
+        if not value.published_at:
+            raise serializers.ValidationError("Thread is not yet published")
+        if value.privacy == THREAD_PRIVATE:
+            # User must have received an invite to interact with thread or be the owner
+            if not ThreadUserInvite.objects.filter(thread=value,
+                                                   to_user=self.context['request'].user).exists() \
+                    or value.user == self.context['request'].user:
+                raise serializers.ValidationError("Thread is private. You need an invite to join")
+        return value
+
+
+class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
+                           serializers.HyperlinkedModelSerializer):
+    """ThreadPost serializer"""
+    class Meta:
+        model = ThreadPost
+        extra_kwargs = {
+            'link': {'view_name': 'api:threadpost-detail'},
+            'comments': {'view_name': 'api:threadcomment-detail'},
+            'user': {'view_name': 'api:user-detail', 'required': True},
+            'thread': {'view_name': 'api:thread-detail'}
+        }
+        fields = (
+            'id',
+            'link',
+            'thread',
+            'user',
             'content',
-            'paper',
-            'state',
-            'members',
-            'posts',
             'created',
             'modified',
-            'published_at'
+            'comments')
+        read_only_fields = (
+            'id',
+            'link',
+            'created',
+            'modified',
+            'comments')
+
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer},
+            'thread': {'serializer': ThreadSerializer,
+                       'one2one_nested': False}
+        }
+
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user logged in are different")
+        return value
+
+    def validate(self, data):
+        """User is a member of thread"""
+        thread = data['thread']
+        if not self.context['request'].user in thread.members:
+            raise serializers.ValidationError(
+                "user is not a member of this thread")
+        return data
+
+
+class ThreadCommentSerializer(One2OneNestedLinkSwitchMixin,
+                              serializers.HyperlinkedModelSerializer):
+    """ThreadComment serializer"""
+    class Meta:
+        model = ThreadComment
+        extra_kwargs = {
+            'link': {'view_name': 'api:threadcomment-detail'},
+            'user': {'view_name': 'api:user-detail'},
+            'post': {'view_name': 'api:threadpost-detail'}
+        }
+        fields = (
+            'id',
+            'link',
+            'user',
+            'post',
+            'content',
+            'created',
+            'modified',
         )
+        read_only_fields = (
+            'id',
+            'link',
+            'created',
+            'modified')
+
+        switch_kwargs = {
+            'user': {'serializer': UserSerializer},
+            'post': {'serializer': ThreadPostSerializer,
+                     'one2one_nested': False}
+        }
+
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user loged in are different")
+        return value
+
+    def validate(self, data):
+        """User is a member of thread"""
+        post = data['post']
+        if not self.context['request'].user in post.thread.members:
+            raise serializers.ValidationError(
+                "user is not a member of this thread")
+        return data
+
+
+class ThreadPostNestedSerializer(ThreadPostSerializer):
+    """ThreadPost nested serializer"""
+
+    comments = ThreadCommentSerializer(many=True, read_only=True)
+    user = UserSerializer(many=False, read_only=True)
+
+    class Meta(ThreadPostSerializer.Meta):
+        read_only_fields = (
+            '__all__')
+
+
+class ThreadNestedSerializer(ThreadSerializer):
+    """Thread nested serializer"""
+
+    state = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField()
+    posts = serializers.SerializerMethodField()
+    paper = PaperNestedSerializer(many=False, read_only=True)
+
+    class Meta(ThreadSerializer.Meta):
         read_only_fields = (
             '__all__',
         )
-
-    def get_state(self, obj):
-        """Get state based on ThreadUser instance if exists"""
-        threaduser = obj.state(self.context['request'].user)
-        if threaduser:
-            return ThreadUserSerializer(
-                instance=threaduser,
-                context={'request': self.context['request']}).data
-        return None
 
     def get_members(self, obj):
         """Get thread members based on if request.user is himself a Thread member"""
@@ -459,7 +408,8 @@ class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
         switch_kwargs = {
             'to_user': {'serializer': UserSerializer},
             'from_user': {'serializer': UserSerializer},
-            'thread': {'serializer': ThreadSerializer},
+            'thread': {'serializer': ThreadSerializer,
+                       'one2one_nested': False},
         }
 
     def validate_thread(self, value):

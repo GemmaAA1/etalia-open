@@ -37,31 +37,38 @@ class One2OneNestedLinkSwitchMixin(object):
        representation
        """
 
-    switch_kwargs = {}
+    one2one_nested = True
+
+    def __init__(self, *args, **kwargs):
+        if 'one2one_nested' in kwargs:
+            self.one2one_nested = kwargs.pop('one2one_nested')
+        meta = getattr(self, 'Meta', None)
+        if not getattr(meta, 'switch_kwargs', None):
+            meta.switch_kwargs = {}
+        super(One2OneNestedLinkSwitchMixin, self).__init__(*args, **kwargs)
 
     def get_fields(self, *args, **kwargs):
         """Limit paper queryset to user library paper"""
         fields = super(One2OneNestedLinkSwitchMixin, self).get_fields(*args, **kwargs)
         method = self.context['request'].method
-        for field in self.Meta.switch_kwargs.keys():
-            if method in READ_METHODS:
-                serializer = self.Meta.switch_kwargs[field].get('serializer')
-                fields[field] = serializer(many=False, read_only=True)
-            elif method in WRITE_METHODS and hasattr(self, 'initial_data'):
-                if field in self.initial_data:
-                    value = self.initial_data.get(field, None)
-                    # nested
-                    if isinstance(value, dict):
-                        extra_kwargs = self.Meta.switch_kwargs[field].copy()
-                        extra_kwargs.pop('serializer', None)
-                        extra_kwargs.pop('queryset', None)
-                        serializer = self.Meta.switch_kwargs[field].get('serializer')
-                        fields[field] = serializer(many=False, read_only=True,
-                                                   **extra_kwargs)
-            # add queryset
-            if 'queryset' in self.Meta.switch_kwargs[field]:
-                queryset = self.get_field_queryset(field)
-                fields[field].queryset = queryset
+        if self.one2one_nested:
+            for field in self.Meta.switch_kwargs.keys():
+                clean_kwargs = self.Meta.switch_kwargs[field].copy()
+                serializer = clean_kwargs.pop('serializer', None)
+                clean_kwargs.pop('queryset', None)
+                if method in READ_METHODS:
+                    fields[field] = serializer(many=False, read_only=True, **clean_kwargs)
+                elif method in WRITE_METHODS and hasattr(self, 'initial_data'):
+                    if field in self.initial_data:
+                        value = self.initial_data.get(field, None)
+                        # nested
+                        if isinstance(value, dict):
+                            fields[field] = serializer(many=False, read_only=True,
+                                                       **clean_kwargs)
+                # add queryset
+                if 'queryset' in self.Meta.switch_kwargs[field]:
+                    queryset = self.get_field_queryset(field)
+                    fields[field].queryset = queryset
 
         return fields
 

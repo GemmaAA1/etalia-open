@@ -5,6 +5,8 @@ from __future__ import unicode_literals, absolute_import
 from __future__ import unicode_literals, absolute_import
 
 from rest_framework import serializers
+from rest_framework.reverse import reverse
+
 from django.contrib.auth import get_user_model
 
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
@@ -14,7 +16,8 @@ from ..models import UserLibPaper, UserLib, Relationship
 User = get_user_model()
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(One2OneNestedLinkSwitchMixin,
+                     serializers.HyperlinkedModelSerializer):
     """User serializer"""
 
     photo_url = serializers.URLField(read_only=True, source='photo.name')
@@ -125,10 +128,7 @@ class UserLibSerializer(One2OneNestedLinkSwitchMixin,
                         serializers.HyperlinkedModelSerializer):
     """UserLib serializer"""
 
-    user = serializers.HyperlinkedRelatedField(view_name='api:user-detail',
-                                               read_only=True)
-    user_lib_papers = UserLibPaperSerializer(many=True, read_only=True,
-                                             source='userlib_paper')
+    user_lib_papers = serializers.SerializerMethodField()
     id = serializers.IntegerField(source='user_id')
 
     class Meta:
@@ -149,32 +149,35 @@ class UserLibSerializer(One2OneNestedLinkSwitchMixin,
             'user': {'serializer': UserSerializer}
         }
 
+    def get_user_lib_papers(self, obj):
+        userlib_paper_urls = []
+        for userlib_paper in obj.userlib_paper.all():
+            userlib_paper_urls.append(
+                reverse('api:userlibpaper-detail',
+                        kwargs={'pk': userlib_paper.id},
+                        request=self.context.get('request', None),
+                        format=self.context.get('format', None))
+            )
+        return userlib_paper_urls
 
-class UserLibNestedSerializer(One2OneNestedLinkSwitchMixin,
-                              serializers.HyperlinkedModelSerializer):
+
+class UserLibNestedSerializer(UserLibSerializer):
     """UserLib nested serializer"""
 
-    user_lib_papers = UserLibPaperSerializer(many=True, read_only=True,
-                                             source='userlib_paper')
-    id = serializers.IntegerField(source='user_id')
+    class Meta(UserLibSerializer.Meta):
+        pass
 
-    class Meta:
-        model = UserLib
-        extra_kwargs = {
-            'link': {'view_name': 'api:userlib-detail'},
-        }
-        fields = (
-            'id',
-            'link',
-            'user',
-            'user_lib_paper',
-        )
-        read_only_fields = (
-            '__all__'
-        )
-        switch_kwargs = {
-            'user': {'serializer': UserSerializer}
-        }
+    def get_user_lib_papers(self, obj):
+        userlib_papers = []
+        for userlib_paper in obj.userlib_paper.all():
+            userlib_papers.append(
+                UserLibPaperSerializer(
+                    instance=userlib_paper,
+                    context={'request': self.context['request']},
+                    one2one_nested=True
+                ).data
+            )
+        return userlib_papers
 
 
 class RelationshipSerializer(One2OneNestedLinkSwitchMixin,

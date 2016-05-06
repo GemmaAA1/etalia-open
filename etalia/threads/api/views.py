@@ -24,7 +24,7 @@ from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED,
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadCommentNestedSerializer, ThreadFilterSerializer, ThreadUserInviteSerializer
+    ThreadFilterSerializer, ThreadUserInviteSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
 
 User = get_user_model()
@@ -335,13 +335,8 @@ class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     ### Optional Kwargs ###
 
-    ** Detail:**
-
-    * **view=(str)**: Reformat output. choices: 'nested',
-
     ** List: **
 
-    * **view=(str)**: Reformat output. choices: 'nested',
     * **post_id=(int)**: Filter comments related to Post post_id
 
     """
@@ -349,7 +344,6 @@ class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     queryset = ThreadComment.objects.filter()
     serializer_class = {
         'default': ThreadCommentSerializer,
-        'nested': ThreadCommentNestedSerializer
     }
     permission_classes = (permissions.IsAuthenticated,
                           IsOwnerOrReadOnly,
