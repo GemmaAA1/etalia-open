@@ -1554,11 +1554,11 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
             "       nlp_threadvectors.thread_id, "
             "       vector, "
             "       published_at"
-            "        "
             "FROM nlp_threadvectors LEFT JOIN threads_thread "
             "ON nlp_threadvectors.thread_id=threads_thread.id "
-            "WHERE model_id=%s "
-            "    AND published_at IS NOT NULL "
+            "WHERE model_id=%s"
+            "    AND published_at IS NOT NULL"
+            "    AND vector IS NOT NULL "
             "ORDER BY published_at ASC", (self.model.pk, )))
 
         # Reshape data
@@ -1599,8 +1599,9 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
             "FROM nlp_threadvectors LEFT JOIN threads_thread "
             "ON nlp_threadvectors.thread_id=threads_thread.id "
             "WHERE model_id=%s"
-            "    AND published_at IS NOT NULL "
-            "    AND nlp_threadvectors.thread_id NOT IN %s"
+            "    AND published_at IS NOT NULL"
+            "    AND vector IS NOT NULL"
+            "    AND nlp_threadvectors.thread_id NOT IN %s "
             "ORDER BY published_at ASC",
             (self.model.pk, tuple(self.index2pk))))
 
