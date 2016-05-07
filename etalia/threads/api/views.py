@@ -70,6 +70,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **invited-accepted=(int)**: Fetch only **accepted invite** (if 1) or **declined** (if 0) threads for current user (default = Null)
     * **time-span=(int)**: Fetch only threads published in the past time-span days
     * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
+    * **user_id[]=(int)**: Filter threads by user_id
 
     ** Sub-routes: **
 
