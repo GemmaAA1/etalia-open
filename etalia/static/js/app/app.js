@@ -6,12 +6,12 @@ define([
     'handlebars',
     'moment',
     'app/ui/layout',
-    'app/ui/controls',
+    //'app/ui/controls',
     'bootstrap',
     'backbone/relational',
     'backbone/paginator',
     'backbone/forms'
-], function(require, $, _, Backbone, Handlebars, Moment, Layout, Controls) {
+], function(require, $, _, Backbone, Handlebars, Moment, Layout/*, Controls*/) {
 
     /**
      * Backbone
@@ -392,7 +392,7 @@ define([
         Handlebars: Handlebars,
 
         Layout: Layout,
-        Controls: Controls,
+        //Controls: Controls,
 
         Const: {},
         Model: {},

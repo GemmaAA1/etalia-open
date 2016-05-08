@@ -1,47 +1,101 @@
 define([
     'app',
-    'text!app/templates/thread/list.html',
+    'text!app/templates/thread/list.hbs',
+    'app/view/list',
     'app/view/detail',
+    'app/view/ui/modal',
     'app/view/thread/detail',
     'app/view/thread/thumb',
     'app/collection/thread/thread'
 ], function (App, template) {
 
-    var defaults = {
-        query: {
-            view: 'nested'
-        }
-    };
-
     App.View.Thread = App.View.Thread || {};
 
-    return App.View.Thread.List = App.Backbone.View.extend({
+    App.View.Thread.List = App.Backbone.View.extend({
+        tagName: 'div',
 
-        //tagName: 'div',
-        //className: 'thumb-list',
         template: App.Handlebars.compile(template),
 
+        listView: null,
         detailView: null,
-        $thumbList: null,
 
         events: {
             "click #thread-create-modal": "onCreateModalClick",
             "click #thread-next-page": "onNextPageClick"
         },
 
-        initialize: function (options) {
-            App.defaults(options, defaults);
-
-            this.collection = new App.Collection.Threads({
-                query: options.query
-            });
-
-            this.listenTo(this.collection.fullCollection, "reset", this.onCollectionReset);
-            this.listenTo(this.collection.fullCollection, "add", this.onCollectionAdd);
-            this.listenTo(this.collection.fullCollection, "remove", this.onCollectionRemove);
-
+        initialize: function () {
             this.listenTo(this, "model:remove", this.onModelRemove);
             this.listenTo(this, "model:detail", this.openDetail);
+        },
+
+        render: function () {
+            App.log('ThreadListView::render');
+
+            this.$el.html(this.template({}));
+
+
+            // Thumbs list
+            this.listView = new App.View.List.create({}, {
+                $target: this.$('div[data-list-placeholder]')
+            });
+            this.pushSubView(this.listView);
+
+            return this;
+        },
+
+        load: function(data) {
+            App.Layout.setBusy();
+
+            this.clearList();
+
+            if (this.collection) {
+                this.collection.fullCollection.off("add", this.onCollectionAdd);
+                this.collection.fullCollection.off("remove", this.onCollectionRemove);
+                this.collection.fullCollection.reset();
+                this.collection.reset();
+            }
+
+            this.collection = new App.Collection.Threads({
+                query: data
+            });
+
+            this.collection.fullCollection.on("add", this.onCollectionAdd, this);
+            this.collection.fullCollection.on("remove", this.onCollectionRemove, this);
+
+            var that = this;
+            this.collection.fetch()
+                .then(function() {
+                    if (that.collection.hasNextPage()) {
+                        that.$('#thread-next-page').show();
+                    } else {
+                        that.$('#thread-next-page').hide();
+                    }
+                    App.Layout.setAvailable();
+                });
+        },
+
+        onCollectionAdd: function (model) {
+            App.log('ThreadListView::onCollectionAdd');
+
+            // Render the thumb
+            var thumbView = new App.View.Thread.Thumb({
+                id: 'thread-thumb-' + model.get('id'),
+                model: model,
+                list: this
+            });
+
+            this.listView.addThumbView(thumbView);
+        },
+
+        onCollectionRemove: function (model) {
+            App.log('ThreadListView::onCollectionRemove');
+
+            this.listView.removeThumbById('thread-thumb-' + model.get('id'));
+        },
+
+        clearList: function() {
+            this.listView.clear();
         },
 
         openDetail: function (model) {
@@ -88,33 +142,6 @@ define([
             this.collection.fullCollection.remove(model);
         },
 
-        onCollectionAdd: function (model) {
-            App.log('ThreadListView::onCollectionAdd');
-
-            // Render the thumb
-            var thumbView = new App.View.Thread.Thumb({
-                    id: 'thread-thumb-' + model.get('id'),
-                    model: model,
-                    list: this
-                });
-
-            // Append the thumb
-            thumbView
-                .render()
-                .$el.appendTo(this.$thumbList);
-        },
-
-        onCollectionRemove: function (model) {
-            App.log('ThreadListView::onCollectionRemove');
-            this.$('#thread-thumb-' + model.get('id')).remove();
-        },
-
-        onCollectionReset: function () {
-            if (this.collection.fullCollection.length == 0) {
-                this.render();
-            }
-        },
-
         onNextPageClick: function (e) {
             e.preventDefault();
 
@@ -135,7 +162,7 @@ define([
 
             var that = this,
                 form = App.View.Thread.CreateForm.create(),
-                modal = new App.View.Modal({
+                modal = new App.View.Ui.Modal({
                     title: 'Start a new thread',
                     content: form,
                     footer: false
@@ -165,27 +192,20 @@ define([
             });
 
             modal.render();
-        },
-
-        render: function () {
-            App.log('ThreadListView::render');
-
-            var that = this;
-
-            this.$el.html(this.template({}));
-
-            this.$thumbList = this.$('.thumb-list');
-
-            this.collection.fetch()
-                .then(function() {
-                    if (that.collection.hasNextPage()) {
-                        that.$('#thread-next-page').show();
-                    } else {
-                        that.$('#thread-next-page').hide();
-                    }
-                });
-
-            return this;
         }
     });
+
+
+    App.View.Thread.List.create = function(options, createOptions) {
+        options = options || {};
+
+        var view = new App.View.Thread.List(options);
+        if (createOptions) {
+            App.View.create(view, createOptions);
+        }
+
+        return view;
+    };
+
+    return App.View.Thread.List;
 });

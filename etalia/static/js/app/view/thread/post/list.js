@@ -1,6 +1,6 @@
 define([
     'app',
-    'text!app/templates/thread/post/list.html',
+    'text!app/templates/thread/post/list.hbs',
     'app/view/thread/post/thumb',
     'app/view/thread/post/form'
 ], function (App, template) {
@@ -55,9 +55,11 @@ define([
         render: function () {
             App.log('PostListView::render');
 
+            var is_member = this.thread.isMember(App.getCurrentUser());
+
             // TODO memberOfThread
             this.$el.html(this.template({
-                isMember: this.thread.isMember(App.getCurrentUser())
+                is_member: is_member
             }));
 
             var that = this,
@@ -81,8 +83,10 @@ define([
                 })
             );
 
-            // TODO only if member of the thread
-            this.renderForm();
+            if (is_member) {
+                // TODO handle subView
+                this.renderForm();
+            }
 
             return this;
         }

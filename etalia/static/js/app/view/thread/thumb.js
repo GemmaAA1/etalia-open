@@ -1,6 +1,6 @@
 define([
     'app',
-    'text!app/templates/thread/thumb.html',
+    'text!app/templates/thread/thumb.hbs',
     'app/view/user/thumb'
 ], function (App, template) {
 
@@ -50,19 +50,13 @@ define([
         onPinClick: function(e) {
             e.preventDefault();
 
-            this.model.getState()
-                .togglePinned()
-                .save(null, {wait:true});
+            this.model.getState().togglePinned();
         },
 
         onBanClick: function(e) {
             e.preventDefault();
 
-            var thread = this.model;
-
-            thread.getState()
-                .toggleBanned()
-                .save(null, {wait:true});
+            this.model.getState().toggleBanned();
         },
 
         updateMembersCount: function() {

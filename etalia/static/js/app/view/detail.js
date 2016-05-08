@@ -1,6 +1,6 @@
 define([
     'app',
-    'text!app/templates/detail.html',
+    'text!app/templates/detail.hbs',
     'app/model/detail'
 ], function (App, template) {
 
@@ -31,7 +31,7 @@ define([
             var prev = this.model.get('prev'),
                 next = this.model.get('next');
 
-            App.$('detail-placeholder').replaceWith(this.$el.html(this.template({
+            App.$('div[data-detail-placeholder]').replaceWith(this.$el.html(this.template({
                 prev: prev ? prev.attributes : null,
                 next: next ? next.attributes : null
             })));

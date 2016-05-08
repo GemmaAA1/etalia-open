@@ -1,6 +1,6 @@
 define([
     'app',
-    'text!app/templates/user/thumb.html'
+    'text!app/templates/user/thumb.hbs'
 ], function (App, template) {
 
     App.View.User = App.View.User || {};
