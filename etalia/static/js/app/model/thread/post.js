@@ -33,7 +33,11 @@ define([
                     includeInJSON: 'link'
                 }
             }
-        ]
+        ],
+
+        isOwner: function (user) {
+            return this.get('user').get('id') === user.get('id');
+        }
     });
 
     App.Model.Post.createNew = function(thread) {

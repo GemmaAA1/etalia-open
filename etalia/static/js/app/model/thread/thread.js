@@ -204,6 +204,16 @@ define([
         }
         return new App.Handlebars.SafeString(icon);
     });
+    App.Handlebars.registerHelper('thread_type_title', function() {
+        if (this.type) {
+            if (this.type === App.Model.Thread.TYPE_PAPER) {
+                return 'About a paper';
+            } else if (this.type === App.Model.Thread.TYPE_QUESTION) {
+                return 'Question';
+            }
+        }
+        return 'Unknown';
+    });
 
     return App.Model.Thread;
 });
