@@ -12,12 +12,13 @@ define([
             privacy: {
                 type: "Radio",
                 options: [
-                    { label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
-                    { label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
+                    {label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
+                    {label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
                 ],
                 help: 'Interdum et malesuada fames ac ante ipsum primis in faucibus. ' +
                     'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
-                    'Integer sit amet egestas tortor.'
+                    'Integer sit amet egestas tortor.',
+                validators: ['required', App.Model.Thread.validators.privacy]
             },
 
             type: {
@@ -25,7 +26,8 @@ define([
                 options: [
                     { label: "Question", val: App.Model.Thread.TYPE_QUESTION},
                     { label: "Paper", val: App.Model.Thread.TYPE_PAPER}
-                ]
+                ],
+                validators: ['required', App.Model.Thread.validators.type]
             },
 
             paper: {
@@ -33,8 +35,6 @@ define([
                 options: function(callback) {
                     var user = App.getCurrentUser(),
                         papers = new App.Collection.Papers();
-
-                    // TODO none choice + validation
 
                     papers.url = App.config.api_root + '/user/user-libs/' + user.get('id') + '/papers';
                     papers
@@ -49,16 +49,20 @@ define([
                             throw textStatus + ' ' + errorThrown;
                         });
 
-                }
+                },
+                validators: [App.Model.Thread.validators.paper]
             },
 
-            title: {type: 'Text'}
+            title: {
+                type: 'Text',
+                validators: ['required', App.Model.Thread.validators.title]
+            }
         },
 
         template: App._.template('\
             <form class="thread-create-form form-horizontal" role="form">\
                 <div data-fieldsets></div>\
-                <div class="form-group form-footer">\
+                <div class="form-group form-footer buttons">\
                     <div class="col-sm-offset-2 col-sm-10">\
                         <button type="submit" class="btn btn-primary form-submit">\
                             Create\
@@ -107,9 +111,9 @@ define([
         _onSubmit: function(e) {
             e.preventDefault();
 
-            var errors = this.commit({ validate: true });
+            var errors = this.commit();
             if (errors) {
-                App.log('Errors', errors);
+                App.log('validation errors', errors);
 
                 this.trigger('validation_failure', this);
                 return;

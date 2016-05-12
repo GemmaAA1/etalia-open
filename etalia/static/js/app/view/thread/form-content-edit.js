@@ -15,7 +15,7 @@ define([
         template: App._.template('\
             <form class="thread-create-form form-horizontal" role="form">\
                 <div data-fieldsets></div>\
-                <div class="form-footer">\
+                <div class="form-footer buttons">\
                     <button type="submit" class="btn btn-primary form-submit">\
                         Update\
                     </button>\

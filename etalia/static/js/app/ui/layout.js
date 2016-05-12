@@ -138,6 +138,8 @@ define([
     };
 
     Layout.prototype.setBusy = function(content) {
+        content = content || 'Please wait&hellip;';
+
         $('#busy-content').html(content);
 
         if (this.busy) {

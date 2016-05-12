@@ -546,13 +546,13 @@ form {
     margin-bottom: 15px;
 }
 
-.form-footer button,
-.form-footer a {
+.buttons button,
+.buttons a {
     margin-right: 15px;
 }
 
-.form-footer button:last-child,
-.form-footer a:last-child {
+.buttons button:last-child,
+.buttons a:last-child {
     margin-right: 0;
 }
 

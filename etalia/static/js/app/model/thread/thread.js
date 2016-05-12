@@ -65,6 +65,17 @@ define([
             }
         ],
 
+        /*constraints: {
+            privacy: [
+                {
+                    type: 'Choice',
+                    groups: ['default', 'create', 'edit'],
+                    choices: [1, 2], // TODO use constants
+                    message: 'Invalid privacy choice.'
+                }
+            ]
+        },*/
+
         initialize: function() {
             this.listenTo(this, 'change:posts', function() {
                 if (0 < this.get('posts').length) {
@@ -79,27 +90,30 @@ define([
         },
 
         validate: function(attrs, options) {
-            //console.log(attrs, options);
-            if (options && options.validate) { // Regular validation
+            var errors = {};
 
-            } else { // Form validation
-                var errors = {};
-                if (attrs.hasOwnProperty('privacy') && 0 > App._.indexOf([App.Model.Thread.PRIVACY_PUBLIC, App.Model.Thread.PRIVACY_PRIVATE], parseInt(attrs.privacy))) {
+            if (options && options.validate) {
+                // TODO use model validators
+                if (attrs.hasOwnProperty('privacy') && !App.Model.Thread.isValidPrivacy(attrs.privacy)) {
                     errors.privacy = 'Please select a privacy.';
                 }
                 if (attrs.hasOwnProperty('type')) {
-                    if (0 > App._.indexOf([App.Model.Thread.TYPE_QUESTION, App.Model.Thread.TYPE_PAPER], parseInt(attrs.type))) {
+                    if (!App.Model.Thread.isValidType(attrs.type)) {
                         errors.type = 'Please select a type.';
                     } else if (attrs.type == App.Model.Thread.TYPE_PAPER && !attrs.paper) {
                         errors.paper = 'Please select a paper.';
                     }
                 }
-                if (attrs.hasOwnProperty('title') && attrs.title.length < 10) {
+                if (attrs.hasOwnProperty('title') && !(App._.isString(attrs.title) && 10 <= attrs.title.length)) {
                     errors.title = 'Please provide a title (min. 10 chars).';
                 }
-                if (attrs.hasOwnProperty('content') && attrs.content.length < 50) {
+                if (attrs.hasOwnProperty('content') && !(App._.isString(attrs.content) && 50 <= attrs.content.length)) {
                     errors.content = 'Please provide a content (min. 50 chars).';
                 }
+            }
+
+            if (!App._.isEmpty(errors)) {
+                App.log('Errors', errors);
                 return errors;
             }
         },
@@ -119,7 +133,7 @@ define([
                     model.trigger('sync', model, resp, options);
                 })
                 .error(function() {
-                    // TODO
+                    App.log('Errors', 'Failed to publish thread.');
                 });
 
             return this;
@@ -164,11 +178,60 @@ define([
         }
     });
 
+    App.Model.Thread.validators = {
+        privacy: function (privacy) {
+            if(!App.Model.Thread.isValidPrivacy(privacy)) {
+                return {
+                    type: 'privacy',
+                    message: 'Please select a privacy.'
+                }
+            }
+        },
+        type: function (type) {
+            if(!App.Model.Thread.isValidType(type)) {
+                return {
+                    type: 'type',
+                    message: 'Please select a type.'
+                }
+            }
+        },
+        paper: function (paper, formValues) {
+            if (formValues['type'] == App.Model.Thread.TYPE_PAPER && !parseInt(paper)) {
+                return {
+                    type: 'paper',
+                    message: 'Please select a paper'
+                }
+            }
+        },
+        title: function(title) {
+            if (10 > String(title).length) {
+                return {
+                    type: 'title',
+                    message: 'Title should be at least 10 characters long'
+                }
+            }
+        }
+    };
+
     App.Model.Thread.PRIVACY_PUBLIC = 1;
     App.Model.Thread.PRIVACY_PRIVATE = 2;
 
     App.Model.Thread.TYPE_QUESTION = 1;
     App.Model.Thread.TYPE_PAPER = 2;
+
+    App.Model.Thread.isValidPrivacy = function (privacy) {
+        return 0 <= App._.indexOf([
+            App.Model.Thread.PRIVACY_PUBLIC,
+            App.Model.Thread.PRIVACY_PRIVATE
+        ], parseInt(privacy));
+    };
+
+    App.Model.Thread.isValidType = function (type) {
+        return 0 <= App._.indexOf([
+            App.Model.Thread.TYPE_QUESTION,
+            App.Model.Thread.TYPE_PAPER
+        ], parseInt(type));
+    };
 
     App.Model.Thread.createNew = function() {
         return new App.Model.Thread({

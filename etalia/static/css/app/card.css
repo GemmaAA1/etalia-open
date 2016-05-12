@@ -21,14 +21,14 @@
     text-decoration: none;
 }
 
-.card .title a span {
+.card .title span {
     color: #00695c;
     display: inline-block;
     font-size: 70%;
     vertical-align: 5%;
 }
 
-.card .title a span.new {
+.card .title span.new {
     color: #ffffff;
     background-color: #00695c;
     padding: 2px 3px 3px 3px;

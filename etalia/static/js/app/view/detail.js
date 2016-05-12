@@ -4,7 +4,7 @@ define([
     'app/model/detail'
 ], function (App, template) {
 
-    var defaults = {};
+    //var defaults = {};
 
     return App.View.Detail = App.Backbone.View.extend({
         tagName: 'div',
@@ -20,7 +20,7 @@ define([
         },
 
         initialize: function (options) {
-            App.defaults(options, defaults);
+            //App._.defaults(options, defaults);
 
             if (!this.model instanceof App.Model.Detail) {
                 throw 'Unexpected model type';
