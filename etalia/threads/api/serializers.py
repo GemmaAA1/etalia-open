@@ -13,7 +13,7 @@ from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
-    THREAD_JOINED, THREAD_LEFT
+    THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING
 
 User = get_user_model()
 
@@ -413,15 +413,18 @@ class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
         }
 
     def validate_thread(self, value):
-        if value.thread.privacy == THREAD_PRIVATE and \
+        # If thread private, must be owner to invite people to thread
+        if value.privacy == THREAD_PRIVATE and \
                         value.user is not self.context['request'].user:
             raise serializers.ValidationError(
                 "You cannot invite another user to this thread. "
                 "This thread is private and your are not the owner")
-        if value.thread.published_at is None:
+        # Thread must be published
+        if value.published_at is None:
             raise serializers.ValidationError(
                 "You cannot invite another user to this thread. "
                 "The thread is not yet published.")
+        # User must be a member of thread
         if self.context['request'].user not in value.members:
             raise serializers.ValidationError(
                 "You cannot invite another user to this thread. "
@@ -440,4 +443,10 @@ class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
         """ Cannot have an invite to yourself, that would be awkward"""
         if value == self.context['request'].user:
             raise serializers.ValidationError("to_user cannot be current user")
+        return value
+
+    def validate_status(self, value):
+        """ Status is PENDING for new invite"""
+        if not self.initial_data and not value == THREAD_INVITE_PENDING:
+            raise serializers.ValidationError("status must be PENDING for new invite")
         return value

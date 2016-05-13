@@ -152,6 +152,9 @@ class ThreadUserInvite(TimeStampedModel):
     status = models.IntegerField(choices=THREAD_INVITE_STATUSES,
                                  default=THREAD_INVITE_PENDING)
 
+    class Meta:
+        unique_together = (('thread', 'from_user', 'to_user'), )
+
 
 class ThreadFeed(TimeStampedModel):
     # User

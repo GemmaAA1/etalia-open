@@ -16,7 +16,8 @@ from django.utils import timezone
 
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
-    ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod
+    ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod, \
+    IsToUserOrOwnersReadOnly
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -325,7 +326,8 @@ class ThreadPostViewSet(MultiSerializerMixin,
         return ThreadPost.objects.all()
 
 
-class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
+class ThreadCommentViewSet(MultiSerializerMixin,
+                           viewsets.ModelViewSet):
     """
     Thread Comment: Comments on thread post
 
@@ -432,7 +434,8 @@ class ThreadUserViewSet(MultiSerializerMixin,
         #     return Response(serializer.data)
 
 
-class ThreadUserInviteViewSet(mixins.CreateModelMixin,
+class ThreadUserInviteViewSet(MultiSerializerMixin,
+                              mixins.CreateModelMixin,
                               mixins.ListModelMixin,
                               mixins.UpdateModelMixin,
                               mixins.RetrieveModelMixin,
@@ -449,9 +452,11 @@ class ThreadUserInviteViewSet(mixins.CreateModelMixin,
     """
 
     queryset = ThreadUserInvite.objects.all()
-    serializer_class = ThreadUserInviteSerializer
+    serializer_class = {
+        'default': ThreadUserInviteSerializer
+    }
     permission_classes = (permissions.IsAuthenticated,
-                          IsOwner,
+                          IsToUserOrOwnersReadOnly,
                           )
 
     def get_queryset(self):
