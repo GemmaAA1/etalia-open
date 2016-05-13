@@ -16,7 +16,8 @@ from django.utils import timezone
 
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
-    ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod
+    ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod, \
+    IsToUserOrOwnersReadOnly
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -24,7 +25,7 @@ from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED,
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadFilterSerializer, ThreadUserInviteSerializer
+    ThreadFilterSerializer, ThreadUserInviteSerializer, ThreadUserInviteUpdateSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
 
 User = get_user_model()
@@ -325,7 +326,8 @@ class ThreadPostViewSet(MultiSerializerMixin,
         return ThreadPost.objects.all()
 
 
-class ThreadCommentViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
+class ThreadCommentViewSet(MultiSerializerMixin,
+                           viewsets.ModelViewSet):
     """
     Thread Comment: Comments on thread post
 
@@ -432,7 +434,8 @@ class ThreadUserViewSet(MultiSerializerMixin,
         #     return Response(serializer.data)
 
 
-class ThreadUserInviteViewSet(mixins.CreateModelMixin,
+class ThreadUserInviteViewSet(MultiSerializerMixin,
+                              mixins.CreateModelMixin,
                               mixins.ListModelMixin,
                               mixins.UpdateModelMixin,
                               mixins.RetrieveModelMixin,
@@ -446,20 +449,47 @@ class ThreadUserInviteViewSet(mixins.CreateModelMixin,
     * **[GET, POST] /invites/**: List of Invite
     * **[GET, PUT, PATCH] /invites/<id\>/**: Invite
 
+    ### Optional Kwargs ###
+
+    ** List: **
+
+    * **from-user=(int)**: Filter ThreadUserInvite with from-user=user_id
+    * **to-user=(int)**: Filter ThreadUserInvite with to-user=user_id
+    * **status=(int)**: Filter ThreadUserInvite with specific status
+
     """
 
     queryset = ThreadUserInvite.objects.all()
-    serializer_class = ThreadUserInviteSerializer
+    serializer_class = {
+        'default': ThreadUserInviteSerializer,
+        'update': ThreadUserInviteUpdateSerializer,
+        'partial_update': ThreadUserInviteUpdateSerializer,
+    }
     permission_classes = (permissions.IsAuthenticated,
-                          IsOwner,
+                          IsToUserOrOwnersReadOnly,
                           )
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return ThreadUserInvite.objects.filter(
+            queryset = ThreadUserInvite.objects.filter(
                 Q(from_user=self.request.user) |
                 Q(to_user=self.request.user))
+            # filter from_user
+            from_user = self.request.query_params.get('from-user', None)
+            if from_user is not None:
+                queryset = queryset.filter(from_user=from_user)
+            # filter to_user
+            to_user = self.request.query_params.get('to-user', None)
+            if to_user is not None:
+                queryset = queryset.filter(to_user=to_user)
+            # filter status
+            status = self.request.query_params.get('status', None)
+            if status is not None:
+                queryset = queryset.filter(status=status)
+
+            return queryset
+
         return ThreadUserInvite.objects.all()
 
     def perform_create(self, serializer):

@@ -114,6 +114,22 @@ class IsOwnerIfViewFull(IsOwner):
             return True
 
 
+class IsToUserOrOwnersReadOnly(permissions.BasePermission):
+    """Custom permission to get/post/put/patch a ThreadUserInvite"""
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS and request.user in \
+                [obj.from_user, obj.to_user]:
+            return True
+        else:
+            if view.action == 'create':
+                return request.user == obj.from_user
+            elif view.action in ['update', 'partial_update']:
+                return request.user == obj.to_user
+
+        return False
+
+
 class IsInRelationship(IsOwner):
     """
     Custom permission to only allow user involved in the relationship.

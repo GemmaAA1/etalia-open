@@ -24,6 +24,7 @@ from ..models import UserLib, User, Relationship, UserLibPaper
 from etalia.users.constants import RELATIONSHIP_BLOCKED, RELATIONSHIP_FOLLOWING, \
     RELATIONSHIP_STATUSES
 
+
 class UserViewSet(MultiSerializerMixin,
                   mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
@@ -40,13 +41,20 @@ class UserViewSet(MultiSerializerMixin,
     * **[GET] /users/<id\>/following/**: List of following users
     * **[GET] /users/<id\>/blocked/**: List of blocked users
 
+    ### Optional Kwargs ###
+
+    ** List: **
+
+    * **first-name=(str)**: Filter User list based on first name
+    * **last-name=(str)**: Filter User list based on last name
+
     ** Detail: **
 
     * **view=(str)**: Reformat output. choices: 'full',
 
     """
 
-    queryset = User.objects.all()
+    queryset = User.objects.all().exclude(is_superuser=True)
     permission_classes = (permissions.IsAuthenticated,
                           IsOwnerOrReadOnly,
                           IsOwnerIfViewFull)
@@ -57,6 +65,20 @@ class UserViewSet(MultiSerializerMixin,
     exclude_action_serializers = {
         'list': 'full',
     }
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        # filter first_name
+        first_name = self.request.query_params.get('first-name', None)
+        if first_name is not None:
+            queryset = self.queryset.filter(first_name__icontains=first_name)
+        # filter first_name
+        last_name = self.request.query_params.get('last-name', None)
+        if last_name is not None:
+            queryset = self.queryset.filter(last_name__icontains=last_name)
+
+        return queryset
 
     def render_list(self, queryset):
         page = self.paginate_queryset(queryset)
