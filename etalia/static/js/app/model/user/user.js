@@ -84,7 +84,11 @@ define(['app', 'app/model/user/user-lib'], function (App) {
             currentUser = App.Model.User.find(id);
             if (!currentUser) {
                 currentUser = new App.Model.User({id: id});
-                currentUser.fetch();
+                currentUser.fetch()
+                    .fail(function() {
+                        // Redirect to home
+                        window.location.href = '/';
+                    });
             }
 
             var relationships, relationshipsXhr;

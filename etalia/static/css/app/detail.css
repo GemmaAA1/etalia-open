@@ -32,6 +32,7 @@ body.detail-opened #detail {
     padding-bottom: 8px !important;
     text-align: center;
     overflow: hidden;
+    min-height: 56px;
 }
 
 #detail > .bar button {

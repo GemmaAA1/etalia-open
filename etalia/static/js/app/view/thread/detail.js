@@ -6,7 +6,8 @@ define([
     'app/view/user/list',
     'app/view/thread/post/list',
     'app/view/thread/form-edit',
-    'app/view/thread/form-content-edit'
+    'app/view/thread/form-content-edit',
+    'app/view/thread/invite/form-create'
 ], function (App, template) {
 
     App.View.Thread = App.View.Thread || {};
@@ -24,7 +25,8 @@ define([
             "click .thread-publish": "onPublishClick",
             "click .thread-content-edit": "onContentEditClick",
             "click .thread-join": "onJoinClick",
-            "click .thread-leave": "onLeaveClick"
+            "click .thread-leave": "onLeaveClick",
+            "click .thread-members-invite-modal": "onInviteModalClick"
         },
 
         initialize: function () {
@@ -129,6 +131,56 @@ define([
                 });
         },
 
+        onInviteModalClick: function(e) {
+            e.preventDefault();
+
+            var that = this,
+                form = App.View.Thread.InviteCreateForm.create({
+                    model: App.Model.Invite.createNew({
+                        thread: this.model
+                    })
+                }),
+                modal = new App.View.Ui.Modal({
+                    title: 'Invite',
+                    content: form,
+                    footer: false
+                });
+
+            form.on('validation_success', function () {
+                // TODO check if exists ?
+
+                form.model.save(null, {
+                    wait: true,
+                    validate: false,
+                    success: function () {
+                        console.log('success !');
+                        modal.updateContent(
+                            '<div style="text-align:center;">' +
+                                '<p>Your invitation has been successfully sent !</p>' +
+                                '<p><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></p>' +
+                            '</div>'
+                        );
+                    },
+                    error: function () {
+                        // TODO
+                        console.log('error', arguments);
+                    }
+                });
+            });
+
+            form.on('cancel', function () {
+                modal.close();
+            });
+
+            modal.on('hidden', function () {
+                // TODO unbind form
+                form = null;
+                modal = null;
+            });
+
+            modal.render();
+        },
+
         updatePostsCount: function() {
             this.$('.content > .card .icons .comment .count').text(this.model.getPostsCount());
         },
@@ -167,7 +219,8 @@ define([
             // Members list
             this.pushSubView(
                 App.View.User.List.create({
-                    model: this.model.get('members')
+                    model: this.model.get('members'),
+                    invite_button: is_owner
                 }, {
                     $target: this.$('[data-members-placeholder]')
                 })

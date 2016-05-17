@@ -19,6 +19,14 @@ define([
                 'class': 'btn btn-default',
                 'data-dismiss': 'modal'
             }
+        },
+        defaults = {
+            title: null,
+            content: null,
+            backdrop: true,
+            footer: {
+                buttons: [closeButton]
+            }
         };
 
     App.View.Ui = App.View.Ui || {};
@@ -37,15 +45,6 @@ define([
             'role': 'dialog'
         },
 
-        defaults: {
-            title: null,
-            content: null,
-            backdrop: true,
-            footer: {
-                buttons: [closeButton]
-            }
-        },
-
         events: {
             "hidden.bs.modal": "_onHidden",
             "hide.bs.modal": "_onHide"
@@ -53,37 +52,19 @@ define([
 
         initialize: function (options) {
             options || (options = {});
-            _.defaults(this, this.defaults);
-            _.extend(this, _.pick(options, _.keys(this.defaults)));
+            _.defaults(this, defaults);
+            _.extend(this, _.pick(options, _.keys(defaults)));
 
             _.bindAll(this, 'close', '_onHidden', '_onHide');
         },
 
         render: function () {
-            var that = this,
-                renderFooter = _.isObject(this.footer) && _.isObject(this.footer.buttons);
-
             this.$el.html(this.template({
-                title: this.title,
-                footer: renderFooter
+                title: this.title
             }));
 
-            // Renders the content
-            if (_.isObject(this.content) && _.isFunction(this.content.render)) {
-                this.$('.modal-body').append(this.content.render().$el);
-            } else {
-                this.$('.modal-body').append(this.content);
-            }
-
-
-            // Renders the footer
-            if (renderFooter) {
-                var $footer = this.$('.modal-footer');
-                _.each(this.footer.buttons, function (button) {
-                    _.defaults(button, defaultButton);
-                    $footer.append(that.buttonTemplate(button));
-                });
-            }
+            this._renderContent();
+            this._renderFooter();
 
             // Call bootstrap modal
             this.$el.modal({
@@ -92,10 +73,62 @@ define([
             });
         },
 
-        _onHidden: function () {
+        updateTitle: function(title) {
+            this.$('.modal-title').html(title);
+
+            return this;
+        },
+
+        updateContent: function (content) {
+            if (!content) {
+                throw 'content argument is mandatory';
+            }
+            this._removeContent();
+            this.content = content;
+            this._renderContent();
+
+            return this;
+        },
+
+        updateFooter: function(footer) {
+            this.footer = footer;
+            this._renderFooter();
+
+            return this;
+        },
+
+        _removeContent: function() {
             if (_.isObject(this.content) && _.isFunction(this.content.remove)) {
                 this.content.remove();
+            } else {
+                this.$('.modal-body').empty();
             }
+        },
+
+        _renderContent: function() {
+            if (_.isObject(this.content) && _.isFunction(this.content.render)) {
+                this.$('.modal-body').append(this.content.render().$el);
+            } else {
+                this.$('.modal-body').append(this.content);
+            }
+        },
+
+        _renderFooter: function() {
+            var that = this,
+                $footer = this.$('.modal-footer').empty();
+            if (_.isObject(this.footer) && _.isObject(this.footer.buttons)) {
+                $footer.show();
+                _.each(this.footer.buttons, function (button) {
+                    _.defaults(button, defaultButton);
+                    $footer.append(that.buttonTemplate(button));
+                });
+            } else {
+                $footer.hide();
+            }
+        },
+
+        _onHidden: function () {
+            this._removeContent();
             this.remove();
 
             this.trigger('hidden');

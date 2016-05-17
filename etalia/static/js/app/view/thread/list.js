@@ -6,6 +6,7 @@ define([
     'app/view/ui/modal',
     'app/view/thread/detail',
     'app/view/thread/thumb',
+    'app/view/thread/invite/treat',
     'app/collection/thread/thread'
 ], function (App, template) {
 
@@ -16,11 +17,13 @@ define([
 
         template: App.Handlebars.compile(template),
 
+        invites: null,
         listView: null,
         detailView: null,
 
         events: {
             "click #thread-create-modal": "onCreateModalClick",
+            "click #thread-invites-modal": "onInvitesModalClick",
             "click #thread-next-page": "onNextPageClick"
         },
 
@@ -40,6 +43,8 @@ define([
                 $target: this.$('div[data-list-placeholder]')
             });
             this.pushSubView(this.listView);
+
+            this._updateInvitesButton();
 
             return this;
         },
@@ -171,6 +176,7 @@ define([
             form.once('validation_success', function () {
                 form.model.save(null, {
                     wait: true,
+                    validate: false,
                     success: function () {
                         that.collection.add(form.model, {at: 0});
                         modal.close();
@@ -178,6 +184,7 @@ define([
                     },
                     error: function () {
                         // TODO
+                        console.log('error', arguments);
                     }
                 });
             });
@@ -192,6 +199,99 @@ define([
             });
 
             modal.render();
+        },
+
+        onInvitesModalClick: function(e) {
+            e.preventDefault();
+
+            var that = this,
+                index = 0,
+                invites = null,
+                view = null,
+                modal = null;
+
+            function openInvite(invite) {
+                var from = invite.get('from_user'),
+                    title = from.get('first_name') + ' ' + from.get('last_name') + ' invites you to this thread';
+
+                view = new App.View.Thread.InviteTreat({
+                    model: invite
+                });
+
+                view.once('declined', function() {
+                    index++;
+                    if (index < invites.length) {
+                        openInvite(invites[index]);
+                    } else {
+                        modal.close();
+                    }
+                });
+
+                view.once('accepted', function() {
+                    App.Layout.setBusy();
+
+                    var thread = invite.get('thread');
+                    thread.fetch()
+                        .done(function() {
+                            // Add thread to list
+                            that.collection.fullCollection.add(thread, {at: 0});
+
+                            App.Layout.setAvailable();
+
+                            // Close modal
+                            modal.close();
+
+                            // Open detail
+                            that.openDetail(thread);
+                        })
+                        .fail(function() {
+                            App.log('Errors', 'Failed to fetch invite thread.');
+                        });
+                });
+
+                if (modal) {
+                    modal.updateTitle(title).updateContent(view);
+                } else {
+                    modal = new App.View.Ui.Modal({
+                        title: title,
+                        content: view,
+                        footer: false
+                    });
+
+                    modal.once('hidden', function () {
+                        view = null;
+                        modal = null;
+                        that._updateInvitesButton();
+                    });
+
+                    modal.render();
+                }
+            }
+
+            App.currentUserInvites
+                .get()
+                .then(function(collection) {
+                    invites = collection;
+                    if (0 == invites.length) {
+                        App.log('Errors', 'Current user has no pending invite');
+                        return;
+                    }
+                    openInvite(invites[index]);
+                });
+        },
+
+        _updateInvitesButton: function(force) {
+            var $button = this.$('#thread-invites-modal');
+            App.currentUserInvites
+                .update(force)
+                .then(function(invites) {
+                    if (0 < invites.length) {
+                        $button.show()
+                            .html(1 == invites.length ? '1 pending invitation' : invites.length + ' pending invitations');
+                    } else {
+                        $button.hide().empty();
+                    }
+                });
         }
     });
 

@@ -16,8 +16,9 @@ define([
                         { label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
                     ],
                     help: 'Interdum et malesuada fames ac ante ipsum primis in faucibus. ' +
-                    'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
-                    'Integer sit amet egestas tortor.'
+                          'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
+                          'Integer sit amet egestas tortor.',
+                    validators: ['required', App.Model.Thread.validators.privacy]
                 }
             };
 
@@ -32,7 +33,7 @@ define([
                         papers
                             .fetch()
                             .then(function () {
-                                var options = [{val: null, label: 'None'}];
+                                var options = [];
                                 papers.each(function (paper) {
                                     options.push({val: paper.get('id'), label: paper.get('title')});
                                 });
@@ -40,12 +41,15 @@ define([
                             }, function (jqXHR, textStatus, errorThrown) {
                                 throw textStatus + ' ' + errorThrown;
                             });
-                    }
-                    // TODO validation
+                    },
+                    validators: ['required']
                 }
             }
 
-            result.title = {type: 'Text'};
+            result.title = {
+                type: 'Text',
+                    validators: ['required', App.Model.Thread.validators.title]
+            };
 
             return result;
         },
@@ -80,7 +84,7 @@ define([
         onSubmit: function(e) {
             e.preventDefault();
 
-            var errors = this.commit({ validate: true });
+            var errors = this.commit();
             if (errors) {
                 App.log('Errors', errors);
 

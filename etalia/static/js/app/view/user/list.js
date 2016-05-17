@@ -11,14 +11,13 @@ define([
         tagName: 'div',
         className: 'thread-members thread-box',
 
+        invite_button: false,
         template: App.Handlebars.compile(template),
 
-        events: {
-            //"click #thread-next-page": "onNextPageClick"
-        },
+        initialize: function (options) {
+            App._.defaults(options, {invite_button: false});
 
-        initialize: function () {
-            //options = App.defaults(defaults, options);
+            this.invite_button = options.invite_button;
 
             this.listenTo(this.model, "reset update", this.render);
         },
@@ -26,7 +25,9 @@ define([
         render: function () {
             App.log('UserListView::render');
 
-            this.$el.html(this.template({}));
+            this.$el.html(this.template({
+                invite_button: this.invite_button
+            }));
 
             var that = this,
                 $list = this.$('.thread-members-list');

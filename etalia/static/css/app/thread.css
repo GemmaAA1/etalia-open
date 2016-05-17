@@ -125,6 +125,10 @@
     top: 4px;
 }
 
+#thread-invites-modal {
+    display: none;
+}
+
 /* -------------------------- DETAIL -------------------------- */
 
 #detail .content > .card .user {
@@ -233,6 +237,32 @@
     color: #00695c;
 }
 
+.thread-members-invite-modal {
+    position: relative;
+    display: inline-block;
+    margin: 10px 17px 20px 17px;
+    width: 50px;
+    height: 50px;
+}
+
+.thread-members-invite-modal span {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    border: 1px solid #cbced1;
+    text-align: center;
+    line-height: 48px;
+    font-size: 26px;
+    color: #7a7d80;
+}
+
+.thread-members-invite-modal:hover span {
+    color: #00695c;
+}
+
 /* ---- THREAD POSTS ---- */
 
 .thread-posts {
@@ -322,6 +352,22 @@
 
 .thread-comment-form textarea {
     resize: none;
+}
+
+/* ---- THREAD INVITE ---- */
+
+.invite-treat {
+
+}
+
+.invite-treat-preview {
+    overflow: hidden;
+    height: 60px;
+    transition: height .6s;
+}
+
+.invite-treat-preview.expanded {
+    height: auto;
 }
 
 /* ---- RESPONSIVE ---- */

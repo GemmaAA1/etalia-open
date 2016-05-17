@@ -1,4 +1,10 @@
-<div class="thread-members-list"></div>
+<div class="thread-members-list">
+    {{#if invite_button}}
+    <a href="javascript: void(0)" class="thread-members-invite-modal">
+        <span class="eai eai-plus-thin"></span>
+    </a>
+    {{/if}}
+</div>
 <div class="thread-members-toggle">
     <a href="javascript: void(0)">
         <span class="eai eai-down"></span>

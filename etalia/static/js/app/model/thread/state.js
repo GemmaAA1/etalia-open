@@ -45,7 +45,7 @@ define([
                 throw 'Unexpected watch state.';
             }
 
-            return this.save({watch: watch}, {wait: true});
+            return this.save({watch: watch}, {patch: true, wait: true});
         },
 
         toggleBanned: function() {
@@ -59,7 +59,7 @@ define([
                 throw 'Unexpected watch state.';
             }
 
-            return this.save({watch: watch}, {wait: true});
+            return this.save({watch: watch}, {patch: true, wait: true});
         },
 
         join: function() {
@@ -71,7 +71,7 @@ define([
                 throw 'Unexpected participate state.';
             }
 
-            return this.save({participate: participate}, {wait: true});
+            return this.save({participate: participate}, {patch: true, wait: true});
         },
 
         leave: function() {
@@ -83,7 +83,7 @@ define([
                 throw 'Unexpected participate state.';
             }
 
-            return this.save({participate: participate}, {wait: true});
+            return this.save({participate: participate}, {patch: true, wait: true});
         }
     });
 

@@ -6,12 +6,11 @@ define([
     'handlebars',
     'moment',
     'app/ui/layout',
-    //'app/ui/controls',
     'bootstrap',
     'backbone/relational',
     'backbone/paginator',
     'backbone/forms'
-], function(require, $, _, Backbone, Handlebars, Moment, Layout/*, Controls*/) {
+], function (require, $, _, Backbone, Handlebars, Moment, Layout) {
 
     /**
      * Backbone
@@ -35,13 +34,13 @@ define([
 
     Backbone.View.prototype.__remove = Backbone.View.prototype.remove;
     Backbone.View = Backbone.View.extend({
-        pushSubView: function(view) {
+        pushSubView: function (view) {
             if (!this.subViews) {
                 this.subViews = [];
             }
             this.subViews.push(view);
         },
-        remove: function() {
+        remove: function () {
             if (this.subViews) {
                 _.each(this.subViews, function (view) {
                     view.remove();
@@ -92,22 +91,22 @@ define([
     };
 
     var hasOneSetKeyContents = Backbone.HasOne.prototype.__setKeyContents = Backbone.HasOne.prototype.setKeyContents;
-    Backbone.HasOne.prototype.setKeyContents = function( keyContents ) {
+    Backbone.HasOne.prototype.setKeyContents = function (keyContents) {
         // Extract ID from Api Url
         if (isApiUrl(keyContents)) {
             keyContents = extractIdFromApiUrl(keyContents);
         }
-        hasOneSetKeyContents.call( this, keyContents );
+        hasOneSetKeyContents.call(this, keyContents);
     };
 
     // @TODO test
     var hasManySetKeyContents = Backbone.HasMany.prototype.__setKeyContents = Backbone.HasMany.prototype.setKeyContents;
-    Backbone.HasMany.prototype.setKeyContents = function( keyContents ) {
+    Backbone.HasMany.prototype.setKeyContents = function (keyContents) {
 
         // Asserts that keyContents is an array of api url string
         if (_.isArray(keyContents)) {
             var assert = true;
-            _.each(keyContents, function(value) {
+            _.each(keyContents, function (value) {
                 if (!isApiUrl(value)) {
                     assert = false;
                 }
@@ -116,16 +115,16 @@ define([
 
         // Convert url[] to id[]
         if (assert) {
-            keyContents = _.map(keyContents, function(value) {
+            keyContents = _.map(keyContents, function (value) {
                 return extractIdFromApiUrl(value);
             });
         }
 
-        hasManySetKeyContents.call( this, keyContents );
+        hasManySetKeyContents.call(this, keyContents);
     };
-    Backbone.HasMany.prototype.getCount = function() {
+    Backbone.HasMany.prototype.getCount = function () {
         var relatedCount = this.related.models.length,
-            idsCount     = this.keyIds.length;
+            idsCount = this.keyIds.length;
 
         return relatedCount > 0 ? relatedCount : idsCount;
     };
@@ -172,7 +171,7 @@ define([
         <button type="submit" class="btn btn-primary"><%= submitButton %></button>\
       <% } %>\
     </form>\
-  ');
+    ');
     Backbone.Form.Field.template = _.template('\
     <div class="form-group field-<%= key %>">\
       <% if (title) { %>\
@@ -184,15 +183,15 @@ define([
         <p class="help-block"><%= help %></p>\
       </div>\
     </div>\
-  ');
+    ');
 
     Backbone.Form.editors.Select.prototype.__setValue = Backbone.Form.editors.Select.prototype.setValue;
     Backbone.Form.editors.Select = Backbone.Form.editors.Select.extend({
-        setValue: function(value) {
+        setValue: function (value) {
             if (typeof value === 'object') {
                 try {
                     value = value.get('id');
-                } catch(e) {
+                } catch (e) {
                 }
             }
             this.__setValue(value);
@@ -206,7 +205,7 @@ define([
         attributes: {
             'data-toggle': 'buttons'
         },
-        setValue: function(value) {
+        setValue: function (value) {
             this.__setValue(value);
             this.$('input[type=radio]:checked').closest('label').addClass('active');
         }
@@ -217,39 +216,39 @@ define([
         <input type="radio" name="<%= item.name %>" value="<%= item.value %>" id="<%= item.id %>" autocomplete="off"> <%= item.label %>\
       </label>\
     <% }); %>\
-  ', null, Backbone.Form.templateSettings)
+    ', null, Backbone.Form.templateSettings)
     });
 
     Backbone.Form.editors.Tinymce = Backbone.Form.editors.TextArea.extend({
 
         /*tagName: 'textarea',
 
-        events: {
-            'change': function() {
-                // The 'change' event should be triggered whenever something happens
-                // that affects the result of `this.getValue()`.
-                this.trigger('change', this);
-            },
-            'focus': function() {
-                // The 'focus' event should be triggered whenever an input within
-                // this editor becomes the `document.activeElement`.
-                this.trigger('focus', this);
-                // This call automatically sets `this.hasFocus` to `true`.
-            },
-            'blur': function() {
-                // The 'blur' event should be triggered whenever an input within
-                // this editor stops being the `document.activeElement`.
-                this.trigger('blur', this);
-                // This call automatically sets `this.hasFocus` to `false`.
-            }
-        },*/
+         events: {
+         'change': function() {
+         // The 'change' event should be triggered whenever something happens
+         // that affects the result of `this.getValue()`.
+         this.trigger('change', this);
+         },
+         'focus': function() {
+         // The 'focus' event should be triggered whenever an input within
+         // this editor becomes the `document.activeElement`.
+         this.trigger('focus', this);
+         // This call automatically sets `this.hasFocus` to `true`.
+         },
+         'blur': function() {
+         // The 'blur' event should be triggered whenever an input within
+         // this editor stops being the `document.activeElement`.
+         this.trigger('blur', this);
+         // This call automatically sets `this.hasFocus` to `false`.
+         }
+         },*/
 
         defaultSettings: {
             resize: false,
             schema: "html5-strict",
-            fix_list_elements : true,
+            fix_list_elements: true,
             keep_styles: false,
-            invalid_elements : "span",
+            invalid_elements: "span",
             statusbar: false,
             menubar: false,
             height: 160,
@@ -266,11 +265,11 @@ define([
 
         tinymceEditorId: null,
 
-        initialize: function(options) {
+        initialize: function (options) {
             Backbone.Form.editors.Base.prototype.initialize.call(this, options);
         },
 
-        render: function() {
+        render: function () {
             this.setValue(this.value);
 
             var that = this,
@@ -284,8 +283,8 @@ define([
                 this.defaultSettings,
                 {selector: '#' + that.tinymceEditorId}
             );
-            settings.setup = function(editor) {
-                var onChange = function() {
+            settings.setup = function (editor) {
+                var onChange = function () {
                     that.setValue(editor.getContent());
 
                     /*und.convert(editor.getContent(), function(err, markdown) {
@@ -297,7 +296,7 @@ define([
                 editor.on('change', onChange);
             };
 
-            require(['jquery', 'tinymce'], function($, tinymce) {
+            require(['jquery', 'tinymce'], function ($, tinymce) {
                 tinymce.EditorManager.execCommand('mceRemoveEditor', true, that.tinymceEditorId);
 
                 tinymce.init(settings);
@@ -306,9 +305,9 @@ define([
             return this;
         },
 
-        remove: function() {
+        remove: function () {
             var that = this;
-            require(['tinymce'], function(tinymce) {
+            require(['tinymce'], function (tinymce) {
                 tinymce.EditorManager.execCommand('mceRemoveEditor', true, that.tinymceEditorId);
             });
 
@@ -321,29 +320,29 @@ define([
         }
 
         /*getValue: function() {
-            return this.$el.val();
-        },
+         return this.$el.val();
+         },
 
-        setValue: function(value) {
-            this.$el.val(value);
-        },
+         setValue: function(value) {
+         this.$el.val(value);
+         },
 
-        focus: function() {
-            if (this.hasFocus) return;
+         focus: function() {
+         if (this.hasFocus) return;
 
-            // This method call should result in an input within this editor
-            // becoming the `document.activeElement`.
-            // This, in turn, should result in this editor's `focus` event
-            // being triggered, setting `this.hasFocus` to `true`.
-            // See above for more detail.
-            this.$el.focus();
-        },
+         // This method call should result in an input within this editor
+         // becoming the `document.activeElement`.
+         // This, in turn, should result in this editor's `focus` event
+         // being triggered, setting `this.hasFocus` to `true`.
+         // See above for more detail.
+         this.$el.focus();
+         },
 
-        blur: function() {
-            if (!this.hasFocus) return;
+         blur: function() {
+         if (!this.hasFocus) return;
 
-            this.$el.blur();
-        }*/
+         this.$el.blur();
+         }*/
     });
 
 
@@ -377,10 +376,38 @@ define([
                 return options.inverse(this);
         }
     });
-    Handlebars.registerHelper('date', function(date) {
-        return Moment(date).format('MMM D, YYYY');
+    Handlebars.registerHelper('date', function (date, format) {
+        if (!_.isString(format)) {
+            format = 'MMM D, YYYY';
+        }
+        return Moment(date).format(format);
     });
 
+
+    /**
+     * Polyfills
+     */
+    if (!String.prototype.trim) {
+        String.prototype.trim = function (str) {
+            return str.replace(/^\s+|\s+$/gm,'');
+        }
+    }
+
+    var Validator = {
+        isRelation: function(relation) {
+            if (_.isObject(relation)) {
+                if (relation instanceof Backbone.Model) {
+                    relation = relation.attributes;
+                }
+                if (relation.hasOwnProperty('link') && 0 < String(relation.link).length) {
+                    return true;
+                }
+            } else if (0 < parseInt(relation)) {
+                return true;
+            }
+            return false;
+        }
+    };
 
     /**
      * App
@@ -391,8 +418,8 @@ define([
         Backbone: Backbone,
         Handlebars: Handlebars,
 
+        Validator: Validator,
         Layout: Layout,
-        //Controls: Controls,
 
         Const: {},
         Model: {},
@@ -402,7 +429,7 @@ define([
                 $target: null,
                 append: false
             },
-            create: function(view, options) {
+            create: function (view, options) {
                 options = _.defaults(options, App.View.createDefaults);
                 if (options.$target && options.$target.length) {
                     if (true === options.append) {
@@ -419,11 +446,7 @@ define([
             api_root: '/api/v1'
         },
 
-        defaults: function(options, defaults) {
-            return _.extend(options, defaults);
-        },
-
-        log: function() {
+        log: function () {
             if (this.config.debug) {
                 if (arguments.length > 1) {
                     console.log(arguments[0], Array.prototype.splice.call(arguments, 1));

@@ -502,6 +502,10 @@
     margin-right: 45px;
 }
 
+.thumb .card.standalone {
+    margin-right: 0;
+}
+
 /* ------------------------------------ ACTIONS ------------------------------------ */
 
 .actions a {
