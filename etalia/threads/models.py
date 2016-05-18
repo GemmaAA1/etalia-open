@@ -62,7 +62,9 @@ class Thread(TimeStampedModel):
         return self.get_active_members()
 
     def __str__(self):
-        return '{0}@{1}'.format(self.short_title, self.user)
+        return '{0} | {1} | {2}'.format(self.id,
+                                        self.short_title,
+                                        self.user)
 
     def get_active_members(self):
         User = get_user_model()

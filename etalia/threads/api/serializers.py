@@ -214,11 +214,13 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
         return value
 
     def validate_participate(self, value):
+        """Check that thread is joined if request is to leave thread"""
         if self.initial_data:
             if value == THREAD_LEFT and \
-                            self.initial_data['participate'] is not THREAD_JOINED:
+                    not self.initial_data.get('participate') == THREAD_JOINED:
                 raise serializers.ValidationError(
                     "You cannot leave a thread that you have not joined")
+        return value
 
     def validate_thread(self, value):
         if not value.published_at:
@@ -415,13 +417,14 @@ class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
             'id',
             'link',
         )
+        validators = []
 
     def validate_thread(self, value):
         # If thread private, must be owner to invite people to thread
         if value.privacy == THREAD_PRIVATE and \
-                        value.user is not self.context['request'].user:
+                        not value.user == self.context['request'].user:
             raise serializers.ValidationError(
-                "You cannot invite another user to this thread. "
+                "You cannot invite another user to join this thread. "
                 "This thread is private and your are not the owner")
         # Thread must be published
         if value.published_at is None:
@@ -444,16 +447,36 @@ class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
         return value
 
     def validate_to_user(self, value):
-        """ Cannot have an invite to yourself, that would be awkward"""
-        if not self.initial_data and value == self.context['request'].user:
-            raise serializers.ValidationError("to_user cannot be current user")
+        """ Cannot have an invite to yourself or to a member of the thread"""
+        if self.context['view'].action == 'create':
+            if value == self.context['request'].user:
+                raise serializers.ValidationError("to_user cannot be current user")
         return value
 
     def validate_status(self, value):
         """ Status is PENDING for new invite"""
-        if not self.initial_data and not value == THREAD_INVITE_PENDING:
-            raise serializers.ValidationError("status must be PENDING for new invite")
+        if self.context['view'].action == 'create':
+            if not value == THREAD_INVITE_PENDING:
+                raise serializers.ValidationError("status must be PENDING for new invite")
         return value
+
+    def validate(self, data):
+        """Validate that:
+            user has not already been invited
+            user is not a member of the thread already"""
+        if self.context['view'].action == 'create':
+            # user has not already been invited
+            if ThreadUserInvite.objects.filter(thread=data.get('thread'),
+                                               from_user=data.get('from_user'),
+                                               to_user=data.get('to_user'))\
+                    .exists():
+                raise serializers.ValidationError("You already invited this user to this thread")
+            # user is not a member of the thread
+            to_user = data.get('to_user')
+            thread = data.get('thread')
+            if to_user in thread.members:
+                raise serializers.ValidationError("The user you are inviting is already in the thread")
+        return data
 
     def save(self, **kwargs):
         instance = super(ThreadUserInviteSerializer, self).save(**kwargs)

@@ -410,29 +410,6 @@ class ThreadUserViewSet(MultiSerializerMixin,
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    def perform_threaduser_action(self, request, action):
-        """Perform ThreadUser related action (join, pin, etc.)"""
-        instance = self.get_object()
-        self.check_object_permissions(request, instance)
-        method = getattr(instance, action)
-        method()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-        # def partial_update(self, request, *args, **kwargs):
-        #     kwargs['context'] = self.get_serializer_context()
-        #     try:  # pop pk, unrelevant for patch
-        #         kwargs.pop('pk')
-        #     except KeyError:
-        #         pass
-        #     serializer_class = self.serializer_class['patch']
-        #     serializer = serializer_class(data=request.data, **kwargs)
-        #     serializer.is_valid(raise_exception=True)
-        #     instance = self.get_object()
-        #     self.perform_patch_update(serializer, instance)
-        #     serializer = self.get_serializer(instance)
-        #     return Response(serializer.data)
-
 
 class ThreadUserInviteViewSet(MultiSerializerMixin,
                               mixins.CreateModelMixin,
