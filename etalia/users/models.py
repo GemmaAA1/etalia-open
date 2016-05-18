@@ -138,8 +138,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     affiliation = models.ForeignKey(Affiliation, null=True, default=None)
 
-    photo = models.ImageField(upload_to='photos', null=True)
-
+    # photo = models.ImageField(upload_to='photos', null=True)
+    #
     relationships = models.ManyToManyField('self', through='Relationship',
                                           symmetrical=False,
                                           related_name='related_to')
