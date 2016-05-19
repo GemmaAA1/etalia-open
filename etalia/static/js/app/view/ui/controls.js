@@ -267,6 +267,8 @@ define([
         },
 
         onChange: function() {
+            this._handleVisibility();
+
             if (this.model.get('value')) {
                 this.$el.addClass('active');
             } else {
@@ -324,12 +326,16 @@ define([
             this.search.open();
         },
 
-        getData: function() {
+        getContext: function() {
             var data = {};
 
             if (true === this.pin.model.get('value')) {
                 data.pinned = 1;
             }
+
+            // TODO Timespan
+
+            // TODO Cluster
 
             var search = String(this.search.model.get('value'));
             if (0 < search.length) {
@@ -340,7 +346,7 @@ define([
         },
 
         dispatchChange: function() {
-            this.trigger('controls-change');
+            this.trigger('context-change');
         },
 
         render: function () {

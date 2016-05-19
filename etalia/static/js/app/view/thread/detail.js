@@ -50,6 +50,7 @@ define([
             form.once('validation_success', function () {
                 form.model.save(null, {
                     wait: true,
+                    validate: false,
                     success: function () {
                         modal.close();
                     },

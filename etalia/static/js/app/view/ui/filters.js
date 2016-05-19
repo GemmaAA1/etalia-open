@@ -30,7 +30,7 @@ define([
 
             this.model.set('active', !this.model.get('active'));
 
-            this.groupView.filtersView.trigger('filters-change');
+            this.groupView.filtersView.trigger('context-change');
         },
 
         render: function () {
@@ -145,7 +145,7 @@ define([
             return this;
         },
 
-        getData: function() {
+        getContext: function() {
             var result = {};
 
             this.model.each(function (group) {
@@ -170,6 +170,39 @@ define([
             }
 
             return this;
+        },
+
+        load: function(url, data) {
+            var that = this;
+            App.$.get(url, {
+                    data: data,
+                    dataType: 'json'
+                })
+                .done(function(response) {
+                    if (response.hasOwnProperty('users')) {
+                        // TODO adapt with new filters format
+                        var group = new App.Model.Ui.FilterGroup({
+                                name: 'user_id',
+                                label: 'Users'
+                            }),
+                            entries = group.get('entries');
+
+                        App._.each(response['users'], function (user) {
+                            entries.add(user);
+                        });
+
+                        var groups = new App.Model.Ui.FilterGroups();
+                        groups.add(group);
+
+                        that.setGroups(groups);
+
+                        that.trigger('loaded');
+                    }
+                })
+                .fail(function() {
+                    App.log(arguments);
+                    throw 'Failed to fetch "' + url + '" filters.';
+                });
         },
 
         render: function () {

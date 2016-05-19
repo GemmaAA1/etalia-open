@@ -1,11 +1,14 @@
 {{#if list_mode}}
 <div class="actions">
+    {{!-- TODO Not in "Left" tab--}}
     <a href="javascript: void(0)" class="thumb-pin{{thread_pin_class}}" title="Pin/Unpin">
         <span class="eai eai-pin"></span>
     </a>
+    {{!-- TODO "Leave" icon if joined --}}
     <a href="javascript: void(0)" class="thumb-ban{{thread_ban_class}}" title="Remove from my threads">
         <span class="eai eai-remove"></span>
     </a>
+    {{!-- TODO "Join" icon if in "Pins" or "Left" tab --}}
 </div>
 {{/if}}
 <div class="card{{#if list_mode}}{{else}} standalone{{/if}}">
@@ -13,10 +16,12 @@
     <p class="title">
         {{#if list_mode}}
             <a href="javascript: void(0)">
+                {{thread_not_published_icon}}
                 {{thread_privacy_icon}}
                 {{title}}
             </a>
         {{else}}
+            {{thread_not_published_icon}}
             {{thread_privacy_icon}}
             {{title}}
         {{/if}}

@@ -256,7 +256,13 @@ define([
     });
     App.Handlebars.registerHelper('thread_privacy_icon', function() {
         if (this.privacy && this.privacy === App.Model.Thread.PRIVACY_PRIVATE) {
-            return new App.Handlebars.SafeString('<span class="eai eai-locked"></span>');
+            return new App.Handlebars.SafeString('<span class="eai eai-locked" title="Private thread"></span>');
+        }
+        return '';
+    });
+    App.Handlebars.registerHelper('thread_not_published_icon', function() {
+        if (null === this.published_at) {
+            return new App.Handlebars.SafeString('<span class="eai eai-exclamation" title="Not published"></span>');
         }
         return '';
     });

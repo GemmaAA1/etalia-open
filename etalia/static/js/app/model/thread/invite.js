@@ -154,6 +154,7 @@ define([
                 if (!force && 0 < invites.length) {
                     resolve(invites);
                 } else {
+                    // TODO Url with parameters
                     var collection = new App.Model.Invites();
                     collection
                         .fetch()

@@ -10,10 +10,41 @@
 {% endfor %}
 --}}
 
-<div class="list-title">
-    <button id="thread-invites-modal" type="button" class="btn btn-default">2 pending invitation</button>
-    <button id="thread-create-modal" type="button" class="btn btn-primary">Start a new thread</button>
-    <p><span>23</span> threads</p>
+<div class="list-header">
+
+    <div class="list-title">
+        <span>23</span> threads
+    </div>
+
+    <div class="list-controls">
+        {{! only in threads tab }}
+        <button id="thread-create-modal" type="button" class="btn btn-primary" title="Start a new thread">New thread</button>
+
+        {{! only in threads tab }}
+        <button id="thread-invites-modal" type="button" class="btn btn-default" title="2 pending invites" data-count="0">
+            <span class="eai eai-invites"></span>
+            <span class="count">2</span>
+        </button>
+
+        <button id="thread-toggle-not-published" type="button" class="btn btn-default" title="Filter : not published threads">
+            <span class="eai eai-exclamation"></span>
+        </button>
+
+        {{! only in threads tab }}
+        <div id="thread-toggle-type" class="btn-group" role="group">
+            <button id="thread-toggle-type-paper" type="button" class="btn btn-default" title="Filter : paper threads">
+                <span class="eai eai-paper"></span>
+            </button>
+            <button id="thread-toggle-type-question" type="button" class="btn btn-default" title="Filter : question threads">
+                <span class="eai eai-question"></span>
+            </button>
+        </div>
+
+        <button id="thread-toggle-private" type="button" class="btn btn-default" title="Filter : private threads">
+            <span class="eai eai-locked"></span>
+        </button>
+    </div>
+
 </div>
 
 <div data-list-placeholder></div>
