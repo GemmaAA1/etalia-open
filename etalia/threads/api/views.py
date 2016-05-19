@@ -72,6 +72,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **time-span=(int)**: Fetch only threads published in the past time-span days
     * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
     * **user_id[]=(int)**: Filter threads by user_id
+    * **type[]=(int)**: Filter threads by type
 
     ** Sub-routes: **
 
@@ -106,7 +107,9 @@ class ThreadViewSet(MultiSerializerMixin,
         'invited-accepted': {'type': int, 'min': 0, 'max': 1},
         'time-span': {'type': int, 'min': 0, 'max': 1e6},
         'view': {'type': str},
-        'sort-by': {'type': str}
+        'sort-by': {'type': str},
+        'type[]': {'type': list},
+        'user_id[]': {'type': list},
     }
 
     size_max_user_filter = 40
@@ -120,7 +123,10 @@ class ThreadViewSet(MultiSerializerMixin,
 
     def validate_query_params(self):
         for key, props in self.query_params_props.items():
-            param = self.request.query_params.get(key, None)
+            if props['type'] == list:
+                param = self.request.query_params.getlist(key, None)
+            else:
+                param = self.request.query_params.get(key, None)
             if param:
                 try:
                     val = props['type'](param)
@@ -208,6 +214,13 @@ class ThreadViewSet(MultiSerializerMixin,
                 queryset = queryset.filter(query)
             elif param == '0':
                 queryset = queryset.exclude(query)
+
+        # Thread Types
+        thread_types = [int(id_) for id_ in self.request.query_params.getlist('type[]', None)]
+        if thread_types:
+            queryset = queryset.filter(
+                Q(type__in=thread_types)
+            )
 
         # Filters
         uids = [int(id_) for id_ in self.request.query_params.getlist('user_id[]', None)]
