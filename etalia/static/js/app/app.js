@@ -454,6 +454,10 @@ define([
                     console.log(arguments[0]);
                 }
             }
+        },
+
+        getProperty: function(object, path) {
+            return object.hasOwnProperty(path) ? object[path] : object.get(path);
         }
     };
 

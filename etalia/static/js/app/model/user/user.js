@@ -1,4 +1,4 @@
-define(['app', 'app/model/user/user-lib'], function (App) {
+define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (App) {
 
     App.Model.User = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + '/user/users',
@@ -6,8 +6,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
         defaults: {
             email: null,
             first_name: null,
-            last_name: null,
-            photo_url: null
+            last_name: null
         },
 
         relations: [
@@ -22,6 +21,18 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                     type: App.Backbone.HasOne,
                     includeInJson: 'link'
                 }
+            },
+            {
+                type: App.Backbone.HasMany,
+                key: 'avatar',
+                relatedModel: App.Model.Avatar,
+                includeInJSON: false, //'link',
+                autoFetch: false/*,
+                reverseRelation: {
+                    key: 'user',
+                    type: App.Backbone.HasOne,
+                    includeInJson: false
+                }*/
             }
         ],
 
@@ -122,7 +133,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                 }
                 var relationShips = currentUser.getRelationships(),
                     //fromUserId = currentUser.get('id'),
-                    toUserId = toUser.hasOwnProperty('get') ? toUser.get('id') : toUser.id;
+                    toUserId = App.getProperty(toUser, 'id');
 
                 return new Promise(function (resolve, reject) {
                     relationShips
@@ -257,7 +268,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
         if (!user) {
             return 'Expected user as first argument';
         }
-        return user.get('first_name') + " " + user.get('last_name');
+        return App.getProperty(user, 'first_name') + " " + App.getProperty(user, 'last_name');
     });
 
     return App.Model.User;
