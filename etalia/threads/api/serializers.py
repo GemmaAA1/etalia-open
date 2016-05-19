@@ -44,8 +44,17 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
 
     def to_representation(self, instance):
         return {
-            'users': [UserFilterSerializer(instance=user, context=self.context).data
-                      for user in instance.get('users', None)]
+            'groups': [
+                {
+                    "name": "user_id",
+                    "label": "Users",
+                    "entries": [
+                        UserFilterSerializer(instance=user,
+                                             context=self.context).data
+                        for user in instance.get('users', None)
+                        ]
+                }
+            ]
         }
 
 

@@ -27,7 +27,7 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
                      serializers.HyperlinkedModelSerializer):
     """User serializer"""
 
-    avatar = AvatarSerializer(read_only=True, many=True, source='avatar_set')
+    avatars = AvatarSerializer(read_only=True, many=True, source='avatar_set')
 
     class Meta:
         model = User
@@ -47,27 +47,23 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
         )
 
 
-class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
+class UserFilterSerializer(serializers.ModelSerializer):
     """User serializer user in filter side panel"""
 
     count = serializers.IntegerField(read_only=True)
-    name = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        extra_kwargs = {
-            'link': {'view_name': 'api:user-detail'},
-        }
         fields = (
             'id',
-            'link',
-            'name',
+            'label',
             'count')
         read_only_fields = (
             '__all__'
         )
 
-    def get_name(self, obj):
+    def get_label(self, obj):
         return '{0} {1}'.format(obj.first_name, obj.last_name)
 
 
