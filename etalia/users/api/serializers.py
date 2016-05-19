@@ -12,20 +12,28 @@ from django.contrib.auth import get_user_model
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.library.api.serializers import PaperNestedSerializer
 from ..models import UserLibPaper, UserLib, Relationship
+from avatar.models import Avatar
 
 User = get_user_model()
+
+
+class AvatarSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Avatar
 
 
 class UserSerializer(One2OneNestedLinkSwitchMixin,
                      serializers.HyperlinkedModelSerializer):
     """User serializer"""
 
-    photo_url = serializers.URLField(read_only=True, source='photo.name')
+    avatar = AvatarSerializer(read_only=True, many=True, source='avatar_set')
 
     class Meta:
         model = User
         extra_kwargs = {
             'link': {'view_name': 'api:user-detail'},
+            'avatar': {'view_name': 'api:avatar-detail'},
         }
         fields = (
             'id',
@@ -33,7 +41,7 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
             'email',
             'first_name',
             'last_name',
-            'photo_url')
+            'avatar')
         read_only_fields = (
             '__all__'
         )
@@ -42,7 +50,6 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
 class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
     """User serializer user in filter side panel"""
 
-    photo_url = serializers.URLField(read_only=True, source='photo.name')
     count = serializers.IntegerField(read_only=True)
     name = serializers.SerializerMethodField()
 
@@ -55,7 +62,6 @@ class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'link',
             'name',
-            'photo_url',
             'count')
         read_only_fields = (
             '__all__'
@@ -67,7 +73,7 @@ class UserFilterSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserFullSerializer(serializers.HyperlinkedModelSerializer):
     """User serializer with full representation """
-    photo_url = serializers.URLField(read_only=True, source='photo.name')
+
     user_lib = serializers.HyperlinkedRelatedField(
         read_only=True,
         view_name='api:userlib-detail',
@@ -87,7 +93,6 @@ class UserFullSerializer(serializers.HyperlinkedModelSerializer):
             'email',
             'first_name',
             'last_name',
-            'photo_url',
             'user_lib',
             'following',
             'followers')
