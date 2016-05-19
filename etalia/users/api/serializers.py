@@ -33,7 +33,7 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
         model = User
         extra_kwargs = {
             'link': {'view_name': 'api:user-detail'},
-            'avatar': {'view_name': 'api:avatar-detail'},
+            'avatars': {'view_name': 'api:avatar-detail'},
         }
         fields = (
             'id',
@@ -41,7 +41,7 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
             'email',
             'first_name',
             'last_name',
-            'avatar')
+            'avatars')
         read_only_fields = (
             '__all__'
         )
