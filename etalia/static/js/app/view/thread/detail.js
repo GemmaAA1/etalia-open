@@ -28,13 +28,13 @@ define([
             "click .thread-members-invite-modal": "onInviteModalClick"
         },
 
-        listView: null,
+        //listView: null,
 
         initialize: function (options) {
-            if (!options.listView) {
+            /*if (!options.listView) {
                 throw 'options.listView is mandatory';
             }
-            this.listView = options.listView;
+            this.listView = options.listView;*/
 
             this.listenTo(this.model, "sync change", this.render);
             this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
