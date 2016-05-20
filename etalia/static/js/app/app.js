@@ -40,13 +40,16 @@ define([
             }
             this.subViews.push(view);
         },
-        remove: function () {
+        clearSubViews: function() {
             if (this.subViews) {
                 _.each(this.subViews, function (view) {
                     view.remove();
                 });
                 this.subViews = null;
             }
+        },
+        remove: function () {
+            this.clearSubViews();
             Backbone.View.prototype.__remove.call(this, arguments);
         }
     });

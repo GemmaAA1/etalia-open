@@ -13,7 +13,6 @@ define([
     App.View.Thread = App.View.Thread || {};
 
     return App.View.Thread.Detail = App.Backbone.View.extend({
-
         tagName: 'div',
         className: 'inner',
 
@@ -29,7 +28,14 @@ define([
             "click .thread-members-invite-modal": "onInviteModalClick"
         },
 
-        initialize: function () {
+        listView: null,
+
+        initialize: function (options) {
+            if (!options.listView) {
+                throw 'options.listView is mandatory';
+            }
+            this.listView = options.listView;
+
             this.listenTo(this.model, "sync change", this.render);
             this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
             this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);

@@ -6,17 +6,6 @@ define([
         tagName: 'div',
         className: 'thumb-list',
 
-        /*initialize: function(options) {
-            if (!options.model) {
-                throw 'options.model is mandatory';
-            }
-            var collection = this.model = options.model;
-            if (this.model.hasOwnProperty('fullCollection')) {
-                collection = this.model.fullCollection;
-            }
-
-        },*/
-
         addThumbView: function(view) {
             this.$el.append(view.render().$el);
             this.pushSubView(view);
@@ -45,17 +34,12 @@ define([
         },
 
         render: function () {
-            //this.$el.html(this.template({}));
-
             return this;
         }
     });
 
     App.View.List.create = function(options, createOptions) {
         options = options || {};
-        /*if (!options.tabs) {
-            throw 'options.tabs is expected to be a hash of tabs';
-        }*/
 
         var view = new App.View.List(options);
         if (createOptions) {

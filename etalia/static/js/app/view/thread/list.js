@@ -244,28 +244,58 @@ define([
                 throw 'Unexpected index';
             }
 
-            var detailModel = new App.Model.Detail({
-                list: this,
-                prev: 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null,
-                next: this.collection.fullCollection.at(modelIndex + 1),
+            var that = this,
+                detailModel = new App.Model.Detail({
+                //list: this,
+                //prev: 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null,
+                //next: this.collection.fullCollection.at(modelIndex + 1),
                 view: new App.View.Thread.Detail({
                     model: model
                 })
             });
+            detailModel.setCenterButton({
+                icon: 'close',
+                title: 'Back to threads list',
+                callback: function() {
+                    if (that.detailView) that.detailView.close();
+                }
+            });
+
+            var prevThread = 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null;
+            if (prevThread) {
+                detailModel.setLeftButton({
+                    title: 'Previous thread',
+                    caption: prevThread.get('title'),
+                    callback: function() {
+                        that.openDetail(prevThread);
+                    }
+                });
+            }
+
+            var nextThread = this.collection.fullCollection.at(modelIndex + 1);
+            if (nextThread) {
+                detailModel.setRightButton({
+                    title: 'Next thread',
+                    caption: nextThread.get('title'),
+                    callback: function() {
+                        that.openDetail(nextThread);
+                    }
+                });
+            }
 
             if (this.detailView) {
-                this.detailView.model.get('view').remove();
+                this.detailView.clearSubViews();
                 this.detailView.model.destroy();
                 this.detailView.model = detailModel;
             } else {
                 this.detailView = new App.View.Detail({
+                    listView: this,
                     model: detailModel
                 });
                 this.listenTo(this.detailView, "detail:prev", this.openDetail);
                 this.listenTo(this.detailView, "detail:next", this.openDetail);
             }
 
-            var that = this;
             model
                 .fetch({data: {view: 'nested'}})
                 .done(function() {

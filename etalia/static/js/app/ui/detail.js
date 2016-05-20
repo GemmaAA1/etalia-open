@@ -12,8 +12,8 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
         this.$element = $(this.config.element);
         this.$document = this.$element.find(this.config.document);
 
-        this.$nextButton = $('#detail-next');
-        this.$prevButton = $('#detail-prev');
+        this.$nextButton = $('.detail-nav-left button');
+        this.$prevButton = $('.detail-nav-right button');
 
         this.loaded = false;
         this.loadXhr = null;
@@ -21,7 +21,7 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
         this.paper = new Paper(options).init();
 
         var that = this;
-        $('#detail-close, #backdrop').on('click', function() {
+        $('.detail-nav-center button, #backdrop').on('click', function() {
             that.close();
         });
     };
