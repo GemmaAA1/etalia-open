@@ -1,7 +1,10 @@
 define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (App) {
 
+    var user_path = '/user/users',
+        relationship_path = '/user/relationships';
+
     App.Model.User = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/user/users',
+        urlRoot: App.config.api_root + user_path,
 
         defaults: {
             email: null,
@@ -24,7 +27,7 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
             },
             {
                 type: App.Backbone.HasMany,
-                key: 'avatar',
+                key: 'avatars',
                 relatedModel: App.Model.Avatar,
                 includeInJSON: false, //'link',
                 autoFetch: false/*,
@@ -46,7 +49,7 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
 
 
     App.Model.Relationship = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/user/relationships',
+        urlRoot: App.config.api_root + relationship_path,
 
         defaults: {
             status: null
@@ -75,6 +78,17 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
         return !!(status === App.Model.Relationship.STATUS_FOLLOWING
         || status === App.Model.Relationship.STATUS_BLOCKED);
     };
+
+
+    App.Model.Users = App.Backbone.Collection.extend({
+        url: App.config.api_root + user_path,
+        model: App.Model.User
+    });
+
+    App.Model.Relationships = App.Backbone.Collection.extend({
+        url: App.config.api_root + relationship_path,
+        model: App.Model.Relationship
+    });
 
 
     var currentUser = null;
@@ -106,7 +120,7 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
 
             currentUser.getRelationships = function (fetch) {
                 if (!relationships) {
-                    relationships = new App.Collection.Relationships();
+                    relationships = new App.Model.Relationships();
                 }
 
                 fetch = fetch || (relationshipsXhr ? false : true);

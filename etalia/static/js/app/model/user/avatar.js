@@ -29,7 +29,7 @@ define(['app', 'app/model/user/user'], function (App) {
             return 'Expected user as first argument';
         }
         var avatar = null,
-            avatars = App.getProperty(user, 'avatar');
+            avatars = App.getProperty(user, 'avatars');
         if (avatars.length) {
             avatar = avatars.find(function(avatar) {
                 return avatar.get('primary');

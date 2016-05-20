@@ -27,9 +27,8 @@ define([
             if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
                 if (!options.list) {
                     throw '"options.list" is mandatory is list mode.';
-                } else {
-                    this.list = options.list;
                 }
+                this.list = options.list;
             }
 
             this.listenTo(this.model, "change", this.render);

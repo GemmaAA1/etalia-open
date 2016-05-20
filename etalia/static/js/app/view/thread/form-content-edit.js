@@ -1,8 +1,4 @@
-define([
-    'app',
-    'app/collection/library/paper',
-    'app/model/thread/thread'
-], function (App) {
+define(['app', 'app/model/thread/thread'], function (App) {
 
     App.View.Thread = App.View.Thread || {};
 

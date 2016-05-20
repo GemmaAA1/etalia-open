@@ -1,7 +1,9 @@
 define(['app'], function (App) {
 
-    return App.Model.Author = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/library/authors',
+    var path = '/library/authors';
+
+    App.Model.Author = App.Backbone.RelationalModel.extend({
+        urlRoot: App.config.api_root + path,
 
         defaults: {
             first_name: null,
@@ -10,4 +12,11 @@ define(['app'], function (App) {
 
         schema: {}
     });
+
+    App.Model.Authors = App.Backbone.Collection.extend({
+        url: App.config.api_root + path,
+        model: App.Model.Author
+    });
+
+    return App.Model.Author
 });

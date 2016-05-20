@@ -1,13 +1,13 @@
 define([
     'app',
     'text!app/templates/thread/list.hbs',
+    'app/model/thread/thread',
     'app/view/list',
     'app/view/detail',
     'app/view/ui/modal',
     'app/view/thread/detail',
     'app/view/thread/thumb',
-    'app/view/thread/invite/treat',
-    'app/collection/thread/thread'
+    'app/view/thread/invite/treat'
 ], function (App, template) {
 
     App.View.Thread = App.View.Thread || {};
@@ -125,7 +125,7 @@ define([
                 this.collection.reset();
             }
 
-            this.collection = new App.Collection.Threads({
+            this.collection = new App.Model.Threads({
                 query: App._.extend(
                     this.listControls.getContext(),
                     this.controlsView.getContext(),

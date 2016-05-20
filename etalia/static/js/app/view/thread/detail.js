@@ -238,6 +238,16 @@ define([
                 );
             }
 
+            // Neighbors
+            // TODO
+            // No next/prev/close buttons but a back button (return to source detail).
+
+            /*this.pushSubView(
+                App.View.Thread.PostList.create({}, {
+                    $target: this.$('[data-neighbors-placeholder]')
+                })
+            );*/
+
             return this;
         }
     });

@@ -173,31 +173,16 @@ define([
         },
 
         load: function(url, data) {
-            var that = this;
-            App.$.get(url, {
-                    data: data,
-                    dataType: 'json'
+            var that = this,
+                groups = new App.Model.Ui.FilterGroups();
+
+            groups.fetch({
+                    url: url,
+                    data: data
                 })
-                .done(function(response) {
-                    if (response.hasOwnProperty('users')) {
-                        // TODO adapt with new filters format
-                        var group = new App.Model.Ui.FilterGroup({
-                                name: 'user_id',
-                                label: 'Users'
-                            }),
-                            entries = group.get('entries');
-
-                        App._.each(response['users'], function (user) {
-                            entries.add(user);
-                        });
-
-                        var groups = new App.Model.Ui.FilterGroups();
-                        groups.add(group);
-
-                        that.setGroups(groups);
-
-                        that.trigger('loaded');
-                    }
+                .done(function() {
+                    that.setGroups(groups);
+                    that.trigger('loaded');
                 })
                 .fail(function() {
                     App.log(arguments);

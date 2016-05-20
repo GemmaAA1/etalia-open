@@ -1,10 +1,9 @@
-define([
-    'app',
-    'app/model/user/user'
-], function (App) {
+define(['app', 'app/model/user/user'], function (App) {
+
+    var path = '/thread/comments';
 
     App.Model.Comment = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/thread/comments',
+        urlRoot: App.config.api_root + path,
 
         defaults: {
             position: null,
@@ -32,6 +31,11 @@ define([
             'author': App.getCurrentUser()
         });
     };
+
+    App.Model.Comments = App.Backbone.Collection.extend({
+        url: App.config.api_root + path,
+        model: App.Model.Comment
+    });
 
     return App.Model.Comment;
 });
