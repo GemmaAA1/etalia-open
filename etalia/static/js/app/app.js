@@ -40,13 +40,16 @@ define([
             }
             this.subViews.push(view);
         },
-        remove: function () {
+        clearSubViews: function() {
             if (this.subViews) {
                 _.each(this.subViews, function (view) {
                     view.remove();
                 });
                 this.subViews = null;
             }
+        },
+        remove: function () {
+            this.clearSubViews();
             Backbone.View.prototype.__remove.call(this, arguments);
         }
     });
@@ -454,6 +457,10 @@ define([
                     console.log(arguments[0]);
                 }
             }
+        },
+
+        getProperty: function(object, path) {
+            return object.hasOwnProperty(path) ? object[path] : object.get(path);
         }
     };
 

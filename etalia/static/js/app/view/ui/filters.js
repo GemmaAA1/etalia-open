@@ -30,7 +30,7 @@ define([
 
             this.model.set('active', !this.model.get('active'));
 
-            this.groupView.filtersView.trigger('filters-change');
+            this.groupView.filtersView.trigger('context-change');
         },
 
         render: function () {
@@ -145,7 +145,7 @@ define([
             return this;
         },
 
-        getData: function() {
+        getContext: function() {
             var result = {};
 
             this.model.each(function (group) {
@@ -170,6 +170,24 @@ define([
             }
 
             return this;
+        },
+
+        load: function(url, data) {
+            var that = this,
+                groups = new App.Model.Ui.FilterGroups();
+
+            groups.fetch({
+                    url: url,
+                    data: data
+                })
+                .done(function() {
+                    that.setGroups(groups);
+                    that.trigger('loaded');
+                })
+                .fail(function() {
+                    App.log(arguments);
+                    throw 'Failed to fetch "' + url + '" filters.';
+                });
         },
 
         render: function () {

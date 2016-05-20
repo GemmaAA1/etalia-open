@@ -5,11 +5,14 @@
            title="Pin/Unpin">
             <span class="eai eai-pin"></span>
         </a>
+
+        {{! TODO Only in "My stream" }}
         <a href="javascript: void(0)"
            class="detail-ban{{thread_ban_class}}"
            title="Remove from feed">
             <span class="eai eai-remove"></span>
         </a>
+        {{! TODO Only in "My threads" = leave icon }}
         <a href="javascript: void(0)"
            class="detail-library-trash loading-button"
            title="Move to trash">
@@ -37,6 +40,7 @@
 
         <p class="title">
             <a href="javascript: void(0)">
+                {{thread_not_published_icon}}
                 {{thread_privacy_icon}}
                 {{title}}
             </a>
@@ -147,11 +151,7 @@
                 <a href="javascript: void(0)" data-value="7">Week</a>
             </li>
         </ul>
-        <div class="thumb-list async-content">
-
-            <!-- TODO -->
-
-        </div>
+        <div data-neighbors-placeholder></div>
     </div>
     {{/if}}
 

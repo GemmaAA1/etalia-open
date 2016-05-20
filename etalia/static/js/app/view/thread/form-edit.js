@@ -1,7 +1,4 @@
-define([
-    'app',
-    'app/model/thread/thread'
-], function (App) {
+define(['app', 'app/model/thread/thread'], function (App) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -12,8 +9,8 @@ define([
                 privacy: {
                     type: "Radio",
                     options: [
-                        { label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
-                        { label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
+                        {label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
+                        {label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
                     ],
                     help: 'Interdum et malesuada fames ac ante ipsum primis in faucibus. ' +
                           'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
@@ -27,7 +24,7 @@ define([
                     type: 'Select',
                     options: function (callback) {
                         var user = App.getCurrentUser(),
-                            papers = new App.Collection.Papers();
+                            papers = new App.Model.Papers();
 
                         papers.url = App.config.api_root + '/user/user-libs/' + user.get('id') + '/papers';
                         papers

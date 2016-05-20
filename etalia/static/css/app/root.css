@@ -147,6 +147,21 @@ body.flap-opened.right .flap.right {
     right: 0;
 }
 
+span.count {
+    background-color: #ffffff;
+    border: 1px solid #cbced1;
+    border-radius: 9px;
+    bottom: -3px;
+    color: #6b6d70;
+    display: block;
+    font-size: 10px;
+    height: 18px;
+    left: -3px;
+    line-height: 15px;
+    position: absolute;
+    width: 18px;
+}
+
 /* ------------------------------------ TOP BAR ------------------------------------ */
 
 #top-bar {
@@ -452,6 +467,7 @@ p:empty {
 }
 
 .btn {
+    position: relative;
     font-size: 16px;
     padding: 5px 10px;
 }
@@ -539,6 +555,16 @@ p:empty {
 .open > .dropdown-toggle.btn-default.focus {
     color: #ffffff;
     background-color: #86b5b0;
+    border-color: #004f46;
+}
+
+.btn-default .count,
+.btn-primary .count {
+    border-color: #86b5b0;
+}
+
+.btn-default:hover  .count,
+.btn-primary:hover  .count {
     border-color: #004f46;
 }
 

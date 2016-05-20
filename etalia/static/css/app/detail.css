@@ -35,17 +35,20 @@ body.detail-opened #detail {
     min-height: 56px;
 }
 
-#detail > .bar button {
+.detail-nav,
+.detail-nav > button {
     display: inline-block;
 }
 
-#detail > .bar .eai {
+.detail-nav .eai {
     font-size: 16px;
 }
 
-#detail-close {
+.detail-nav-center {
     position: absolute;
     left: 50%;
+    width: 10px;
+    height: 40px;
     margin-left: -20px;
 }
 
@@ -55,31 +58,31 @@ body.detail-opened #detail {
     font-style: italic;
 }
 
-/* Prev button */
-#detail-prev {
+/* Left button */
+.detail-nav-left {
     float: left;
     text-align: left;
 }
-#detail-prev > span {
+.detail-nav-left > span {
     display: none;
     float: left;
     margin-left: 10px;
 }
-#detail-prev > button {
+.detail-nav-left > button {
     float: left;
 }
 
 /* Next button */
-#detail-next {
+.detail-nav-right {
     float: right;
     text-align: right;
 }
-#detail-next > span {
+.detail-nav-right > span {
     display: none;
     float: right;
     margin-right: 10px;
 }
-#detail-next > button {
+.detail-nav-right > button {
     float: right;
 }
 
@@ -251,8 +254,8 @@ body.detail-opened #detail {
         right: 20px;
     }
 
-    #detail-prev > span,
-    #detail-next > span {
+    .detail-nav-left > span,
+    .detail-nav-right > span {
         display: inline-block;
         max-width: 240px;
         white-space: nowrap;

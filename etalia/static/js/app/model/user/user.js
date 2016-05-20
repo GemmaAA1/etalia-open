@@ -1,13 +1,15 @@
-define(['app', 'app/model/user/user-lib'], function (App) {
+define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (App) {
+
+    var user_path = '/user/users',
+        relationship_path = '/user/relationships';
 
     App.Model.User = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/user/users',
+        urlRoot: App.config.api_root + user_path,
 
         defaults: {
             email: null,
             first_name: null,
-            last_name: null,
-            photo_url: null
+            last_name: null
         },
 
         relations: [
@@ -22,6 +24,18 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                     type: App.Backbone.HasOne,
                     includeInJson: 'link'
                 }
+            },
+            {
+                type: App.Backbone.HasMany,
+                key: 'avatars',
+                relatedModel: App.Model.Avatar,
+                includeInJSON: false, //'link',
+                autoFetch: false/*,
+                reverseRelation: {
+                    key: 'user',
+                    type: App.Backbone.HasOne,
+                    includeInJson: false
+                }*/
             }
         ],
 
@@ -35,7 +49,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
 
 
     App.Model.Relationship = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/user/relationships',
+        urlRoot: App.config.api_root + relationship_path,
 
         defaults: {
             status: null
@@ -64,6 +78,17 @@ define(['app', 'app/model/user/user-lib'], function (App) {
         return !!(status === App.Model.Relationship.STATUS_FOLLOWING
         || status === App.Model.Relationship.STATUS_BLOCKED);
     };
+
+
+    App.Model.Users = App.Backbone.Collection.extend({
+        url: App.config.api_root + user_path,
+        model: App.Model.User
+    });
+
+    App.Model.Relationships = App.Backbone.Collection.extend({
+        url: App.config.api_root + relationship_path,
+        model: App.Model.Relationship
+    });
 
 
     var currentUser = null;
@@ -95,7 +120,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
 
             currentUser.getRelationships = function (fetch) {
                 if (!relationships) {
-                    relationships = new App.Collection.Relationships();
+                    relationships = new App.Model.Relationships();
                 }
 
                 fetch = fetch || (relationshipsXhr ? false : true);
@@ -122,7 +147,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
                 }
                 var relationShips = currentUser.getRelationships(),
                     //fromUserId = currentUser.get('id'),
-                    toUserId = toUser.hasOwnProperty('get') ? toUser.get('id') : toUser.id;
+                    toUserId = App.getProperty(toUser, 'id');
 
                 return new Promise(function (resolve, reject) {
                     relationShips
@@ -257,7 +282,7 @@ define(['app', 'app/model/user/user-lib'], function (App) {
         if (!user) {
             return 'Expected user as first argument';
         }
-        return user.get('first_name') + " " + user.get('last_name');
+        return App.getProperty(user, 'first_name') + " " + App.getProperty(user, 'last_name');
     });
 
     return App.Model.User;

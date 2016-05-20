@@ -6,39 +6,74 @@ define([
 
     //var defaults = {};
 
-    return App.View.Detail = App.Backbone.View.extend({
+    App.View.DetailButton = App.Backbone.View.extend({
+        tagName: 'div',
+
+        template: App.Handlebars.compile(
+            '<button class="btn-circle" type="button">' +
+                '<span class="eai eai-{{icon}}"></span>' +
+            '</button>' +
+            '{{#if caption}}<span>{{caption}}</span>{{/if}}'
+        ),
+
+        events: {
+            "click": 'onClick'
+        },
+
+        render: function() {
+            this.$el.html(this.template(this.model.attributes));
+
+            return this;
+        },
+
+        onClick: function(e) {
+            e.preventDefault();
+
+            this.model.get('callback')(e);
+        }
+    });
+
+    App.View.Detail = App.Backbone.View.extend({
         tagName: 'div',
         id: 'detail',
 
         template: App.Handlebars.compile(template),
 
         events: {
-            "click #detail-close": "onCloseClick",
-            "click #detail-prev": "onPrevClick",
-            "click #detail-next": "onNextClick",
             "click": 'onClick'
         },
 
         initialize: function (options) {
-            //App._.defaults(options, defaults);
-
-            if (!this.model instanceof App.Model.Detail) {
-                throw 'Unexpected model type';
+            if (!options.model) {
+                throw 'options.model is mandatory';
             }
         },
 
         render: function () {
-            var prev = this.model.get('prev'),
-                next = this.model.get('next');
-
-            App.$('div[data-detail-placeholder]').replaceWith(this.$el.html(this.template({
-                prev: prev ? prev.attributes : null,
-                next: next ? next.attributes : null
-            })));
+            App.$('div[data-detail-placeholder]').replaceWith(this.$el.html(this.template({})));
 
             var that = this,
-                view = this.model.get('view').render();
-            view.$el.appendTo(this.$('.document .wrapper'));
+                $bar = this.$('.bar > .wrapper > .inner').empty(),
+                $document = this.$('.document > .wrapper').empty();
+
+            App._.forEach(['left', 'right', 'center'], function(name) {
+                var button = that.model.get(name + '_button');
+                if (button) {
+                    var view = new App.View.DetailButton({
+                        model: button,
+                        attributes: {
+                            'class': 'detail-nav detail-nav-' + name,
+                            title: button.get('title')
+                        }
+                    });
+                    $bar.append(view.render().$el);
+                    that.pushSubView(view);
+                }
+            });
+
+            var view = this.model.get('view').render();
+            $document.append(view.$el);
+            that.pushSubView(view);
 
             this.listenToOnce(view, 'close', function() {
                 that.close();
@@ -47,28 +82,10 @@ define([
             return this.open();
         },
 
-        onPrevClick: function() {
-            var prev = this.model.get('prev');
-            if (prev) {
-                this.trigger('detail:prev', prev, this);
-            }
-        },
-
-        onNextClick: function() {
-            var next = this.model.get('next');
-            if (next) {
-                this.trigger('detail:next', next, this);
-            }
-        },
-
         onClick: function(e) {
             if (App.$(e.target).attr('id') === 'detail-document') {
                 this.close();
             }
-        },
-
-        onCloseClick: function() {
-            this.close();
         },
 
         open: function() {
@@ -80,9 +97,11 @@ define([
         close: function() {
             App.$('body').removeClass('detail-opened');
 
-            this.model.get('view').remove();
+            this.clearSubViews();
 
             return this;
         }
     });
+
+    return App.View.Detail;
 });

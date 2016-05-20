@@ -1,8 +1,4 @@
-define([
-    'app',
-    'app/collection/library/paper',
-    'app/model/thread/thread'
-], function (App) {
+define(['app', 'app/model/thread/thread'], function (App) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -34,7 +30,7 @@ define([
                 type: 'Select',
                 options: function(callback) {
                     var user = App.getCurrentUser(),
-                        papers = new App.Collection.Papers();
+                        papers = new App.Model.Papers();
 
                     papers.url = App.config.api_root + '/user/user-libs/' + user.get('id') + '/papers';
                     papers

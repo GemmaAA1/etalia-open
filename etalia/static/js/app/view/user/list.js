@@ -50,7 +50,7 @@ define([
     App.View.User.List.create = function(options, createOptions) {
         options = options || {};
         if (!options.model) {
-            options.model = new App.Collection.Users();
+            options.model = new App.Model.Users();
         }
 
         var list = new App.View.User.List(options);

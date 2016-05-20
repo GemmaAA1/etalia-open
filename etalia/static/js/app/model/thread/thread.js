@@ -2,12 +2,14 @@ define([
     'app',
     'app/model/thread/state',
     'app/model/library/paper',
-    'app/collection/thread/post',
-    'app/collection/user/user'
+    'app/model/thread/post',
+    'app/model/user/user'
 ], function (App) {
 
+    var path = '/thread/threads';
+
     App.Model.Thread = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/thread/threads',
+        urlRoot: App.config.api_root + path,
 
         defaults: {
             link: null,
@@ -48,7 +50,7 @@ define([
                 type: App.Backbone.HasMany,
                 key: 'posts',
                 relatedModel: App.Model.Post,
-                collectionType: App.Collection.Posts,
+                collectionType: App.Model.Posts,
                 includeInJSON: false,
                 reverseRelation: {
                     key: 'thread',
@@ -60,7 +62,7 @@ define([
                 type: App.Backbone.HasMany,
                 key: 'members',
                 relatedModel: App.Model.User,
-                collectionType: App.Collection.Users,
+                collectionType: App.Model.Users,
                 includeInJSON: false
             }
         ],
@@ -178,6 +180,22 @@ define([
         }
     });
 
+    App.Model.Threads = App.Backbone.PageableCollection.extend({
+        url: App.config.api_root + path,
+        mode: 'infinite',
+        model: App.Model.Thread,
+
+        initialize: function(options) {
+            App._.defaults(options, {
+                query: {
+                    view: 'nested'
+                }
+            });
+
+            this.queryParams = options.query;
+        }
+    });
+
     App.Model.Thread.validators = {
         privacy: function (privacy) {
             if(!App.Model.Thread.isValidPrivacy(privacy)) {
@@ -256,7 +274,13 @@ define([
     });
     App.Handlebars.registerHelper('thread_privacy_icon', function() {
         if (this.privacy && this.privacy === App.Model.Thread.PRIVACY_PRIVATE) {
-            return new App.Handlebars.SafeString('<span class="eai eai-locked"></span>');
+            return new App.Handlebars.SafeString('<span class="eai eai-locked" title="Private thread"></span>');
+        }
+        return '';
+    });
+    App.Handlebars.registerHelper('thread_not_published_icon', function() {
+        if (null === this.published_at) {
+            return new App.Handlebars.SafeString('<span class="eai eai-exclamation" title="Not published"></span>');
         }
         return '';
     });

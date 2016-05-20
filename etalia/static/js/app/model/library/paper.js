@@ -4,8 +4,10 @@ define([
     'app/model/library/author'
 ], function (App) {
 
+    var path = '/library/papers';
+
     App.Model.Paper = App.Backbone.RelationalModel.extend({
-        urlRoot: App.config.api_root + '/library/papers',
+        urlRoot: App.config.api_root + path,
 
         defaults: {
             di_doi: null,
@@ -40,6 +42,11 @@ define([
         toString: function() {
             return this.get('title');
         }
+    });
+
+    App.Model.Papers = App.Backbone.Collection.extend({
+        url: App.config.api_root + path,
+        model: App.Model.Paper
     });
 
     /**

@@ -34,17 +34,12 @@ define([
         },
 
         render: function () {
-            //this.$el.html(this.template({}));
-
             return this;
         }
     });
 
     App.View.List.create = function(options, createOptions) {
         options = options || {};
-        /*if (!options.tabs) {
-            throw 'options.tabs is expected to be a hash of tabs';
-        }*/
 
         var view = new App.View.List(options);
         if (createOptions) {

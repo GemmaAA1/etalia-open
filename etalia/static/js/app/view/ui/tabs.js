@@ -25,7 +25,7 @@ define([
             });
         },
 
-        getData: function() {
+        getContext: function() {
             return this.getActiveTab().data;
         },
 
@@ -51,7 +51,7 @@ define([
                 });
                 tab.active = true;
                 this.render();
-                this.trigger('tab-selection', tab.data);
+                this.trigger('context-change', tab.data);
             } else {
                 throw 'Tab not found';
             }

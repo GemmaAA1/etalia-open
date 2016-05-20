@@ -1,7 +1,4 @@
-define([
-    'app',
-    'app/model/thread/invite'
-], function (App) {
+define(['app', 'app/model/thread/invite'], function (App) {
 
     App.View.Thread.InviteCreateForm = App.Backbone.Form.extend({
 
@@ -10,7 +7,7 @@ define([
                 type: 'Select',
                 title: 'Who',
                 options: function(callback) {
-                    var users = new App.Collection.Users();
+                    var users = new App.Model.Users();
 
                     // TODO users.url
                     users

@@ -20,8 +20,10 @@
                     </div>
                     {% endif %}
                 {% endfor %}
-                <div class="list-title">
-                    <p><span>{{ number_of_papers }}</span> publications suggested for you</p>
+                <div class="list-header">
+                    <div class="list-title">
+                        <span>{{ number_of_papers }}</span> publications suggested for you
+                    </div>
                 </div>
                 <div class="endless_data thumb-list async-content">
                     {% include page_template %}
