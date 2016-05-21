@@ -14,7 +14,6 @@ import names
 from subprocess import call
 from random import randrange
 from datetime import timedelta, datetime, date
-from autofixture import AutoFixture
 
 NB_THREADS = 50
 NB_POSTS = 200
@@ -252,6 +251,11 @@ if __name__ == '__main__':
     # fetch path
     root_path = fetch_path()
 
+    # Run pip requirements
+    call(["pip",
+          "install",
+          "-r", os.path.join(root_path, "requirements/development.txt")])
+
     import django
     django.setup()
     from django.core.files import File
@@ -272,6 +276,7 @@ if __name__ == '__main__':
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
     from utils.avatar import AvatarGenerator
+    from autofixture import AutoFixture
 
     User = get_user_model()
 
@@ -286,11 +291,6 @@ if __name__ == '__main__':
     # Fetch new papers
     if args.papers:
         fetch_new_papers()
-
-    # Run pip requirements
-    call(["pip",
-          "install",
-          "-r", os.path.join(root_path, "requirements/development.txt")])
 
     # Apply migrations
     call([os.path.join(root_path, "manage.py"), "migrate"])
