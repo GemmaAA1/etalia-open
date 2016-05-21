@@ -7,6 +7,7 @@ from __future__ import unicode_literals, absolute_import
 import os
 import sys
 import copy
+import yaml
 import random
 import argparse
 from argparse import RawTextHelpFormatter
@@ -22,6 +23,8 @@ NB_USERS = 50
 NB_RELATIONSHIPS = 100
 NB_THREADUSER = 400
 INIT_DATA_FILE = os.path.join('data', 'init_data.json')
+MODEL_FILE = 'models.yaml'
+MODEL_NAME = 'test'
 
 
 def update():
@@ -226,7 +229,6 @@ def fetch_new_papers():
     arxiv_run('arxiv_all')
     elsevier_run('elsevier_all')
     sys.exit()
-
 
 if __name__ == '__main__':
 
