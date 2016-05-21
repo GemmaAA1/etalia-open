@@ -1553,7 +1553,7 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
             "SELECT nlp_threadvectors.id, "
             "       nlp_threadvectors.thread_id, "
             "       vector, "
-            "       published_at"
+            "       published_at "
             "FROM nlp_threadvectors LEFT JOIN threads_thread "
             "ON nlp_threadvectors.thread_id=threads_thread.id "
             "WHERE model_id=%s"
