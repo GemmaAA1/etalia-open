@@ -9,6 +9,7 @@ import sys
 import copy
 import random
 import argparse
+from argparse import RawTextHelpFormatter
 import names
 from subprocess import call
 from random import randrange
@@ -229,10 +230,14 @@ def fetch_new_papers():
 
 
 if __name__ == '__main__':
-    """Update Etalia in dev"""
 
     # Input parser
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=
+                                     'Update Etalia data in dev:\n'
+                                     '- Populate/update database with data\n'
+                                     '- Update NLP objects\n'
+                                     '- Update streams\n',
+                                     formatter_class=RawTextHelpFormatter)
     parser.add_argument("-p", "--papers",
                         help="Fetch new papers",
                         action="store_true")
@@ -240,7 +245,7 @@ if __name__ == '__main__':
                         help="Flush database",
                         action="store_true")
     parser.add_argument("-l", "--load",
-                        help="Load database from init_data.json",
+                        help="Load database with fixture (from {0})".format(INIT_DATA_FILE),
                         action="store_true")
     args = parser.parse_args()
 
