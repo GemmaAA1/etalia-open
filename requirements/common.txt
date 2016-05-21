@@ -11,6 +11,7 @@ beautifulsoup4==4.3.2
 biopython==1.65
 celery==3.1.18
 defusedxml==0.4.1
+django-autofixture==0.12.1
 django-avatar==2.1.1
 django-braces==1.8.0
 django-disqus==0.5
