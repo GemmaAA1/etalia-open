@@ -8,32 +8,43 @@ import os
 import sys
 import copy
 import random
+import argparse
+import names
 from subprocess import call
+from random import randrange
+from datetime import timedelta, datetime, date
+from autofixture import AutoFixture
+
+NB_THREADS = 50
+NB_POSTS = 200
+NB_COMMENTS = 200
+NB_USERS = 50
+NB_RELATIONSHIPS = 100
+NB_THREADUSER = 400
+INIT_DATA_FILE = os.path.join('data', 'init_data.json')
 
 
 def update():
-    from django.contrib.auth import get_user_model
-    from etalia.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
-    from etalia.library.models import Paper
-    from etalia.altmetric.tasks import update_altmetric
-    from etalia.altmetric.models import AltmetricModel
-    from etalia.feeds.tasks import reset_stream, reset_trend
-    from etalia.nlp.tasks import mostsimilar_full_update_all
-    from etalia.nlp.models import MostSimilarThread, MostSimilar, Model
-    from etalia.threads.tasks import mostsimilarthread_full_update_all, \
-        embed_threads
-    from etalia.threads.models import Thread
 
-    User = get_user_model()
+    update_papers()
+    update_users()
+    update_threads()
+    update_threadusers()
+    update_relationships()
+    update_mostsimilar()
+    update_streams()
 
-    # POPULATE DATABASE WITH SOME DATA
 
-    # fetching some recent papers from the consumers
-    pubmed_run('pubmed_all')
-    arxiv_run('arxiv_all')
-    elsevier_run('elsevier_all')
-
+def update_papers():
+    # Update date randomly
     papers = Paper.objects.all()
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=90)
+    for paper in papers:
+        paper.date_ep = random_date(start_date, end_date)
+        paper.date_fs = random_date(start_date, end_date)
+        paper.date_pp = random_date(start_date, end_date)
+        paper.save()
 
     # Fetch some Altmetric data and fake others (saving time)
     alt_objs = []
@@ -53,6 +64,114 @@ def update():
             if key == 'score':
                 value = float(random.randrange(1, 1000))
             setattr(altmetric, key, value)
+        altmetric.save()
+
+
+def update_users():
+    # Fake N users
+    if User.objects.all().count() < NB_USERS:
+        papers = Paper.objects.all()
+        new_user = NB_USERS - User.objects.all().count()
+        fake_names = [(names.get_first_name(), names.get_last_name()) for _ in range(new_user)]
+        for fn in fake_names:
+            user = User.objects.create_user(email='{0}.{1}@fake.com'.format(fn[0], fn[1]),
+                                            first_name=fn[0],
+                                            last_name=fn[1])
+            # add papers
+            nb_papers = random.randint(5, 50)
+            for i in range(nb_papers):
+                ulp, _ = UserLibPaper.objects.get_or_create(
+                    userlib=user.lib,
+                    paper=papers[random.randrange(0, papers.count())])
+                ulp.date_created = random_date(date(2000, 1, 1), date.today())
+                ulp.save()
+            # add avatar
+            ag = AvatarGenerator()
+            filename = ag.generate(128, user.email, 'png')
+            f = open(filename, 'rb')
+            avatar = Avatar(user=user, primary=True)
+            avatar.avatar.save(filename, File(f))
+
+
+def update_threads():
+    # Fake thread
+    if Thread.objects.all().count() < NB_THREADS:
+        fixture = AutoFixture(Thread, overwrite_defaults=True)
+        fixture.create(NB_THREADS - Thread.objects.all().count())
+    if ThreadPost.objects.all().count() < NB_POSTS:
+        fixture = AutoFixture(ThreadPost, overwrite_defaults=True)
+        fixture.create(NB_POSTS - ThreadPost.objects.all().count())
+    if ThreadComment.objects.all().count() < NB_COMMENTS:
+        fixture = AutoFixture(ThreadComment, overwrite_defaults=True)
+        fixture.create(NB_COMMENTS - ThreadComment.objects.all().count())
+
+    threads = Thread.objects.all()
+    posts = ThreadPost.objects.all()
+    comments = ThreadComment.objects.all()
+
+    # fix thread logic type
+    for thread in threads:
+        if thread.type == 1:
+            thread.paper = None
+            thread.save()
+    # fix thread members + Invites
+    for post in posts:
+        if post.user not in post.thread.members:
+            tu, _ = ThreadUser.objects.get_or_create(user=post.user,
+                                                  thread=post.thread)
+            tu.join()
+            if post.thread.privacy == THREAD_PRIVATE:
+                # Add Invite accepted
+                ThreadUserInvite.objects.get_or_create(
+                    thread=post.thread,
+                    from_user=post.thread.user,
+                    to_user=post.user,
+                    status=THREAD_INVITE_ACCEPTED)
+    for comment in comments:
+        if comment.user not in comment.post.thread.members:
+            tu, _ = ThreadUser.objects.get_or_create(user=comment.user,
+                                                  thread=comment.post.thread)
+            tu.join()
+            if comment.post.thread.privacy == THREAD_PRIVATE:
+                # Add Invite accepted
+                ThreadUserInvite.objects.get_or_create(
+                    thread=comment.post.thread,
+                    from_user=comment.post.thread.user,
+                    to_user=comment.user,
+                    status=THREAD_INVITE_ACCEPTED)
+
+    # Embed threads
+    pks = Thread.objects.all().exclude(published_at=None).values_list('pk', flat=True)
+    model = Model.objects.load(is_active=True)
+    model.infer_threads(pks)
+
+
+def update_threadusers():
+    # ThreadUser
+    if ThreadUser.objects.all().count() < NB_THREADUSER:
+        fixture = AutoFixture(ThreadUser, overwrite_defaults=True)
+        fixture.create(NB_THREADUSER - ThreadUser.objects.all().count())
+
+
+def update_relationships():
+    # Relationships
+    if Relationship.objects.all().count() < NB_RELATIONSHIPS:
+        fixture = AutoFixture(Relationship, overwrite_defaults=True)
+        fixture.create(NB_RELATIONSHIPS - Relationship.objects.all().count())
+
+
+def update_streams():
+    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
+    # Update users stream
+    for user_pk in us_pk:
+        reset_stream(user_pk)
+
+    # Update users trend
+    for user_pk in us_pk:
+        reset_trend(user_pk)
+
+
+def update_mostsimilar():
 
     # update mostsimilar
     if not MostSimilar.objects.filter(is_active=True).exists():
@@ -61,27 +180,12 @@ def update():
         ms.activate()
     mostsimilar_full_update_all()
 
-    # Embed threads
-    pks = Thread.objects.all().exclude(published_at=None).values_list('pk', flat=True)
-    model = Model.objects.load(is_active=True)
-    model.infer_threads(pks)
-    # embed_threads(pks, model.name)
-
     # update mostsimilarthread
     if not MostSimilarThread.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
         mst = MostSimilarThread.objects.create(model=model)
         mst.activate()
     mostsimilarthread_full_update_all()
-
-    # Update users stream
-    us_pk = User.objects.all().values_list('pk', flat=True)
-    for user_pk in us_pk:
-        reset_stream(user_pk)
-
-    # Update users trend
-    for user_pk in us_pk:
-        reset_trend(user_pk)
 
 
 def fetch_path():
@@ -94,17 +198,89 @@ def fetch_path():
     return os.path.abspath(os.getcwd())
 
 
-def setup_django():
-    import django
-    django.setup()
+def random_date(start, end):
+    """
+    This function will return a random datetime between two datetime
+    objects.
+    """
+    delta = end - start
+    int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
+    random_second = randrange(int_delta)
+    return start + timedelta(seconds=random_second)
+
+
+def flush():
+    call([os.path.join(root_path, "manage.py"), "flush"])
+    sys.exit()
+
+
+def load():
+    print("Loading data from {file}...".format(file=INIT_DATA_FILE))
+    call([os.path.join(root_path, "manage.py"), "loaddata",
+          os.path.join(root_path, "scripts", "routines", INIT_DATA_FILE)])
+    sys.exit()
+
+
+def fetch_new_papers():
+    pubmed_run('pubmed_all')
+    arxiv_run('arxiv_all')
+    elsevier_run('elsevier_all')
+    sys.exit()
 
 
 if __name__ == '__main__':
-    """Update db and relevant objects with fresh data
-    """
+    """Update Etalia in dev"""
+
+    # Input parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--papers",
+                        help="Fetch new papers",
+                        action="store_true")
+    parser.add_argument("-f", "--flush",
+                        help="Flush database",
+                        action="store_true")
+    parser.add_argument("-l", "--load",
+                        help="Load database from init_data.json",
+                        action="store_true")
+    args = parser.parse_args()
 
     # fetch path
     root_path = fetch_path()
+
+    import django
+    django.setup()
+    from django.core.files import File
+    from django.contrib.auth import get_user_model
+    from etalia.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
+    from etalia.library.models import Paper
+    from etalia.altmetric.tasks import update_altmetric
+    from etalia.altmetric.models import AltmetricModel
+    from etalia.feeds.tasks import reset_stream, reset_trend
+    from etalia.nlp.tasks import mostsimilar_full_update_all
+    from etalia.nlp.models import MostSimilarThread, MostSimilar, Model
+    from etalia.threads.tasks import mostsimilarthread_full_update_all, \
+        embed_threads
+    from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
+        ThreadUser, ThreadUserInvite
+    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED, \
+        THREAD_PUBLIC
+    from etalia.users.models import UserLibPaper, Relationship
+    from avatar.models import Avatar
+    from utils.avatar import AvatarGenerator
+
+    User = get_user_model()
+
+    # Reset DB
+    if args.flush:
+        flush()
+
+    # Load init_data.json
+    if args.load:
+        load()
+
+    # Fetch new papers
+    if args.papers:
+        fetch_new_papers()
 
     # Run pip requirements
     call(["pip",
@@ -113,9 +289,6 @@ if __name__ == '__main__':
 
     # Apply migrations
     call([os.path.join(root_path, "manage.py"), "migrate"])
-
-    # Setup django
-    setup_django()
 
     # Fetch data and update etalia objects
     update()
