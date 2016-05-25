@@ -28,7 +28,6 @@ MODEL_NAME = 'test'
 
 
 def update():
-
     update_papers()
     update_users()
     update_threads()
@@ -39,6 +38,7 @@ def update():
 
 
 def update_papers():
+    print('Updating papers...')
     # Update date randomly
     papers = Paper.objects.all()
     end_date = datetime.now().date()
@@ -71,6 +71,7 @@ def update_papers():
 
 
 def update_users():
+    print('Updating users...')
     # Fake N users
     if User.objects.all().count() < NB_USERS:
         papers = Paper.objects.all()
@@ -97,6 +98,7 @@ def update_users():
 
 
 def update_threads():
+    print('Updating threads...')
     # Fake thread
     if Thread.objects.all().count() < NB_THREADS:
         fixture = AutoFixture(Thread, overwrite_defaults=True)
@@ -150,6 +152,7 @@ def update_threads():
 
 
 def update_threadusers():
+    print('Updating ThreadUser states...')
     # ThreadUser
     if ThreadUser.objects.all().count() < NB_THREADUSER:
         fixture = AutoFixture(ThreadUser, overwrite_defaults=True)
@@ -157,6 +160,7 @@ def update_threadusers():
 
 
 def update_relationships():
+    print('Updating relationships...')
     # Relationships
     if Relationship.objects.all().count() < NB_RELATIONSHIPS:
         fixture = AutoFixture(Relationship, overwrite_defaults=True)
@@ -164,6 +168,7 @@ def update_relationships():
 
 
 def update_streams():
+    print('Updating streams...')
     us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
     # Update users stream
     for user_pk in us_pk:
@@ -175,7 +180,7 @@ def update_streams():
 
 
 def update_mostsimilar():
-
+    print('Updating MostSimilar...')
     # update mostsimilar
     if not MostSimilar.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
@@ -213,6 +218,7 @@ def random_date(start, end):
 
 
 def flush():
+    print('Flushing DB...')
     call([os.path.join(root_path, "manage.py"), "flush"])
     sys.exit()
 
@@ -225,20 +231,91 @@ def load():
 
 
 def fetch_new_papers():
+    print('Fetching new papers...')
     pubmed_run('pubmed_all')
     arxiv_run('arxiv_all')
     elsevier_run('elsevier_all')
     sys.exit()
 
+
+def dump_data():
+    print('Dump data to file...')
+    call([os.path.join(root_path, "manage.py"), "dumpdata",
+          "--exclude=auth",
+          "--exclude=contentypes",
+          "-o", os.path.join(root_path, "scripts", "routines", INIT_DATA_FILE)])
+    sys.exit()
+
+
+def init_publishers():
+    print('Init publishers...')
+    call([os.path.join(root_path, "manage.py"), "populate", "publisher", "all"])
+
+
+def init_consumers():
+    print('Init consumers...')
+    call([os.path.join(root_path, "manage.py"), "populate", "consumer", "pubmed", "--name", "pubmed_all", "--local"])
+    call([os.path.join(root_path, "manage.py"), "populate", "consumer", "arxiv", "--name", "arxiv_all"])
+    call([os.path.join(root_path, "manage.py"), "populate", "consumer", "elsevier", "--name", "elsevier_all"])
+
+
+def init_journals():
+    print('Init journals...')
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "thomson_local"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "pubmed_local"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "arxiv_local"])
+
+
+def init_publishers_prod():
+    init_publishers()
+
+
+def init_journals_prod():
+    print('Init journals...')
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "thomson"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "pubmed"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "arxiv"])
+
+
+def init_consumers_prod():
+    print('Init consumers...')
+    call([os.path.join(root_path, "manage.py"), "populate", "consumer", "pubmed", "--name", "pubmed_all"])
+    call([os.path.join(root_path, "manage.py"), "populate", "consumer", "arxiv", "--name", "arxiv_all"])
+    call([os.path.join(root_path, "manage.py"), "populate", "consumer", "elsevier", "--name", "elsevier_all"])
+
+
+def init_models():
+    print('Init NLP models...')
+    # Build NLP model and activate
+    with open(os.path.join(root_path, 'scripts', 'routines', MODEL_FILE)) as stream:
+        MODELS = yaml.load(stream)
+    model_params = [m for m in MODELS if m['name'] == MODEL_NAME][0]
+
+    model = Model.objects.create(**model_params)
+    papers = Paper.objects.filter(is_trusted=True,
+                                  title__regex=r'^.{5}.*',
+                                  abstract__regex=r'^.{10}.*')
+    model.dump(papers)
+    model.build_vocab_and_train()
+    model.activate()
+
+    # Populate paper with NLP signatures
+    model.save_journal_vec_from_bulk()
+    model.save_paper_vec_from_bulk()
+
+
 if __name__ == '__main__':
 
     # Input parser
     parser = argparse.ArgumentParser(description=
-                                     'Update Etalia data in dev:\n'
-                                     '- Populate/update database with data\n'
-                                     '- Update NLP objects\n'
-                                     '- Update streams\n',
+                                     'Init and Update Etalia database and related-objects in devolpment:\n',
                                      formatter_class=RawTextHelpFormatter)
+    parser.add_argument("-i", "--init",
+                        help="Init database from scratch",
+                        action="store_true")
+    parser.add_argument("--init-production",
+                        help="Init database in production from scratch",
+                        action="store_true")
     parser.add_argument("-p", "--papers",
                         help="Fetch new papers",
                         action="store_true")
@@ -248,10 +325,30 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--load",
                         help="Load database with fixture (from {0})".format(INIT_DATA_FILE),
                         action="store_true")
+    parser.add_argument("-m", "--models",
+                        help="Update NLP models",
+                        action="store_true")
+    parser.add_argument("-d", "--dump",
+                        help="Dump database to file {0}".format(INIT_DATA_FILE),
+                        action="store_true")
+
+
     args = parser.parse_args()
 
     # fetch path
     root_path = fetch_path()
+
+    # Reset DB
+    if args.flush:
+        flush()
+
+    # Load init_data.json
+    if args.load:
+        load()
+
+    # Dump to init_data.json
+    if args.load:
+        dump_data()
 
     # Run pip requirements
     call(["pip",
@@ -282,20 +379,28 @@ if __name__ == '__main__':
 
     User = get_user_model()
 
-    # Reset DB
-    if args.flush:
-        flush()
+    # Apply migrations
+    call([os.path.join(root_path, "manage.py"), "migrate"])
 
-    # Load init_data.json
-    if args.load:
-        load()
+    # Initialization
+    if args.init:
+        init_publishers()
+        init_journals()
+        init_consumers()
+        fetch_new_papers()
+        init_models()
+
+    if args.models:
+        init_models()
+
+    if args.init_production:
+        init_publishers_prod()
+        init_journals_prod()
+        init_consumers_prod()
 
     # Fetch new papers
     if args.papers:
         fetch_new_papers()
-
-    # Apply migrations
-    call([os.path.join(root_path, "manage.py"), "migrate"])
 
     # Fetch data and update etalia objects
     update()
