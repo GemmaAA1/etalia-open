@@ -50,12 +50,12 @@ Once you get the requirements installed, follow these steps to get started:
 
 and visit 127.0.0.1:8000
 
-### Updating Etalia data:
+### Updating Etalia:
 
-This script updates the database and related object with new data.
-
+An update script is provided to update database and related objects.
+See help menu for usage:
 `
-./scripts/routines/update.py
+./scripts/routines/update.py -h
 `
 
 ### Frontend dev ###

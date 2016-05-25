@@ -22,7 +22,12 @@ NB_COMMENTS = 200
 NB_USERS = 50
 NB_RELATIONSHIPS = 100
 NB_THREADUSER = 400
-INIT_DATA_FILE = os.path.join('data', 'init_data.json')
+NB_THREADS_USER = 10
+NB_POSTS_USER = 20
+NB_COMMENTS_USER = 20
+NB_RELATIONSHIPS_USER = 20
+NB_THREADUSER_USER = 20
+INIT_DEFAULT_FIXTURE_FILE = os.path.join('data', 'init_data.json')
 MODEL_FILE = 'models.yaml'
 MODEL_NAME = 'test'
 
@@ -35,6 +40,63 @@ def update():
     update_relationships()
     update_mostsimilar()
     update_streams()
+
+
+def update_oauth_user(email):
+    print('Updating user ({email})'.format(email=email))
+    user = User.objects.get(email=email)
+
+    # Thread
+    fixture = AutoFixture(Thread,
+                          field_values={'user': user},
+                          overwrite_defaults=True)
+    if Thread.objects.filter(user=user).count() < NB_THREADS_USER:
+        fixture.create(NB_THREADS_USER -
+                       Thread.objects.filter(user=user).count())
+    # Posts
+    fixture = AutoFixture(ThreadPost,
+                          field_values={'user': user},
+                          overwrite_defaults=True)
+    if ThreadPost.objects.filter(user=user).count() < NB_POSTS_USER:
+        fixture.create(NB_POSTS_USER -
+                       ThreadPost.objects.filter(user=user).count())
+    # Comments
+    fixture = AutoFixture(ThreadComment,
+                          field_values={'user': user},
+                          overwrite_defaults=True)
+    if ThreadComment.objects.filter(user=user).count() < NB_COMMENTS_USER:
+        fixture.create(NB_COMMENTS_USER -
+                       ThreadComment.objects.filter(user=user).count())
+
+    threads = Thread.objects.filter(user=user)
+    posts = ThreadPost.objects.filter(user=user)
+    comments = ThreadComment.objects.filter(user=user)
+
+    # Embed threads
+    pks = threads.exclude(published_at=None).values_list('pk', flat=True)
+    model = Model.objects.load(is_active=True)
+    model.infer_threads(pks)
+
+    fix_thread_logic(threads, posts, comments)
+
+    # ThreadUser
+    if ThreadUser.objects.filter(user=user).count() < NB_THREADUSER_USER:
+        fixture = AutoFixture(ThreadUser, overwrite_defaults=True,
+                              field_values={'user': user})
+        fixture.create(NB_THREADUSER_USER -
+                       ThreadUser.objects.filter(user=user).count())
+
+    # Relationships
+    if Relationship.objects.filter(from_user=user).count() < NB_RELATIONSHIPS_USER:
+        fixture = AutoFixture(Relationship, overwrite_defaults=True)
+        fixture.create(NB_RELATIONSHIPS -
+                       Relationship.objects.filter(from_user=user).count())
+
+    # Update streams
+    reset_stream(user.pk)
+    reset_trend(user.pk)
+
+    sys.exit()
 
 
 def update_papers():
@@ -114,6 +176,16 @@ def update_threads():
     posts = ThreadPost.objects.all()
     comments = ThreadComment.objects.all()
 
+    # Embed threads
+    pks = threads.exclude(published_at=None).values_list('pk', flat=True)
+    model = Model.objects.load(is_active=True)
+    model.infer_threads(pks)
+
+    fix_thread_logic(threads, posts, comments)
+
+
+def fix_thread_logic(threads, posts, comments):
+
     # fix thread logic type
     for thread in threads:
         if thread.type == 1:
@@ -144,11 +216,6 @@ def update_threads():
                     from_user=comment.post.thread.user,
                     to_user=comment.user,
                     status=THREAD_INVITE_ACCEPTED)
-
-    # Embed threads
-    pks = Thread.objects.all().exclude(published_at=None).values_list('pk', flat=True)
-    model = Model.objects.load(is_active=True)
-    model.infer_threads(pks)
 
 
 def update_threadusers():
@@ -224,9 +291,9 @@ def flush():
 
 
 def load():
-    print("Loading data from {file}...".format(file=INIT_DATA_FILE))
+    print("Loading data from {file}...".format(file=INIT_DEFAULT_FIXTURE_FILE))
     call([os.path.join(root_path, "manage.py"), "loaddata",
-          os.path.join(root_path, "scripts", "routines", INIT_DATA_FILE)])
+          os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
     sys.exit()
 
 
@@ -243,7 +310,7 @@ def dump_data():
     call([os.path.join(root_path, "manage.py"), "dumpdata",
           "--exclude=auth",
           "--exclude=contentypes",
-          "-o", os.path.join(root_path, "scripts", "routines", INIT_DATA_FILE)])
+          "-o", os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
     sys.exit()
 
 
@@ -303,8 +370,11 @@ def init_models():
     model.save_journal_vec_from_bulk()
     model.save_paper_vec_from_bulk()
 
+    sys.exit()
+
 
 if __name__ == '__main__':
+
 
     # Input parser
     parser = argparse.ArgumentParser(description=
@@ -313,47 +383,43 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--init",
                         help="Init database from scratch",
                         action="store_true")
-    parser.add_argument("--init-production",
-                        help="Init database in production from scratch",
-                        action="store_true")
+    parser.add_argument("-l", "--load",
+                        help="Load database from fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
+                        metavar='file',
+                        type=str)
     parser.add_argument("-p", "--papers",
-                        help="Fetch new papers",
+                        help="Fetch new papers only",
                         action="store_true")
+    parser.add_argument("-m", "--models",
+                        help="Update NLP models only",
+                        action="store_true")
+    parser.add_argument("--user", metavar='email',
+                        help="Populate OAuth user with data only",
+                        type=str)
+    parser.add_argument("-d", "--dump",
+                        help="Dump database to fxiture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
+                        metavar='file',
+                        type=str)
     parser.add_argument("-f", "--flush",
                         help="Flush database",
                         action="store_true")
-    parser.add_argument("-l", "--load",
-                        help="Load database with fixture (from {0})".format(INIT_DATA_FILE),
+    parser.add_argument("--init-production",
+                        help="Init database in production from scratch",
                         action="store_true")
-    parser.add_argument("-m", "--models",
-                        help="Update NLP models",
-                        action="store_true")
-    parser.add_argument("-d", "--dump",
-                        help="Dump database to file {0}".format(INIT_DATA_FILE),
-                        action="store_true")
-
+    UNITARY_UPDATE_ARGS = ['papers', 'models', 'user', 'flush', 'dump', 'load']
 
     args = parser.parse_args()
+    is_unitary = any([True for arg in UNITARY_UPDATE_ARGS
+                      if not getattr(args, arg) in [None, False]])
 
     # fetch path
     root_path = fetch_path()
 
-    # Reset DB
-    if args.flush:
-        flush()
-
-    # Load init_data.json
-    if args.load:
-        load()
-
-    # Dump to init_data.json
-    if args.load:
-        dump_data()
-
     # Run pip requirements
-    call(["pip",
-          "install",
-          "-r", os.path.join(root_path, "requirements/development.txt")])
+    if not is_unitary:
+        call(["pip",
+              "install",
+              "-r", os.path.join(root_path, "requirements/development.txt")])
 
     import django
     django.setup()
@@ -379,10 +445,34 @@ if __name__ == '__main__':
 
     User = get_user_model()
 
+    # SINGLE UPDATE
+    if args.user:
+        update_oauth_user(args.user)
+
+    if args.models:
+        init_models()
+
+    # Reset DB
+    if args.flush:
+        flush()
+
+    # Load init_data.json
+    if args.load:
+        load()
+
+    # Dump to init_data.json
+    if args.load:
+        dump_data()
+
+    # Fetch new papers
+    if args.papers:
+        fetch_new_papers()
+
+    # MASTER UPDATE
     # Apply migrations
     call([os.path.join(root_path, "manage.py"), "migrate"])
 
-    # Initialization
+    # Initialization in local environment
     if args.init:
         init_publishers()
         init_journals()
@@ -390,17 +480,10 @@ if __name__ == '__main__':
         fetch_new_papers()
         init_models()
 
-    if args.models:
-        init_models()
-
     if args.init_production:
         init_publishers_prod()
         init_journals_prod()
         init_consumers_prod()
-
-    # Fetch new papers
-    if args.papers:
-        fetch_new_papers()
 
     # Fetch data and update etalia objects
     update()
