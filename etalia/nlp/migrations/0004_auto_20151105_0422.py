@@ -14,13 +14,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='journalneighbors',
             name='ms',
-            field=models.ForeignKey(to='nlp.MostSimilar', default=5),
+            field=models.ForeignKey(to='nlp.models.PaperEngine', default=5),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='paperneighbors',
             name='ms',
-            field=models.ForeignKey(to='nlp.MostSimilar', default=5),
+            field=models.ForeignKey(to='nlp.models.PaperEngine', default=5),
             preserve_default=False,
         ),
         migrations.AlterField(

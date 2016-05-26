@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='threadneighbors',
             name='ms',
-            field=models.ForeignKey(default=1, to='nlp.MostSimilarThread'),
+            field=models.ForeignKey(default=1, to='nlp.models.ThreadEngine'),
             preserve_default=False,
         ),
     ]

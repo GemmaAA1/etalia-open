@@ -14,6 +14,7 @@ from sklearn.externals import joblib
 from progressbar import ProgressBar, Percentage, Bar, ETA
 from django.db import models
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.core.validators import MaxValueValidator
@@ -23,23 +24,158 @@ from gensim.models import Doc2Vec
 from gensim.models import Phrases
 
 from etalia.core.models import TimeStampedModel
+from etalia.core.utils import pad_vector, pad_neighbors
 
 from etalia.library.models import Paper, Journal
+from etalia.library.constants import PAPER_TIME_LAPSE_CHOICES
+
 from etalia.threads.models import Thread
+from etalia.threads.constant import THREAD_TIME_LAPSE_CHOICES
+
 from .constants import FIELDS_FOR_MODEL
 from .utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
     model_attr_setter
 from .mixins import S3Mixin
 from .constants import NLP_JOURNAL_RATIO_CHOICES
 
-from etalia.threads.nlp import ThreadNeighbors, ThreadVectors, ModelThreadMixin
-from etalia.library.nlp import JournalVectors, JournalNeighbors, PaperVectors, \
-    PaperNeighbors, ModelLibraryMixin
-
 
 logger = logging.getLogger(__name__)
 
 
+
+
+
+# --------------------------------------
+# Thread NLP
+# --------------------------------------
+class ThreadVectors(TimeStampedModel):
+    """ Table Thread - NLP Model relationship
+
+    Vector field length is fixed to NLP_MAX_VECTOR_SIZE:
+    i.e all model must have embedding space < NLP_MAX_VECTOR_SIZE.
+    Shorter vectors are pad with None
+
+    Use setter/getter functions to set and get vector
+    """
+
+    thread = models.ForeignKey(Thread,
+                               related_name='vectors')
+
+    model = models.ForeignKey('Model')
+
+    vector = ArrayField(models.FloatField(null=True),
+                        size=settings.NLP_MAX_VECTOR_SIZE,
+                        null=True, db_index=True)
+
+    class Meta:
+        unique_together = ('thread', 'model')
+
+    def __str__(self):
+        return '{thread_pk}/{name}'.format(thread_pk=self.thread.pk,
+                                           name=self.model.name)
+
+    def set_vector(self, vector):
+        self.vector = pad_vector(vector)
+        self.save()
+
+    def get_vector(self):
+        return self.vector[:self.model.size]
+
+
+class ThreadNeighbors(TimeStampedModel):
+    """Table for Thread neighbors"""
+    # thread
+    thread = models.ForeignKey(Thread)
+
+    # Time lapse for neighbors match
+    time_lapse = models.IntegerField(default=-1,
+                                     choices=THREAD_TIME_LAPSE_CHOICES,
+                                     verbose_name='Days from right now')
+
+    # MostSimilarThread
+    ms = models.ForeignKey('ThreadEngine')
+
+    # Primary keys of the k-nearest neighbors matches
+    neighbors = ArrayField(models.IntegerField(null=True),
+                           size=settings.NLP_MAX_KNN_NEIGHBORS,
+                           null=True, blank=True)
+
+    def __str__(self):
+        return '{ms}/{time_lapse}'.format(
+            ms=self.ms.name,
+            time_lapse=self.time_lapse)
+
+    def set_neighbors(self, vector):
+        self.neighbors = pad_neighbors(vector)
+        self.save()
+
+    def get_neighbors(self):
+        return self.neighbors[:self.ms.model.size]
+
+    class Meta:
+        unique_together = ('time_lapse', 'thread', 'ms')
+
+
+class ModelThreadMixin(object):
+    """Mixin to Model to add Thread support"""
+    THREAD_TOKENIZED_FIELDS = ['title', 'content']
+
+    def infer_thread(self, thread_pk, **kwargs):
+        """
+        Infer vector for model and thread instance
+        """
+        vector = self.infer_object(Thread, thread_pk,
+                                   self.THREAD_TOKENIZED_FIELDS, **kwargs)
+
+        pv, _ = ThreadVectors.objects.get_or_create(model=self,
+                                                    thread_id=thread_pk)
+
+        # store
+        pv.set_vector(vector.tolist())
+
+        return thread_pk
+
+    def infer_threads(self, thread_pks, **kwargs):
+        """Infer vector for model and all thread in thread_pks list
+        """
+        # Check inputs
+        if isinstance(thread_pks, models.QuerySet):
+            thread_pks = list(thread_pks)
+        if not isinstance(thread_pks, list):
+            raise TypeError(
+                'thread_pks must be list or QuerySet, found {0} instead'.format(
+                    type(thread_pks)))
+
+        # setup progressbar
+        nb_pbar_updates = 100
+        nb_threads = len(thread_pks)
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ' ', ETA()],
+                           maxval=nb_threads, redirect_stderr=True).start()
+
+        for count, thread_pk in enumerate(thread_pks):
+            self.infer_thread(thread_pk, **kwargs)
+            if not (nb_threads // nb_pbar_updates) == 0:
+                if not count % (nb_threads // nb_pbar_updates):
+                    pbar.update(count)
+        # close progress bar
+        pbar.finish()
+
+    def tasks(self, task, **kwargs):
+        if task == 'infer_thread':
+            thread_pk = kwargs.pop('thread_pk')
+            return self.infer_thread(thread_pk, **kwargs)
+        if task == 'infer_threads':
+            thread_pks = kwargs.pop('thread_pks')
+            return self.infer_threads(thread_pks, **kwargs)
+        return super(ModelThreadMixin, self).tasks(task, **kwargs)
+
+    def infer_object(self, cls, pk, fields, **kwargs):
+        raise NotImplemented
+
+
+# --------------------------------------
+# Core NLP
+# --------------------------------------
 class ModelBase(TimeStampedModel):
     """Abstract NLP model class"""
 
@@ -459,11 +595,11 @@ class Model(ModelThreadMixin,
 
     def build_most_similar(self):
         try:
-            ms = MostSimilar.objects.get(model=self)
+            ms = PaperEngine.objects.get(model=self)
             ms.delete()
-        except MostSimilar.DoesNotExist:
+        except PaperEngine.DoesNotExist:
             pass
-        ms = MostSimilar.objects.create(model=self)
+        ms = PaperEngine.objects.create(model=self)
         ms.full_update()
 
     def save_journal_vec_from_bulk(self):
@@ -604,28 +740,22 @@ class TextField(TimeStampedModel):
         return self.text_field
 
 
-class MostSimilarManager(models.Manager):
+class PaperEngineManager(models.Manager):
     def load(self, **kwargs):
         """Get MostSimilar instance and load corresponding data"""
-        obj = super(MostSimilarManager, self).get(**kwargs)
+        obj = super(PaperEngineManager, self).get(**kwargs)
         try:
+            np_pkl_file = os.path.join(settings.NLP_MS_PATH,
+                                       '{0}-np.pkl'.format(obj.name))
+            dat_p_file = os.path.join(settings.NLP_MS_PATH,
+                                       '{0}-dat.p'.format(obj.name))
             # if not on volume try download from s3
-            if not os.path.isfile(os.path.join(settings.NLP_MS_PATH,
-                                               '{0}.ms_data'.format(obj.name))):
+            if not os.path.isfile(np_pkl_file):
                 if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
                     obj.pull_from_s3()
 
-            obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
-                                                '{0}.ms_data'.format(obj.name)))
-            with open(
-                    os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2pk'),
-                    'rb') as f:
-                obj.index2pk = pickle.load(f)
-            with open(os.path.join(settings.NLP_MS_PATH,
-                                   obj.name + '.ms_ind2journalpk'), 'rb') as f:
-                obj.index2journalpk = pickle.load(f)
-            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_date'),
-                      'rb') as f:
+            obj.data = joblib.load(np_pkl_file)
+            with open(dat_p_file, 'rb') as f:
                 obj.date = pickle.load(f)
         except EnvironmentError:  # OSError or IOError...
             raise
@@ -633,45 +763,60 @@ class MostSimilarManager(models.Manager):
         return obj
 
 
-class MostSimilar(TimeStampedModel, S3Mixin):
-    """Most Similar class to perform k-nearest neighbors search based on
-    simple dot product. This is working because paper vector are normalized"""
+class PaperEngine(TimeStampedModel, S3Mixin):
+    """Most Similar class
+    Store data:
+     - for cosine similarity search
+     - scoring
+
+    Data are dynamically updated and roll-out over a certain dwell time
+    """
+
+    DWELL_TIME = 365    # days
 
     # For S3 Mixin
+    # --------------------
     BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
     PATH = getattr(settings, 'NLP_MS_PATH', '')
     AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
 
+    # Data structure
+    # --------------------
+    # data is 2D-array with each row representing a paper. Paper are represented
+    # as an array with the following structure:
+    # [paper-id, journal-id, auth-id_1|None,... auth-id_n|None, v1, v2,... vm]
+    # where:
+    #   - auth_id_i being the ids of the authors of the paper (max length n)
+    #   - vi being the weights of the embedding (max length m)
+    # Rq: if number of authors is > n, then all pks default to None.
+
+    AUTH_ARRAY_SIZE = 50        # n
+    data = np.empty(0)
+    date = []
+
+    # DB stored properties
+    # --------------------
     model = models.ForeignKey(Model, related_name='ms')
 
     upload_state = models.CharField(max_length=3,
                                     choices=(('IDL', 'Idle'),
                                              ('ING', 'Uploading')),
                                     default='IDL ')
-
-    # 2D array of # matches x vector size
-    data = np.empty(0)
-    # data index to paper pk
-    index2pk = []
-    # index date
-    date = []
-    # data index to journal pk
-    index2journalpk = []
     # journal ratio to weight vectors with
     journal_ratio = models.FloatField(default=0.0,
                                       choices=NLP_JOURNAL_RATIO_CHOICES)
     # make instance active (use when linking task)
     is_active = models.BooleanField(default=False)
 
-    objects = MostSimilarManager()
+    objects = PaperEngineManager()
 
     class Meta:
         unique_together = (('model', 'journal_ratio'),)
 
     @property
     def name(self):
-        return '{model_name}-jr{journal_ratio:.0f}perc'.format(
+        return 'ms-{model_name}-jr{journal_ratio:.0f}perc'.format(
             model_name=self.model.name,
             journal_ratio=self.journal_ratio * 100)
 
@@ -680,7 +825,7 @@ class MostSimilar(TimeStampedModel, S3Mixin):
 
     def activate(self):
         """Set model to active. Only on model can be active at once"""
-        MostSimilar.objects.all() \
+        PaperEngine.objects.all() \
             .update(is_active=False)
         self.is_active = True
         self.save_db_only()
@@ -698,17 +843,14 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         # save files to local volume
         if not os.path.exists(settings.NLP_MS_PATH):
             os.makedirs(settings.NLP_MS_PATH)
+        np_pkl_file = os.path.join(settings.NLP_MS_PATH,
+                                   '{0}-np.pkl'.format(self.name))
+        dat_p_file = os.path.join(settings.NLP_MS_PATH,
+                                   '{0}-dat.p'.format(self.name))
         # use joblib for numpy array pickling optimization
-        joblib.dump(self.data,
-                    os.path.join(settings.NLP_MS_PATH, self.name + '.ms_data'))
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2pk'),
-                  'wb') as f:
-            pickle.dump(self.index2pk, f)
-        with open(os.path.join(settings.NLP_MS_PATH,
-                               self.name + '.ms_ind2journalpk'), 'wb') as f:
-            pickle.dump(self.index2journalpk, f)
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_date'),
-                  'wb') as f:
+        joblib.dump(self.data, np_pkl_file)
+        # use regular pickle for date list
+        with open(dat_p_file, 'wb') as f:
             pickle.dump(self.date, f)
 
         # push files to s3
@@ -721,14 +863,14 @@ class MostSimilar(TimeStampedModel, S3Mixin):
         self.save_db_only()
 
     def save_db_only(self, *args, **kwargs):
-        super(MostSimilar, self).save(*args, **kwargs)
+        super(PaperEngine, self).save(*args, **kwargs)
 
     def delete(self, s3=False, **kwargs):
         # delete on local volume
         try:
             # remove local
             rm_files = glob.glob(
-                os.path.join(settings.NLP_MS_PATH, '{0}.ms*'.format(self.name)))
+                os.path.join(settings.NLP_MS_PATH, '{0}.*'.format(self.name)))
             for file in rm_files:
                 os.remove(file)
         except IOError:
@@ -741,30 +883,29 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                     self.delete_on_s3()
             except IOError:
                 pass
-        super(MostSimilar, self).delete(**kwargs)
+        super(PaperEngine, self).delete(**kwargs)
 
     def full_update(self):
-        """Full update data for knn search
+        """Full update data / date
         """
 
         logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
             pk=self.id, name=self.name))
 
-        # size of the model space used for truncation of vector
-        vec_size = self.model.size
+        array_size = 2 + self.AUTH_ARRAY_SIZE + self.model.size
+        a_year_ago = (timezone.now() -
+                      timezone.timedelta(days=self.DWELL_TIME)).date()
 
-        a_year_ago = (timezone.now() - timezone.timedelta(days=365)).date()
-
-        # query
+        # query data
         data = list(PaperVectors.objects.raw(
-            "SELECT nlp_papervectors.id, "
-            "       nlp_papervectors.paper_id, "
+            "SELECT library_papervectors.id, "
+            "       library_papervectors.paper_id, "
             "       vector, "
             "       LEAST(date_ep, date_pp, date_fs) AS date,"
             "       journal_id "
             "        "
-            "FROM nlp_papervectors LEFT JOIN library_paper "
-            "ON nlp_papervectors.paper_id=library_paper.id "
+            "FROM library_papervectors LEFT JOIN library_paper "
+            "ON library_papervectors.paper_id=library_paper.id "
             "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
             "    AND model_id=%s"
             "    AND is_trusted=TRUE "
@@ -775,28 +916,26 @@ class MostSimilar(TimeStampedModel, S3Mixin):
                             .filter(model=self.model) \
                             .values_list('journal_id', 'vector'))
 
-        # Reshape data
-        nb_items = len(data)
-        self.date = []
-        self.index2pk = []
-        self.index2journalpk = []
-        self.data = np.zeros((nb_items, vec_size))
-        for i, dat in enumerate(data):
-            if dat.vector:
-                self.date.append(dat.date)
-                # store paper pk
-                self.index2pk.append(dat.paper_id)
-                # store journal pk
-                self.index2journalpk.append(dat.journal_id)
-                # build input matrix for fit
-                if dat.journal_id in data_journal:
-                    self.data[i, :] = (1 - self.journal_ratio) * np.array(
-                        dat.vector[:vec_size]) + \
-                                      self.journal_ratio * np.array(
-                                          data_journal[dat.journal_id][
-                                          :vec_size])
-                else:
-                    self.data[i, :] = np.array(dat.vector[:vec_size])
+        # # Reshape data
+        # nb_items = len(data)
+        # self.date = []
+        # self.data = np.zeros((nb_items, array_size))
+        # for i, d in enumerate(data):
+        #     if d.vector:    # paper must have been embbeded
+        #         self.date.append(d.date)
+        #         # store paper pk
+        #         self.index2pk.append(d.paper_id)
+        #         # store journal pk
+        #         self.index2journalpk.append(d.journal_id)
+        #         # build input matrix for fit
+        #         if d.journal_id in data_journal:
+        #             self.data[i, :] = (1 - self.journal_ratio) * np.array(
+        #                 d.vector[:vec_size]) + \
+        #                               self.journal_ratio * np.array(
+        #                                   data_journal[d.journal_id][
+        #                                   :vec_size])
+        #         else:
+        #             self.data[i, :] = np.array(d.vector[:vec_size])
 
         # Store
         self.save()
@@ -1098,10 +1237,10 @@ class MostSimilar(TimeStampedModel, S3Mixin):
             raise ValueError('Unknown task action: {0}'.format(task))
 
 
-class MostSimilarThreadManager(models.Manager):
+class ThreadEngineManager(models.Manager):
     def load(self, **kwargs):
         """Get MostSimilar instance and load corresponding data"""
-        obj = super(MostSimilarThreadManager, self).get(**kwargs)
+        obj = super(ThreadEngineManager, self).get(**kwargs)
         try:
             # if not on volume try download from s3
             if not os.path.isfile(os.path.join(settings.NLP_MS_PATH,
@@ -1124,7 +1263,7 @@ class MostSimilarThreadManager(models.Manager):
         return obj
 
 
-class MostSimilarThread(TimeStampedModel, S3Mixin):
+class ThreadEngine(TimeStampedModel, S3Mixin):
     """Most Similar class to perform k-nearest neighbors search based on
     simple dot product. This is working because thread vector are normalized"""
 
@@ -1150,7 +1289,7 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
     # make instance active (use when linking task)
     is_active = models.BooleanField(default=False)
 
-    objects = MostSimilarThreadManager()
+    objects = ThreadEngineManager()
 
     @property
     def name(self):
@@ -1162,7 +1301,7 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
 
     def activate(self):
         """Set model to active. Only on model can be active at once"""
-        MostSimilarThread.objects.all() \
+        ThreadEngine.objects.all() \
             .update(is_active=False)
         self.is_active = True
         self.save_db_only()
@@ -1200,7 +1339,7 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
         self.save_db_only()
 
     def save_db_only(self, *args, **kwargs):
-        super(MostSimilarThread, self).save(*args, **kwargs)
+        super(ThreadEngine, self).save(*args, **kwargs)
 
     def delete(self, s3=False, **kwargs):
         # delete on local volume
@@ -1220,7 +1359,7 @@ class MostSimilarThread(TimeStampedModel, S3Mixin):
                     self.delete_on_s3()
             except IOError:
                 pass
-        super(MostSimilarThread, self).delete(**kwargs)
+        super(ThreadEngine, self).delete(**kwargs)
 
     def full_update(self):
         """Full update data for knn search

@@ -18,7 +18,7 @@ from config.celery import celery_app as app
 from celery.exceptions import SoftTimeLimitExceeded
 from braces.views import LoginRequiredMixin
 
-from etalia.nlp.models import PaperNeighbors, Model, MostSimilar
+from etalia.nlp.models import PaperNeighbors, Model, PaperEngine
 from etalia.core.mixins import ModalMixin
 from etalia.users.models import UserTaste, UserLibPaper
 from .models import Journal, Paper
@@ -160,7 +160,7 @@ class PaperNeighborsView(LoginRequiredMixin, ListView):
                 paper_ = Paper.objects.get(id=self.paper_id)
 
                 # Get active MostSimilar
-                ms = MostSimilar.objects.filter(is_active=True)
+                ms = PaperEngine.objects.filter(is_active=True)
 
                 # Get stored neighbors matches
                 try:

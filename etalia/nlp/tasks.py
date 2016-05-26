@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-from .models import Model, MostSimilar
+from .models import Model, PaperEngine
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def mostsimilar_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
-        ms = MostSimilar.objects.load(model=model,
+        ms = PaperEngine.objects.load(model=model,
                                       is_active=True)
         ms.update()
 
@@ -24,7 +24,7 @@ def mostsimilar_update_all():
 def mostsimilar_full_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
-        ms = MostSimilar.objects.load(model=model,
+        ms = PaperEngine.objects.load(model=model,
                                       is_active=True)
         ms.full_update()
         ms.activate()

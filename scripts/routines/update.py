@@ -249,16 +249,16 @@ def update_streams():
 def update_mostsimilar():
     print('Updating MostSimilar...')
     # update mostsimilar
-    if not MostSimilar.objects.filter(is_active=True).exists():
+    if not PaperEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
-        ms = MostSimilar.objects.create(model=model)
+        ms = PaperEngine.objects.create(model=model)
         ms.activate()
     mostsimilar_full_update_all()
 
     # update mostsimilarthread
-    if not MostSimilarThread.objects.filter(is_active=True).exists():
+    if not ThreadEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
-        mst = MostSimilarThread.objects.create(model=model)
+        mst = ThreadEngine.objects.create(model=model)
         mst.activate()
     mostsimilarthread_full_update_all()
 
@@ -431,7 +431,7 @@ if __name__ == '__main__':
     from etalia.altmetric.models import AltmetricModel
     from etalia.feeds.tasks import reset_stream, reset_trend
     from etalia.nlp.tasks import mostsimilar_full_update_all
-    from etalia.nlp.models import MostSimilarThread, MostSimilar, Model
+    from etalia.nlp.models import ThreadEngine, PaperEngine, Model
     from etalia.threads.tasks import mostsimilarthread_full_update_all, \
         embed_threads
     from etalia.threads.models import Thread, ThreadPost, ThreadComment, \

@@ -6,7 +6,7 @@ from django.conf import settings
 
 from celery.exceptions import SoftTimeLimitExceeded
 
-from etalia.nlp.models import Model, MostSimilarThread
+from etalia.nlp.models import Model, ThreadEngine
 from config.celery import celery_app as app
 from etalia.nlp.models import ThreadNeighbors
 from .models import Thread
@@ -56,7 +56,7 @@ def embed_threads(pks, model_name, batch_size=1000):
 
 def get_neighbors_threads(thread_pk, time_span):
     # Get active MostSimilarThread
-    ms = MostSimilarThread.objects.filter(is_active=True)[0]
+    ms = ThreadEngine.objects.filter(is_active=True)[0]
 
     # Get stored neighbors matches
     try:
@@ -100,7 +100,7 @@ def get_neighbors_threads(thread_pk, time_span):
 def mostsimilarthread_full_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
-        ms = MostSimilarThread.objects.load(model=model,
+        ms = ThreadEngine.objects.load(model=model,
                                             is_active=True)
         ms.full_update()
         ms.activate()

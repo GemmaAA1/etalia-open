@@ -8,7 +8,7 @@ from celery import Task
 from django.db.models.query import QuerySet
 from django.conf import settings
 
-from .models import Model, MostSimilar, MostSimilarThread
+from .models import Model, PaperEngine, ThreadEngine
 
 
 class EmbedPaperTask(Task):
@@ -116,8 +116,8 @@ class MostSimilarBaseTask(Task):
 
 
 class MostSimilarTask(MostSimilarBaseTask):
-    ms_class = MostSimilar
+    ms_class = PaperEngine
 
 
 class MostSimilarThreadTask(MostSimilarBaseTask):
-    ms_class = MostSimilarThread
+    ms_class = ThreadEngine

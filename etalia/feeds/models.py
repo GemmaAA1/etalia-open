@@ -12,7 +12,7 @@ from django.db.transaction import atomic
 
 from etalia.core.models import TimeStampedModel
 from etalia.core.utils import pad_vector
-from etalia.nlp.models import MostSimilar
+from etalia.nlp.models import PaperEngine
 from etalia.last_seen.models import LastSeen
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
 from .scoring import *
@@ -159,7 +159,7 @@ class Stream(TimeStampedModel):
         # Instantiate Score
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
         # and instantiate
-        journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
+        journal_ratio = PaperEngine.objects.get(is_active=True).journal_ratio
         # method_arg = self.user.settings.stream_method_args or {}
         method_arg = {
             'vector_weight': self.user.settings.stream_vector_weight,
@@ -370,7 +370,7 @@ class Trend(TimeStampedModel):
         # Instantiate Score
         Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
         # and instantiate
-        journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
+        journal_ratio = PaperEngine.objects.get(is_active=True).journal_ratio
         # method_arg = self.user.settings.trend_method_args or {}
         method_arg = {
             'doc_weight': self.user.settings.trend_doc_weight,
