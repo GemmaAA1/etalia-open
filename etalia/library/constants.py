@@ -172,3 +172,12 @@ LANGUAGES_DETECT = (
     ('CY', 'WEL'),
     (''  , 'UND'),
 )
+
+
+PAPER_TIME_LAPSE_CHOICES = (
+    (7, 'Week'),
+    (30, 'Month'),
+    (60, 'Two Months'),
+    (180, 'Six Months'),
+    (365, 'Year'),
+)

@@ -17,8 +17,7 @@ from etalia.library.models import Paper, Journal, Author
 from etalia.nlp.models import Model
 from etalia.feeds.models import Stream, Trend
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
-from etalia.core.constants import NLP_TIME_LAPSE_CHOICES, \
-    NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
+from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
 from etalia.threads.models import Thread
 
@@ -568,21 +567,6 @@ class UserSettings(TimeStampedModel):
     stream_roll_back_deltatime = models.IntegerField(default=36,
                                              verbose_name='Roll-back time (months)')
 
-    # DEPRECATED
-    # in days
-    stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
-                                            choices=NLP_TIME_LAPSE_CHOICES,
-                                            verbose_name='Time range')
-    # DEPRECATED
-    # arbitrary units
-    stream_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
-                                            choices=NLP_NARROWNESS_CHOICES,
-                                            verbose_name='Narrowness')
-
-    # DEPRECATED
-    # stream method arguments
-    stream_method_args = JSONField(null=True, default=None, blank=True)
-
     # Trend settings
     # nlp model
     trend_model = models.ForeignKey(Model, verbose_name='NLP Model',
@@ -591,20 +575,6 @@ class UserSettings(TimeStampedModel):
     # scoring method to use
     trend_method = models.IntegerField(verbose_name='Method', default=0,
                                        choices=TREND_METHODS)
-    # DEPRECATED
-    # in days
-    trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
-                                           choices=NLP_TIME_LAPSE_CHOICES,
-                                           verbose_name='Time range')
-
-    # DEPRECATED
-    # arbitrary units
-    trend_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
-                                            choices=NLP_NARROWNESS_CHOICES,
-                                            verbose_name='Narrowness')
-    # DEPRECATED
-    # stream method arguments
-    trend_method_args = JSONField(null=True, default=None, blank=True)
 
     # doc vector weight
     trend_doc_weight = models.FloatField(default=1.0,
