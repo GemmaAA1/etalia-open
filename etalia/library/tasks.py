@@ -52,4 +52,4 @@ def embed_papers(pks, model_name, batch_size=1000):
     pks_batched.append(pks[nb_batches * batch_size:])
 
     for batch in pks_batched:
-        model_task.delay('infer_papers', batch)
+        model_task.delay('infer_papers', paper_pks=batch)

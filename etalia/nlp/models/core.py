@@ -24,7 +24,7 @@ from gensim.models import Phrases
 
 from etalia.core.models import TimeStampedModel
 
-from etalia.library.models import Paper, Journal
+from etalia.library.models import Paper, Journal, AuthorPaper
 
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
     JournalVectors
@@ -609,17 +609,13 @@ class PaperEngineManager(models.Manager):
         obj = super(PaperEngineManager, self).get(**kwargs)
         try:
             np_pkl_file = os.path.join(settings.NLP_MS_PATH,
-                                       '{0}-np.pkl'.format(obj.name))
-            dat_p_file = os.path.join(settings.NLP_MS_PATH,
-                                       '{0}-dat.p'.format(obj.name))
+                                       '{0}.pkl'.format(obj.name))
             # if not on volume try download from s3
             if not os.path.isfile(np_pkl_file):
                 if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
                     obj.pull_from_s3()
 
             obj.data = joblib.load(np_pkl_file)
-            with open(dat_p_file, 'rb') as f:
-                obj.date = pickle.load(f)
         except EnvironmentError:  # OSError or IOError...
             raise
 
@@ -649,17 +645,26 @@ class PaperEngine(TimeStampedModel, S3Mixin):
 
     # Data structure
     # --------------------
-    # data is 2D-array with each row representing a paper. Paper are represented
-    # as an array with the following structure:
-    # [paper-id, journal-id, auth-id_1|None,... auth-id_n|None, v1, v2,... vm]
-    # where:
-    #   - auth_id_i being the ids of the authors of the paper (max length n)
-    #   - vi being the weights of the embedding (max length m)
-    # Rq: if number of authors is > n, then all pks default to None.
+    # Dictionary with following key, value pairs:
+    # {
+    #   'ids': [paper-id_1, ..., paper-id_N],
+    #   'journal-ids': [journal-id_1, ..., journal-id_N],
+    #   'authors-ids': [[auth-id_1_1, ... auth-id_1_P1],
+    #                   [auth-id_2_1, ... auth-id_2_P2],
+    #                   ...,
+    #                   [auth-id_N_1, ... auth-id_N_PN]],
+    #   'date':      [date_1, ..., date_N],
+    #   'embedding': np.array([[v11, v12, ... v1Q],
+    #                          ...,
+    #                          [vN1, vN2, ... vNQ]])
+    # }
 
-    AUTH_ARRAY_SIZE = 50        # n
-    data = np.empty(0)
-    date = []
+    data = {'ids': [],
+            'journal-ids': [],
+            'authors-ids': [],
+            'date': [],
+            'embedding': np.empty(0)
+            }
 
     # DB stored properties
     # --------------------
@@ -669,22 +674,22 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                                     choices=(('IDL', 'Idle'),
                                              ('ING', 'Uploading')),
                                     default='IDL ')
-    # journal ratio to weight vectors with
-    journal_ratio = models.FloatField(default=0.0,
-                                      choices=NLP_JOURNAL_RATIO_CHOICES)
     # make instance active (use when linking task)
     is_active = models.BooleanField(default=False)
 
-    objects = PaperEngineManager()
+    # journal boost
+    journal_boost = models.FloatField(default=0.05, null=True, blank=True)
 
-    class Meta:
-        unique_together = (('model', 'journal_ratio'),)
+    objects = PaperEngineManager()
 
     @property
     def name(self):
-        return 'ms-{model_name}-jr{journal_ratio:.0f}perc'.format(
-            model_name=self.model.name,
-            journal_ratio=self.journal_ratio * 100)
+        return 'ms-{model_name}'.format(
+            model_name=self.model.name)
+
+    @property
+    def embedding_size(self):
+        return self.model.size
 
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)
@@ -710,14 +715,9 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         if not os.path.exists(settings.NLP_MS_PATH):
             os.makedirs(settings.NLP_MS_PATH)
         np_pkl_file = os.path.join(settings.NLP_MS_PATH,
-                                   '{0}-np.pkl'.format(self.name))
-        dat_p_file = os.path.join(settings.NLP_MS_PATH,
-                                   '{0}-dat.p'.format(self.name))
+                                   '{0}.pkl'.format(self.name))
         # use joblib for numpy array pickling optimization
         joblib.dump(self.data, np_pkl_file)
-        # use regular pickle for date list
-        with open(dat_p_file, 'wb') as f:
-            pickle.dump(self.date, f)
 
         # push files to s3
         if self.BUCKET_NAME:
@@ -752,354 +752,314 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         super(PaperEngine, self).delete(**kwargs)
 
     def full_update(self):
-        """Full update data / date
-        """
+        """Full update of data structure"""
 
-        logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
+        logger.info('Updating PaperEngine ({pk}/{name}) - full update...'.format(
             pk=self.id, name=self.name))
 
-        array_size = 2 + self.AUTH_ARRAY_SIZE + self.model.size
         a_year_ago = (timezone.now() -
                       timezone.timedelta(days=self.DWELL_TIME)).date()
 
-        # query data
-        data = list(PaperVectors.objects.raw(
-            "SELECT nlp_papervectors.id, "
-            "       nlp_papervectors.paper_id, "
-            "       vector, "
-            "       LEAST(date_ep, date_pp, date_fs) AS date,"
-            "       journal_id "
-            "        "
-            "FROM nlp_papervectors LEFT JOIN library_paper "
-            "ON nlp_papervectors.paper_id=library_paper.id "
-            "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
-            "    AND model_id=%s"
-            "    AND is_trusted=TRUE "
-            "    AND abstract <> ''"
-            "ORDER BY date ASC", (a_year_ago, self.model.pk)))
+        self.data = {'ids': [],
+                     'journal-ids': [],
+                     'authors-ids': [],
+                     'date': [],
+                     'embedding': []
+                     }
 
-        data_journal = dict(JournalVectors.objects \
-                            .filter(model=self.model) \
-                            .values_list('journal_id', 'vector'))
+        # query on paper / vector
+        q1 = Paper.objects.raw(
+                "SELECT lp.id, "
+                "		lp.journal_id, "
+                "       LEAST(date_ep, date_pp, date_fs) AS date,"
+                "		pv.vector "
+                "FROM library_paper lp "
+                "LEFT JOIN nlp_papervectors as pv ON lp.id = pv.paper_id "
+                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+                "    AND pv.model_id=%s"
+                "    AND lp.is_trusted=TRUE "
+                "    AND lp.abstract <> ''"
+                "    AND pv.vector IS NOT NULL "
+                "ORDER BY date ASC", (a_year_ago, self.model.id)
+                )
 
-        # Reshape data
-        self.date = []
-        self.data = np.zeros((len(data), array_size))
-        for i, d in enumerate(data):
-            if d.vector:    # paper must have been embbeded
-                self.date.append(d.date)
-                # store paper pk
-                self.index2pk.append(d.paper_id)
-                # store journal pk
-                self.index2journalpk.append(d.journal_id)
-                # build input matrix for fit
-                if d.journal_id in data_journal:
-                    self.data[i, :] = (1 - self.journal_ratio) * np.array(
-                        d.vector[:vec_size]) + \
-                                      self.journal_ratio * np.array(
-                                          data_journal[d.journal_id][
-                                          :vec_size])
-                else:
-                    self.data[i, :] = np.array(d.vector[:vec_size])
+        for d in q1:
+            self.data['ids'].append(d.id)
+            self.data['journal-ids'].append(d.journal_id)
+            self.data['date'].append(d.date)
+            self.data['embedding'].append(d.vector[:self.embedding_size])
+        self.data['embedding'] = np.array(self.data['embedding'])
+
+        # query on authors
+        if self.data['ids']:
+            values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
+            q2 = AuthorPaper.objects.raw(
+                    "SELECT ap.id, "
+                    "	    ap.paper_id, "
+                    "		ap.author_id "
+                    "FROM library_authorpaper ap "
+                    "WHERE ap.paper_id IN (VALUES {0}) ".format(values))
+
+            d2 = [(d.paper_id, d.author_id) for d in q2]
+            dic = {}
+            for k, v in d2:
+                try:
+                    dic[k].append(v)
+                except KeyError:
+                    dic[k] = [v]
+
+            for i in self.data['ids']:
+                self.data['authors-ids'].append(dic[i])
 
         # Store
         self.save()
 
     def update(self):
-        """Update data for knn search for new paper
-        """
+        """Partial update of data structure with new entries only"""
 
-        if not self.index2pk:
-            raise ValueError('Looks like you should run full_update instead')
+        if not len(self.data['ids']):
+            raise ValueError('Object is empty. run a full_update instead')
 
-        logger.info('Updating MS ({pk}/{name}) - fetching new data...'.format(
+        logger.info('Updating PaperEngine ({pk}/{name}) - partial update...'.format(
             pk=self.id, name=self.name))
 
-        # size of the model space used for truncation of vector
-        vec_size = self.model.size
+        a_year_ago = (timezone.now() - timezone.timedelta(days=self.DWELL_TIME)).date()
 
-        a_year_ago = (timezone.now() - timezone.timedelta(days=365)).date()
+        # query on paper / vector
+        values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
+        q1 = Paper.objects.raw(
+                "SELECT lp.id, "
+                "		lp.journal_id, "
+                "       LEAST(date_ep, date_pp, date_fs) AS date,"
+                "		pv.vector "
+                "FROM library_paper lp "
+                "LEFT JOIN nlp_papervectors as pv ON lp.id = pv.paper_id "
+                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+                "    AND pv.model_id=%s"
+                "    AND lp.is_trusted=TRUE "
+                "    AND lp.abstract <> ''"
+                "    AND pv.vector IS NOT NULL "
+                "    AND lp.id NOT IN (VALUES {0}) "
+                "ORDER BY date ASC".format(values), (a_year_ago, self.model.id,)
+                )
 
-        data = list(PaperVectors.objects.raw(
-            "SELECT nlp_papervectors.id, "
-            "       nlp_papervectors.paper_id, "
-            "       vector, "
-            "       LEAST(date_ep, date_pp, date_fs) AS date,"
-            "       journal_id "
-            "        "
-            "FROM nlp_papervectors LEFT JOIN library_paper "
-            "ON nlp_papervectors.paper_id=library_paper.id "
-            "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
-            "    AND model_id=%s"
-            "    AND is_trusted=TRUE "
-            "    AND abstract <> ''"
-            "    AND nlp_papervectors.paper_id NOT IN %s"
-            "ORDER BY date ASC",
-            (a_year_ago, self.model.pk, tuple(self.index2pk))))
+        new_ids = []
+        for d in q1:
+            new_ids.append(d.id)
+            self.data['ids'].append(d.id)
+            self.data['journal-ids'].append(d.journal_id)
+            self.data['date'].append(d.date)
+            np.vstack((self.data['embedding'], np.array(d.vector[:self.embedding_size])))
 
-        data_journal = dict(JournalVectors.objects \
-                            .filter(model=self.model) \
-                            .values_list('journal_id', 'vector'))
+        # query on authors
+        if new_ids:
+            values = ', '.join(['({0})'.format(i) for i in new_ids])
+            q2 = AuthorPaper.objects.raw(
+                    "SELECT ap.id, "
+                    "	    ap.paper_id, "
+                    "		ap.author_id "
+                    "FROM library_authorpaper ap "
+                    "WHERE ap.paper_id IN (VALUES {0}) ".format(values))
 
-        # Reshape data
-        nb_items = len(data)
-        date = []
-        index2pk = []
-        index2journalpk = []
-        data_mat = np.zeros((nb_items, vec_size))
-        for i, dat in enumerate(data):
-            if dat.vector:
-                # get min date
-                date.append(dat.date)
-                # store paper pk
-                index2pk.append(dat.paper_id)
-                # store journal pk
-                index2journalpk.append(dat.journal_id)
-                # build input matrix for fit
-                if dat.journal_id in data_journal:
-                    data_mat[i, :] = (1 - self.journal_ratio) * np.array(
-                        dat.vector[:vec_size]) + \
-                                     self.journal_ratio * np.array(
-                                         data_journal[dat.journal_id][
-                                         :vec_size])
-                else:
-                    data_mat[i, :] = np.array(dat.vector[:vec_size])
+            d2 = [(d.paper_id, d.author_id) for d in q2]
+            dic = {}
+            for k, v in d2:
+                try:
+                    dic[k].append(v)
+                except KeyError:
+                    dic[k] = [v]
 
-        # concatenate
-        self.date += date
-        self.index2pk += index2pk
-        self.index2journalpk += index2journalpk
-        self.data = np.vstack((self.data, data_mat))
-
-        # reorder data by date
-        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
-        self.date = [self.date[i] for i in idx]
-        self.index2pk = [self.index2pk[i] for i in idx]
-        self.index2journalpk = [self.index2journalpk[i] for i in idx]
-        self.data = self.data[idx, :]
+            for i in new_ids:
+                self.data['authors-ids'].append(dic[i])
 
         # save
         self.save()
 
-    def populate_neighbors(self, paper_pk, time_lapse=-1):
-        """Populate neighbors of paper
-        """
+    def populate_neighbors(self, paper_id, time_lapse=-1):
+        """Populate neighbors of paper"""
 
-        neighbors_pks = self.get_knn(paper_pk, time_lapse=time_lapse,
+        neighbors_ids = self.get_knn(paper_id,
+                                     time_lapse=time_lapse,
                                      k=settings.NLP_MAX_KNN_NEIGHBORS)
 
         pn, _ = PaperNeighbors.objects.get_or_create(ms=self,
                                                      time_lapse=time_lapse,
-                                                     paper_id=paper_pk)
-        pn.set_neighbors(neighbors_pks)
+                                                     paper_id=paper_id)
+        pn.set_neighbors(neighbors_ids)
 
-        return neighbors_pks
+        return neighbors_ids
 
     def get_clip_start(self, time_lapse):
-        if time_lapse == -1:
+        """Return index in data structure what corresponding to paper with
+        date greater than now() - time_lapse
+
+        Args:
+            time_lapse (int): Number of days. if negative, returns 0
+
+        """
+
+        if time_lapse < 0:
             return 0
         else:
-            cutoff_date = (
-                timezone.now() - timezone.timedelta(days=time_lapse)).date()
-            if max(np.array(self.date) > cutoff_date):  # at least one in True
-                return np.argmax(np.array(self.date) > cutoff_date)
+            cutoff_date = (timezone.now() -
+                           timezone.timedelta(days=time_lapse)).date()
+            if max(self.data['date']) > cutoff_date:
+                return np.argmax(np.array(self.data['date']) > cutoff_date)
             else:
-                return len(self.date)
+                return len(self.data['date'])
 
-    def get_knn(self, paper_pk, time_lapse=-1, k=1):
+    def get_knn(self, paper_id, time_lapse=-1, k=1):
 
         pv = PaperVectors.objects \
-            .filter(paper_id=paper_pk, model=self.model) \
-            .select_related('paper__journal')[0]
-        # get related journal vector
-        jv = None
-        if pv.paper.journal:
-            try:
-                jv = JournalVectors.objects \
-                    .get(model=self.model, journal_id=pv.paper.journal.id)
-            except JournalVectors.DoesNotExist:
-                pass
+                .filter(paper_id=paper_id, model=self.model) \
+                .values('vector', 'paper__journal_id')[0]
 
-        # build weighted vector
-        if jv:
-            vec = (1. - self.journal_ratio) * np.array(
-                pv.vector[:self.model.size]) + \
-                  self.journal_ratio * np.array(jv.vector[:self.model.size])
-        else:
-            vec = np.array(pv.vector[:self.model.size])
+        if paper_id in self.data['ids']:
+            # increment k because knn_search will return input in the neighbors
+            # set
+            k += 1
 
-        res_search = self.knn_search(vec, time_lapse=time_lapse, top_n=k)
+        res_search = dict(self.knn_search(
+            np.array(pv['vector'][:self.embedding_size]),
+            time_lapse=time_lapse,
+            top_n=k,
+            journal_id=pv['paper__journal_id']))
 
-        neighbors_pks = [item[0] for item in res_search
-                         if item[0] not in [paper_pk]]
+        # Remove input from res_search
+        try:
+            res_search.pop(paper_id)
+        except KeyError:
+            pass
 
-        return neighbors_pks[:k]
+        return list(res_search.keys())
 
-    def knn_search(self, seed, time_lapse=-1, top_n=5):
+    def knn_search(self, seed, time_lapse=-1, top_n=5, journal_id=None):
+        """"""
 
         # check seed
         if isinstance(seed, list):
             seed = np.array(seed).squeeze()
         if seed.ndim == 1:
-            assert len(seed) == self.model.size
+            assert len(seed) == self.embedding_size
         else:
-            assert seed.shape[1] == self.model.size
+            assert seed.shape[1] == self.embedding_size
 
         # get clip
         clip_start = self.get_clip_start(time_lapse)
 
         # compute distance
-        dists = np.dot(self.data[clip_start:, :], seed)
-        # clip index
-        index2pk = self.index2pk[clip_start:]
-        # sort (NB: +1 because likely will return input seed as closest item)
-        best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
-        # return paper pk and distances
-        result = [(index2pk[ind], float(dists[ind])) for ind in best]
+        dists = np.dot(self.data['embedding'][clip_start:, :], seed)
+
+        # Add journal bonus to distance
+        if journal_id and self.journal_boost:
+            jb = np.where(
+                np.array(self.data['journal-ids'])[clip_start:] == journal_id,
+                self.journal_boost,
+                0)
+            dists += jb
+
+        best = matutils.argsort(dists, topn=top_n, reverse=True)
+
+        # return [(paper_id, distances), ...]
+        result = [(self.data['ids'][ind], float(dists[ind])) for ind in best]
+
         return result
 
-    def get_partition(self, paper_pks, time_lapse=-1, k=1, journal_pks=None):
-        """
-        """
+    def get_partition(self, paper_ids, time_lapse=-1, k=1):
+        """Return the k ids of neighbor papers of paper_ids"""
 
         # get seed data
-        data = list(PaperVectors.objects \
-                    .filter(paper_id__in=paper_pks, model=self.model) \
-                    .select_related('paper__journal') \
-                    .values('vector', 'paper__journal_id'))
+        pvs = PaperVectors.objects \
+                .filter(paper_id__in=paper_ids, model=self.model) \
+                .values('vector', 'paper__journal_id')
 
-        # Get corresponding journal data
-        j_pks = [d.get('paper__journal_id') for d in data]
-        data_journal = dict(JournalVectors.objects \
-                            .filter(model=self.model, journal_id__in=j_pks) \
-                            .values_list('journal_id', 'vector'))
-
-        # Build the corresponding matrix data (paper weighted by journal in
-        # agreement with the journal ratio current used in the active
-        # MostSimilar object
-        mat = np.zeros((self.model.size, len(data)))
-        for i, d in enumerate(data):
-            if 'paper__journal_id' in d and d[
-                'paper__journal_id'] in data_journal:
-                mat[:, i] = (1. - self.journal_ratio) * np.array(
-                    d['vector'][:self.model.size]) + \
-                            self.journal_ratio * np.array(
-                                data_journal[d['paper__journal_id']][
-                                :self.model.size])
-            else:
-                mat[:, i] = np.array(d['vector'][:self.model.size])
+        # Reshape
+        mat = []
+        journal_ids = []
+        for pv in pvs:
+            mat.append(pv['vector'][:self.embedding_size])
+            journal_ids.append(pv['paper__journal_id'])
+        mat = np.array(mat)
 
         # find clip
         clip_start = self.get_clip_start(time_lapse)
 
-        # get partition
-        res_search = self.partition_search(mat, clip_start=clip_start, top_n=k,
-                                           journal_pks=journal_pks)
+        # correct k for self-match
+        k_correction = len([1 for id_ in paper_ids if id_ in self.data['ids']])
+        k += k_correction
 
-        # ignore paper_pks
-        neighbors_pks_multi = [nei for nei in res_search if
-                               nei not in paper_pks]
-        return neighbors_pks_multi
+        # get partition
+        res_search = self.partition_search(mat,
+                                           clip_start=clip_start,
+                                           top_n=k,
+                                           journal_ids=journal_ids)
+        # Remove inputs from res_search
+        for id_ in paper_ids:
+            res_search.remove(id_)
+
+        return res_search
 
     def partition_search(self, seeds, clip_start=0, top_n=5,
                          clip_start_reverse=False,
-                         journal_pks=None):
-        """Return the unsorted list of paper pk that are in the top_n neighbors
+                         journal_ids=None):
+        """Return the unsorted list of paper ids that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
 
         Args:
             seeds (np.array): 2d array, vector size x # of matches
         """
 
-        # check seeds
+        # check seeds shape / type
         if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
             seeds = np.array(seeds)
-        assert seeds.shape[0] == self.model.size
+        assert seeds.shape[1] == self.embedding_size
 
         # Reverse clip_start if flagged
         if clip_start_reverse:
-            clip_start = len(self.index2pk) - clip_start
-
-        # clip
-        data = self.data[clip_start:, :]
-        index2pk = self.index2pk[clip_start:]
-        index2journalpk = self.index2journalpk[clip_start:]
-
-        # filter by journal if defined
-        if journal_pks:
-            idx = list(map(lambda x: x in journal_pks, index2journalpk))
-            data = data[np.array(idx), :]
-            index2pk = [x for i, x in enumerate(index2pk) if idx[i]]
-            # index2journalpk = [x for i, x in enumerate(index2journalpk) if idx[i]]
+            clip_start = len(self.data['ids']) - clip_start
 
         # compute distance
-        dists = np.dot(data, seeds)
+        dists = np.dot(self.data['embedding'][clip_start:, :], seeds.T)
+
+        # Add journal bonus to distance
+        jbs = np.zeros(dists.shape)
+        if journal_ids and self.journal_boost:
+            for i, jid in enumerate(journal_ids):
+                jbs[:, i] = np.where(
+                    np.array(self.data['journal-ids'])[clip_start:] == jid,
+                    self.journal_boost,
+                    0)
+        dists += jbs
 
         # reverse order
         dists = - dists
         # get partition
         arg_part = np.argpartition(dists, top_n + 1, axis=0)[:top_n:, :]
-        # reshape and return unique
-        result = [index2pk[ind] for ind in arg_part.flatten()]
+
+        result = [self.data['ids'][ind] for ind in arg_part.flatten()]
         return list(set(result))
 
     def get_recent_pks(self, time_lapse=30):
         """Return last found/published paper pk"""
         clip_start = self.get_clip_start(time_lapse)
-        return self.index2pk[clip_start:], self.date[clip_start:]
+        return self.data['ids'][clip_start:], self.data['ids'][clip_start:]
 
-    def tasks(self, task, **kwargs):
-        """Wrapper around MostSimilar tasks
+    def tasks(self, task_name, *args, **kwargs):
+        """Dispatcher for PaperEngine tasks
 
-        Use from tasks.py for calling task while object remains in-memory.
-        Possibly an awkward design.
-
-        This method dispatches tasks that can be run from MostSimilar.
-        It is so because we want to have the MostSimilar instance in-memory
-        to avoid over-head of loading from file. Given the Task class of Celery
-        the work-around to define this wrapper that dispatches to sub tasks.
+        Dispatches tasks that can be run from PaperEngine. Task class is
+        instantiated when celery worker starts up. PaperEnging data is kept
+        in-memory to avoid loading over-head.
 
         Args:
-            task (string): A string defining the task. 'update', 'populate_neighbors',
-                'get_knn', 'knn_search', 'init'
-
-            Optional kwargs:
-            'populate_neighbors':
-                paper_pk (int): The primary key of a Paper instance
-                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
-            'get_knn':
-                paper_pk (int): The primary key of a Paper instance
-                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
-                k (int): number of neighbors
-            'get_partition':
-                paper_pks (list): List of primary key of Paper instances
-                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
-                k (int): number of neighbors
-            'knn_search':
-                seed (np.array or list): An array of length corresponding to model
-                clip_start (int): Where to start in self.data (see get_clip_start method)
-                top_n (int): the top n results
-
+            task_name (string): Name of the method to call.
         """
+        methods = [method for method in dir(self.__class__)
+                   if callable(getattr(self.__class__,  method))]
+        assert task_name in methods
 
-        if task == 'update':
-            self.update()
-        elif task == 'populate_neighbors':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.populate_neighbors(paper_pk, **kwargs)
-        elif task == 'get_knn':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.get_knn(paper_pk, **kwargs)
-        elif task == 'get_partition':
-            paper_pks = kwargs.pop('paper_pks')
-            return self.get_partition(paper_pks, **kwargs)
-        elif task == 'knn_search':
-            seed = kwargs.pop('seed')
-            return self.knn_search(seed, **kwargs)
-        elif task == 'get_recent_pks':
-            return self.get_recent_pks(**kwargs)
-        else:
-            raise ValueError('Unknown task action: {0}'.format(task))
+        method = getattr(self, task_name)
+        return method(*args, **kwargs)
 
 
 class ThreadEngineManager(models.Manager):
