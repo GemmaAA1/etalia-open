@@ -432,16 +432,6 @@ class Model(ModelThreadMixin,
         logging.info('{} Populate matches...'.format(self.name))
         self.save_paper_vec_from_bulk()
         logging.info('{} Build MostSimilar...'.format(self.name))
-        self.build_most_similar()
-
-    def build_most_similar(self):
-        try:
-            ms = PaperEngine.objects.get(model=self)
-            ms.delete()
-        except PaperEngine.DoesNotExist:
-            pass
-        ms = PaperEngine.objects.create(model=self)
-        ms.full_update()
 
     def save_journal_vec_from_bulk(self):
         """Store inferred journal vector from training in db
@@ -878,7 +868,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                                      time_lapse=time_lapse,
                                      k=settings.NLP_MAX_KNN_NEIGHBORS)
 
-        pn, _ = PaperNeighbors.objects.get_or_create(ms=self,
+        pn, _ = PaperNeighbors.objects.get_or_create(pe=self,
                                                      time_lapse=time_lapse,
                                                      paper_id=paper_id)
         pn.set_neighbors(neighbors_ids)
@@ -1266,83 +1256,22 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
                 except KeyError:
                     dic[k] = [v]
 
-            for i in self.data['ids']:
-                self.data['users-ids'].append(dic[i])
+            for i, id_ in enumerate(self.data['ids']):
+                self.data['users-ids'][i] += dic[id_]
 
         # Store
         self.save()
 
-    def update(self):
-        """Partial update of data structure with new entries only"""
+    def populate_neighbors(self, thread_id, time_lapse=-1):
+        """Populate neighbors of thread"""
 
-        if not len(self.data['ids']):
-            raise ValueError('Object is empty. run a full_update instead')
-
-        logger.info('Updating PaperEngine ({pk}/{name}) - partial update...'.format(
-            pk=self.id, name=self.name))
-
-        some_time_ago = (timezone.now() - timezone.timedelta(days=self.DWELL_TIME)).date()
-
-        # query on paper / vector
-        values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
-        q1 = Paper.objects.raw(
-                "SELECT lp.id, "
-                "		lp.journal_id, "
-                "       LEAST(date_ep, date_pp, date_fs) AS date,"
-                "		pv.vector "
-                "FROM library_paper lp "
-                "LEFT JOIN nlp_papervectors as pv ON lp.id = pv.paper_id "
-                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
-                "    AND pv.model_id=%s"
-                "    AND lp.is_trusted=TRUE "
-                "    AND lp.abstract <> ''"
-                "    AND pv.vector IS NOT NULL "
-                "    AND lp.id NOT IN (VALUES {0}) "
-                "ORDER BY date ASC".format(values), (some_time_ago, self.model.id,)
-                )
-
-        new_ids = []
-        for d in q1:
-            new_ids.append(d.id)
-            self.data['ids'].append(d.id)
-            self.data['journal-ids'].append(d.journal_id)
-            self.data['date'].append(d.date)
-            np.vstack((self.data['embedding'], np.array(d.vector[:self.embedding_size])))
-
-        # query on authors
-        if new_ids:
-            values = ', '.join(['({0})'.format(i) for i in new_ids])
-            q2 = AuthorPaper.objects.raw(
-                    "SELECT ap.id, "
-                    "	    ap.paper_id, "
-                    "		ap.author_id "
-                    "FROM library_authorpaper ap "
-                    "WHERE ap.paper_id IN (VALUES {0}) ".format(values))
-
-            d2 = [(d.paper_id, d.author_id) for d in q2]
-            dic = {}
-            for k, v in d2:
-                try:
-                    dic[k].append(v)
-                except KeyError:
-                    dic[k] = [v]
-
-            for i in new_ids:
-                self.data['authors-ids'].append(dic[i])
-
-        # save
-        self.save()
-
-    def populate_neighbors(self, paper_id, time_lapse=-1):
-        """Populate neighbors of paper"""
-
-        neighbors_ids = self.get_knn(paper_id,
+        neighbors_ids = self.get_knn(thread_id,
                                      time_lapse=time_lapse,
                                      k=settings.NLP_MAX_KNN_NEIGHBORS)
 
-        pn, _ = PaperNeighbors.objects.get_or_create(ms=self,
-                                                     time_lapse=time_lapse,
-                                                     paper_id=paper_id)
+        pn, _ = ThreadNeighbors.objects.get_or_create(te=self,
+                                                      time_lapse=time_lapse,
+                                                      thread_id=thread_id)
         pn.set_neighbors(neighbors_ids)
 
         return neighbors_ids
@@ -1366,26 +1295,25 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
             else:
                 return len(self.data['date'])
 
-    def get_knn(self, paper_id, time_lapse=-1, k=1):
+    def get_knn(self, thread_id, time_lapse=-1, k=1):
 
-        pv = PaperVectors.objects \
-                .filter(paper_id=paper_id, model=self.model) \
-                .values('vector', 'paper__journal_id')[0]
+        tv = ThreadVectors.objects \
+                .filter(thread_id=thread_id, model=self.model) \
+                .values('vector')[0]
 
-        if paper_id in self.data['ids']:
+        if thread_id in self.data['ids']:
             # increment k because knn_search will return input in the neighbors
             # set
             k += 1
 
         res_search = dict(self.knn_search(
-            np.array(pv['vector'][:self.embedding_size]),
+            np.array(tv['vector'][:self.embedding_size]),
             time_lapse=time_lapse,
-            top_n=k,
-            journal_id=pv['paper__journal_id']))
+            top_n=k))
 
         # Remove input from res_search
         try:
-            res_search.pop(paper_id)
+            res_search.pop(thread_id)
         except KeyError:
             pass
 
@@ -1408,59 +1336,47 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
         # compute distance
         dists = np.dot(self.data['embedding'][clip_start:, :], seed)
 
-        # Add journal bonus to distance
-        if journal_id and self.journal_boost:
-            jb = np.where(
-                np.array(self.data['journal-ids'])[clip_start:] == journal_id,
-                self.journal_boost,
-                0)
-            dists += jb
-
         best = matutils.argsort(dists, topn=top_n, reverse=True)
 
-        # return [(paper_id, distances), ...]
+        # return [(thread_id, distances), ...]
         result = [(self.data['ids'][ind], float(dists[ind])) for ind in best]
 
         return result
 
-    def get_partition(self, paper_ids, time_lapse=-1, k=1):
-        """Return the k ids of neighbor papers of paper_ids"""
+    def get_partition(self, thread_ids, time_lapse=-1, k=1):
+        """Return the k ids of neighbor threads of thread_id"""
 
         # get seed data
-        pvs = PaperVectors.objects \
-                .filter(paper_id__in=paper_ids, model=self.model) \
-                .values('vector', 'paper__journal_id')
+        pvs = ThreadVectors.objects \
+                .filter(thread_id__in=thread_ids, model=self.model) \
+                .values('vector')
 
         # Reshape
         mat = []
-        journal_ids = []
         for pv in pvs:
             mat.append(pv['vector'][:self.embedding_size])
-            journal_ids.append(pv['paper__journal_id'])
         mat = np.array(mat)
 
         # find clip
         clip_start = self.get_clip_start(time_lapse)
 
         # correct k for self-match
-        k_correction = len([1 for id_ in paper_ids if id_ in self.data['ids']])
+        k_correction = len([1 for id_ in thread_ids if id_ in self.data['ids']])
         k += k_correction
 
         # get partition
         res_search = self.partition_search(mat,
                                            clip_start=clip_start,
-                                           top_n=k,
-                                           journal_ids=journal_ids)
+                                           top_n=k)
         # Remove inputs from res_search
-        for id_ in paper_ids:
+        for id_ in thread_ids:
             res_search.remove(id_)
 
         return res_search
 
     def partition_search(self, seeds, clip_start=0, top_n=5,
-                         clip_start_reverse=False,
-                         journal_ids=None):
-        """Return the unsorted list of paper ids that are in the top_n neighbors
+                         clip_start_reverse=False):
+        """Return the unsorted list of thread ids that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
 
         Args:
@@ -1478,16 +1394,6 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
 
         # compute distance
         dists = np.dot(self.data['embedding'][clip_start:, :], seeds.T)
-
-        # Add journal bonus to distance
-        jbs = np.zeros(dists.shape)
-        if journal_ids and self.journal_boost:
-            for i, jid in enumerate(journal_ids):
-                jbs[:, i] = np.where(
-                    np.array(self.data['journal-ids'])[clip_start:] == jid,
-                    self.journal_boost,
-                    0)
-        dists += jbs
 
         # reverse order
         dists = - dists
