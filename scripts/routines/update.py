@@ -308,8 +308,7 @@ def fetch_new_papers():
 def dump_data():
     print('Dump data to file...')
     call([os.path.join(root_path, "manage.py"), "dumpdata",
-          "--exclude=auth",
-          "--exclude=contentypes",
+          "--exclude", "auth", "--exclude", "contenttypes",
           "-o", os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
     sys.exit()
 
@@ -386,6 +385,8 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--load",
                         help="Load database from fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
                         metavar='file',
+                        nargs='?',
+                        const=INIT_DEFAULT_FIXTURE_FILE,
                         type=str)
     parser.add_argument("-p", "--papers",
                         help="Fetch new papers only",
@@ -398,6 +399,8 @@ if __name__ == '__main__':
                         type=str)
     parser.add_argument("-d", "--dump",
                         help="Dump database to fxiture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
+                        nargs='?',
+                        const=INIT_DEFAULT_FIXTURE_FILE,
                         metavar='file',
                         type=str)
     parser.add_argument("-f", "--flush",
@@ -461,7 +464,7 @@ if __name__ == '__main__':
         load()
 
     # Dump to init_data.json
-    if args.load:
+    if args.dump:
         dump_data()
 
     # Fetch new papers
