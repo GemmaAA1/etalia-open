@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='journalneighbors',
-            name='ms',
+            name='pe',
         ),
         migrations.AlterUniqueTogether(
             name='journalvectors',
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='paperneighbors',
-            name='ms',
+            name='pe',
         ),
         migrations.RemoveField(
             model_name='paperneighbors',
@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='threadneighbors',
-            name='ms',
+            name='pe',
         ),
         migrations.RemoveField(
             model_name='threadneighbors',

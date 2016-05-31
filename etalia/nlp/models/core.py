@@ -25,6 +25,7 @@ from gensim.models import Phrases
 from etalia.core.models import TimeStampedModel
 
 from etalia.library.models import Paper, Journal, AuthorPaper
+from etalia.threads.models import Thread, ThreadPost, ThreadComment
 
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
     JournalVectors
@@ -37,29 +38,6 @@ from ..mixins import S3Mixin
 from ..constants import NLP_JOURNAL_RATIO_CHOICES
 
 logger = logging.getLogger(__name__)
-
-
-class ModelBase(TimeStampedModel):
-    """Abstract NLP model class"""
-
-    def tasks(self, task, **kwargs):
-        """Task dispatcher"""
-        if task == 'get_words_vec':
-            vec = kwargs.pop('vec')
-            return self.get_words_vec(vec, **kwargs)
-        if task == 'get_words_paper':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.get_words_paper(paper_pk, **kwargs)
-        if task == 'infer_object':
-            class_name = kwargs.pop('class_name')
-            pk = kwargs.pop('pk')
-            fields = kwargs.pop('fields')
-            return self.infer_object(class_name, pk, fields, **kwargs)
-        print('unknown')
-        raise ValueError('Unknown task action: {0}'.format(task))
-
-    class Meta:
-        abstract = True
 
 
 class ModelManager(models.Manager):
@@ -113,7 +91,7 @@ class ModelManager(models.Manager):
 class Model(ModelThreadMixin,
             ModelLibraryMixin,
             S3Mixin,
-            ModelBase):
+            TimeStampedModel):
     """Natural Language Processing Class based on Doc2Vec from Gensim
     """
     # For S3 Mixin
@@ -591,6 +569,23 @@ class Model(ModelThreadMixin,
 
         return dist
 
+    def tasks(self, task_name, *args, **kwargs):
+        """Dispatcher for Model tasks
+
+        Dispatches tasks that can be run from Model. Task class is
+        instantiated when celery worker starts up. Model instance is kept
+        in-memory to avoid loading over-head.
+
+        Args:
+            task_name (string): Name of the method to call.
+        """
+        methods = [method for method in dir(self.__class__)
+                   if callable(getattr(self.__class__,  method))]
+        assert task_name in methods
+
+        method = getattr(self, task_name)
+        return method(*args, **kwargs)
+
 
 class TextField(TimeStampedModel):
     """Store which fields of paper and related data are used in model training
@@ -605,17 +600,17 @@ class TextField(TimeStampedModel):
 
 class PaperEngineManager(models.Manager):
     def load(self, **kwargs):
-        """Get MostSimilar instance and load corresponding data"""
+        """Get PaperEngine instance and load corresponding data"""
         obj = super(PaperEngineManager, self).get(**kwargs)
         try:
-            np_pkl_file = os.path.join(settings.NLP_MS_PATH,
+            pe_pkl_file = os.path.join(settings.NLP_PE_PATH,
                                        '{0}.pkl'.format(obj.name))
             # if not on volume try download from s3
-            if not os.path.isfile(np_pkl_file):
-                if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
+            if not os.path.isfile(pe_pkl_file):
+                if getattr(settings, 'NLP_PE_BUCKET_NAME', ''):
                     obj.pull_from_s3()
 
-            obj.data = joblib.load(np_pkl_file)
+            obj.data = joblib.load(pe_pkl_file)
         except EnvironmentError:  # OSError or IOError...
             raise
 
@@ -625,7 +620,7 @@ class PaperEngineManager(models.Manager):
 class PaperEngine(TimeStampedModel, S3Mixin):
     """PaperEngine class
 
-    Store useful data for:
+    Store useful data and perform tasks for:
      - cosine similarity search
      - scoring
 
@@ -639,7 +634,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
     # For S3 Mixin
     # --------------------
     BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
-    PATH = getattr(settings, 'NLP_MS_PATH', '')
+    PATH = getattr(settings, 'NLP_PE_PATH', '')
     AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
 
@@ -668,7 +663,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
 
     # DB stored properties
     # --------------------
-    model = models.ForeignKey(Model, related_name='ms')
+    model = models.ForeignKey(Model, related_name='pe')
 
     upload_state = models.CharField(max_length=3,
                                     choices=(('IDL', 'Idle'),
@@ -684,7 +679,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
 
     @property
     def name(self):
-        return 'ms-{model_name}'.format(
+        return 'pe-{model_name}'.format(
             model_name=self.model.name)
 
     @property
@@ -708,22 +703,22 @@ class PaperEngine(TimeStampedModel, S3Mixin):
 
     def save(self, *args, **kwargs):
 
-        logger.info('Saving MS ({pk}/{name})'.format(pk=self.id,
+        logger.info('Saving PE ({pk}/{name})'.format(pk=self.id,
                                                      name=self.name))
 
         # save files to local volume
-        if not os.path.exists(settings.NLP_MS_PATH):
-            os.makedirs(settings.NLP_MS_PATH)
-        np_pkl_file = os.path.join(settings.NLP_MS_PATH,
+        if not os.path.exists(settings.NLP_PE_PATH):
+            os.makedirs(settings.NLP_PE_PATH)
+        pe_pkl_file = os.path.join(settings.NLP_PE_PATH,
                                    '{0}.pkl'.format(self.name))
         # use joblib for numpy array pickling optimization
-        joblib.dump(self.data, np_pkl_file)
+        joblib.dump(self.data, pe_pkl_file)
 
         # push files to s3
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
             self.save_db_only()
-            self.push_to_s3(ext='ms')
+            self.push_to_s3(ext='pe')
             self.upload_state = 'IDL'
         # save to db
         self.save_db_only()
@@ -736,7 +731,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         try:
             # remove local
             rm_files = glob.glob(
-                os.path.join(settings.NLP_MS_PATH, '{0}.*'.format(self.name)))
+                os.path.join(settings.NLP_PE_PATH, '{0}.*'.format(self.name)))
             for file in rm_files:
                 os.remove(file)
         except IOError:
@@ -757,8 +752,8 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         logger.info('Updating PaperEngine ({pk}/{name}) - full update...'.format(
             pk=self.id, name=self.name))
 
-        a_year_ago = (timezone.now() -
-                      timezone.timedelta(days=self.DWELL_TIME)).date()
+        some_time_ago = (timezone.now() -
+                         timezone.timedelta(days=self.DWELL_TIME)).date()
 
         self.data = {'ids': [],
                      'journal-ids': [],
@@ -780,7 +775,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                 "    AND lp.is_trusted=TRUE "
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
-                "ORDER BY date ASC", (a_year_ago, self.model.id)
+                "ORDER BY date ASC", (some_time_ago, self.model.id)
                 )
 
         for d in q1:
@@ -823,7 +818,8 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         logger.info('Updating PaperEngine ({pk}/{name}) - partial update...'.format(
             pk=self.id, name=self.name))
 
-        a_year_ago = (timezone.now() - timezone.timedelta(days=self.DWELL_TIME)).date()
+        some_time_ago = (timezone.now() -
+                         timezone.timedelta(days=self.DWELL_TIME)).date()
 
         # query on paper / vector
         values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
@@ -840,7 +836,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
                 "    AND lp.id NOT IN (VALUES {0}) "
-                "ORDER BY date ASC".format(values), (a_year_ago, self.model.id,)
+                "ORDER BY date ASC".format(values), (some_time_ago, self.model.id,)
                 )
 
         new_ids = []
@@ -1063,25 +1059,19 @@ class PaperEngine(TimeStampedModel, S3Mixin):
 
 
 class ThreadEngineManager(models.Manager):
+
     def load(self, **kwargs):
-        """Get MostSimilar instance and load corresponding data"""
+        """Get ThreadEngine instance and load corresponding data"""
         obj = super(ThreadEngineManager, self).get(**kwargs)
         try:
+            te_pkl_file = os.path.join(settings.NLP_TE_PATH,
+                                       '{0}.pkl'.format(obj.name))
             # if not on volume try download from s3
-            if not os.path.isfile(os.path.join(settings.NLP_MS_PATH,
-                                               '{0}.ms_data'.format(obj.name))):
-                if getattr(settings, 'NLP_MS_BUCKET_NAME', ''):
+            if not os.path.isfile(te_pkl_file):
+                if getattr(settings, 'NLP_TE_BUCKET_NAME', ''):
                     obj.pull_from_s3()
 
-            obj.data = joblib.load(os.path.join(settings.NLP_MS_PATH,
-                                                '{0}.ms_data'.format(obj.name)))
-            with open(
-                    os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_ind2pk'),
-                    'rb') as f:
-                obj.index2pk = pickle.load(f)
-            with open(os.path.join(settings.NLP_MS_PATH, obj.name + '.ms_date'),
-                      'rb') as f:
-                obj.date = pickle.load(f)
+            obj.data = joblib.load(te_pkl_file)
         except EnvironmentError:  # OSError or IOError...
             raise
 
@@ -1089,43 +1079,84 @@ class ThreadEngineManager(models.Manager):
 
 
 class ThreadEngine(TimeStampedModel, S3Mixin):
-    """Most Similar class to perform k-nearest neighbors search based on
-    simple dot product. This is working because thread vector are normalized"""
+    """ThreadEngine class
+
+    Store useful data and perform tasks for:
+     - cosine similarity search
+     - scoring
+
+    Object is stored on S3 bucket.
+
+    Data are dynamically updated and roll-out over DWELL_TIME
+    """
+
+    DWELL_TIME = 365 * 5    # days
 
     # For S3 Mixin
-    BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
-    PATH = getattr(settings, 'NLP_MS_PATH', '')
+    # --------------------
+    BUCKET_NAME = getattr(settings, 'NLP_TE_BUCKET_NAME', '')
+    PATH = getattr(settings, 'NLP_TE_PATH', '')
     AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
 
-    model = models.ForeignKey(Model, related_name='ms_thread')
+    # Data structure
+    # --------------------
+    # Dictionary with following key, value pairs:
+    # {
+    #   'ids': [thread-id_1, ..., thread-id_N],
+    #   'paper-ids': [thread-id_1, ..., thread-id_N],
+    #   'users-ids': [[user-id_1_1, ... user-id_1_P1],
+    #                 [user-id_2_1, ... user-id_2_P2],
+    #                   ...,
+    #                 [user-id_N_1, ... user-id_N_PN]
+    #                ],
+    #   'date':      [date_1, ..., date_N],
+    #   'embedding': np.array([[v11, v12, ... v1Q],
+    #                          ...,
+    #                          [vN1, vN2, ... vNQ]])
+    # }
+    #
+    # Comment:
+    #      - users-ids: first user is thread owner, others are users that posted
+
+
+    data = {'ids': [],
+            'paper-ids': [],
+            'users-ids': [],
+            'date': [],
+            'embedding': np.empty(0)
+            }
+
+    # DB stored properties
+    # --------------------
+    model = models.ForeignKey(Model, related_name='te')
 
     upload_state = models.CharField(max_length=3,
                                     choices=(('IDL', 'Idle'),
                                              ('ING', 'Uploading')),
                                     default='IDL ')
-
-    # 2D array of # matches x vector size
-    data = np.empty(0)
-    # data index to thread pk
-    index2pk = []
-    # index date
-    date = []
     # make instance active (use when linking task)
     is_active = models.BooleanField(default=False)
+
+    # user boost
+    user_boost = models.FloatField(default=0.05, null=True, blank=True)
 
     objects = ThreadEngineManager()
 
     @property
     def name(self):
-        return 'thread-{model_name}'.format(
+        return 'te-{model_name}'.format(
             model_name=self.model.name)
+
+    @property
+    def embedding_size(self):
+        return self.model.size
 
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)
 
     def activate(self):
-        """Set model to active. Only on model can be active at once"""
+        """Set model to active. Only one model can be active at once"""
         ThreadEngine.objects.all() \
             .update(is_active=False)
         self.is_active = True
@@ -1138,27 +1169,22 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
 
     def save(self, *args, **kwargs):
 
-        logger.info('Saving MS Thread ({pk}/{name})'.format(pk=self.id,
-                                                            name=self.name))
+        logger.info('Saving TE ({pk}/{name})'.format(pk=self.id,
+                                                     name=self.name))
 
         # save files to local volume
-        if not os.path.exists(settings.NLP_MS_PATH):
-            os.makedirs(settings.NLP_MS_PATH)
+        if not os.path.exists(settings.NLP_TE_PATH):
+            os.makedirs(settings.NLP_TE_PATH)
+        te_pkl_file = os.path.join(settings.NLP_TE_PATH,
+                                   '{0}.pkl'.format(self.name))
         # use joblib for numpy array pickling optimization
-        joblib.dump(self.data,
-                    os.path.join(settings.NLP_MS_PATH, self.name + '.ms_data'))
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_ind2pk'),
-                  'wb') as f:
-            pickle.dump(self.index2pk, f)
-        with open(os.path.join(settings.NLP_MS_PATH, self.name + '.ms_date'),
-                  'wb') as f:
-            pickle.dump(self.date, f)
+        joblib.dump(self.data, te_pkl_file)
 
         # push files to s3
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
             self.save_db_only()
-            self.push_to_s3(ext='ms')
+            self.push_to_s3(ext='te')
             self.upload_state = 'IDL'
         # save to db
         self.save_db_only()
@@ -1171,13 +1197,13 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
         try:
             # remove local
             rm_files = glob.glob(
-                os.path.join(settings.NLP_MS_PATH, '{0}.ms*'.format(self.name)))
+                os.path.join(settings.NLP_TE_PATH, '{0}.*'.format(self.name)))
             for file in rm_files:
                 os.remove(file)
         except IOError:
             pass
 
-        # delete on amazon s3
+        # delete on S3
         if s3:
             try:
                 if self.BUCKET_NAME:
@@ -1187,275 +1213,308 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
         super(ThreadEngine, self).delete(**kwargs)
 
     def full_update(self):
-        """Full update data for knn search
-        """
+        """Full update of data structure"""
 
-        logger.info('Updating MS ({pk}/{name}) - fetching full data...'.format(
+        logger.info('Updating ThreadEngine ({pk}/{name}) - full update...'.format(
             pk=self.id, name=self.name))
 
-        # size of the model space used for truncation of vector
-        vec_size = self.model.size
+        some_time_ago = (timezone.now() -
+                         timezone.timedelta(days=self.DWELL_TIME)).date()
 
-        # query
-        data = list(ThreadVectors.objects.raw(
-            "SELECT nlp_threadvectors.id, "
-            "       nlp_threadvectors.thread_id, "
-            "       vector, "
-            "       published_at "
-            "FROM nlp_threadvectors LEFT JOIN threads_thread "
-            "ON nlp_threadvectors.thread_id=threads_thread.id "
-            "WHERE model_id=%s"
-            "    AND published_at IS NOT NULL"
-            "    AND vector IS NOT NULL "
-            "ORDER BY published_at ASC", (self.model.pk, )))
+        self.data = {'ids': [],
+                     'paper-ids': [],
+                     'users-ids': [],
+                     'date': [],
+                     'embedding': []}
 
-        # Reshape data
-        nb_items = len(data)
-        self.date = []
-        self.index2pk = []
-        self.data = np.zeros((nb_items, vec_size))
-        for i, dat in enumerate(data):
-            if dat.vector:
-                self.date.append(dat.published_at)
-                # store thread pk
-                self.index2pk.append(dat.thread_id)
-                # build input matrix for fit
-                self.data[i, :] = np.array(dat.vector[:vec_size])
+        # query on thread / vector
+        q1 = Thread.objects.raw(
+                "SELECT tt.id,"
+                "       tt.user_id,"
+                "       tt.published_at,"
+                "		tv.vector "
+                "FROM threads_thread tt "
+                "LEFT JOIN nlp_threadvectors as tv ON tt.id = tv.thread_id "
+                "WHERE tt.published_at >= %s"
+                "    AND tv.model_id = %s"
+                "    AND tv.vector IS NOT NULL "
+                "ORDER BY date ASC", (some_time_ago, self.model.id)
+                )
+
+        for d in q1:
+            self.data['ids'].append(d.id)
+            self.data['date'].append(d.published_at)
+            self.data['user-ids'].append([d.user_id])
+            self.data['embedding'].append(d.vector[:self.embedding_size])
+        self.data['embedding'] = np.array(self.data['embedding'])
+
+        # query on authors
+        if self.data['ids']:
+            values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
+            q2 = ThreadPost.objects.raw(
+                    "SELECT tp.id, "
+                    "	    tp.thread_id, "
+                    "		tp.user_id "
+                    "FROM threads_threadpost tp "
+                    "WHERE tp.thread_id IN (VALUES {0}) ".format(values))
+
+            d2 = [(d.thread_id, d.user_id) for d in q2]
+            dic = {}
+            for k, v in d2:
+                try:
+                    dic[k].append(v)
+                except KeyError:
+                    dic[k] = [v]
+
+            for i in self.data['ids']:
+                self.data['users-ids'].append(dic[i])
 
         # Store
         self.save()
 
     def update(self):
-        """Update data for knn search for new thread
-        """
+        """Partial update of data structure with new entries only"""
 
-        if not self.index2pk:
-            raise ValueError('Looks like you should run full_update instead')
+        if not len(self.data['ids']):
+            raise ValueError('Object is empty. run a full_update instead')
 
-        logger.info('Updating MS ({pk}/{name}) - fetching new data...'.format(
+        logger.info('Updating PaperEngine ({pk}/{name}) - partial update...'.format(
             pk=self.id, name=self.name))
 
-        # size of the model space used for truncation of vector
-        vec_size = self.model.size
+        some_time_ago = (timezone.now() - timezone.timedelta(days=self.DWELL_TIME)).date()
 
-        data = list(ThreadVectors.objects.raw(
-            "SELECT nlp_threadvectors.id, "
-            "       nlp_threadvectors.thread_id, "
-            "       vector, "
-            "       published_at"
-            "        "
-            "FROM nlp_threadvectors LEFT JOIN threads_thread "
-            "ON nlp_threadvectors.thread_id=threads_thread.id "
-            "WHERE model_id=%s"
-            "    AND published_at IS NOT NULL"
-            "    AND vector IS NOT NULL"
-            "    AND nlp_threadvectors.thread_id NOT IN %s "
-            "ORDER BY published_at ASC",
-            (self.model.pk, tuple(self.index2pk))))
+        # query on paper / vector
+        values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
+        q1 = Paper.objects.raw(
+                "SELECT lp.id, "
+                "		lp.journal_id, "
+                "       LEAST(date_ep, date_pp, date_fs) AS date,"
+                "		pv.vector "
+                "FROM library_paper lp "
+                "LEFT JOIN nlp_papervectors as pv ON lp.id = pv.paper_id "
+                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+                "    AND pv.model_id=%s"
+                "    AND lp.is_trusted=TRUE "
+                "    AND lp.abstract <> ''"
+                "    AND pv.vector IS NOT NULL "
+                "    AND lp.id NOT IN (VALUES {0}) "
+                "ORDER BY date ASC".format(values), (some_time_ago, self.model.id,)
+                )
 
-        # Reshape data
-        nb_items = len(data)
-        date = []
-        index2pk = []
-        data_mat = np.zeros((nb_items, vec_size))
-        for i, dat in enumerate(data):
-            if dat.vector:
-                # get min date
-                date.append(dat.published_at)
-                # store thread pk
-                index2pk.append(dat.thread_id)
-                # build input matrix for fit
-                data_mat[i, :] = np.array(dat.vector[:vec_size])
+        new_ids = []
+        for d in q1:
+            new_ids.append(d.id)
+            self.data['ids'].append(d.id)
+            self.data['journal-ids'].append(d.journal_id)
+            self.data['date'].append(d.date)
+            np.vstack((self.data['embedding'], np.array(d.vector[:self.embedding_size])))
 
-        # concatenate
-        self.date += date
-        self.index2pk += index2pk
-        self.data = np.vstack((self.data, data_mat))
+        # query on authors
+        if new_ids:
+            values = ', '.join(['({0})'.format(i) for i in new_ids])
+            q2 = AuthorPaper.objects.raw(
+                    "SELECT ap.id, "
+                    "	    ap.paper_id, "
+                    "		ap.author_id "
+                    "FROM library_authorpaper ap "
+                    "WHERE ap.paper_id IN (VALUES {0}) ".format(values))
 
-        # reorder data by date
-        idx = sorted(range(len(self.date)), key=self.date.__getitem__)
-        self.date = [self.date[i] for i in idx]
-        self.index2pk = [self.index2pk[i] for i in idx]
-        self.data = self.data[idx, :]
+            d2 = [(d.paper_id, d.author_id) for d in q2]
+            dic = {}
+            for k, v in d2:
+                try:
+                    dic[k].append(v)
+                except KeyError:
+                    dic[k] = [v]
+
+            for i in new_ids:
+                self.data['authors-ids'].append(dic[i])
 
         # save
         self.save()
 
-    def populate_neighbors(self, thread_pk, time_lapse=-1):
-        """Populate neighbors of thread
-        """
+    def populate_neighbors(self, paper_id, time_lapse=-1):
+        """Populate neighbors of paper"""
 
-        neighbors_pks = self.get_knn(thread_pk, time_lapse=time_lapse,
+        neighbors_ids = self.get_knn(paper_id,
+                                     time_lapse=time_lapse,
                                      k=settings.NLP_MAX_KNN_NEIGHBORS)
 
-        pn, _ = ThreadNeighbors.objects.get_or_create(ms=self,
-                                                      time_lapse=time_lapse,
-                                                      thread_id=thread_pk)
-        pn.set_neighbors(neighbors_pks)
+        pn, _ = PaperNeighbors.objects.get_or_create(ms=self,
+                                                     time_lapse=time_lapse,
+                                                     paper_id=paper_id)
+        pn.set_neighbors(neighbors_ids)
 
-        return neighbors_pks
+        return neighbors_ids
 
     def get_clip_start(self, time_lapse):
-        if time_lapse == -1:
+        """Return index in data structure what corresponding to paper with
+        date greater than now() - time_lapse
+
+        Args:
+            time_lapse (int): Number of days. if negative, returns 0
+
+        """
+
+        if time_lapse < 0:
             return 0
         else:
-            cutoff_date = (
-                timezone.now() - timezone.timedelta(days=time_lapse))
-            if max(np.array(self.date) > cutoff_date):  # at least one in True
-                return np.argmax(np.array(self.date) > cutoff_date)
+            cutoff_date = (timezone.now() -
+                           timezone.timedelta(days=time_lapse)).date()
+            if max(self.data['date']) > cutoff_date:
+                return np.argmax(np.array(self.data['date']) > cutoff_date)
             else:
-                return len(self.date)
+                return len(self.data['date'])
 
-    def get_knn(self, thread_pk, time_lapse=-1, k=1):
+    def get_knn(self, paper_id, time_lapse=-1, k=1):
 
-        pv = ThreadVectors.objects \
-            .filter(thread_id=thread_pk, model=self.model)[0]
+        pv = PaperVectors.objects \
+                .filter(paper_id=paper_id, model=self.model) \
+                .values('vector', 'paper__journal_id')[0]
 
-        # build weighted vector
-        vec = np.array(pv.vector[:self.model.size])
+        if paper_id in self.data['ids']:
+            # increment k because knn_search will return input in the neighbors
+            # set
+            k += 1
 
-        res_search = self.knn_search(vec, time_lapse=time_lapse, top_n=k)
+        res_search = dict(self.knn_search(
+            np.array(pv['vector'][:self.embedding_size]),
+            time_lapse=time_lapse,
+            top_n=k,
+            journal_id=pv['paper__journal_id']))
 
-        neighbors_pks = [item[0] for item in res_search
-                         if item[0] not in [thread_pk]]
+        # Remove input from res_search
+        try:
+            res_search.pop(paper_id)
+        except KeyError:
+            pass
 
-        return neighbors_pks[:k]
+        return list(res_search.keys())
 
-    def knn_search(self, seed, time_lapse=-1, top_n=5):
+    def knn_search(self, seed, time_lapse=-1, top_n=5, journal_id=None):
+        """"""
 
         # check seed
         if isinstance(seed, list):
             seed = np.array(seed).squeeze()
         if seed.ndim == 1:
-            assert len(seed) == self.model.size
+            assert len(seed) == self.embedding_size
         else:
-            assert seed.shape[1] == self.model.size
+            assert seed.shape[1] == self.embedding_size
 
         # get clip
         clip_start = self.get_clip_start(time_lapse)
 
         # compute distance
-        dists = np.dot(self.data[clip_start:, :], seed)
-        # clip index
-        index2pk = self.index2pk[clip_start:]
-        # sort (NB: +1 because likely will return input seed as closest item)
-        best = matutils.argsort(dists, topn=top_n + 1, reverse=True)
-        # return thread pk and distances
-        result = [(index2pk[ind], float(dists[ind])) for ind in best]
+        dists = np.dot(self.data['embedding'][clip_start:, :], seed)
+
+        # Add journal bonus to distance
+        if journal_id and self.journal_boost:
+            jb = np.where(
+                np.array(self.data['journal-ids'])[clip_start:] == journal_id,
+                self.journal_boost,
+                0)
+            dists += jb
+
+        best = matutils.argsort(dists, topn=top_n, reverse=True)
+
+        # return [(paper_id, distances), ...]
+        result = [(self.data['ids'][ind], float(dists[ind])) for ind in best]
+
         return result
 
-    def get_partition(self, thread_pks, time_lapse=-1, k=1):
-        """
-        """
+    def get_partition(self, paper_ids, time_lapse=-1, k=1):
+        """Return the k ids of neighbor papers of paper_ids"""
 
         # get seed data
-        data = list(ThreadVectors.objects \
-                    .filter(thread_id__in=thread_pks, model=self.model) \
-                    .values('vector'))
+        pvs = PaperVectors.objects \
+                .filter(paper_id__in=paper_ids, model=self.model) \
+                .values('vector', 'paper__journal_id')
 
-        # Build the corresponding matrix data
-        mat = np.zeros((self.model.size, len(data)))
-        for i, d in enumerate(data):
-                mat[:, i] = np.array(d['vector'][:self.model.size])
+        # Reshape
+        mat = []
+        journal_ids = []
+        for pv in pvs:
+            mat.append(pv['vector'][:self.embedding_size])
+            journal_ids.append(pv['paper__journal_id'])
+        mat = np.array(mat)
 
         # find clip
         clip_start = self.get_clip_start(time_lapse)
 
-        # get partition
-        res_search = self.partition_search(mat, clip_start=clip_start, top_n=k)
+        # correct k for self-match
+        k_correction = len([1 for id_ in paper_ids if id_ in self.data['ids']])
+        k += k_correction
 
-        # ignore thread_pks
-        neighbors_pks_multi = [nei for nei in res_search if
-                               nei not in thread_pks]
-        return neighbors_pks_multi
+        # get partition
+        res_search = self.partition_search(mat,
+                                           clip_start=clip_start,
+                                           top_n=k,
+                                           journal_ids=journal_ids)
+        # Remove inputs from res_search
+        for id_ in paper_ids:
+            res_search.remove(id_)
+
+        return res_search
 
     def partition_search(self, seeds, clip_start=0, top_n=5,
-                         clip_start_reverse=False):
-        """Return the unsorted list of thread pk that are in the top_n neighbors
+                         clip_start_reverse=False,
+                         journal_ids=None):
+        """Return the unsorted list of paper ids that are in the top_n neighbors
         of vector defined as columns of 2d array seeds
 
         Args:
             seeds (np.array): 2d array, vector size x # of matches
         """
 
-        # check seeds
+        # check seeds shape / type
         if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
             seeds = np.array(seeds)
-        assert seeds.shape[0] == self.model.size
+        assert seeds.shape[1] == self.embedding_size
 
         # Reverse clip_start if flagged
         if clip_start_reverse:
-            clip_start = len(self.index2pk) - clip_start
-
-        # clip
-        data = self.data[clip_start:, :]
-        index2pk = self.index2pk[clip_start:]
+            clip_start = len(self.data['ids']) - clip_start
 
         # compute distance
-        dists = np.dot(data, seeds)
+        dists = np.dot(self.data['embedding'][clip_start:, :], seeds.T)
+
+        # Add journal bonus to distance
+        jbs = np.zeros(dists.shape)
+        if journal_ids and self.journal_boost:
+            for i, jid in enumerate(journal_ids):
+                jbs[:, i] = np.where(
+                    np.array(self.data['journal-ids'])[clip_start:] == jid,
+                    self.journal_boost,
+                    0)
+        dists += jbs
 
         # reverse order
         dists = - dists
         # get partition
         arg_part = np.argpartition(dists, top_n + 1, axis=0)[:top_n:, :]
-        # reshape and return unique
-        result = [index2pk[ind] for ind in arg_part.flatten()]
+
+        result = [self.data['ids'][ind] for ind in arg_part.flatten()]
         return list(set(result))
 
     def get_recent_pks(self, time_lapse=30):
-        """Return last found/published thread pk"""
+        """Return last found/published paper pk"""
         clip_start = self.get_clip_start(time_lapse)
-        return self.index2pk[clip_start:], self.date[clip_start:]
+        return self.data['ids'][clip_start:], self.data['ids'][clip_start:]
 
-    def tasks(self, task, **kwargs):
-        """Wrapper around MostSimilar tasks
+    def tasks(self, task_name, *args, **kwargs):
+        """Dispatcher for PaperEngine tasks
 
-        Use from tasks.py for calling task while object remains in-memory.
-        Possibly an awkward design.
-
-        This method dispatches tasks that can be run from MostSimilar.
-        It is so because we want to have the MostSimilar instance in-memory
-        to avoid over-head of loading from file. Given the Task class of Celery
-        the work-around to define this wrapper that dispatches to sub tasks.
+        Dispatches tasks that can be run from PaperEngine. Task class is
+        instantiated when celery worker starts up. PaperEnging data is kept
+        in-memory to avoid loading over-head.
 
         Args:
-            task (string): A string defining the task. 'update', 'populate_neighbors',
-                'get_knn', 'knn_search', 'init'
-
-            Optional kwargs:
-            'populate_neighbors':
-                thread_pk (int): The primary key of a Paper instance
-                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
-            'get_knn':
-                thread_pk (int): The primary key of a Paper instance
-                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
-                k (int): number of neighbors
-            'get_partition':
-                thread_pks (list): List of primary key of Paper instances
-                time_lapse (int): Days in the past, in NLP_TIME_LAPSE_CHOICES
-                k (int): number of neighbors
-            'knn_search':
-                seed (np.array or list): An array of length corresponding to model
-                clip_start (int): Where to start in self.data (see get_clip_start method)
-                top_n (int): the top n results
-
+            task_name (string): Name of the method to call.
         """
+        methods = [method for method in dir(self.__class__)
+                   if callable(getattr(self.__class__,  method))]
+        assert task_name in methods
 
-        if task == 'update':
-            self.update()
-        elif task == 'populate_neighbors':
-            thread_pk = kwargs.pop('thread_pk')
-            return self.populate_neighbors(thread_pk, **kwargs)
-        elif task == 'get_knn':
-            thread_pk = kwargs.pop('thread_pk')
-            return self.get_knn(thread_pk, **kwargs)
-        elif task == 'get_partition':
-            thread_pks = kwargs.pop('thread_pks')
-            return self.get_partition(thread_pks, **kwargs)
-        elif task == 'knn_search':
-            seed = kwargs.pop('seed')
-            return self.knn_search(seed, **kwargs)
-        elif task == 'get_recent_pks':
-            return self.get_recent_pks(**kwargs)
-        else:
-            raise ValueError('Unknown task action: {0}'.format(task))
+        method = getattr(self, task_name)
+        return method(*args, **kwargs)

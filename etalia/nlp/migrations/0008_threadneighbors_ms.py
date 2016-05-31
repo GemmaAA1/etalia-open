@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='threadneighbors',
-            name='ms',
+            name='pe',
             field=models.ForeignKey(default=1, to='nlp.models.ThreadEngine'),
             preserve_default=False,
         ),

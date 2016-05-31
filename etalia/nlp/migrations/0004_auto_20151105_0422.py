@@ -13,13 +13,13 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='journalneighbors',
-            name='ms',
+            name='pe',
             field=models.ForeignKey(to='nlp.models.PaperEngine', default=5),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='paperneighbors',
-            name='ms',
+            name='pe',
             field=models.ForeignKey(to='nlp.models.PaperEngine', default=5),
             preserve_default=False,
         ),
@@ -30,11 +30,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='journalneighbors',
-            unique_together=set([('journal', 'ms')]),
+            unique_together=set([('journal', 'pe')]),
         ),
         migrations.AlterUniqueTogether(
             name='paperneighbors',
-            unique_together=set([('time_lapse', 'paper', 'ms')]),
+            unique_together=set([('time_lapse', 'paper', 'pe')]),
         ),
         migrations.RemoveField(
             model_name='journalneighbors',

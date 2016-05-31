@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='threadneighbors',
-            unique_together=set([('time_lapse', 'thread', 'ms')]),
+            unique_together=set([('time_lapse', 'thread', 'pe')]),
         ),
     ]

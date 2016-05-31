@@ -37,7 +37,7 @@ celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 # Add user options to control for nlp / mostsimilar registration of tasks
 celery_app.user_options['worker'].add(
     Option('--init', dest='init', default=None,
-           help='init MostSimilar (ms) or Model based tasks (nlp)')
+           help='init MostSimilar (pe) or Model based tasks (nlp)')
 )
 
 
@@ -50,7 +50,7 @@ class NLPBootstep(bootsteps.Step):
         if init:
             if 'nlp' in init:
                 register_model_tasks(init=True)
-            if 'ms' in init:
+            if 'pe' in init:
                 register_mostsimilar_tasks(init=True)
         else:
             register_model_tasks()

@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='paperengine',
             name='model',
-            field=models.ForeignKey(unique=True, to='nlp.Model', related_name='ms'),
+            field=models.ForeignKey(unique=True, to='nlp.Model', related_name='pe'),
         ),
         migrations.AlterUniqueTogether(
             name='paperengine',

@@ -59,7 +59,7 @@ class ThreadNeighbors(TimeStampedModel):
                                      verbose_name='Days from right now')
 
     # MostSimilarThread
-    ms = models.ForeignKey('nlp.ThreadEngine')
+    pe = models.ForeignKey('nlp.ThreadEngine')
 
     # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
@@ -67,8 +67,8 @@ class ThreadNeighbors(TimeStampedModel):
                            null=True, blank=True)
 
     def __str__(self):
-        return '{ms}/{time_lapse}'.format(
-            ms=self.ms.name,
+        return '{pe}/{time_lapse}'.format(
+            ms=self.pe.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):
@@ -76,10 +76,10 @@ class ThreadNeighbors(TimeStampedModel):
         self.save()
 
     def get_neighbors(self):
-        return self.neighbors[:self.ms.model.size]
+        return self.neighbors[:self.pe.model.size]
 
     class Meta:
-        unique_together = ('time_lapse', 'thread', 'ms')
+        unique_together = ('time_lapse', 'thread', 'pe')
 
 
 class ModelThreadMixin(object):
@@ -125,15 +125,6 @@ class ModelThreadMixin(object):
                     pbar.update(count)
         # close progress bar
         pbar.finish()
-
-    def tasks(self, task, **kwargs):
-        if task == 'infer_thread':
-            thread_pk = kwargs.pop('thread_pk')
-            return self.infer_thread(thread_pk, **kwargs)
-        if task == 'infer_threads':
-            thread_pks = kwargs.pop('thread_pks')
-            return self.infer_threads(thread_pks, **kwargs)
-        return super(ModelThreadMixin, self).tasks(task, **kwargs)
 
     def infer_object(self, cls, pk, fields, **kwargs):
         raise NotImplemented

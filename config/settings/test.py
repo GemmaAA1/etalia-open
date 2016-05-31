@@ -31,7 +31,7 @@ NLP_CHUNK_SIZE = 2
 NLP_MAX_VECTOR_SIZE = 300
 NLP_DATA_PATH = str(ROOT_DIR.path('nlp_data_test', 'data'))
 NLP_MODELS_PATH = str(ROOT_DIR.path('nlp_data_test', 'mods'))
-NLP_MS_PATH = str(ROOT_DIR.path('nlp_data_test', 'ms'))
+NLP_MS_PATH = str(ROOT_DIR.path('nlp_data_test', 'pe'))
 
 # LOGGING
 LOGGING = {}
@@ -48,4 +48,4 @@ BROKER_BACKEND = 'memory'
 
 NLP_DATA_BUCKET_NAME = 'etalia-development-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'etalia-development-nlp-models'
-NLP_MS_BUCKET_NAME = 'etalia-development-nlp-ms'
+NLP_MS_BUCKET_NAME = 'etalia-development-nlp-pe'

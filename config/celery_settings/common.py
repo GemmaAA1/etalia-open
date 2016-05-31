@@ -48,7 +48,7 @@ CELERYBEAT_SCHEDULE = {
         'task': 'etalia.users.tasks.userlib_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
     },
-    'update-ms-all': {
+    'update-pe-all': {
         'task': 'etalia.nlp.tasks.mostsimilar_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
     },

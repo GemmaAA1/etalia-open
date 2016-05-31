@@ -51,7 +51,8 @@ STATICFILES_DIRS = (
 # AWS S3 Buckets
 NLP_DATA_BUCKET_NAME = 'etalia-development-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'etalia-development-nlp-models'
-NLP_MS_BUCKET_NAME = 'etalia-development-nlp-ms'
+NLP_PE_BUCKET_NAME = 'etalia-development-nlp-pe'
+NLP_TE_BUCKET_NAME = 'etalia-development-nlp-te'
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
 
@@ -84,7 +85,7 @@ CACHES = {
 #
 # NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
 # NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
-# NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
+# NLP_MS_BUCKET_NAME = 'etalia-production-nlp-pe'
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',

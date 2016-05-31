@@ -16,7 +16,7 @@ Current understood roles are:
 - master    # master job (e.g rabbitmq, any unitary task, celery-beat, flower)
 - base      # default job queue, consumers
 - nlp       # doc2vec tagging
-- ms        # mostsimilar request
+- pe        # mostsimilar request
 - feed      # feed computation
 - redis     # MUST BE DEFINED ON ONE SINGLE SPOT INSTANCE
 
@@ -54,7 +54,7 @@ ROLE_INSTANCE_TYPE_MAP = {
     'web': 't2.micro',
     'base': 't2.small',
     'master': 't2.small',
-    'ms': 't2.medium',
+    'pe': 't2.medium',
     'feed': 't2.medium',
     'nlp': 't2.large',
     'spot': 'm4.large',
@@ -91,7 +91,7 @@ env.roledefs = {
     'base': [],
     'feed': [],
     'nlp': [],
-    'ms': [],
+    'pe': [],
     'redis': [],
 }
 
@@ -758,7 +758,7 @@ def restart_all():
 @task
 def clear_nlp_data():
     run('rm -f /home/ubuntu/staging/source/nlp_data/mods/*')
-    run('rm -f /home/ubuntu/staging/source/nlp_data/ms/*')
+    run('rm -f /home/ubuntu/staging/source/nlp_data/pe/*')
 
 
 @task

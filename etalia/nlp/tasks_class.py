@@ -102,7 +102,7 @@ class MostSimilarBaseTask(Task):
                 (upload_state == 'IDL' and not self._ms.modified == last_modified):
             # remove local
             rm_files = glob.glob(
-                os.path.join(settings.NLP_MS_PATH, '{name}.ms*'.format(
+                os.path.join(settings.NLP_MS_PATH, '{name}.pe*'.format(
                     name=self._ms.name)))
             for file in rm_files:
                 os.remove(file)

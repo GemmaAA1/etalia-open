@@ -19,8 +19,9 @@ class NLPConfig(AppConfig):
         makedirs_p(settings.NLP_MODELS_PATH)
     if not(os.path.isdir(settings.NLP_DATA_PATH)):
         makedirs_p(settings.NLP_DATA_PATH)
-    if not(os.path.isdir(settings.NLP_MS_PATH)):
-        makedirs_p(settings.NLP_MS_PATH)
-
+    if not(os.path.isdir(settings.NLP_PE_PATH)):
+        makedirs_p(settings.NLP_PE_PATH)
+    if not(os.path.isdir(settings.NLP_TE_PATH)):
+        makedirs_p(settings.NLP_TE_PATH)
 
 

@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                 ('upload_state', models.CharField(default='IDL ', choices=[('IDL', 'Idle'), ('ING', 'Uploading')], max_length=3)),
                 ('journal_ratio', models.FloatField(default=0.0)),
                 ('is_active', models.BooleanField(default=False)),
-                ('model', models.ForeignKey(related_name='ms', to='nlp.Model')),
+                ('model', models.ForeignKey(related_name='pe', to='nlp.Model')),
             ],
             bases=(models.Model, etalia.nlp.mixins.S3Mixin),
         ),

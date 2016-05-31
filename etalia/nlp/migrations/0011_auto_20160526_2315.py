@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('upload_state', models.CharField(default='IDL ', max_length=3, choices=[('IDL', 'Idle'), ('ING', 'Uploading')])),
                 ('journal_ratio', models.FloatField(default=0.0, choices=[('0.0', '0 %'), ('0.05', '5 %'), ('0.10', '10 %'), ('0.15', '15 %'), ('0.20', '20 %'), ('0.25', '25 %'), ('0.30', '30 %')])),
                 ('is_active', models.BooleanField(default=False)),
-                ('model', models.ForeignKey(related_name='ms', to='nlp.Model')),
+                ('model', models.ForeignKey(related_name='pe', to='nlp.Model')),
             ],
             bases=(models.Model, etalia.nlp.mixins.S3Mixin),
         ),
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('time_lapse', models.IntegerField(default=-1, choices=[(7, 'Week'), (30, 'Month'), (60, 'Two Months'), (180, 'Six Months'), (365, 'Year')], verbose_name='Days from right now')),
                 ('neighbors', django.contrib.postgres.fields.ArrayField(blank=True, size=10, null=True, base_field=models.IntegerField(null=True))),
-                ('ms', models.ForeignKey(to='nlp.PaperEngine')),
+                ('pe', models.ForeignKey(to='nlp.PaperEngine')),
                 ('paper', models.ForeignKey(related_name='neighbors', to='library.Paper')),
             ],
         ),
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('time_lapse', models.IntegerField(default=-1, choices=[(7, 'Week'), (30, 'Month'), (60, 'Two Months'), (180, 'Six Months'), (365, 'Year')], verbose_name='Days from right now')),
                 ('neighbors', django.contrib.postgres.fields.ArrayField(blank=True, size=10, null=True, base_field=models.IntegerField(null=True))),
-                ('ms', models.ForeignKey(to='nlp.ThreadEngine')),
+                ('pe', models.ForeignKey(to='nlp.ThreadEngine')),
                 ('thread', models.ForeignKey(to='threads.Thread')),
             ],
         ),
@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='journalneighbors',
-            name='ms',
+            name='pe',
             field=models.ForeignKey(to='nlp.PaperEngine'),
         ),
         migrations.AlterUniqueTogether(
@@ -139,7 +139,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='threadneighbors',
-            unique_together=set([('time_lapse', 'thread', 'ms')]),
+            unique_together=set([('time_lapse', 'thread', 'pe')]),
         ),
         migrations.AlterUniqueTogether(
             name='papervectors',
@@ -147,7 +147,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='paperneighbors',
-            unique_together=set([('time_lapse', 'paper', 'ms')]),
+            unique_together=set([('time_lapse', 'paper', 'pe')]),
         ),
         migrations.AlterUniqueTogether(
             name='paperengine',
@@ -159,6 +159,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='journalneighbors',
-            unique_together=set([('journal', 'ms')]),
+            unique_together=set([('journal', 'pe')]),
         ),
     ]

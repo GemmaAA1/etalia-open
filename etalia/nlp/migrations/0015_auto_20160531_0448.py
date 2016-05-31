@@ -7,13 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('nlp', '0012_auto_20160526_2358'),
+        ('nlp', '0014_paperengine_journal_boost'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='paperengine',
+            model_name='threadengine',
             name='model',
-            field=models.ForeignKey(related_name='pe', to='nlp.Model'),
+            field=models.ForeignKey(related_name='te', to='nlp.Model'),
         ),
     ]

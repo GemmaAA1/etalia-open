@@ -88,7 +88,7 @@ class PaperNeighbors(TimeStampedModel):
 
     paper = models.ForeignKey(Paper, related_name='neighbors')
 
-    ms = models.ForeignKey('PaperEngine')
+    pe = models.ForeignKey('PaperEngine')
 
     time_lapse = models.IntegerField(default=-1,
                                      choices=PAPER_TIME_LAPSE_CHOICES,
@@ -100,8 +100,8 @@ class PaperNeighbors(TimeStampedModel):
                            null=True, blank=True)
 
     def __str__(self):
-        return '{ms}/{time_lapse}'.format(
-            ms=self.ms.name,
+        return '{pe}/{time_lapse}'.format(
+            ms=self.pe.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):
@@ -109,10 +109,10 @@ class PaperNeighbors(TimeStampedModel):
         self.save()
 
     def get_neighbors(self):
-        return self.neighbors[:self.ms.model.size]
+        return self.neighbors[:self.pe.model.size]
 
     class Meta:
-        unique_together = ('time_lapse', 'paper', 'ms')
+        unique_together = ('time_lapse', 'paper', 'pe')
 
 
 class JournalNeighbors(TimeStampedModel):
@@ -120,7 +120,7 @@ class JournalNeighbors(TimeStampedModel):
 
     journal = models.ForeignKey(Journal, related_name='neighbors')
 
-    ms = models.ForeignKey('PaperEngine')
+    pe = models.ForeignKey('PaperEngine')
 
     # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
@@ -128,8 +128,8 @@ class JournalNeighbors(TimeStampedModel):
                            null=True, blank=True)
 
     def __str__(self):
-        return '{ms}/{time_lapse}'.format(
-            ms=self.ms.name,
+        return '{pe}/{time_lapse}'.format(
+            pe=self.pe.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):
@@ -137,10 +137,10 @@ class JournalNeighbors(TimeStampedModel):
         self.save()
 
     def get_neighbors(self):
-        return self.neighbors[:self.ms.model.size]
+        return self.neighbors[:self.pe.model.size]
 
     class Meta:
-        unique_together = ('journal', 'ms')
+        unique_together = ('journal', 'pe')
 
 
 class ModelLibraryMixin(object):
@@ -187,15 +187,6 @@ class ModelLibraryMixin(object):
                     pbar.update(count)
         # close progress bar
         pbar.finish()
-
-    def tasks(self, task, **kwargs):
-        if task == 'infer_paper':
-            paper_pk = kwargs.pop('paper_pk')
-            return self.infer_paper(paper_pk, **kwargs)
-        if task == 'infer_papers':
-            paper_pks = kwargs.pop('paper_pks')
-            return self.infer_papers(paper_pks, **kwargs)
-        return super(ModelLibraryMixin, self).tasks(task, **kwargs)
 
     def infer_object(self, cls, pk, fields, **kwargs):
         raise NotImplemented

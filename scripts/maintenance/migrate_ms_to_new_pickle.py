@@ -56,7 +56,7 @@ def save_new(obj):
     if obj.BUCKET_NAME:
         obj.upload_state = 'ING'
         obj.save_db_only()
-        obj.push_to_s3(ext='ms')
+        obj.push_to_s3(ext='pe')
         obj.upload_state = 'IDL'
 
 
