@@ -272,8 +272,8 @@ class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
 
         switch_kwargs = {
             'user': {'serializer': UserSerializer},
-            'thread': {'serializer': ThreadSerializer,
-                       'one2one_nested': False}
+            # 'thread': {'serializer': ThreadSerializer,
+            #            'one2one_nested': False}
         }
 
     def validate_user(self, value):
@@ -319,8 +319,8 @@ class ThreadCommentSerializer(One2OneNestedLinkSwitchMixin,
 
         switch_kwargs = {
             'user': {'serializer': UserSerializer},
-            'post': {'serializer': ThreadPostSerializer,
-                     'one2one_nested': False}
+            # 'post': {'serializer': ThreadPostSerializer,
+            #          'one2one_nested': False}
         }
 
     def validate_user(self, value):
