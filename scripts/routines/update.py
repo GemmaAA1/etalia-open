@@ -253,7 +253,7 @@ def update_mostsimilar():
         model = Model.objects.get(is_active=True)
         ms = PaperEngine.objects.create(model=model)
         ms.activate()
-    mostsimilar_full_update_all()
+    paperengine_full_update_all()
 
     # update mostsimilarthread
     if not ThreadEngine.objects.filter(is_active=True).exists():
@@ -430,7 +430,7 @@ if __name__ == '__main__':
     from etalia.altmetric.tasks import update_altmetric
     from etalia.altmetric.models import AltmetricModel
     from etalia.feeds.tasks import reset_stream, reset_trend
-    from etalia.nlp.tasks import mostsimilar_full_update_all
+    from etalia.nlp.tasks import paperengine_full_update_all
     from etalia.nlp.models import ThreadEngine, PaperEngine, Model
     from etalia.threads.tasks import mostsimilarthread_full_update_all, \
         embed_threads

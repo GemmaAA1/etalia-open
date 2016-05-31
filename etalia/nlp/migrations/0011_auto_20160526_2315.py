@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('time_lapse', models.IntegerField(default=-1, choices=[(7, 'Week'), (30, 'Month'), (60, 'Two Months'), (180, 'Six Months'), (365, 'Year')], verbose_name='Days from right now')),
                 ('neighbors', django.contrib.postgres.fields.ArrayField(blank=True, size=10, null=True, base_field=models.IntegerField(null=True))),
-                ('pe', models.ForeignKey(to='nlp.ThreadEngine')),
+                ('te', models.ForeignKey(to='nlp.ThreadEngine')),
                 ('thread', models.ForeignKey(to='threads.Thread')),
             ],
         ),
@@ -139,7 +139,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='threadneighbors',
-            unique_together=set([('time_lapse', 'thread', 'pe')]),
+            unique_together=set([('time_lapse', 'thread', 'te')]),
         ),
         migrations.AlterUniqueTogether(
             name='papervectors',

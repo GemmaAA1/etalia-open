@@ -62,7 +62,7 @@ class JournalVectors(TimeStampedModel):
 
     journal = models.ForeignKey(Journal, related_name='vectors')
 
-    model = models.ForeignKey('Model')
+    model = models.ForeignKey('nlp.Model')
 
     vector = ArrayField(models.FloatField(null=True),
                         size=settings.NLP_MAX_VECTOR_SIZE,
@@ -88,7 +88,7 @@ class PaperNeighbors(TimeStampedModel):
 
     paper = models.ForeignKey(Paper, related_name='neighbors')
 
-    pe = models.ForeignKey('PaperEngine')
+    pe = models.ForeignKey('nlp.PaperEngine')
 
     time_lapse = models.IntegerField(default=-1,
                                      choices=PAPER_TIME_LAPSE_CHOICES,
@@ -120,7 +120,7 @@ class JournalNeighbors(TimeStampedModel):
 
     journal = models.ForeignKey(Journal, related_name='neighbors')
 
-    pe = models.ForeignKey('PaperEngine')
+    pe = models.ForeignKey('nlp.PaperEngine')
 
     # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),

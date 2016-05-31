@@ -593,7 +593,7 @@ class PaperEngineManager(models.Manager):
         """Get PaperEngine instance and load corresponding data"""
         obj = super(PaperEngineManager, self).get(**kwargs)
         try:
-            pe_pkl_file = os.path.join(settings.NLP_PE_PATH,
+            pe_pkl_file = os.path.join(obj.PATH,
                                        '{0}.pkl'.format(obj.name))
             # if not on volume try download from s3
             if not os.path.isfile(pe_pkl_file):
@@ -623,7 +623,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
 
     # For S3 Mixin
     # --------------------
-    BUCKET_NAME = getattr(settings, 'NLP_MS_BUCKET_NAME', '')
+    BUCKET_NAME = getattr(settings, 'NLP_PE_BUCKET_NAME', '')
     PATH = getattr(settings, 'NLP_PE_PATH', '')
     AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY', '')
@@ -697,9 +697,9 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                                                      name=self.name))
 
         # save files to local volume
-        if not os.path.exists(settings.NLP_PE_PATH):
-            os.makedirs(settings.NLP_PE_PATH)
-        pe_pkl_file = os.path.join(settings.NLP_PE_PATH,
+        if not os.path.exists(self.PATH):
+            os.makedirs(self.PATH)
+        pe_pkl_file = os.path.join(self.PATH,
                                    '{0}.pkl'.format(self.name))
         # use joblib for numpy array pickling optimization
         joblib.dump(self.data, pe_pkl_file)
@@ -721,7 +721,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         try:
             # remove local
             rm_files = glob.glob(
-                os.path.join(settings.NLP_PE_PATH, '{0}.*'.format(self.name)))
+                os.path.join(self.PATH, '{0}.*'.format(self.name)))
             for file in rm_files:
                 os.remove(file)
         except IOError:
@@ -794,7 +794,10 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                     dic[k] = [v]
 
             for i in self.data['ids']:
-                self.data['authors-ids'].append(dic[i])
+                if i in dic.keys():
+                    self.data['authors-ids'].append(dic[i])
+                else:
+                    self.data['authors-ids'].append([])
 
         # Store
         self.save()
@@ -856,7 +859,10 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                     dic[k] = [v]
 
             for i in new_ids:
-                self.data['authors-ids'].append(dic[i])
+                if i in dic.keys():
+                    self.data['authors-ids'].append(dic[i])
+                else:
+                    self.data['authors-ids'].append([])
 
         # save
         self.save()
@@ -1054,7 +1060,7 @@ class ThreadEngineManager(models.Manager):
         """Get ThreadEngine instance and load corresponding data"""
         obj = super(ThreadEngineManager, self).get(**kwargs)
         try:
-            te_pkl_file = os.path.join(settings.NLP_TE_PATH,
+            te_pkl_file = os.path.join(obj.PATH,
                                        '{0}.pkl'.format(obj.name))
             # if not on volume try download from s3
             if not os.path.isfile(te_pkl_file):
@@ -1163,9 +1169,9 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
                                                      name=self.name))
 
         # save files to local volume
-        if not os.path.exists(settings.NLP_TE_PATH):
-            os.makedirs(settings.NLP_TE_PATH)
-        te_pkl_file = os.path.join(settings.NLP_TE_PATH,
+        if not os.path.exists(self.PATH):
+            os.makedirs(self.PATH)
+        te_pkl_file = os.path.join(self.PATH,
                                    '{0}.pkl'.format(self.name))
         # use joblib for numpy array pickling optimization
         joblib.dump(self.data, te_pkl_file)
@@ -1187,7 +1193,7 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
         try:
             # remove local
             rm_files = glob.glob(
-                os.path.join(settings.NLP_TE_PATH, '{0}.*'.format(self.name)))
+                os.path.join(self.PATH, '{0}.*'.format(self.name)))
             for file in rm_files:
                 os.remove(file)
         except IOError:
@@ -1202,8 +1208,8 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
                 pass
         super(ThreadEngine, self).delete(**kwargs)
 
-    def full_update(self):
-        """Full update of data structure"""
+    def update(self):
+        """Update of data structure"""
 
         logger.info('Updating ThreadEngine ({pk}/{name}) - full update...'.format(
             pk=self.id, name=self.name))
@@ -1222,19 +1228,21 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
                 "SELECT tt.id,"
                 "       tt.user_id,"
                 "       tt.published_at,"
+                "       tt.paper_id,"
                 "		tv.vector "
                 "FROM threads_thread tt "
                 "LEFT JOIN nlp_threadvectors as tv ON tt.id = tv.thread_id "
                 "WHERE tt.published_at >= %s"
                 "    AND tv.model_id = %s"
                 "    AND tv.vector IS NOT NULL "
-                "ORDER BY date ASC", (some_time_ago, self.model.id)
+                "ORDER BY tt.published_at ASC", (some_time_ago, self.model.id)
                 )
 
         for d in q1:
             self.data['ids'].append(d.id)
             self.data['date'].append(d.published_at)
-            self.data['user-ids'].append([d.user_id])
+            self.data['paper-ids'].append(d.paper_id)
+            self.data['users-ids'].append([d.user_id]) # add owner only for now
             self.data['embedding'].append(d.vector[:self.embedding_size])
         self.data['embedding'] = np.array(self.data['embedding'])
 
@@ -1257,7 +1265,8 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
                     dic[k] = [v]
 
             for i, id_ in enumerate(self.data['ids']):
-                self.data['users-ids'][i] += dic[id_]
+                if id_ in dic.keys():
+                    self.data['users-ids'][i] += dic[id_]
 
         # Store
         self.save()
@@ -1319,7 +1328,7 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
 
         return list(res_search.keys())
 
-    def knn_search(self, seed, time_lapse=-1, top_n=5, journal_id=None):
+    def knn_search(self, seed, time_lapse=-1, top_n=5):
         """"""
 
         # check seed

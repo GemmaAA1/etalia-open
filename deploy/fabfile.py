@@ -16,7 +16,8 @@ Current understood roles are:
 - master    # master job (e.g rabbitmq, any unitary task, celery-beat, flower)
 - base      # default job queue, consumers
 - nlp       # doc2vec tagging
-- pe        # mostsimilar request
+- pe        # paperengine request
+- te        # threadengine request
 - feed      # feed computation
 - redis     # MUST BE DEFINED ON ONE SINGLE SPOT INSTANCE
 
@@ -55,6 +56,7 @@ ROLE_INSTANCE_TYPE_MAP = {
     'base': 't2.small',
     'master': 't2.small',
     'pe': 't2.medium',
+    'te': 't2.medium',
     'feed': 't2.medium',
     'nlp': 't2.large',
     'spot': 'm4.large',
@@ -92,6 +94,7 @@ env.roledefs = {
     'feed': [],
     'nlp': [],
     'pe': [],
+    'te': [],
     'redis': [],
 }
 

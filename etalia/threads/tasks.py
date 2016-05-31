@@ -26,18 +26,18 @@ def embed_thread(thread_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            model_task = app.tasks['etalia.nlp.tasks.mostsimilarthread_{model_name}'.format(
+            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Model task for {model_name} not defined'.format(
                 model_name=model_name))
             continue
-        model_task.delay('infer_thread', thread_pk=thread_pk)
+        model_task.delay('infer_thread', thread_pk)
 
 
 def embed_threads(pks, model_name, batch_size=1000):
     try:
-        model_task = app.tasks['etalia.nlp.tasks.mostsimilarthread_{model_name}'.format(
+        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
             model_name=model_name)]
     except KeyError:
         logger.error('Embeding task for {model_name} not defined'.format(
@@ -55,12 +55,14 @@ def embed_threads(pks, model_name, batch_size=1000):
 
 
 def get_neighbors_threads(thread_pk, time_span):
-    # Get active MostSimilarThread
-    ms = ThreadEngine.objects.filter(is_active=True)[0]
+    # Get active ThreadEngine
+    te = ThreadEngine.objects.filter(is_active=True)[0]
 
     # Get stored neighbors matches
     try:
-        neigh_data = ThreadNeighbors.objects.get(ms=ms, time_lapse=time_span)
+        neigh_data = ThreadNeighbors.objects.get(thread_id=thread_pk,
+                                                 te=te,
+                                                 time_lapse=time_span)
         if not neigh_data.neighbors or not max(
                 neigh_data.neighbors):  # neighbors can be filled with zero if none was found previously
             neigh_data.delete()
@@ -72,12 +74,12 @@ def get_neighbors_threads(thread_pk, time_span):
             raise ThreadNeighbors.DoesNotExist
     except ThreadNeighbors.DoesNotExist:  # refresh
         try:
-            ms_task = app.tasks[
-                'etalia.nlp.tasks.mostsimilarthread_{name}'.format(
-                    name=ms.model.name)]
-            res = ms_task.apply_async(args=('populate_neighbors',),
-                                      kwargs={'thread_pk': thread_pk,
-                                              'time_lapse': time_span},
+            te_task = app.tasks[
+                'etalia.nlp.tasks.te_{name}'.format(
+                    name=te.model.name)]
+            res = te_task.apply_async(args=('populate_neighbors',
+                                            thread_pk,
+                                            time_span),
                                       timeout=10,
                                       soft_timeout=5)
             neighbors = res.get()
@@ -94,13 +96,3 @@ def get_neighbors_threads(thread_pk, time_span):
     ordering = 'CASE %s END' % clauses
     return Thread.objects.filter(pk__in=neigh_pk_list).extra(
         select={'ordering': ordering}, order_by=('ordering',))
-
-
-@app.task()
-def mostsimilarthread_full_update_all():
-    models = Model.objects.filter(is_active=True)
-    for model in models:
-        ms = ThreadEngine.objects.load(model=model,
-                                            is_active=True)
-        ms.full_update()
-        ms.activate()

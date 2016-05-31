@@ -59,7 +59,7 @@ class ThreadNeighbors(TimeStampedModel):
                                      verbose_name='Days from right now')
 
     # MostSimilarThread
-    pe = models.ForeignKey('nlp.ThreadEngine')
+    te = models.ForeignKey('nlp.ThreadEngine')
 
     # Primary keys of the k-nearest neighbors matches
     neighbors = ArrayField(models.IntegerField(null=True),
@@ -67,8 +67,8 @@ class ThreadNeighbors(TimeStampedModel):
                            null=True, blank=True)
 
     def __str__(self):
-        return '{pe}/{time_lapse}'.format(
-            ms=self.pe.name,
+        return '{te}/{time_lapse}'.format(
+            te=self.te.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):
@@ -76,10 +76,10 @@ class ThreadNeighbors(TimeStampedModel):
         self.save()
 
     def get_neighbors(self):
-        return self.neighbors[:self.pe.model.size]
+        return self.neighbors[:self.te.model.size]
 
     class Meta:
-        unique_together = ('time_lapse', 'thread', 'pe')
+        unique_together = ('time_lapse', 'thread', 'te')
 
 
 class ModelThreadMixin(object):

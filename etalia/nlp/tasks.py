@@ -3,31 +3,41 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-from .models import Model, PaperEngine
+from .models import Model, PaperEngine, ThreadEngine
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
 
-# PLEASE NOTE:
-# tasks related to embeding of paper and mostsimilar model are registered
-# in celery.py because they are host dependant
+# NOTE:
+# tasks related to Model or Engines are registered in celery.py because they
+# are host dependant
+
 
 @app.task()
-def mostsimilar_update_all():
+def paperengine_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
-        ms = PaperEngine.objects.load(model=model,
+        pe = PaperEngine.objects.load(model=model,
                                       is_active=True)
-        ms.update()
+        pe.update()
+
 
 @app.task()
-def mostsimilar_full_update_all():
+def paperengine_full_update_all():
     models = Model.objects.filter(is_active=True)
     for model in models:
-        ms = PaperEngine.objects.load(model=model,
+        pe = PaperEngine.objects.load(model=model,
                                       is_active=True)
-        ms.full_update()
-        ms.activate()
+        pe.full_update()
+        pe.activate()
+
+@app.task()
+def threadengine_update_all():
+    models = Model.objects.filter(is_active=True)
+    for model in models:
+        te = ThreadEngine.objects.load(model=model,
+                                       is_active=True)
+        te.update()
 
 @app.task()
 def add_nlp(x, y):
