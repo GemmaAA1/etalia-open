@@ -14,8 +14,6 @@ from django.conf import settings
 from django.utils import timezone
 
 from etalia.library.models import Paper, Journal, Author
-from etalia.nlp.models import Model
-from etalia.feeds.models import Stream, Trend
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
@@ -87,9 +85,9 @@ class UserManager(BaseUserManager):
         # create user settings
         UserSettings.objects.create(user=user)
         # create user default (main) feed
-        Stream.objects.create_main(user=user)
+        # Stream.objects.create_main(user=user)
         # create user default (main) feed
-        Trend.objects.create(user=user, name='main')
+        # Trend.objects.create(user=user, name='main')
         return user
 
     def create_superuser(self, **kwargs):
@@ -543,9 +541,6 @@ class UserSettings(TimeStampedModel):
                                 related_name='settings')
 
     ##  Stream settings
-    # NLP model to use
-    stream_model = models.ForeignKey(Model, verbose_name='NLP Model',
-                                     related_name='stream_model')
 
     # scoring method to use
     stream_method = models.IntegerField(verbose_name='Method', default=0,
@@ -568,9 +563,6 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Roll-back time (months)')
 
     # Trend settings
-    # nlp model
-    trend_model = models.ForeignKey(Model, verbose_name='NLP Model',
-                                    related_name='trend_model')
 
     # scoring method to use
     trend_method = models.IntegerField(verbose_name='Method', default=0,

@@ -12,7 +12,6 @@ from django.db.transaction import atomic
 
 from etalia.core.models import TimeStampedModel
 from etalia.core.utils import pad_vector
-from etalia.nlp.models import PaperEngine
 from etalia.last_seen.models import LastSeen
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
 from .scoring import *
@@ -159,14 +158,13 @@ class Stream(TimeStampedModel):
         # Instantiate Score
         Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
         # and instantiate
-        journal_ratio = PaperEngine.objects.get(is_active=True).journal_ratio
         # method_arg = self.user.settings.stream_method_args or {}
         method_arg = {
             'vector_weight': self.user.settings.stream_vector_weight,
             'author_weight': self.user.settings.stream_author_weight,
             'journal_weight': self.user.settings.stream_journal_weight,
         }
-        scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
+        scoring = Score(stream=self, journal_ratio=None, **method_arg)
 
         # Get score and date
         results, date = scoring.score()
@@ -370,14 +368,13 @@ class Trend(TimeStampedModel):
         # Instantiate Score
         Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
         # and instantiate
-        journal_ratio = PaperEngine.objects.get(is_active=True).journal_ratio
         # method_arg = self.user.settings.trend_method_args or {}
         method_arg = {
             'doc_weight': self.user.settings.trend_doc_weight,
             'altmetric_weight': self.user.settings.trend_altmetric_weight,
         }
         scoring = Score(stream=self.user.streams.first(),
-                        journal_ratio=journal_ratio,
+                        journal_ratio=None,
                         **method_arg)
 
         # Get score and date

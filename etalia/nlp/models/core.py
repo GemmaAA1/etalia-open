@@ -4,7 +4,6 @@ from __future__ import unicode_literals, absolute_import
 import os
 import logging
 import glob
-import pickle
 from random import shuffle
 import collections
 
@@ -30,12 +29,12 @@ from etalia.threads.models import Thread, ThreadPost, ThreadComment
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
     JournalVectors
 from .threads import ModelThreadMixin, ThreadNeighbors, ThreadVectors
+from .users import UserFingerprint
 
 from ..constants import FIELDS_FOR_MODEL
 from ..utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
     model_attr_setter
 from ..mixins import S3Mixin
-from ..constants import NLP_JOURNAL_RATIO_CHOICES
 
 logger = logging.getLogger(__name__)
 
@@ -756,10 +755,10 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         q1 = Paper.objects.raw(
                 "SELECT lp.id, "
                 "		lp.journal_id, "
-                "       LEAST(date_ep, date_pp, date_fs) AS date,"
+                "       LEAST(lp.date_ep, lp.date_pp, lp.date_fs) AS date_,"
                 "		pv.vector "
                 "FROM library_paper lp "
-                "LEFT JOIN nlp_papervectors as pv ON lp.id = pv.paper_id "
+                "LEFT JOIN nlp_papervectors pv ON lp.id = pv.paper_id "
                 "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
                 "    AND pv.model_id=%s"
                 "    AND lp.is_trusted=TRUE "
@@ -771,7 +770,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         for d in q1:
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
-            self.data['date'].append(d.date)
+            self.data['date'].append(d.date_)
             self.data['embedding'].append(d.vector[:self.embedding_size])
         self.data['embedding'] = np.array(self.data['embedding'])
 
@@ -819,10 +818,10 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         q1 = Paper.objects.raw(
                 "SELECT lp.id, "
                 "		lp.journal_id, "
-                "       LEAST(date_ep, date_pp, date_fs) AS date,"
+                "       LEAST(date_ep, date_pp, date_fs) AS date_,"
                 "		pv.vector "
                 "FROM library_paper lp "
-                "LEFT JOIN nlp_papervectors as pv ON lp.id = pv.paper_id "
+                "LEFT JOIN nlp_papervectors pv ON lp.id = pv.paper_id "
                 "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
                 "    AND pv.model_id=%s"
                 "    AND lp.is_trusted=TRUE "
@@ -837,7 +836,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
             new_ids.append(d.id)
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
-            self.data['date'].append(d.date)
+            self.data['date'].append(d.date_)
             np.vstack((self.data['embedding'], np.array(d.vector[:self.embedding_size])))
 
         # query on authors

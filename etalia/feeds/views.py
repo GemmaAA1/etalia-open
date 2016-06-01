@@ -23,7 +23,6 @@ class FeedPaperListView(BasePaperListView):
         self.context_settings = {
             'time_lapse': self.request.user.settings.stream_time_lapse,
             'method': self.request.user.settings.stream_method,
-            'model': self.request.user.settings.stream_model,
         }
         return self.context_settings
 

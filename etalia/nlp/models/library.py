@@ -27,7 +27,8 @@ class PaperVectors(TimeStampedModel):
     Use set_vector() to pad and set vector list
     """
 
-    paper = models.ForeignKey(Paper, related_name='vectors')
+    paper = models.ForeignKey(Paper,
+                              related_name='vectors')
 
     model = models.ForeignKey('nlp.Model')
 
@@ -101,7 +102,7 @@ class PaperNeighbors(TimeStampedModel):
 
     def __str__(self):
         return '{pe}/{time_lapse}'.format(
-            ms=self.pe.name,
+            pe=self.pe.name,
             time_lapse=self.time_lapse)
 
     def set_neighbors(self, vector):

@@ -251,15 +251,15 @@ def update_mostsimilar():
     # update mostsimilar
     if not PaperEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
-        ms = PaperEngine.objects.create(model=model)
-        ms.activate()
+        pe = PaperEngine.objects.create(model=model)
+        pe.activate()
     paperengine_full_update_all()
 
     # update mostsimilarthread
     if not ThreadEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
-        mst = ThreadEngine.objects.create(model=model)
-        mst.activate()
+        te = ThreadEngine.objects.create(model=model)
+        te.activate()
     mostsimilarthread_full_update_all()
 
 
