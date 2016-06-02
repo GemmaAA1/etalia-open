@@ -287,14 +287,12 @@ def random_date(start, end):
 def flush():
     print('Flushing DB...')
     call([os.path.join(root_path, "manage.py"), "flush"])
-    sys.exit()
 
 
 def load():
     print("Loading data from {file}...".format(file=INIT_DEFAULT_FIXTURE_FILE))
     call([os.path.join(root_path, "manage.py"), "loaddata",
           os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
-    sys.exit()
 
 
 def fetch_new_papers():
@@ -302,7 +300,6 @@ def fetch_new_papers():
     pubmed_run('pubmed_all')
     arxiv_run('arxiv_all')
     elsevier_run('elsevier_all')
-    sys.exit()
 
 
 def dump_data():
@@ -310,7 +307,6 @@ def dump_data():
     call([os.path.join(root_path, "manage.py"), "dumpdata",
           "--exclude", "auth", "--exclude", "contenttypes",
           "-o", os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
-    sys.exit()
 
 
 def init_publishers():
@@ -368,8 +364,6 @@ def init_models():
     # Populate paper with NLP signatures
     model.save_journal_vec_from_bulk()
     model.save_paper_vec_from_bulk()
-
-    sys.exit()
 
 
 if __name__ == '__main__':
@@ -446,35 +440,41 @@ if __name__ == '__main__':
     from utils.avatar import AvatarGenerator
     from autofixture import AutoFixture
 
+    # Apply migrations
+    call([os.path.join(root_path, "manage.py"), "migrate"])
+
     User = get_user_model()
 
     # SINGLE UPDATE
     if args.user:
         update_oauth_user(args.user)
+        sys.exit()
 
     if args.models:
         init_models()
+        sys.exit()
 
     # Reset DB
     if args.flush:
         flush()
+        sys.exit()
 
     # Load init_data.json
     if args.load:
         load()
+        sys.exit()
 
     # Dump to init_data.json
     if args.dump:
         dump_data()
+        sys.exit()
 
     # Fetch new papers
     if args.papers:
         fetch_new_papers()
+        sys.exit()
 
     # MASTER UPDATE
-    # Apply migrations
-    call([os.path.join(root_path, "manage.py"), "migrate"])
-
     # Initialization in local environment
     if args.init:
         init_publishers()
