@@ -7,7 +7,7 @@ located in a app/task.py files are auto detected and available to workers
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
-from etalia.nlp.models import Model
+from etalia.nlp.models import Model, PaperEngine, ThreadEngine
 from etalia.nlp.tasks_class import EmbedPaperTask, PaperEngineTask, \
     ThreadEngineTask
 from django.conf import settings
@@ -69,31 +69,26 @@ def register_model_tasks(init=False):
 
 
 def register_paperengine_tasks(init=False):
-    """Register MostSimilar tasks
+    """Register PaperEngine tasks
     """
-    model_names = Model.objects \
-        .filter(is_active=True) \
-        .values_list('name', flat=True)
-    for model_name in model_names:
-        cls = PaperEngineTask(model_name=model_name, init=init)
+    pes = PaperEngine.objects \
+        .filter(is_active=True)
+    for pe in pes:
+        cls = PaperEngineTask(engine_id=pe.id, init=init)
         celery_app.task(cls,
-                        name='etalia.nlp.tasks.pe_{model_name}'.format(
-                            model_name=model_name))
+                        name='etalia.nlp.tasks.{name}'.format(name=pe.name))
 
 
 def register_threadengine_tasks(init=False):
     """Register MostSimilar tasks
     """
-    model_names = Model.objects \
-        .filter(is_active=True) \
-        .values_list('name', flat=True)
-    for model_name in model_names:
-        cls = ThreadEngineTask(model_name=model_name,
-                               init=init)
+    tes = ThreadEngine.objects \
+        .filter(is_active=True)
+    for te in tes:
+        cls = ThreadEngineTask(engine_id=te.id, init=init)
         celery_app.task(cls,
-                        name='etalia.nlp.tasks.te_{model_name}'.format(
-                            model_name=model_name))
-
+                        name='etalia.nlp.tasks.{name}'.format(name=te.name)
+                        )
 
 celery_app.steps['worker'].add(NLPBootstep)
 

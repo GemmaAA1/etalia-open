@@ -521,19 +521,6 @@ class UserStats(TimeStampedModel):
     objects = UserStatsManager()
 
 
-class UserSettingsManager(models.Manager):
-
-    def create(self, **kwargs):
-        # if nlp_model not defined, default to first nlp_model
-        if 'model' not in kwargs:
-            model = Model.objects.first()
-            kwargs['stream_model'] = model
-            kwargs['trend_model'] = model
-        obj = self.model(**kwargs)
-        obj.save(using=self._db)
-        return obj
-
-
 class UserSettings(TimeStampedModel):
     """Table - User Settings"""
 
@@ -547,11 +534,11 @@ class UserSettings(TimeStampedModel):
                                         choices=STREAM_METHODS)
 
     # author weight
-    stream_author_weight = models.FloatField(default=0.1,
+    stream_author_weight = models.FloatField(default=1.0,
                                              verbose_name='Author weight')
 
     # journal weight
-    stream_journal_weight = models.FloatField(default=0.1,
+    stream_journal_weight = models.FloatField(default=1.0,
                                               verbose_name='Journal weight')
 
     # vector weight
@@ -581,8 +568,6 @@ class UserSettings(TimeStampedModel):
         default=EMAIL_DIGEST_FREQUENCY_CHOICES[0][0],
         choices=EMAIL_DIGEST_FREQUENCY_CHOICES,
         verbose_name='Email digest frequency')
-
-    objects = UserSettingsManager()
 
     def __str__(self):
         return self.user.email

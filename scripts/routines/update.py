@@ -15,6 +15,7 @@ import names
 from subprocess import call
 from random import randrange
 from datetime import timedelta, datetime, date
+from django.db import transaction
 
 NB_THREADS = 50
 NB_POSTS = 200
@@ -38,7 +39,7 @@ def update():
     update_threads()
     update_threadusers()
     update_relationships()
-    update_mostsimilar()
+    update_engines()
     update_streams()
 
 
@@ -102,14 +103,15 @@ def update_oauth_user(email):
 def update_papers():
     print('Updating papers...')
     # Update date randomly
-    papers = Paper.objects.all()
-    end_date = datetime.now().date()
-    start_date = end_date - timedelta(days=90)
-    for paper in papers:
-        paper.date_ep = random_date(start_date, end_date)
-        paper.date_fs = random_date(start_date, end_date)
-        paper.date_pp = random_date(start_date, end_date)
-        paper.save()
+    with transaction.atomic():
+        papers = Paper.objects.select_for_update().all()
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=90)
+        for paper in papers:
+            paper.date_ep = random_date(start_date, end_date)
+            paper.date_fs = random_date(start_date, end_date)
+            paper.date_pp = random_date(start_date, end_date)
+            paper.save()
 
     # Fetch some Altmetric data and fake others (saving time)
     alt_objs = []
@@ -246,21 +248,21 @@ def update_streams():
         reset_trend(user_pk)
 
 
-def update_mostsimilar():
-    print('Updating MostSimilar...')
-    # update mostsimilar
+def update_engines():
+    print('Updating Engines...')
+    # update PaperEngine
     if not PaperEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
         pe = PaperEngine.objects.create(model=model)
         pe.activate()
     paperengine_full_update_all()
 
-    # update mostsimilarthread
+    # update ThreadEngine
     if not ThreadEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
         te = ThreadEngine.objects.create(model=model)
         te.activate()
-    mostsimilarthread_full_update_all()
+    threadengine_update_all()
 
 
 def fetch_path():
@@ -287,14 +289,12 @@ def random_date(start, end):
 def flush():
     print('Flushing DB...')
     call([os.path.join(root_path, "manage.py"), "flush"])
-    sys.exit()
 
 
 def load():
     print("Loading data from {file}...".format(file=INIT_DEFAULT_FIXTURE_FILE))
     call([os.path.join(root_path, "manage.py"), "loaddata",
           os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
-    sys.exit()
 
 
 def fetch_new_papers():
@@ -302,7 +302,6 @@ def fetch_new_papers():
     pubmed_run('pubmed_all')
     arxiv_run('arxiv_all')
     elsevier_run('elsevier_all')
-    sys.exit()
 
 
 def dump_data():
@@ -311,7 +310,6 @@ def dump_data():
           "--exclude=auth",
           "--exclude=contentypes",
           "-o", os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
-    sys.exit()
 
 
 def init_publishers():
@@ -370,8 +368,6 @@ def init_models():
     model.save_journal_vec_from_bulk()
     model.save_paper_vec_from_bulk()
 
-    sys.exit()
-
 
 if __name__ == '__main__':
 
@@ -403,6 +399,9 @@ if __name__ == '__main__':
     parser.add_argument("-f", "--flush",
                         help="Flush database",
                         action="store_true")
+    parser.add_argument("-e", "--engines",
+                        help="Update engines",
+                        action="store_true")
     parser.add_argument("--init-production",
                         help="Init database in production from scratch",
                         action="store_true")
@@ -430,14 +429,11 @@ if __name__ == '__main__':
     from etalia.altmetric.tasks import update_altmetric
     from etalia.altmetric.models import AltmetricModel
     from etalia.feeds.tasks import reset_stream, reset_trend
-    from etalia.nlp.tasks import paperengine_full_update_all
+    from etalia.nlp.tasks import paperengine_full_update_all, threadengine_update_all
     from etalia.nlp.models import ThreadEngine, PaperEngine, Model
-    from etalia.threads.tasks import mostsimilarthread_full_update_all, \
-        embed_threads
     from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
         ThreadUser, ThreadUserInvite
-    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED, \
-        THREAD_PUBLIC
+    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
     from utils.avatar import AvatarGenerator
@@ -448,25 +444,36 @@ if __name__ == '__main__':
     # SINGLE UPDATE
     if args.user:
         update_oauth_user(args.user)
+        sys.exit()
 
     if args.models:
         init_models()
+        sys.exit()
 
     # Reset DB
     if args.flush:
         flush()
+        sys.exit()
 
     # Load init_data.json
     if args.load:
         load()
+        sys.exit()
 
     # Dump to init_data.json
     if args.load:
         dump_data()
+        sys.exit()
 
     # Fetch new papers
     if args.papers:
         fetch_new_papers()
+        sys.exit()
+
+    # Fetch new papers
+    if args.engines:
+        update_engines()
+        sys.exit()
 
     # MASTER UPDATE
     # Apply migrations

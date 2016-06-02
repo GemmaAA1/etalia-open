@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import numpy as np
+from gensim import matutils
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from django.db import models
@@ -12,6 +14,9 @@ from etalia.core.utils import pad_vector, pad_neighbors
 
 from etalia.library.constants import PAPER_TIME_LAPSE_CHOICES
 from etalia.library.models import Paper, Journal
+from etalia.users.models import UserSettings
+
+from .users import UserFingerprint
 
 
 # --------------------------------------
@@ -191,3 +196,107 @@ class ModelLibraryMixin(object):
 
     def infer_object(self, cls, pk, fields, **kwargs):
         raise NotImplemented
+
+
+class PaperEngineScoringMixin(object):
+
+    SCORE_N_PAPERS = 250
+    SCORE_AUTHOR_CAP_COUNT = 10
+    SCORE_JOURNAL_CAP_COUNT = 10
+
+    score_author_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_journal_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    model = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    embedding_size = None
+
+    data = {'ids': [],
+            'journal-ids': [],
+            'authors-ids': [],
+            'date': [],
+            'embedding': np.empty(0)
+            }
+
+    def score_stream(self, user_id, name='main'):
+
+        # Gather user fingerprint
+        if UserFingerprint.objects.filter(user_id=user_id,
+                                          name=name,
+                                          model=self.model).exists():
+            f = UserFingerprint.objects.get(user_id=user_id, name=name,
+                                            model=self.model)
+        else:
+            f = UserFingerprint.objects.create(user_id=user_id, name=name,
+                                               model=self.model)
+            f.update()
+
+        # Convert user data
+        seed = np.array(f.embedding[:self.embedding_size])
+        jb = self.convert_to_journal_boost(f.journals_counts)
+        ab = self.convert_to_author_boost(f.authors_counts)
+        jbdic = dict([(k, jb[i]) for i, k in enumerate(f.journals_ids)])
+        abdic = dict([(k, ab[i]) for i, k in enumerate(f.authors_ids)])
+
+        # Get user settings
+        us = UserSettings.objects.get(user_id=user_id)
+
+        # Compute
+        jboost = np.zeros((self.data['embedding'].shape[0], ))
+        for i, jid in enumerate(self.data['journal-ids']):
+            if jid in jbdic.keys():
+                jboost[i] = jbdic[jid]
+
+        aboost = np.zeros((self.data['embedding'].shape[0], ))
+        aids_set = set(abdic.keys())
+        for i, aids in enumerate(self.data['authors-ids']):
+            b = 0
+            for aid in aids_set.intersection(set(aids)):
+                b += abdic[aid]
+            aboost[i] = min([b, self.score_author_boost])
+
+        score = us.stream_vector_weight * np.dot(self.data['embedding'], seed.T) + \
+                us.stream_vector_weight * jboost + \
+                us.stream_vector_weight * aboost
+
+        results = self.order_n(self.data['ids'], score, self.data['date'], self.SCORE_N_PAPERS)
+
+        return results
+
+    def order_n(self, ids, vals, date, n):
+        """"Return top scores
+
+        Return the top N vals and order in decreasing val order
+        [{'id': id, 'score': val, 'date': date}, ...]
+        """
+        # sort scores
+        top_idx = matutils.argsort(vals, topn=n, reverse=True)
+
+        return [{'id': ids[i],
+                 'score': float(vals[i]),
+                 'date': date[i],
+                 } for i in top_idx]
+
+    def convert_to_journal_boost(self, count):
+        return self.convert_to_boost(count,
+                                     self.SCORE_JOURNAL_CAP_COUNT,
+                                     self.score_journal_boost)
+
+    def convert_to_author_boost(self, count):
+        return self.convert_to_boost(count,
+                                     self.SCORE_AUTHOR_CAP_COUNT,
+                                     self.score_author_boost)
+
+    def convert_to_boost(self, count, cap, max_boost):
+        boost = []
+        for c in count:
+            if c >= cap:
+                boost.append(max_boost)
+            else:
+                boost.append(c / cap * max_boost)
+        return boost
+
+
+
+

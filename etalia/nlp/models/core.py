@@ -27,9 +27,8 @@ from etalia.library.models import Paper, Journal, AuthorPaper
 from etalia.threads.models import Thread, ThreadPost, ThreadComment
 
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
-    JournalVectors
+    JournalVectors, PaperEngineScoringMixin
 from .threads import ModelThreadMixin, ThreadNeighbors, ThreadVectors
-from .users import UserFingerprint
 
 from ..constants import FIELDS_FOR_MODEL
 from ..utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
@@ -606,7 +605,7 @@ class PaperEngineManager(models.Manager):
         return obj
 
 
-class PaperEngine(TimeStampedModel, S3Mixin):
+class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
     """PaperEngine class
 
     Store useful data and perform tasks for:
@@ -647,7 +646,8 @@ class PaperEngine(TimeStampedModel, S3Mixin):
             'journal-ids': [],
             'authors-ids': [],
             'date': [],
-            'embedding': np.empty(0)
+            'embedding': np.empty(0),
+            'altmetric': [],
             }
 
     # DB stored properties
@@ -664,12 +664,17 @@ class PaperEngine(TimeStampedModel, S3Mixin):
     # journal boost
     journal_boost = models.FloatField(default=0.05, null=True, blank=True)
 
+    score_author_boost = models.FloatField(default=0.05)
+
+    score_journal_boost = models.FloatField(default=0.05)
+
     objects = PaperEngineManager()
 
     @property
     def name(self):
-        return 'pe-{model_name}'.format(
-            model_name=self.model.name)
+        return 'pe-{model_name}-id{id}'.format(
+            model_name=self.model.name,
+            id=self.id)
 
     @property
     def embedding_size(self):
@@ -695,6 +700,9 @@ class PaperEngine(TimeStampedModel, S3Mixin):
         logger.info('Saving PE ({pk}/{name})'.format(pk=self.id,
                                                      name=self.name))
 
+        # save to db (to get id)
+        self.save_db_only()
+
         # save files to local volume
         if not os.path.exists(self.PATH):
             os.makedirs(self.PATH)
@@ -709,8 +717,6 @@ class PaperEngine(TimeStampedModel, S3Mixin):
             self.save_db_only()
             self.push_to_s3(ext='pe')
             self.upload_state = 'IDL'
-        # save to db
-        self.save_db_only()
 
     def save_db_only(self, *args, **kwargs):
         super(PaperEngine, self).save(*args, **kwargs)
@@ -748,7 +754,8 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                      'journal-ids': [],
                      'authors-ids': [],
                      'date': [],
-                     'embedding': []
+                     'embedding': [],
+                     'altmetric': [],
                      }
 
         # query on paper / vector
@@ -756,21 +763,24 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                 "SELECT lp.id, "
                 "		lp.journal_id, "
                 "       LEAST(lp.date_ep, lp.date_pp, lp.date_fs) AS date_,"
-                "		pv.vector "
+                "		pv.vector,"
+                "       aa.score "
                 "FROM library_paper lp "
                 "LEFT JOIN nlp_papervectors pv ON lp.id = pv.paper_id "
+                "LEFT JOIN altmetric_altmetricmodel aa ON lp.id = aa.paper_id "
                 "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
                 "    AND pv.model_id=%s"
                 "    AND lp.is_trusted=TRUE "
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
-                "ORDER BY date ASC", (some_time_ago, self.model.id)
+                "ORDER BY date_ ASC", (some_time_ago, self.model.id)
                 )
 
         for d in q1:
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
             self.data['date'].append(d.date_)
+            self.data['altmetric'].append(d.score)
             self.data['embedding'].append(d.vector[:self.embedding_size])
         self.data['embedding'] = np.array(self.data['embedding'])
 
@@ -819,16 +829,18 @@ class PaperEngine(TimeStampedModel, S3Mixin):
                 "SELECT lp.id, "
                 "		lp.journal_id, "
                 "       LEAST(date_ep, date_pp, date_fs) AS date_,"
-                "		pv.vector "
+                "		pv.vector,"
+                "       aa.score "
                 "FROM library_paper lp "
                 "LEFT JOIN nlp_papervectors pv ON lp.id = pv.paper_id "
+                "LEFT JOIN altmetric_altmetricmodel aa ON lp.id = aa.paper_id "
                 "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
                 "    AND pv.model_id=%s"
                 "    AND lp.is_trusted=TRUE "
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
                 "    AND lp.id NOT IN (VALUES {0}) "
-                "ORDER BY date ASC".format(values), (some_time_ago, self.model.id,)
+                "ORDER BY date_ ASC".format(values), (some_time_ago, self.model.id,)
                 )
 
         new_ids = []
@@ -837,6 +849,7 @@ class PaperEngine(TimeStampedModel, S3Mixin):
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
             self.data['date'].append(d.date_)
+            self.data['altmetric'].append(d.score)
             np.vstack((self.data['embedding'], np.array(d.vector[:self.embedding_size])))
 
         # query on authors
@@ -1140,8 +1153,9 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
 
     @property
     def name(self):
-        return 'te-{model_name}'.format(
-            model_name=self.model.name)
+        return 'te-{model_name}-id{id}'.format(
+            model_name=self.model.name,
+            id=self.id)
 
     @property
     def embedding_size(self):
@@ -1167,6 +1181,9 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
         logger.info('Saving TE ({pk}/{name})'.format(pk=self.id,
                                                      name=self.name))
 
+        # save to db (to get id)
+        self.save_db_only()
+
         # save files to local volume
         if not os.path.exists(self.PATH):
             os.makedirs(self.PATH)
@@ -1181,8 +1198,6 @@ class ThreadEngine(TimeStampedModel, S3Mixin):
             self.save_db_only()
             self.push_to_s3(ext='te')
             self.upload_state = 'IDL'
-        # save to db
-        self.save_db_only()
 
     def save_db_only(self, *args, **kwargs):
         super(ThreadEngine, self).save(*args, **kwargs)

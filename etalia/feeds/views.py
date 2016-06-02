@@ -13,7 +13,7 @@ from etalia.users.models import UserTaste
 from etalia.core.views import BasePaperListView
 from etalia.core.mixins import NavFlapMixin, XMLMixin
 
-from .models import Stream, StreamMatches, TrendMatches
+from .models import Stream, StreamPapers, TrendPapers
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
 
 
@@ -80,7 +80,7 @@ class FeedPaperListView(BasePaperListView):
 
 
 class BaseStreamView(FeedPaperListView):
-    model = StreamMatches
+    model = StreamPapers
     template_name = 'feeds/feed.html'
     control_session = 'control_stream'
 
@@ -106,7 +106,7 @@ stream_xml = StreamViewXML.as_view()
 
 
 class BaseTrendView(FeedPaperListView):
-    model = TrendMatches
+    model = TrendPapers
     template_name = 'feeds/trend.html'
     control_session = 'control_trend'
 

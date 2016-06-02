@@ -7,7 +7,7 @@ from django.http import JsonResponse
 
 from etalia.users.mixins import ProfileModalFormsMixin
 from etalia.feeds.mixins import CreateFeedModalMixin
-from etalia.feeds.models import StreamMatches, TrendMatches
+from etalia.feeds.models import StreamPapers, TrendPapers
 
 
 class AjaxableResponseMixin(object):
@@ -54,11 +54,11 @@ class NavFlapMixin(object):
     def get_context_counters_since_last_seen(self):
 
         return {
-            'stream_counter': StreamMatches.objects.filter(
+            'stream_counter': StreamPapers.objects.filter(
                 stream__user=self.request.user,
                 stream__name='main',
                 new=True).count(),
-            'trend_counter': TrendMatches.objects.filter(
+            'trend_counter': TrendPapers.objects.filter(
                 trend__user=self.request.user,
                 trend__name='main',
                 new=True).count(),

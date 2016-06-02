@@ -5,6 +5,7 @@ import numpy as np
 import collections
 
 from django.db import models
+from django.utils import timezone
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 
@@ -16,8 +17,10 @@ from etalia.core.utils import pad_vector
 
 class UserFingerprint(TimeStampedModel):
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL,
-                                related_name='fingerprint')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             related_name='fingerprint')
+
+    name = models.CharField(max_length=128, default='main')
 
     model = models.ForeignKey('nlp.Model')
 
@@ -50,6 +53,9 @@ class UserFingerprint(TimeStampedModel):
             'embedding': []
             }
 
+    class Meta:
+        unique_together = (('user', 'name'), )
+
     def __str__(self):
         return '{email}'.format(email=self.user.email)
 
@@ -61,6 +67,9 @@ class UserFingerprint(TimeStampedModel):
 
         data = self.data
 
+        delta = self.user.settings.stream_roll_back_deltatime  # in months
+        self.added_after = timezone.now() - timezone.timedelta(days=delta*30.5)
+
         q1 = UserLibPaper.objects.raw(
                 "SELECT ulp.id, "
                 "		ulp.paper_id, "
@@ -71,7 +80,8 @@ class UserFingerprint(TimeStampedModel):
                 "LEFT JOIN nlp_papervectors pv ON ulp.paper_id = pv.paper_id "
                 "LEFT JOIN library_paper lp ON ulp.paper_id = lp.id "
                 "WHERE ulp.userlib_id = %s "
-                "ORDER BY ulp.date_created ASC", (self.user_id,)
+                "       AND ulp.date_created >= %s "
+                "ORDER BY ulp.date_created ASC", (self.user_id, self.added_after)
                 )
 
         for d in q1:
@@ -114,8 +124,14 @@ class UserFingerprint(TimeStampedModel):
              for auth in auths])
         jour_count = collections.Counter(data['journal-ids'][start_ind:])
 
+        # Normalize averaged embedding
+        vec = np.sum(data['embedding'][start_ind:, :], axis=0)
+        norm = np.linalg.norm(vec)
+        if norm > 0:
+            vec /= norm
+
         # Populate fingerprint
-        self.embedding = pad_vector(np.sum(data['embedding'][start_ind:, :], axis=0))
+        self.embedding = pad_vector(vec)
         self.authors_ids = pad_vector(list(auth_count.keys()))
         self.authors_counts = pad_vector(list(auth_count.values()))
         self.journals_ids = pad_vector(list(jour_count.keys()))

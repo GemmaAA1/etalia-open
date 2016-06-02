@@ -64,19 +64,19 @@ class EngineTask(Task):
     data for each task)
     """
     engine_class = None
-    model_name = None
+    engine_id = None
     ignore_result = False
     init = False
 
     _engine = None
 
     def __init__(self, *args, **kwargs):
-        if 'model_name' in kwargs:
-            # check in model_id is known
-            model_name = kwargs.get('model_name')
-            choices = Model.objects.all().values_list('name', flat=True)
-            if model_name in choices:
-                self.model_name = model_name
+        if 'engine_id' in kwargs:
+            # check in engine_id is known
+            engine_id = kwargs.get('engine_id')
+            choices = self.engine_class.objects.filter(is_active=True).values_list('id', flat=True)
+            if engine_id in choices:
+                self.engine_id = engine_id
             else:
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
@@ -85,20 +85,20 @@ class EngineTask(Task):
         self.init = kwargs.get('init', False)
         if self.init:
             self._engine = self.engine_class.objects.load(
-                model__name=self.model_name,
+                id=self.engine_id,
                 is_active=True)
 
     @property
     def engine(self):
         if self._engine is None:
             self._engine = self.engine_class.objects.load(
-                model__name=self.model_name,
+                id=self.engine_id,
                 is_active=True)
             return self._engine
         # if Engine has been modified and Engine not uploading/downloading, or
         # has been deactivated => reload
         engine_now = self.engine_class.objects.get(
-            model__name=self.model_name,
+            id=self.engine_id,
             is_active=True)
         last_modified = engine_now.modified
         upload_state = engine_now.upload_state
@@ -113,7 +113,7 @@ class EngineTask(Task):
                 os.remove(file)
 
             self._engine = self.engine_class.objects.load(
-                model__name=self.model_name,
+                id=self.engine_id,
                 is_active=True)
         return self._engine
 
