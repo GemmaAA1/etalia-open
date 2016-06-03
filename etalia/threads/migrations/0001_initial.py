@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import etalia.threads.mixins
+import etalia.core.mixins
 
 
 class Migration(migrations.Migration):
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('watch', models.PositiveIntegerField(default=None, choices=[(1, 'Pinned'), (2, 'Banned')], null=True)),
                 ('participate', models.PositiveIntegerField(default=None, choices=[(1, 'Joined'), (2, 'Left')], null=True)),
             ],
-            bases=(etalia.threads.mixins.ModelDiffMixin, models.Model),
+            bases=(etalia.core.mixins.ModelDiffMixin, models.Model),
         ),
         migrations.CreateModel(
             name='ThreadUserHistory',

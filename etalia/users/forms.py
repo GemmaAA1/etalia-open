@@ -5,8 +5,10 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
-from .models import Affiliation, UserSettings, UserTaste, UserLibPaper
+from .models import Affiliation, UserSettings, UserLibPaper
 from .validators import validate_first_name, validate_last_name
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_PINNED, PAPER_BANNED
 
 from etalia.nlp.models import Model
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
@@ -231,17 +233,17 @@ class UserEmailDigestSettingsForm(forms.ModelForm):
         }
 
 
-class UserTasteForm(forms.ModelForm):
+class PaperUserForm(forms.ModelForm):
 
     class Meta:
-        model = UserTaste
-        fields = ('paper', 'source')
+        model = PaperUser
+        fields = ('paper', 'watch')
 
     def __init__(self, **kwargs):
-        # reformat ajax call to match UserTaste model (id -> paper)
+        # reformat ajax call to match PaperUser model (id -> paper)
         data = kwargs.pop('data').copy()
         data['paper'] = data.pop('id')[0]
-        super(UserTasteForm, self).__init__(data=data, **kwargs)
+        super(PaperUserForm, self).__init__(data=data, **kwargs)
 
 
 class UserLibPaperForm(forms.ModelForm):

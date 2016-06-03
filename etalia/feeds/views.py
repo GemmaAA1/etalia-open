@@ -9,7 +9,8 @@ from django.conf import settings
 
 from braces.views import LoginRequiredMixin
 
-from etalia.users.models import UserTaste
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_PINNED, PAPER_BANNED
 from etalia.core.views import BasePaperListView
 from etalia.core.mixins import NavFlapMixin, XMLMixin
 
@@ -35,9 +36,9 @@ class FeedPaperListView(BasePaperListView):
         self.original_qs = self.get_original_queryset()
 
         # Exclude rejected paper
-        papers_banned = UserTaste.objects\
+        papers_banned = PaperUser.objects\
             .filter(user=self.request.user,
-                    is_banned=True)\
+                    watch=PAPER_BANNED)\
             .values('paper')
         self.original_qs = self.original_qs.exclude(paper__in=papers_banned)
 

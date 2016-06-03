@@ -32,12 +32,8 @@ User = get_user_model()
 
 
 class ThreadViewSet(MultiSerializerMixin,
-                    mixins.CreateModelMixin,
-                    mixins.ListModelMixin,
-                    mixins.RetrieveModelMixin,
-                    mixins.UpdateModelMixin,
-                    mixins.DestroyModelMixin,
-                    viewsets.GenericViewSet):
+                    viewsets.ModelViewSet):
+
     """
     Threads
 

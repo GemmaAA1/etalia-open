@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import json
 from django.db import models, connection
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.conf import settings
 from model_utils.fields import MonitorField
 
 from etalia.core.models import TimeStampedModel, NullableCharField
+from etalia.core.mixins import ModelDiffMixin
 
 from .validators import validate_issn, validate_author_names
-from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS
+from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS, \
+    PAPER_BANNED, PAPER_PINNED, PAPER_WATCH
 from .utils import langcode_to_langpap
 
 from langdetect import detect
@@ -535,4 +539,41 @@ class Stats(TimeStampedModel):
             month=self.nb_papers_last_month,
             year=self.nb_papers_last_year,
         ))
+
+
+class PaperUser(ModelDiffMixin, TimeStampedModel):
+    # user
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+
+    # paper
+    paper = models.ForeignKey(Paper)
+
+    # Pinned or banned
+    watch = models.PositiveIntegerField(null=True, default=None,
+                                        choices=PAPER_WATCH)
+
+    class Meta:
+        unique_together = (('paper', 'user'),)
+
+    def pin(self):
+        self.watch = PAPER_PINNED
+        self.save()
+
+    def ban(self):
+        self.watch = PAPER_BANNED
+        self.save()
+
+    def save(self, **kwargs):
+        super(PaperUser, self).save(**kwargs)
+        PaperUserHistory.objects.create(paperuser=self,
+                                        difference=json.dumps(self.diff))
+
+
+class PaperUserHistory(PaperUser):
+
+    paperuser = models.ForeignKey(PaperUser, related_name='history')
+
+    difference = models.CharField(max_length=256, default='')
+
+    date = models.DateTimeField(auto_now_add=True)
 
