@@ -56,7 +56,7 @@ def save_new(obj):
     if obj.BUCKET_NAME:
         obj.upload_state = 'ING'
         obj.save_db_only()
-        obj.push_to_s3(ext='ms')
+        obj.push_to_s3(ext='pe')
         obj.upload_state = 'IDL'
 
 
@@ -65,9 +65,9 @@ if __name__ == '__main__':
     setup_django()
 
     from django.conf import settings
-    from etalia.nlp.models import MostSimilar
+    from etalia.nlp.models import PaperEngine
 
-    mss = MostSimilar.objects.all()
+    mss = PaperEngine.objects.all()
     for ms in mss:
         ms = load_old(ms)
         save_new(ms)

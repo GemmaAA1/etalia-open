@@ -2,16 +2,14 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import jsonfield.fields
-import etalia.users.validators
 from django.conf import settings
+import etalia.users.validators
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '0006_require_contenttypes_0002'),
-        ('nlp', '0001_initial'),
         ('library', '0001_initial'),
     ]
 
@@ -19,20 +17,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='User',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('password', models.CharField(verbose_name='password', max_length=128)),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, verbose_name='superuser status', help_text='Designates that this user has all permissions without explicitly assigning them.')),
-                ('username', models.CharField(default='', blank=True, verbose_name='username (UNUSED)', max_length=255, db_index=True)),
-                ('email', models.EmailField(unique=True, verbose_name='Email', max_length=255, db_index=True)),
-                ('first_name', models.CharField(default='', blank=True, verbose_name='First Name', validators=[etalia.users.validators.validate_first_name], max_length=255)),
-                ('last_name', models.CharField(default='', blank=True, verbose_name='Last Name', validators=[etalia.users.validators.validate_last_name], max_length=255)),
-                ('title', models.CharField(default='', blank=True, max_length=32)),
-                ('position', models.CharField(default='', blank=True, max_length=64)),
-                ('is_staff', models.BooleanField(default=False, verbose_name='staff status', help_text='Designates whether the user can log into this admin site.')),
-                ('is_active', models.BooleanField(default=True, verbose_name='active', help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.')),
-                ('init_step', models.CharField(default='NON', choices=[('NON', 'uninitialized'), ('LIB', 'library'), ('STR', 'personalized stream'), ('TRE', 'trends'), ('IDL', 'done')], max_length=3, help_text='Tag where init user stands')),
-                ('photo', models.ImageField(null=True, upload_to='photos')),
+                ('last_login', models.DateTimeField(blank=True, verbose_name='last login', null=True)),
+                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
+                ('username', models.CharField(blank=True, max_length=255, default='', verbose_name='username (UNUSED)', db_index=True)),
+                ('email', models.EmailField(max_length=255, unique=True, verbose_name='Email', db_index=True)),
+                ('first_name', models.CharField(blank=True, default='', verbose_name='First Name', validators=[etalia.users.validators.validate_first_name], max_length=255)),
+                ('last_name', models.CharField(blank=True, default='', verbose_name='Last Name', validators=[etalia.users.validators.validate_last_name], max_length=255)),
+                ('title', models.CharField(blank=True, default='', max_length=32)),
+                ('position', models.CharField(blank=True, default='', max_length=64)),
+                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
+                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
+                ('is_alpha', models.BooleanField(default=True, help_text='Designates whether this user should be treated as an early adopter user.', verbose_name='alpha')),
+                ('init_step', models.CharField(default='NON', help_text='Tag where init user stands', choices=[('NON', 'uninitialized'), ('LIB', 'library'), ('STR', 'personalized stream'), ('TRE', 'trends'), ('IDL', 'done')], max_length=3)),
             ],
             options={
                 'ordering': ('email',),
@@ -41,47 +39,55 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Affiliation',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('department', models.CharField(default='', blank=True, max_length=200)),
-                ('institution', models.CharField(default='', blank=True, max_length=200)),
-                ('city', models.CharField(default='', blank=True, max_length=50)),
-                ('state', models.CharField(default='', blank=True, max_length=20)),
-                ('country', models.CharField(default='', blank=True, max_length=50)),
+                ('department', models.CharField(blank=True, default='', max_length=200)),
+                ('institution', models.CharField(blank=True, default='', max_length=200)),
+                ('city', models.CharField(blank=True, default='', max_length=50)),
+                ('state', models.CharField(blank=True, default='', max_length=20)),
+                ('country', models.CharField(blank=True, default='', max_length=50)),
             ],
         ),
         migrations.CreateModel(
-            name='FeedLayout',
+            name='Relationship',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('stream_filter', jsonfield.fields.JSONField(null=True)),
-                ('trend_filter', jsonfield.fields.JSONField(null=True)),
-                ('library_filter', jsonfield.fields.JSONField(null=True)),
+                ('status', models.IntegerField(default=1, choices=[(1, 'Following'), (2, 'Blocked')])),
+            ],
+        ),
+        migrations.CreateModel(
+            name='UserLibAuthor',
+            fields=[
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('occurrence', models.IntegerField(default=0)),
+                ('author', models.ForeignKey(to='library.Author')),
             ],
             options={
-                'abstract': False,
+                'ordering': ('-occurrence',),
             },
         ),
         migrations.CreateModel(
             name='UserLibJournal',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('papers_in_journal', models.IntegerField(default=0)),
+                ('occurrence', models.IntegerField(default=0)),
                 ('journal', models.ForeignKey(to='library.Journal')),
             ],
             options={
-                'ordering': ('-papers_in_journal',),
+                'ordering': ('-occurrence',),
             },
         ),
         migrations.CreateModel(
             name='UserLibPaper',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('date_created', models.DateField(default=None, null=True)),
@@ -91,7 +97,7 @@ class Migration(migrations.Migration):
                 ('scored', models.FloatField(default=0.0)),
                 ('paper_provider_id', models.CharField(default='', max_length=64)),
                 ('is_trashed', models.BooleanField(default=False)),
-                ('paper', models.ForeignKey(related_name='userlib_paper', to='library.Paper')),
+                ('paper', models.ForeignKey(to='library.Paper', related_name='userlib_paper')),
             ],
             options={
                 'ordering': ['-date_created'],
@@ -100,11 +106,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserStats',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('message', models.CharField(max_length=128)),
-                ('options', models.CharField(default='', blank=True, max_length=128)),
+                ('options', models.CharField(blank=True, default='', max_length=128)),
             ],
             options={
                 'abstract': False,
@@ -113,12 +119,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserTaste',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('context_source', models.CharField(max_length=128)),
-                ('is_ticked', models.BooleanField(default=False)),
-                ('is_liked', models.BooleanField(default=False)),
+                ('source', models.CharField(max_length=128)),
+                ('is_banned', models.BooleanField(default=False)),
+                ('is_pinned', models.BooleanField(default=False)),
                 ('paper', models.ForeignKey(to='library.Paper')),
             ],
         ),
@@ -127,8 +133,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(primary_key=True, related_name='lib', serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('state', models.CharField(default='NON', blank=True, choices=[('NON', 'Uninitialized'), ('IDL', 'Idle'), ('ING', 'Syncing')], max_length=3)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL, primary_key=True, related_name='lib', serialize=False)),
+                ('state', models.CharField(blank=True, default='NON', choices=[('NON', 'Uninitialized'), ('IDL', 'Idle'), ('ING', 'Syncing')], max_length=3)),
+                ('d_oldest', models.DateField(blank=True, null=True)),
             ],
             options={
                 'abstract': False,
@@ -139,13 +146,16 @@ class Migration(migrations.Migration):
             fields=[
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(primary_key=True, related_name='settings', serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('stream_method', models.IntegerField(default=1, verbose_name='Method')),
-                ('stream_time_lapse', models.IntegerField(default=30, choices=[(7, 'Week'), (30, 'Month'), (60, 'Two Months'), (365, 'Year'), (-1, 'All')], verbose_name='In the past for')),
-                ('trend_method', models.IntegerField(default=1, verbose_name='Method')),
-                ('trend_time_lapse', models.IntegerField(default=30, choices=[(7, 'Week'), (30, 'Month'), (60, 'Two Months'), (365, 'Year'), (-1, 'All')], verbose_name='In the past for')),
-                ('stream_model', models.ForeignKey(related_name='stream_model', verbose_name='NLP Model', to='nlp.Model')),
-                ('trend_model', models.ForeignKey(related_name='trend_model', verbose_name='NLP Model', to='nlp.Model')),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL, primary_key=True, related_name='settings', serialize=False)),
+                ('stream_method', models.IntegerField(default=0, choices=[(0, 'Content Based Scoring (simple)')], verbose_name='Method')),
+                ('stream_author_weight', models.FloatField(default=1.0, verbose_name='Author weight')),
+                ('stream_journal_weight', models.FloatField(default=1.0, verbose_name='Journal weight')),
+                ('stream_vector_weight', models.FloatField(default=1.0, verbose_name='Content weight')),
+                ('stream_roll_back_deltatime', models.IntegerField(default=36, verbose_name='Roll-back time (months)')),
+                ('trend_method', models.IntegerField(default=0, choices=[(0, 'Method #1')], verbose_name='Method')),
+                ('trend_doc_weight', models.FloatField(default=1.0, verbose_name='Content weight')),
+                ('trend_altmetric_weight', models.FloatField(default=1.0, verbose_name='Altmetric weight')),
+                ('email_digest_frequency', models.IntegerField(default=7, choices=[(7, 'Weekly'), (15, 'Bi-Weekly'), (30, 'Monthly'), (30, 'Bi-Monthly'), (-1, 'Never')], verbose_name='Email digest frequency')),
             ],
             options={
                 'abstract': False,
@@ -154,17 +164,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='usertaste',
             name='user',
-            field=models.ForeignKey(related_name='tastes', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='tastes'),
         ),
         migrations.AddField(
             model_name='userstats',
             name='user',
-            field=models.ForeignKey(related_name='stats', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='stats'),
         ),
         migrations.AddField(
-            model_name='feedlayout',
-            name='user',
-            field=models.OneToOneField(to=settings.AUTH_USER_MODEL),
+            model_name='relationship',
+            name='from_user',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='relation_from_users'),
+        ),
+        migrations.AddField(
+            model_name='relationship',
+            name='to_user',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='relation_to_users'),
         ),
         migrations.AlterUniqueTogether(
             name='affiliation',
@@ -173,17 +188,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='affiliation',
-            field=models.ForeignKey(default=None, to='users.Affiliation', null=True),
+            field=models.ForeignKey(to='users.Affiliation', default=None, null=True),
         ),
         migrations.AddField(
             model_name='user',
             name='groups',
-            field=models.ManyToManyField(blank=True, related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups', help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.'),
+            field=models.ManyToManyField(blank=True, to='auth.Group', help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_query_name='user', related_name='user_set', verbose_name='groups'),
+        ),
+        migrations.AddField(
+            model_name='user',
+            name='relationships',
+            field=models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='users.Relationship', related_name='related_to'),
         ),
         migrations.AddField(
             model_name='user',
             name='user_permissions',
-            field=models.ManyToManyField(blank=True, related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions', help_text='Specific permissions for this user.'),
+            field=models.ManyToManyField(blank=True, to='auth.Permission', help_text='Specific permissions for this user.', related_query_name='user', related_name='user_set', verbose_name='user permissions'),
         ),
         migrations.AlterUniqueTogether(
             name='usertaste',
@@ -192,7 +212,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userlibpaper',
             name='userlib',
-            field=models.ForeignKey(related_name='userlib_paper', to='users.UserLib'),
+            field=models.ForeignKey(to='users.UserLib', related_name='userlib_paper'),
         ),
         migrations.AddField(
             model_name='userlibjournal',
@@ -200,14 +220,28 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to='users.UserLib'),
         ),
         migrations.AddField(
+            model_name='userlibauthor',
+            name='userlib',
+            field=models.ForeignKey(to='users.UserLib'),
+        ),
+        migrations.AddField(
+            model_name='userlib',
+            name='authors',
+            field=models.ManyToManyField(to='library.Author', through='users.UserLibAuthor'),
+        ),
+        migrations.AddField(
             model_name='userlib',
             name='journals',
-            field=models.ManyToManyField(through='users.UserLibJournal', to='library.Journal'),
+            field=models.ManyToManyField(to='library.Journal', through='users.UserLibJournal'),
         ),
         migrations.AddField(
             model_name='userlib',
             name='papers',
-            field=models.ManyToManyField(through='users.UserLibPaper', to='library.Paper'),
+            field=models.ManyToManyField(to='library.Paper', through='users.UserLibPaper'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='relationship',
+            unique_together=set([('from_user', 'to_user')]),
         ),
         migrations.AlterUniqueTogether(
             name='userlibpaper',
@@ -216,5 +250,9 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='userlibjournal',
             unique_together=set([('userlib', 'journal')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='userlibauthor',
+            unique_together=set([('userlib', 'author')]),
         ),
     ]

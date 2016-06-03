@@ -4,18 +4,17 @@ from __future__ import unicode_literals, absolute_import
 import collections
 
 from nameparser import HumanName
-from jsonfield import JSONField
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import F, Min
 from django.utils import timezone
 
+
 from etalia.library.models import Paper, Journal, Author
-from etalia.nlp.models import Model
-from etalia.feeds.models import Stream, Trend
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
@@ -87,9 +86,9 @@ class UserManager(BaseUserManager):
         # create user settings
         UserSettings.objects.create(user=user)
         # create user default (main) feed
-        Stream.objects.create_main(user=user)
+        # Stream.objects.create_main(user=user)
         # create user default (main) feed
-        Trend.objects.create(user=user, name='main')
+        # Trend.objects.create(user=user, name='main')
         return user
 
     def create_superuser(self, **kwargs):
@@ -523,19 +522,6 @@ class UserStats(TimeStampedModel):
     objects = UserStatsManager()
 
 
-class UserSettingsManager(models.Manager):
-
-    def create(self, **kwargs):
-        # if nlp_model not defined, default to first nlp_model
-        if 'model' not in kwargs:
-            model = Model.objects.first()
-            kwargs['stream_model'] = model
-            kwargs['trend_model'] = model
-        obj = self.model(**kwargs)
-        obj.save(using=self._db)
-        return obj
-
-
 class UserSettings(TimeStampedModel):
     """Table - User Settings"""
 
@@ -543,20 +529,17 @@ class UserSettings(TimeStampedModel):
                                 related_name='settings')
 
     ##  Stream settings
-    # NLP model to use
-    stream_model = models.ForeignKey(Model, verbose_name='NLP Model',
-                                     related_name='stream_model')
 
     # scoring method to use
     stream_method = models.IntegerField(verbose_name='Method', default=0,
                                         choices=STREAM_METHODS)
 
     # author weight
-    stream_author_weight = models.FloatField(default=0.1,
+    stream_author_weight = models.FloatField(default=1.0,
                                              verbose_name='Author weight')
 
     # journal weight
-    stream_journal_weight = models.FloatField(default=0.1,
+    stream_journal_weight = models.FloatField(default=1.0,
                                               verbose_name='Journal weight')
 
     # vector weight
@@ -564,13 +547,13 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Content weight')
 
     # delta-time in MONTHS to roll back stream
-    stream_roll_back_deltatime = models.IntegerField(default=36,
-                                             verbose_name='Roll-back time (months)')
+    stream_roll_back_deltatime = models.IntegerField(
+        default=None,
+        verbose_name='Roll-back time (months)',
+        null=True,
+        blank=True)
 
     # Trend settings
-    # nlp model
-    trend_model = models.ForeignKey(Model, verbose_name='NLP Model',
-                                    related_name='trend_model')
 
     # scoring method to use
     trend_method = models.IntegerField(verbose_name='Method', default=0,
@@ -590,18 +573,18 @@ class UserSettings(TimeStampedModel):
         choices=EMAIL_DIGEST_FREQUENCY_CHOICES,
         verbose_name='Email digest frequency')
 
-    objects = UserSettingsManager()
+    def init_stream_roll_back_deltatime(self):
+        if not self.stream_roll_back_deltatime:
+            first_created = self.user.lib.userlib_paper.all()\
+                .aggregate(min_date=Min(F('date_created')))['min_date']
+            delta_months = (timezone.now().date() - first_created).days // \
+                           (365 / 12)
+            self.stream_roll_back_deltatime = delta_months
+            self.save()
+        return self.stream_roll_back_deltatime
 
     def __str__(self):
         return self.user.email
-
-    def init(self):
-        """Initialize user settings"""
-        # default roll back deltatime (either default or user.lib.d_oldest)
-        d_oldest_month = (timezone.now().date() - self.user.lib.d_oldest).days // 30
-        if self.stream_roll_back_deltatime > d_oldest_month:
-            self.stream_roll_back_deltatime = d_oldest_month
-            self.save()
 
 
 class UserTaste(TimeStampedModel):

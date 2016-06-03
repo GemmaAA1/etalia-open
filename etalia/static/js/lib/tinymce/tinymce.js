@@ -607,7 +607,7 @@ define("tinymce/util/Delay", [
 		},
 
 		/**
-		 * Sets a timer in ms and executes the specified callback when the timer runs out.
+		 * Sets a timer in pe and executes the specified callback when the timer runs out.
 		 *
 		 * @method setTimeout
 		 * @param {function} callback Callback to execute when timer runs out.
@@ -617,7 +617,7 @@ define("tinymce/util/Delay", [
 		setTimeout: wrappedSetTimeout,
 
 		/**
-		 * Sets an interval timer in ms and executes the specified callback at every interval of that time.
+		 * Sets an interval timer in pe and executes the specified callback at every interval of that time.
 		 *
 		 * @method setInterval
 		 * @param {function} callback Callback to execute when interval time runs out.

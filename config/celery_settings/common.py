@@ -23,12 +23,11 @@ CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 CELERY_TASK_RESULT_EXPIRES = 5  # in seconds
 
 CELERY_DEFAULT_QUEUE = 'default'
-# embed_exchange = Exchange('embed', type='topic')
-# consumer_exchange = Exchange('consumer', type='topic')
 CELERY_QUEUES = (
     Queue('default', routing_key='default.#'),
     Queue('nlp', routing_key='nlp.#'),
-    Queue('mostsimilar', routing_key='mostsimilar.#'),
+    Queue('pe', routing_key='pe.#'),
+    Queue('te', routing_key='te.#'),
     Queue('feed', routing_key='feed.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
@@ -48,9 +47,13 @@ CELERYBEAT_SCHEDULE = {
         'task': 'etalia.users.tasks.userlib_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
     },
-    'update-ms-all': {
-        'task': 'etalia.nlp.tasks.mostsimilar_update_all',
+    'update-pe-all': {
+        'task': 'etalia.nlp.tasks.paperengine_update_all',
         'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
+    },
+    'update-te-all': {
+        'task': 'etalia.nlp.tasks.threadengine_update_all',
+        'schedule': crontab(minute=30, hour=0),  # every day at UTC+0
     },
     'update-all-main-streams': {
         'task': 'etalia.feeds.tasks.update_all_main_streams',

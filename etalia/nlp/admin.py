@@ -5,7 +5,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Model, MostSimilar
+from .models import Model, PaperEngine
 
 admin.site.register(Model)
-admin.site.register(MostSimilar)
+admin.site.register(PaperEngine)

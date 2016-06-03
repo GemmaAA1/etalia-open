@@ -6,16 +6,13 @@ import logging
 from django.db import models
 
 from django.contrib.auth.models import BaseUserManager
-from django.db.models import Q
-from django.contrib.postgres.fields import ArrayField
-from django.db.transaction import atomic
+from django.db import transaction
 
 from etalia.core.models import TimeStampedModel
-from etalia.core.utils import pad_vector
-from etalia.nlp.models import MostSimilar
 from etalia.last_seen.models import LastSeen
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
 from .scoring import *
+from etalia.nlp.models import PaperEngine
 
 
 logger = logging.getLogger(__name__)
@@ -29,15 +26,7 @@ class StreamManager(BaseUserManager):
         if 'user' not in kwargs:
             raise AssertionError('<user> is not defined')
 
-        papers_seed = None
-        if 'papers_seed' in kwargs:
-            papers_seed = kwargs.pop('papers_seed')
-
         obj = super(StreamManager, self).create(**kwargs)
-
-        if papers_seed:
-            obj.add_papers_seed(papers_seed)
-            obj.save()
 
         return obj
 
@@ -49,30 +38,18 @@ class StreamManager(BaseUserManager):
 
 
 class Stream(TimeStampedModel):
-    """User Stream model
-
-    NB: Design to have multiple feed per user,
-    """
-
-    # stream name
-    name = models.CharField(max_length=100, default='main')
+    """Stream: Table of relevant Papers for a user"""
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='streams')
 
-    # Papers that are used in the similarity matching
-    seeds = models.ManyToManyField(Paper, through='StreamSeeds',
-                                   related_name='stream_seeds')
+    name = models.CharField(max_length=128, default='main')
 
-    # relevant matches matched
-    matches = models.ManyToManyField(Paper, through='StreamMatches',
-                                     related_name='stream_matches')
+    papers = models.ManyToManyField(Paper, through='StreamPapers',
+                                    related_name='stream_papers')
 
     state = models.CharField(max_length=3, blank=True, default='NON',
                              choices=FEED_STATUS_CHOICES)
 
-    message = models.CharField(max_length=127, blank=True, default='')
-
-    # last update of the stream
     last_update = models.DateTimeField(default=None, blank=True, null=True)
 
     objects = StreamManager()
@@ -82,165 +59,78 @@ class Stream(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
-        if state == 'IDL':
-            self.set_message('')
-        self.save()
-
-    def set_message(self, message):
-        self.message = message
         self.save()
 
     def __str__(self):
         return '{stream}@{email}'.format(stream=self.name,
                                          email=self.user.email)
 
-    def add_papers_seed(self, papers):
-        """Add paper to seed in bulk"""
-        if papers:
-            objs = []
-            seed_pks = self.seeds.all().values_list('pk', flat=True)
-            for paper in papers:
-                if paper.pk not in seed_pks:
-                    objs.append(StreamSeeds(stream=self, paper=paper))
-            StreamSeeds.objects.bulk_create(objs)
-
-        # Update stream vector
-        self.update_stream_vector()
-
-    def update_stream_vector(self):
-        """Update stream vector for each NLP model"""
-        model_pks = Model.objects\
-            .filter(is_active=True)\
-            .values_list('pk', flat='True')
-        for model_pk in model_pks:
-            ufv, _ = self.vectors.get_or_create(model_id=model_pk)
-            ufv.update_vector()
-
     def clear_all(self):
-        """Delete all matched matches"""
-        StreamMatches.objects.filter(stream=self).delete()
+        """Delete all papers"""
+        StreamPapers.objects.filter(stream=self).delete()
 
-    def log(self, level, message, options):
-        """Local wrapper around logger"""
-        if level == 'info':
-            logger.info('Stream ({pk}/{stream_name}@{user_email}): '
-                        '{message} - {options}'.format(
-                pk=self.id,
-                stream_name=self.name,
-                user_email=self.user.email,
-                message=message,
-                options=options))
+    def clean_not_in(self, paper_ids):
+        """Delete papers that are not in paper_ids"""
+        StreamPapers.objects\
+            .filter(stream=self)\
+            .exclude(paper_id__in=paper_ids)\
+            .delete()
 
-        elif level == 'debug':
-            logger.debug('Stream ({pk}/{stream_name}@{user_email}): '
-                         '{message} - {options}'.format(
-                pk=self.id,
-                stream_name=self.name,
-                user_email=self.user.email,
-                message=message,
-                options=options))
-        else:
-            raise ValueError('level unknown')
+    def update(self):
+        """Update Stream"""
 
-    def update(self, restrict_journal=False):
-        """Update Stream
-
-        - Get all matches in time range excluding untrusted and paper already
-        in user lib
-        - Score
-        - Get only the N top scored matches
-        - Create/Update StreamPaper
-        """
-
+        logger.info('Updating stream {id}'.format(id=self.id))
         self.set_state('ING')
-        self.log('info', 'Updating', 'starting...')
-        self.set_message('Cleaning')
 
-        # Instantiate Score
-        Score = eval(dict(STREAM_METHODS_MAP)[self.user.settings.stream_method])
-        # and instantiate
-        journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
-        # method_arg = self.user.settings.stream_method_args or {}
-        method_arg = {
-            'vector_weight': self.user.settings.stream_vector_weight,
-            'author_weight': self.user.settings.stream_author_weight,
-            'journal_weight': self.user.settings.stream_journal_weight,
-        }
-        scoring = Score(stream=self, journal_ratio=journal_ratio, **method_arg)
+        # Score
+        pe = PaperEngine.objects.get(is_active=True)
+        pe_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
+        task = pe_tasks.delay('score_stream', self.user.id)
+        res = task.get()
+        # reformat
+        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
+        pids = list(res_dic.keys())
 
-        # Get score and date
-        results, date = scoring.score()
-        pks_res = results.keys()
+        # clean stream
+        self.clean_not_in(pids)
 
-        # get StreamMatches to be deleted
-        del_objs = self.streammatches_set.all().exclude(paper_id__in=pks_res)
+        # Update existing StreamPapers
+        with transaction.atomic():
+            sp_update = StreamPapers.objects.select_for_update()\
+                .filter(stream=self, paper_id__in=pids)
+            update_pids = []
+            for sp in sp_update:
+                sp.score = res_dic[sp.paper_id]['score']
+                sp.save()
+                update_pids.append(sp.paper_id)
 
-        # get paper_pk from TrendMatches to be updated
-        update_paper_list = self.streammatches_set\
-            .filter(paper_id__in=pks_res)\
-            .values_list('paper_id', flat=True)
-
-        # create TrendMatches
+        # Create new StreamPapers
         create_objs = []
-        for pk in list(set(pks_res) - set(update_paper_list)):
-            create_objs.append(StreamMatches(
+        create_pids = set(pids).difference(set(update_pids))
+        for id_ in create_pids:
+            create_objs.append(StreamPapers(
                 stream=self,
-                paper_id=pk,
-                score=results[pk],
-                date=date[pk]))
-
-        # udpate matches that already exists and are in results
-        update_objs = []
-        sms = list(StreamMatches.objects.filter(stream=self,
-                                               paper_id__in=update_paper_list))
-        for sm in sms:
-            sm.score = results[sm.paper_id]
-            update_objs.append(sm)
+                paper_id=id_,
+                score=res_dic[id_]['score'],
+                date=res_dic[id_]['date'],
+                new=True))
+        StreamPapers.objects.bulk_create(create_objs)
 
         # Get last user visit. use for the tagging matched with 'new'
         try:
             last_seen = LastSeen.objects.when(user=self.user)
+            StreamPapers.objects.filter(created__lt=last_seen).update(new=False)
         except LastSeen.DoesNotExist:
-            last_seen = None
             pass
 
-        # atomic update
-        self.atomic_update(del_objs, update_objs, create_objs, last_seen=last_seen)
+        self.last_update = timezone.now()
+        self.save(update_fields=('last_update', ))
 
         self.set_state('IDL')
-        self.log('info', 'Updating', 'done')
-
-    @atomic
-    def atomic_update(self, delete_objs, update_objs, create_objs, last_seen=None):
-        if delete_objs:
-            delete_objs.delete()
-        if update_objs:
-            for obj in update_objs:
-                obj.save()
-        if create_objs:
-            StreamMatches.objects.bulk_create(create_objs)
-        if last_seen:
-            StreamMatches.objects.filter(created__lt=last_seen)\
-                .update(new=False)
+        logger.info('Updating stream {id} done'.format(id=self.id))
 
 
-class StreamSeeds(TimeStampedModel):
-    """Relationship table between stream and seed matches"""
-
-    stream = models.ForeignKey(Stream)
-
-    paper = models.ForeignKey(Paper)
-
-    class Meta:
-        unique_together = ('stream', 'paper')
-
-    def clean(self):
-        """check if paper is in user.lib"""
-        assert self.paper.pk in \
-            self.stream.user.lib.papers.values_list('pk', flat=True)
-
-
-class StreamMatches(TimeStampedModel):
+class StreamPapers(TimeStampedModel):
     """Relationship table between stream and matched matches with scoring"""
 
     stream = models.ForeignKey(Stream)
@@ -250,8 +140,6 @@ class StreamMatches(TimeStampedModel):
     score = models.FloatField(default=0.)
 
     date = models.DateField()
-
-    is_score_computed = models.BooleanField(default=False)
 
     new = models.BooleanField(default=True)
 
@@ -267,64 +155,18 @@ class StreamMatches(TimeStampedModel):
                                         score=self.score)
 
 
-class StreamVector(TimeStampedModel):
-    """Feature vector for stream is defined as the averaged of paper vectors in
-    stream
-    """
-    stream = models.ForeignKey(Stream, related_name='vectors')
-
-    model = models.ForeignKey(Model)
-
-    vector = ArrayField(models.FloatField(null=True),
-                        size=settings.NLP_MAX_VECTOR_SIZE,
-                        null=True)
-
-    class Meta:
-        unique_together = ('stream', 'model')
-
-    def __str__(self):
-        return '{stream_name}/{model_name}'.format(stream_name=self.stream.name,
-                                                   model_name=self.model.name)
-
-    def set_vector(self, vector):
-        self.vector = pad_vector(vector)
-        self.save()
-
-    def get_vector(self):
-        if self.vector:
-            return self.vector[:self.model.size]
-        else:
-            return None
-
-    def update_vector(self):
-        vectors = self.stream.seeds\
-            .filter(vectors__model=self.model)\
-            .values_list('vectors__vector', flat=True)
-
-        # bag of vectors
-        vector = [sum(x) for x in zip(*vectors) if x[0]]  # not considering None
-        self.set_vector(vector)
-        return vector[:self.model.size]
-
-
 class Trend(TimeStampedModel):
-    """Trend feed retrieving trending papers in a broaden neighborhood"""
+    """Trend: Table of relevant trendy Papers for a user"""
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='trends')
 
-    name = models.CharField(max_length=100, default='main')
+    name = models.CharField(max_length=128, default='main')
 
-    matches = models.ManyToManyField(Paper, through='TrendMatches')
-
-    # top n closest matches
-    top_n_closest = models.IntegerField(default=5000)
-
-    # Add very high trending and recent papers
-    # look for trendy altmetric in the past n days
-    time_lapse_top_altmetric = models.IntegerField(default=15)
-    score_threshold = models.FloatField(default=1000.0)
+    papers = models.ManyToManyField(Paper, through='TrendPapers')
 
     state = models.CharField(max_length=3, blank=True, choices=FEED_STATUS_CHOICES)
+
+    last_update = models.DateTimeField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.user.email
@@ -336,107 +178,71 @@ class Trend(TimeStampedModel):
         self.state = state
         self.save()
 
-    def log(self, level, message, options):
-        """Local wrapper around logger"""
-        if level == 'info':
-            logger.info('Trend ({pk}/{trend_name}@{user_email}): '
-                        '{message} - {options}'.format(
-                pk=self.id,
-                trend_name=self.name,
-                user_email=self.user.email,
-                message=message,
-                options=options))
-
-        elif level == 'debug':
-            logger.debug('Trend ({pk}/{trend_name}@{user_email}): '
-                         '{message} - {options}'.format(
-                pk=self.id,
-                trend_name=self.name,
-                user_email=self.user.email,
-                message=message,
-                options=options))
-        else:
-            raise ValueError('level unknown')
-
     def clear_all(self):
         """Delete all matched matches"""
-        StreamMatches.objects.filter(stream=self).all().delete()
+        TrendPapers.objects.filter(trend=self).all().delete()
+
+    def clean_not_in(self, paper_ids):
+        """Delete papers that are not in paper_ids"""
+        TrendPapers.objects\
+            .filter(trend=self)\
+            .exclude(paper_id__in=paper_ids)\
+            .delete()
 
     def update(self):
 
+        logger.info('Updating trend {id}'.format(id=self.id))
         self.set_state('ING')
-        self.log('info', 'Updating', 'starting...')
 
-        # Instantiate Score
-        Score = eval(dict(TREND_METHODS_MAP)[self.user.settings.trend_method])
-        # and instantiate
-        journal_ratio = MostSimilar.objects.get(is_active=True).journal_ratio
-        # method_arg = self.user.settings.trend_method_args or {}
-        method_arg = {
-            'doc_weight': self.user.settings.trend_doc_weight,
-            'altmetric_weight': self.user.settings.trend_altmetric_weight,
-        }
-        scoring = Score(stream=self.user.streams.first(),
-                        journal_ratio=journal_ratio,
-                        **method_arg)
+        # Score
+        pe = PaperEngine.objects.get(is_active=True)
+        pe_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
+        task = pe_tasks.delay('score_trend', self.user.id)
+        res = task.get()
+        # reformat
+        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
+        pids = list(res_dic.keys())
 
-        # Get score and date
-        results, date = scoring.score()
-        pks_res = results.keys()
+        # clean trend
+        self.clean_not_in(pids)
 
-        # get TrendMatches to be deleted
-        del_objs = self.trendmatches_set.all().exclude(paper_id__in=pks_res)
+        # Update existing TrendPapers
+        with transaction.atomic():
+            tp_update = TrendPapers.objects.select_for_update()\
+                .filter(trend=self, paper_id__in=pids)
+            update_pids = []
+            for tp in tp_update:
+                tp.score = res_dic[tp.paper_id]['score']
+                tp.save()
+                update_pids.append(tp.paper_id)
 
-        # get paper_pk from TrendMatches to be updated
-        update_paper_list = self.trendmatches_set\
-            .filter(paper_id__in=pks_res)\
-            .values_list('paper_id', flat=True)
-
-        # create TrendMatches
+        # Create new TrendPapers
         create_objs = []
-        for pk in list(set(results.keys()) - set(update_paper_list)):
-            create_objs.append(TrendMatches(
+        create_pids = set(pids).difference(set(update_pids))
+        for id_ in create_pids:
+            create_objs.append(TrendPapers(
                 trend=self,
-                paper_id=pk,
-                score=results[pk],
-                date=date[pk]))
-
-        # udpate matches that already exists and are in results
-        update_objs = []
-        tms = list(TrendMatches.objects.filter(trend=self,
-                                               paper_id__in=update_paper_list))
-        for tm in tms:
-            tm.score = results[tm.paper_id]
-            update_objs.append(tm)
+                paper_id=id_,
+                score=res_dic[id_]['score'],
+                date=res_dic[id_]['date'],
+                new=True))
+        TrendPapers.objects.bulk_create(create_objs)
 
         # Get last user visit. use for the tagging matched with 'new'
         try:
             last_seen = LastSeen.objects.when(user=self.user)
+            TrendPapers.objects.filter(created__lt=last_seen).update(new=False)
         except LastSeen.DoesNotExist:
-            last_seen = None
             pass
 
-        # atomic update
-        self.atomic_update(del_objs, update_objs, create_objs, last_seen=last_seen)
+        self.last_update = timezone.now()
+        self.save(update_fields=('last_update', ))
 
         self.set_state('IDL')
-        self.log('info', 'Updating', 'done')
-
-    @atomic
-    def atomic_update(self, delete_objs, update_objs, create_objs, last_seen=None):
-        if delete_objs:
-            delete_objs.delete()
-        if update_objs:
-            for obj in update_objs:
-                obj.save()
-        if create_objs:
-            TrendMatches.objects.bulk_create(create_objs)
-        if last_seen:
-            TrendMatches.objects.filter(created__lt=last_seen)\
-                .update(new=False)
+        logger.info('Updating trend {id} done'.format(id=self.id))
 
 
-class TrendMatches(TimeStampedModel):
+class TrendPapers(TimeStampedModel):
 
     trend = models.ForeignKey(Trend)
 

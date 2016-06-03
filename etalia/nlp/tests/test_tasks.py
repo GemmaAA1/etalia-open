@@ -10,7 +10,7 @@ from library.tasks import embed_paper
 
 from ..tasks import EmbedPaperTask, MostSimilarTask, register_nlp_tasks
 
-from ..models import Model, MostSimilar
+from ..models import Model, PaperEngine
 from .base import NLPDataExtendedTestCase, NLPDataTestCase
 
 

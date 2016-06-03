@@ -15,6 +15,7 @@ import names
 from subprocess import call
 from random import randrange
 from datetime import timedelta, datetime, date
+from django.db import transaction
 
 NB_THREADS = 50
 NB_POSTS = 200
@@ -38,8 +39,9 @@ def update():
     update_threads()
     update_threadusers()
     update_relationships()
-    update_mostsimilar()
+    update_engines()
     update_streams()
+    update_trends()
 
 
 def update_oauth_user(email):
@@ -102,14 +104,15 @@ def update_oauth_user(email):
 def update_papers():
     print('Updating papers...')
     # Update date randomly
-    papers = Paper.objects.all()
-    end_date = datetime.now().date()
-    start_date = end_date - timedelta(days=90)
-    for paper in papers:
-        paper.date_ep = random_date(start_date, end_date)
-        paper.date_fs = random_date(start_date, end_date)
-        paper.date_pp = random_date(start_date, end_date)
-        paper.save()
+    with transaction.atomic():
+        papers = Paper.objects.select_for_update().all()
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=90)
+        for paper in papers:
+            paper.date_ep = random_date(start_date, end_date)
+            paper.date_fs = random_date(start_date, end_date)
+            paper.date_pp = random_date(start_date, end_date)
+            paper.save()
 
     # Fetch some Altmetric data and fake others (saving time)
     alt_objs = []
@@ -241,26 +244,30 @@ def update_streams():
     for user_pk in us_pk:
         reset_stream(user_pk)
 
+
+def update_trends():
+    print('Updating trends...')
+    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
     # Update users trend
     for user_pk in us_pk:
         reset_trend(user_pk)
 
 
-def update_mostsimilar():
-    print('Updating MostSimilar...')
-    # update mostsimilar
-    if not MostSimilar.objects.filter(is_active=True).exists():
+def update_engines():
+    print('Updating Engines...')
+    # update PaperEngine
+    if not PaperEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
-        ms = MostSimilar.objects.create(model=model)
-        ms.activate()
-    mostsimilar_full_update_all()
+        pe = PaperEngine.objects.create(model=model)
+        pe.activate()
+    paperengine_full_update_all()
 
-    # update mostsimilarthread
-    if not MostSimilarThread.objects.filter(is_active=True).exists():
+    # update ThreadEngine
+    if not ThreadEngine.objects.filter(is_active=True).exists():
         model = Model.objects.get(is_active=True)
-        mst = MostSimilarThread.objects.create(model=model)
-        mst.activate()
-    mostsimilarthread_full_update_all()
+        te = ThreadEngine.objects.create(model=model)
+        te.activate()
+    threadengine_update_all()
 
 
 def fetch_path():
@@ -374,7 +381,7 @@ if __name__ == '__main__':
                                      'Init and Update Etalia database and related-objects in devolpment:\n',
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument("-i", "--init",
-                        help="Init database from scratch",
+                        help="Populate database with test data",
                         action="store_true")
     parser.add_argument("-l", "--load",
                         help="Load database from fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
@@ -384,6 +391,9 @@ if __name__ == '__main__':
                         type=str)
     parser.add_argument("-p", "--papers",
                         help="Fetch new papers only",
+                        action="store_true")
+    parser.add_argument("-u", "--users",
+                        help="Populate database with test users",
                         action="store_true")
     parser.add_argument("-m", "--models",
                         help="Update NLP models only",
@@ -399,6 +409,9 @@ if __name__ == '__main__':
                         type=str)
     parser.add_argument("-f", "--flush",
                         help="Flush database",
+                        action="store_true")
+    parser.add_argument("-e", "--engines",
+                        help="Update engines",
                         action="store_true")
     parser.add_argument("--init-production",
                         help="Init database in production from scratch",
@@ -427,14 +440,11 @@ if __name__ == '__main__':
     from etalia.altmetric.tasks import update_altmetric
     from etalia.altmetric.models import AltmetricModel
     from etalia.feeds.tasks import reset_stream, reset_trend
-    from etalia.nlp.tasks import mostsimilar_full_update_all
-    from etalia.nlp.models import MostSimilarThread, MostSimilar, Model
-    from etalia.threads.tasks import mostsimilarthread_full_update_all, \
-        embed_threads
+    from etalia.nlp.tasks import paperengine_full_update_all, threadengine_update_all
+    from etalia.nlp.models import ThreadEngine, PaperEngine, Model
     from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
         ThreadUser, ThreadUserInvite
-    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED, \
-        THREAD_PUBLIC
+    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
     from utils.avatar import AvatarGenerator
@@ -472,6 +482,11 @@ if __name__ == '__main__':
     # Fetch new papers
     if args.papers:
         fetch_new_papers()
+        sys.exit()
+
+    # Update engines
+    if args.engines:
+        update_engines()
         sys.exit()
 
     # MASTER UPDATE
