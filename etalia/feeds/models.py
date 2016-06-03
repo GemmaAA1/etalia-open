@@ -100,7 +100,7 @@ class Stream(TimeStampedModel):
                 .filter(stream=self, paper_id__in=pids)
             update_pids = []
             for sp in sp_update:
-                sp.score = res_dic[sp.paper_id]
+                sp.score = res_dic[sp.paper_id]['score']
                 sp.save()
                 update_pids.append(sp.paper_id)
 
@@ -126,6 +126,7 @@ class Stream(TimeStampedModel):
         self.last_update = timezone.now()
         self.save(update_fields=('last_update', ))
 
+        self.set_state('IDL')
         logger.info('Updating stream {id} done'.format(id=self.id))
 
 
@@ -179,7 +180,14 @@ class Trend(TimeStampedModel):
 
     def clear_all(self):
         """Delete all matched matches"""
-        TrendPapers.objects.filter(stream=self).all().delete()
+        TrendPapers.objects.filter(trend=self).all().delete()
+
+    def clean_not_in(self, paper_ids):
+        """Delete papers that are not in paper_ids"""
+        TrendPapers.objects\
+            .filter(trend=self)\
+            .exclude(paper_id__in=paper_ids)\
+            .delete()
 
     def update(self):
 
@@ -195,7 +203,7 @@ class Trend(TimeStampedModel):
         res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
         pids = list(res_dic.keys())
 
-        # clean stream
+        # clean trend
         self.clean_not_in(pids)
 
         # Update existing TrendPapers
@@ -204,7 +212,7 @@ class Trend(TimeStampedModel):
                 .filter(trend=self, paper_id__in=pids)
             update_pids = []
             for tp in tp_update:
-                tp.score = res_dic[tp.paper_id]
+                tp.score = res_dic[tp.paper_id]['score']
                 tp.save()
                 update_pids.append(tp.paper_id)
 
@@ -213,7 +221,7 @@ class Trend(TimeStampedModel):
         create_pids = set(pids).difference(set(update_pids))
         for id_ in create_pids:
             create_objs.append(TrendPapers(
-                stream=self,
+                trend=self,
                 paper_id=id_,
                 score=res_dic[id_]['score'],
                 date=res_dic[id_]['date'],
@@ -230,6 +238,7 @@ class Trend(TimeStampedModel):
         self.last_update = timezone.now()
         self.save(update_fields=('last_update', ))
 
+        self.set_state('IDL')
         logger.info('Updating trend {id} done'.format(id=self.id))
 
 

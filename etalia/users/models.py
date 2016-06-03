@@ -4,14 +4,15 @@ from __future__ import unicode_literals, absolute_import
 import collections
 
 from nameparser import HumanName
-from jsonfield import JSONField
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import F, Min
 from django.utils import timezone
+
 
 from etalia.library.models import Paper, Journal, Author
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
@@ -546,8 +547,11 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Content weight')
 
     # delta-time in MONTHS to roll back stream
-    stream_roll_back_deltatime = models.IntegerField(default=36,
-                                             verbose_name='Roll-back time (months)')
+    stream_roll_back_deltatime = models.IntegerField(
+        default=None,
+        verbose_name='Roll-back time (months)',
+        null=True,
+        blank=True)
 
     # Trend settings
 
@@ -569,16 +573,18 @@ class UserSettings(TimeStampedModel):
         choices=EMAIL_DIGEST_FREQUENCY_CHOICES,
         verbose_name='Email digest frequency')
 
+    def init_stream_roll_back_deltatime(self):
+        if not self.stream_roll_back_deltatime:
+            first_created = self.user.lib.userlib_paper.all()\
+                .aggregate(min_date=Min(F('date_created')))['min_date']
+            delta_months = (timezone.now().date() - first_created).days // \
+                           (365 / 12)
+            self.stream_roll_back_deltatime = delta_months
+            self.save()
+        return self.stream_roll_back_deltatime
+
     def __str__(self):
         return self.user.email
-
-    def init(self):
-        """Initialize user settings"""
-        # default roll back deltatime (either default or user.lib.d_oldest)
-        d_oldest_month = (timezone.now().date() - self.user.lib.d_oldest).days // 30
-        if self.stream_roll_back_deltatime > d_oldest_month:
-            self.stream_roll_back_deltatime = d_oldest_month
-            self.save()
 
 
 class UserTaste(TimeStampedModel):

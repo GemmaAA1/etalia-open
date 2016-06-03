@@ -203,10 +203,13 @@ class PaperEngineScoringMixin(object):
     SCORE_N_PAPERS = 250
     SCORE_AUTHOR_CAP_COUNT = 10
     SCORE_JOURNAL_CAP_COUNT = 10
+    SCORE_ALTMETRIC_CAP_SCORE = 200
 
     score_author_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
     score_journal_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_altmetric_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
     model = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
@@ -264,6 +267,38 @@ class PaperEngineScoringMixin(object):
 
         return results
 
+    def score_trend(self, user_id, name='main'):
+
+        # Gather user fingerprint
+        if UserFingerprint.objects.filter(user_id=user_id,
+                                          name=name,
+                                          model=self.model).exists():
+            f = UserFingerprint.objects.get(user_id=user_id, name=name,
+                                            model=self.model)
+        else:
+            f = UserFingerprint.objects.create(user_id=user_id, name=name,
+                                               model=self.model)
+            f.update()
+
+        # Convert user data
+        seed = np.array(f.embedding[:self.embedding_size])
+
+        # Get user settings
+        us = UserSettings.objects.get(user_id=user_id)
+
+        # Convert altmetric
+        altmetric_boost = np.array(self.convert_to_boost(
+            self.data['altmetric'],
+            self.SCORE_ALTMETRIC_CAP_SCORE,
+            self.score_altmetric_boost))
+
+        score = us.trend_doc_weight * np.dot(self.data['embedding'], seed.T) + \
+                us.trend_altmetric_weight * altmetric_boost
+
+        results = self.order_n(self.data['ids'], score, self.data['date'], self.SCORE_N_PAPERS)
+
+        return results
+
     def order_n(self, ids, vals, date, n):
         """"Return top scores
 
@@ -296,6 +331,7 @@ class PaperEngineScoringMixin(object):
             else:
                 boost.append(c / cap * max_boost)
         return boost
+
 
 
 

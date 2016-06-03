@@ -105,7 +105,7 @@ class BackendLibMixin(object):
             return None, None
 
     def add_entry(self, entry):
-        """Add or Retrieve entry and Update NLP Models and LSHs"""
+        """Add or Retrieve entry and Update NLP Models"""
 
         paper, journal = self.get_or_create_entry(entry)
 

@@ -41,6 +41,7 @@ def update():
     update_relationships()
     update_engines()
     update_streams()
+    update_trends()
 
 
 def update_oauth_user(email):
@@ -243,6 +244,10 @@ def update_streams():
     for user_pk in us_pk:
         reset_stream(user_pk)
 
+
+def update_trends():
+    print('Updating trends...')
+    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
     # Update users trend
     for user_pk in us_pk:
         reset_trend(user_pk)
@@ -377,7 +382,7 @@ if __name__ == '__main__':
                                      'Init and Update Etalia database and related-objects in devolpment:\n',
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument("-i", "--init",
-                        help="Init database from scratch",
+                        help="Populate database with test data",
                         action="store_true")
     parser.add_argument("-l", "--load",
                         help="Load database from fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
@@ -385,6 +390,9 @@ if __name__ == '__main__':
                         type=str)
     parser.add_argument("-p", "--papers",
                         help="Fetch new papers only",
+                        action="store_true")
+    parser.add_argument("-u", "--users",
+                        help="Populate database with test users",
                         action="store_true")
     parser.add_argument("-m", "--models",
                         help="Update NLP models only",

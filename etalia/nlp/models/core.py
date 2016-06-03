@@ -668,6 +668,8 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
     score_journal_boost = models.FloatField(default=0.05)
 
+    score_altmetric_boost = models.FloatField(default=0.1)
+
     objects = PaperEngineManager()
 
     @property

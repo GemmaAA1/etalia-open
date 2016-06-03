@@ -5,6 +5,7 @@ import numpy as np
 import collections
 
 from django.db import models
+from django.db.models import F, Min
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -13,6 +14,18 @@ from etalia.users.models import UserLibPaper
 from etalia.core.models import TimeStampedModel
 from etalia.library.models import AuthorPaper
 from etalia.core.utils import pad_vector
+
+
+class UserFingerprintManager(models.Manager):
+
+    def create(self, **kwargs):
+        obj = super(UserFingerprintManager, self).create(**kwargs)
+
+        if not obj.user.settings.stream_roll_back_deltatime:
+            obj.user.settings.init_stream_roll_back_deltatime()
+        obj.update_added_after()
+
+        return obj
 
 
 class UserFingerprint(TimeStampedModel):
@@ -46,12 +59,7 @@ class UserFingerprint(TimeStampedModel):
                                  size=settings.NLP_MAX_VECTOR_SIZE,
                                  null=True)
 
-    data = {'ids': [],
-            'journal-ids': [],
-            'authors-ids': [],
-            'date': [],
-            'embedding': []
-            }
+    objects = UserFingerprintManager()
 
     class Meta:
         unique_together = (('user', 'name'), )
@@ -63,12 +71,24 @@ class UserFingerprint(TimeStampedModel):
     def embedding_size(self):
         return self.model.size
 
+    def update_added_after(self):
+        delta = self.user.settings.stream_roll_back_deltatime  # in months
+        added_after = (timezone.now() - timezone.timedelta(days=delta*30.5)).date()
+        if not self.added_after == added_after:
+            self.added_after = added_after
+            self.save(update_fields=('added_after', ))
+        return self.added_after
+
     def update(self):
 
-        data = self.data
+        data = {'ids': [],
+                'journal-ids': [],
+                'authors-ids': [],
+                'date': [],
+                'embedding': []
+                }
 
-        delta = self.user.settings.stream_roll_back_deltatime  # in months
-        self.added_after = timezone.now() - timezone.timedelta(days=delta*30.5)
+        self.update_added_after()
 
         q1 = UserLibPaper.objects.raw(
                 "SELECT ulp.id, "
@@ -80,7 +100,8 @@ class UserFingerprint(TimeStampedModel):
                 "LEFT JOIN nlp_papervectors pv ON ulp.paper_id = pv.paper_id "
                 "LEFT JOIN library_paper lp ON ulp.paper_id = lp.id "
                 "WHERE ulp.userlib_id = %s "
-                "       AND ulp.date_created >= %s "
+                "    AND ulp.date_created >= %s "
+                "    AND pv.vector IS NOT NULL "
                 "ORDER BY ulp.date_created ASC", (self.user_id, self.added_after)
                 )
 

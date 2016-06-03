@@ -23,7 +23,7 @@ def update_stats():
 
 
 def embed_paper(paper_pk):
-    """Send chain task to embed paper
+    """Send task to embed paper
     """
     model_names = Model.objects\
         .filter(is_active=True)\
@@ -31,7 +31,7 @@ def embed_paper(paper_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            model_task = app.tasks['etalia.nlp.tasks.pe_{model_name}'.format(
+            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Model task for {model_name} not defined'.format(
@@ -43,7 +43,7 @@ def embed_paper(paper_pk):
 
 def embed_papers(pks, model_name, batch_size=1000):
     try:
-        model_task = app.tasks['etalia.nlp.tasks.pe_{model_name}'.format(
+        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
             model_name=model_name)]
     except KeyError:
         logger.error('Embeding task for {model_name} not defined'.format(
