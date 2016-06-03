@@ -6,9 +6,8 @@ import logging
 from django.contrib.auth import get_user_model
 
 from config.celery import celery_app as app
-from .models import Stream, Trend
+from .models import Stream, Trend, ThreadFeed
 
-    # Trend
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
@@ -74,7 +73,20 @@ def update_trend(user_pk, trend_name='main'):
 @app.task()
 def reset_trend(user_pk, trend_name='main'):
     df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
-    # update
+    df.update()
+    return user_pk
+
+
+@app.task()
+def update_threadfeed(user_pk, name='main'):
+    df, _ = ThreadFeed.objects.get_or_create(user_id=user_pk, name=name)
+    df.update()
+    return user_pk
+
+
+@app.task()
+def reset_threadfeed(user_pk, name='main'):
+    df, _ = ThreadFeed.objects.get_or_create(user_id=user_pk, name=name)
     df.update()
     return user_pk
 

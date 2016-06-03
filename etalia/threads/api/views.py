@@ -170,8 +170,8 @@ class ThreadViewSet(MultiSerializerMixin,
                           ~Q(published_at=None)],
             },
             'scored': {
-                'query': [Q(threadscore__thread_feed__name=feed_name),
-                          Q(threadscore__thread_feed__user=self.request.user)],
+                'query': [Q(threadfeedthreads__threadfeed__name=feed_name),
+                          Q(threadfeedthreads__threadfeed__user=self.request.user)],
             },
             'private': {
                 'query': [Q(privacy=THREAD_PRIVATE)],

@@ -24,11 +24,12 @@ from gensim.models import Phrases
 from etalia.core.models import TimeStampedModel
 
 from etalia.library.models import Paper, Journal, AuthorPaper
-from etalia.threads.models import Thread, ThreadPost, ThreadComment
+from etalia.threads.models import Thread, ThreadPost
 
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
     JournalVectors, PaperEngineScoringMixin
-from .threads import ModelThreadMixin, ThreadNeighbors, ThreadVectors
+from .threads import ModelThreadMixin, ThreadNeighbors, ThreadVectors, \
+    ThreadEngineScoringMixin
 
 from ..constants import FIELDS_FOR_MODEL
 from ..utils import obj2tokens, TaggedDocumentsIterator, model_attr_getter, \
@@ -1088,7 +1089,7 @@ class ThreadEngineManager(models.Manager):
         return obj
 
 
-class ThreadEngine(TimeStampedModel, S3Mixin):
+class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
     """ThreadEngine class
 
     Store useful data and perform tasks for:
