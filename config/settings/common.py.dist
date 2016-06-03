@@ -37,7 +37,6 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='CHANGEME!!!')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost']
 
 
-
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
 DJANGO_APPS = (
@@ -59,19 +58,19 @@ THIRD_PARTY_APPS = (
     'messages_extends',
     'rest_framework',
     'rest_condition',
+    'autofixture',
 )
 
 LOCAL_APPS = (
     'etalia.core',
-    'etalia.library',
     'etalia.populate',
     'etalia.consumers',
+    'etalia.threads',
+    'etalia.library',
     'etalia.nlp',
     'etalia.users',
     'etalia.feeds',
-    'etalia.threads',
     'etalia.altmetric',
-    'etalia.invite',
     'etalia.last_seen'
     # 'functional_tests',
 )
@@ -101,7 +100,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'etalia',
-        'USER': '',
+        'USER': 'nicolaspannetier',
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
@@ -304,7 +303,8 @@ CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
 NLP_CHUNK_SIZE = 10000
 NLP_DATA_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'data'))
 NLP_MODELS_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'mods'))
-NLP_MS_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'pe'))
+NLP_PE_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'pe'))
+NLP_TE_PATH = str((ROOT_DIR-1).path('data', 'nlp', 'te'))
 NLP_NLTK_DATA_PATH = str(APPS_DIR.path('nlp', 'nltk_data'))
 NLP_MAX_VECTOR_SIZE = 300
 NLP_MAX_KNN_NEIGHBORS = 10
@@ -333,21 +333,6 @@ ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
 ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 
 
-# THREAD
-# ------------------------------------------------------------------------------
-
-MAX_MEMBERS_NOT_JOINED = 3
-
-# REST FRAMEWORK
-# ------------------------------------------------------------------------------
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'PAGE_SIZE': 10,
-    'URL_FIELD_NAME': 'link',
-}
-
 # LANDING
 # ------------------------------------------------------------------------------
 LANDING_ACTIVE_PAPERS_NUMBER = 1
@@ -375,6 +360,25 @@ AVATAR_STORAGE = DEFAULT_FILE_STORAGE
 AVATAR_CLEANUP_DELETED = False
 AVATAR_AUTO_GENERATE_SIZES = (AVATAR_DEFAULT_SIZE, 120)
 AVATAR_DEFAULT_MENDELEY = 'http://s3.amazonaws.com/mendeley-photos/awaiting.png'
+
+
+# THREAD
+# ------------------------------------------------------------------------------
+
+MAX_MEMBERS_NOT_JOINED = 3
+
+# REST FRAMEWORK
+# ------------------------------------------------------------------------------
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
+    'PAGE_SIZE': 10,
+    'URL_FIELD_NAME': 'link',
+}
+
+
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -505,4 +509,3 @@ LOGGING = {
 
 # MESSAGES
 MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'
-
