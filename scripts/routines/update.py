@@ -42,6 +42,7 @@ def update():
     update_engines()
     update_streams()
     update_trends()
+    update_threadfeeds()
 
 
 def update_oauth_user(email):
@@ -253,6 +254,13 @@ def update_trends():
         reset_trend(user_pk)
 
 
+def update_threadfeeds():
+    print('Updating threadfeeds...')
+    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
+    # Update users threadfeed
+    for user_pk in us_pk:
+        reset_threadfeed(user_pk)
+
 def update_engines():
     print('Updating Engines...')
     # update PaperEngine
@@ -439,7 +447,7 @@ if __name__ == '__main__':
     from etalia.library.models import Paper
     from etalia.altmetric.tasks import update_altmetric
     from etalia.altmetric.models import AltmetricModel
-    from etalia.feeds.tasks import reset_stream, reset_trend
+    from etalia.feeds.tasks import reset_stream, reset_trend, reset_threadfeed
     from etalia.nlp.tasks import paperengine_full_update_all, threadengine_update_all
     from etalia.nlp.models import ThreadEngine, PaperEngine, Model
     from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
