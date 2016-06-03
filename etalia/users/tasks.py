@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from celery.canvas import chain
 
 from config.celery import celery_app as app
-from etalia.feeds.tasks import update_stream, update_trend
+from etalia.feeds.tasks import update_stream, update_trend, update_threadfeed
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,8 @@ def init_user(user_pk, provider_name):
         update_stream.s(),
         init_step.s('TRE'),
         update_trend.s(),
+        init_step.s('THR'),
+        update_threadfeed.s(),
         init_step.s('IDL'),
     )
 

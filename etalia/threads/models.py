@@ -158,43 +158,6 @@ class ThreadUserInvite(TimeStampedModel):
         unique_together = (('thread', 'from_user', 'to_user'), )
 
 
-class ThreadFeed(TimeStampedModel):
-    # User
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
-    # name of the feed
-    name = models.CharField(max_length=128, default='main')
-
-    # last update of the feed
-    updated_at = models.DateTimeField(auto_now=True)
-
-    # state
-    status = models.CharField(max_length=3, blank=True,
-                              default='NON',
-                              choices=THREADFEED_STATUS_CHOICES)
-
-    # threads
-    thread_scores = models.ManyToManyField(Thread, through='ThreadScore')
-
-
-class ThreadScore(TimeStampedModel):
-    # thread
-    thread = models.ForeignKey(Thread)
-
-    # feed
-    thread_feed = models.ForeignKey(ThreadFeed)
-
-    # score
-    score = models.FloatField(default=0.0)
-
-    # new flag
-    new = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['-score']
-        unique_together = (('thread', 'thread_feed'),)
-
-
 class ThreadUser(ModelDiffMixin, TimeStampedModel):
     # user
     user = models.ForeignKey(settings.AUTH_USER_MODEL)

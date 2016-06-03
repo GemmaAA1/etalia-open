@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import numpy as np
+from gensim import matutils
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from django.db import models
@@ -12,6 +14,9 @@ from etalia.core.utils import pad_vector, pad_neighbors
 
 from etalia.threads.models import Thread
 from etalia.threads.constant import THREAD_TIME_LAPSE_CHOICES
+from etalia.users.models import UserSettings
+
+from .users import UserFingerprint
 
 
 class ThreadVectors(TimeStampedModel):
@@ -128,3 +133,60 @@ class ModelThreadMixin(object):
 
     def infer_object(self, cls, pk, fields, **kwargs):
         raise NotImplemented
+
+
+class ThreadEngineScoringMixin(object):
+
+    SCORE_N_THREADS = 250
+
+    model = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    embedding_size = None
+
+    data = {'ids': [],
+            'date': [],
+            'embedding': np.empty(0)
+            }
+
+    def score_threadfeed(self, user_id, name='main'):
+
+        # Gather user fingerprint
+        if UserFingerprint.objects.filter(user_id=user_id,
+                                          name=name,
+                                          model=self.model).exists():
+            f = UserFingerprint.objects.get(user_id=user_id, name=name,
+                                            model=self.model)
+        else:
+            f = UserFingerprint.objects.create(user_id=user_id, name=name,
+                                               model=self.model)
+            f.update()
+
+        # Convert user data
+        seed = np.array(f.embedding[:self.embedding_size])
+
+        # Get user settings
+        us = UserSettings.objects.get(user_id=user_id)
+
+        # Compute
+        score = np.dot(self.data['embedding'], seed.T)
+
+        results = self.order_n(self.data['ids'],
+                               score,
+                               self.data['date'],
+                               self.SCORE_N_THREADS)
+
+        return results
+
+    def order_n(self, ids, vals, date, n):
+        """"Return top scores
+
+        Return the top N vals and order in decreasing val order
+        [{'id': id, 'score': val, 'date': date}, ...]
+        """
+        # sort scores
+        top_idx = matutils.argsort(vals, topn=n, reverse=True)
+
+        return [{'id': ids[i],
+                 'score': float(vals[i]),
+                 'date': date[i],
+                 } for i in top_idx]

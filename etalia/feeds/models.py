@@ -13,6 +13,8 @@ from etalia.last_seen.models import LastSeen
 from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
 from .scoring import *
 from etalia.nlp.models import PaperEngine
+from etalia.nlp.models import ThreadEngine
+from etalia.threads.models import Thread
 
 
 logger = logging.getLogger(__name__)
@@ -258,3 +260,106 @@ class TrendPapers(TimeStampedModel):
         ordering = ['-score']
         unique_together = [('trend', 'paper'), ]
 
+
+class ThreadFeed(TimeStampedModel):
+    """Trend: Table of relevant Threads for a user"""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='threadfeeds')
+
+    name = models.CharField(max_length=128, default='main')
+
+    threads = models.ManyToManyField(Thread, through='ThreadFeedThreads')
+
+    state = models.CharField(max_length=3, blank=True, choices=FEED_STATUS_CHOICES)
+
+    last_update = models.DateTimeField(default=None, blank=True, null=True)
+
+    def __str__(self):
+        return self.user.email
+
+    class Meta:
+        unique_together = (('user', 'name'),)
+
+    def set_state(self, state):
+        self.state = state
+        self.save()
+
+    def clear_all(self):
+        """Delete all matched matches"""
+        ThreadFeedThreads.objects.filter(threadfeed=self).all().delete()
+
+    def clean_not_in(self, thread_ids):
+        """Delete threads that are not in thread_ids"""
+        ThreadFeedThreads.objects\
+            .filter(threadfeed=self)\
+            .exclude(thread_id__in=thread_ids)\
+            .delete()
+
+    def update(self):
+
+        logger.info('Updating thread feed {id}'.format(id=self.id))
+        self.set_state('ING')
+
+        # Score
+        te = ThreadEngine.objects.get(is_active=True)
+        te_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
+        task = te_tasks.delay('score_threadfeed', self.user.id)
+        res = task.get()
+        # reformat
+        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
+        tids = list(res_dic.keys())
+
+        # clean threadfeed
+        self.clean_not_in(tids)
+
+        # Update existing TrendFeedThreads
+        with transaction.atomic():
+            tfp_update = ThreadFeedThreads.objects.select_for_update()\
+                .filter(threadfeed=self, thread_id__in=tids)
+            update_tids = []
+            for tfp in tfp_update:
+                tfp.score = res_dic[tfp.thread_id]['score']
+                tfp.save()
+                update_tids.append(tfp.thread_id)
+
+        # Create new TrendFeedThreads
+        create_objs = []
+        create_pids = set(tids).difference(set(update_tids))
+        for id_ in create_pids:
+            create_objs.append(ThreadFeedThreads(
+                threadfeed=self,
+                thread_id=id_,
+                score=res_dic[id_]['score'],
+                date=res_dic[id_]['date'],
+                new=True))
+        ThreadFeedThreads.objects.bulk_create(create_objs)
+
+        # Get last user visit. use for the tagging matched with 'new'
+        try:
+            last_seen = LastSeen.objects.when(user=self.user)
+            ThreadFeedThreads.objects.filter(created__lt=last_seen).update(new=False)
+        except LastSeen.DoesNotExist:
+            pass
+
+        self.last_update = timezone.now()
+        self.save(update_fields=('last_update', ))
+
+        self.set_state('IDL')
+        logger.info('Updating thread feed {id} done'.format(id=self.id))
+
+
+class ThreadFeedThreads(TimeStampedModel):
+
+    threadfeed = models.ForeignKey(ThreadFeed)
+
+    thread = models.ForeignKey(Thread)
+
+    score = models.FloatField(default=0.0)
+
+    date = models.DateField()
+
+    new = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-score']
+        unique_together = [('threadfeed', 'thread'), ]
