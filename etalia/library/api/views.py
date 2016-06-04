@@ -198,8 +198,8 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):
-        time_span = self.request.query_params.get('time-span',
-                                                  self.neighbors_time_span)
+        time_span = int(self.request.query_params.get('time-span',
+                                                      self.neighbors_time_span))
         instance = self.get_object()
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)

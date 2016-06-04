@@ -251,8 +251,8 @@ class ThreadViewSet(MultiSerializerMixin,
     @detail_route(methods=['get'],
                   permission_classes=(ThreadIsPublished, ))
     def neighbors(self, request, pk=None):
-        time_span = self.request.query_params.get('time-span',
-                                                  self.neighbors_time_span)
+        time_span = int(self.request.query_params.get('time-span',
+                                                      self.neighbors_time_span))
         instance = self.get_object()
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)
