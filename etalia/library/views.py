@@ -19,7 +19,8 @@ from celery.exceptions import SoftTimeLimitExceeded
 from braces.views import LoginRequiredMixin
 
 from etalia.nlp.models import PaperNeighbors, Model, PaperEngine
-from etalia.core.mixins import ModalMixin
+from etalia.users.mixins import ProfileModalFormsMixin
+from etalia.feeds.mixins import CreateFeedModalMixin
 from etalia.users.models import UserLibPaper
 from etalia.library.models import PaperUser
 from etalia.library.constants import PAPER_PINNED, PAPER_BANNED
@@ -34,7 +35,7 @@ def library(request):
     return render(request, 'library/library.html', context)
 
 
-class JournalsListView(ModalMixin, ListView):
+class JournalsListView(ProfileModalFormsMixin, CreateFeedModalMixin, ListView):
     model = Journal
     template_name = 'library/journals.html'
     paginate_by = 100
@@ -47,7 +48,7 @@ class JournalsListView(ModalMixin, ListView):
 journals = JournalsListView.as_view()
 
 
-class JournalView(ModalMixin, ListView):
+class JournalView(ProfileModalFormsMixin, CreateFeedModalMixin, ListView):
     # Journal view display a list of matches from the journal
     model = Paper
     template_name = 'library/journal.html'
@@ -84,7 +85,7 @@ class JournalViewPk(RedirectView):
 journal = JournalViewPk.as_view()
 
 
-class PaperView(ModalMixin, DetailView):
+class PaperView(ProfileModalFormsMixin, CreateFeedModalMixin, DetailView):
 
     model = Paper
     template_name = 'library/paper.html'

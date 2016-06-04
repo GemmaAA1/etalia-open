@@ -449,6 +449,10 @@ class Paper(TimeStampedModel):
         lang_code = detect(text)
         return langcode_to_langpap(lang_code)
 
+    def get_neighbors(self, time_span):
+        from .tasks import get_neighbors_papers
+        return get_neighbors_papers(self.id, time_span)
+
     def __str__(self):
         return self.short_title
 

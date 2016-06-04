@@ -65,10 +65,10 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     queryset = Paper.objects.all()
     serializer_class = {
         'default': PaperSerializer,
-         'nested': PaperNestedSerializer
+        'nested': PaperNestedSerializer
     }
     exclude_action_serializers = {
-        'list': ['nested'],
+        # 'list': ['nested'],
     }
     permission_classes = (permissions.IsAuthenticated,
                           )
@@ -124,11 +124,11 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         # Bool filters definition
         bool_filters_def = {
             'added': {
-                'query': [Q(userlibpaper__user=self.request.user)],
+                'query': [Q(userlib_paper__user=self.request.user)],
             },
             'trashed': {
-                'query': [Q(userlibpaper__user=self.request.user),
-                          Q(userlibpaper__is_trashed=True)],
+                'query': [Q(userlib_paper__user=self.request.user),
+                          Q(userlib_paper__is_trashed=True)],
             },
             'pinned': {
                 'query': [Q(paperuser__user=self.request.user),
@@ -165,7 +165,7 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
 
         # Paper feeds
-        scored = self.request.query_params.get(key, None)
+        scored = self.request.query_params.get('scored', None)
         type = self.request.query_params.get('type', 'stream')
         feed_name = self.request.query_params.get('feed', 'main')
         time_span = self.request.query_params.get('time-span', None)
@@ -192,7 +192,7 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
             return queryset
 
-        queryset = queryset.order_by('-userlibpaper__date_created')
+        queryset = queryset.order_by('-userlib_paper__date_created')
 
         return queryset
 
@@ -215,21 +215,25 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         # Journals
         js = [d.journal for d in data]
-        js_count = Counter(js)
-        journals = [j for j in js_count.keys()[:self.size_max_journal_filter]]
-        for j in journals:
-            j.count = js_count[j]
+        js_count = Counter(js).most_common()
+        journals = []
+        for j, c in js_count[:self.size_max_journal_filter]:
+            j.count = c
+            journals.append(j)
 
         # Authors
-        qa = AuthorPaper.objects.raw(
+        values = ', '.join(['({0})'.format(i) for i in pids])
+        qa = Author.objects.raw(
                     "SELECT * "
-                    "FROM library_authorpaper ap "
-                    "WHERE ap.paper_id IN (VALUES {0}) ".format(pids))
+                    "FROM library_author a "
+                    "LEFT JOIN library_authorpaper ap ON a.id = ap.author_id "
+                    "WHERE ap.paper_id IN (VALUES {0}) ".format(values))
         da = list(qa)
-        as_count = Counter(da)
-        authors = [a for a in as_count.keys()[:self.size_max_author_filter]]
-        for a in authors:
-            a.count = as_count[j]
+        as_count = Counter(da).most_common()
+        authors = []
+        for a, c in as_count[:self.size_max_author_filter]:
+            a.count = c
+            authors.append(a)
 
         kwargs = {'context': self.get_serializer_context()}
         serializer = PaperFilterSerializer({'authors': authors,

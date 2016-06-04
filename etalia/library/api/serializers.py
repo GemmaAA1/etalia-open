@@ -62,7 +62,8 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'title',
             'journal',
             'authors',
-            'url'
+            'abstract',
+            'url',
         )
         read_only_fields = (
             '__all__',

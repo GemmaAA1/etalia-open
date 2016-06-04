@@ -6,8 +6,6 @@ import json
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
 
-# from etalia.users.mixins import ProfileModalFormsMixin
-# from etalia.feeds.mixins import CreateFeedModalMixin
 # from etalia.feeds.models import StreamPapers, TrendPapers
 
 
@@ -39,9 +37,21 @@ class AjaxableResponseMixin(object):
         raise NotImplementedError
 
 
-# class ModalMixin(ProfileModalFormsMixin, CreateFeedModalMixin):
-#     """Pull Mixin in one"""
-#     pass
+class NavFlapMixin(object):
+    """To generate context for navigation flap"""
+
+    def get_context_data(self, **kwargs):
+        context = super(NavFlapMixin, self).get_context_data(**kwargs)
+        context.update(self.get_context_counters_since_last_seen())
+        return context
+
+    def get_context_counters_since_last_seen(self):
+
+        return {
+            'stream_counter': 0,
+            'trend_counter': 0,
+            'Threads_counter': 0
+        }
 
 
 class XMLMixin(object):

@@ -74,9 +74,7 @@ def get_neighbors_threads(thread_pk, time_span):
             raise ThreadNeighbors.DoesNotExist
     except ThreadNeighbors.DoesNotExist:  # refresh
         try:
-            te_task = app.tasks[
-                'etalia.nlp.tasks.te_{name}'.format(
-                    name=te.model.name)]
+            te_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
             res = te_task.apply_async(args=('populate_neighbors',
                                             thread_pk,
                                             time_span),
