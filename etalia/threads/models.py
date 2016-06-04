@@ -13,7 +13,7 @@ from etalia.core.models import TimeStampedModel
 
 
 from etalia.library.models import Paper
-from .mixins import ModelDiffMixin
+from etalia.core.mixins import ModelDiffMixin
 from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
     THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, \
     THREAD_QUESTION, \
@@ -165,11 +165,11 @@ class ThreadUser(ModelDiffMixin, TimeStampedModel):
     # thread
     thread = models.ForeignKey(Thread)
 
-    # thread watch (pinned or left
+    # Pinned or banned
     watch = models.PositiveIntegerField(null=True, default=None,
                                         choices=THREAD_WATCH)
 
-    # thread is banned
+    # Joined or left
     participate = models.PositiveIntegerField(null=True, default=None,
                                               choices=THREAD_PARTICIPATE)
 

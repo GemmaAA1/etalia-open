@@ -62,7 +62,8 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'title',
             'journal',
             'authors',
-            'url'
+            'abstract',
+            'url',
         )
         read_only_fields = (
             '__all__',
@@ -81,3 +82,71 @@ class PaperNestedSerializer(PaperSerializer):
         read_only_fields = (
             '__all__',
         )
+
+
+class JournalFilterSerializer(serializers.ModelSerializer):
+    """Journal serializer in filter side panel"""
+
+    count = serializers.IntegerField(read_only=True)
+    label = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Journal
+        fields = (
+            'id',
+            'label',
+            'count')
+        read_only_fields = (
+            '__all__'
+        )
+
+    def get_label(self, obj):
+        return '{0}'.format(obj.title)
+
+
+class AuthorFilterSerializer(serializers.ModelSerializer):
+    """Journal serializer in filter side panel"""
+
+    count = serializers.IntegerField(read_only=True)
+    label = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Author
+        fields = (
+            'id',
+            'label',
+            'count')
+        read_only_fields = (
+            '__all__'
+        )
+
+    def get_label(self, obj):
+        return '{0} {1}'.format(obj.first_name, obj.last_name)
+
+
+class PaperFilterSerializer(serializers.BaseSerializer):
+    """Serializer for filters on side panel of Threads list"""
+
+    def to_representation(self, instance):
+        return {
+            'groups': [
+                {
+                    "name": "author_id",
+                    "label": "Authors",
+                    "entries": [
+                        AuthorFilterSerializer(instance=author,
+                                               context=self.context).data
+                        for author in instance.get('authors', None)
+                        ]
+                },
+                {
+                    "name": "journal_id",
+                    "label": "Journals",
+                    "entries": [
+                        JournalFilterSerializer(instance=journal,
+                                                context=self.context).data
+                        for journal in instance.get('journals', None)
+                        ]
+                }
+            ]
+        }

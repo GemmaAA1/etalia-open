@@ -181,3 +181,12 @@ PAPER_TIME_LAPSE_CHOICES = (
     (180, 'Six Months'),
     (365, 'Year'),
 )
+
+
+# WATCH
+PAPER_PINNED = 1
+PAPER_BANNED = 2
+PAPER_WATCH = (
+    (PAPER_PINNED, 'Pinned'),
+    (PAPER_BANNED, 'Banned'),
+)

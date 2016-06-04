@@ -19,8 +19,11 @@ from celery.exceptions import SoftTimeLimitExceeded
 from braces.views import LoginRequiredMixin
 
 from etalia.nlp.models import PaperNeighbors, Model, PaperEngine
-from etalia.core.mixins import ModalMixin
-from etalia.users.models import UserTaste, UserLibPaper
+from etalia.users.mixins import ProfileModalFormsMixin
+from etalia.feeds.mixins import CreateFeedModalMixin
+from etalia.users.models import UserLibPaper
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_PINNED, PAPER_BANNED
 from .models import Journal, Paper
 from .constants import PAPER_TYPE
 
@@ -32,7 +35,7 @@ def library(request):
     return render(request, 'library/library.html', context)
 
 
-class JournalsListView(ModalMixin, ListView):
+class JournalsListView(ProfileModalFormsMixin, CreateFeedModalMixin, ListView):
     model = Journal
     template_name = 'library/journals.html'
     paginate_by = 100
@@ -45,7 +48,7 @@ class JournalsListView(ModalMixin, ListView):
 journals = JournalsListView.as_view()
 
 
-class JournalView(ModalMixin, ListView):
+class JournalView(ProfileModalFormsMixin, CreateFeedModalMixin, ListView):
     # Journal view display a list of matches from the journal
     model = Paper
     template_name = 'library/journal.html'
@@ -82,7 +85,7 @@ class JournalViewPk(RedirectView):
 journal = JournalViewPk.as_view()
 
 
-class PaperView(ModalMixin, DetailView):
+class PaperView(ProfileModalFormsMixin, CreateFeedModalMixin, DetailView):
 
     model = Paper
     template_name = 'library/paper.html'
@@ -104,9 +107,9 @@ class PaperView(ModalMixin, DetailView):
 
         if not self.request.user.is_anonymous():
             try:
-                ut = UserTaste.objects.get(user=self.request.user, paper=paper_)
-                context['is_pinned'] = ut.is_pinned
-            except UserTaste.DoesNotExist:
+                ut = PaperUser.objects.get(user=self.request.user, paper=paper_)
+                context['is_pinned'] = ut.watch == PAPER_PINNED
+            except PaperUser.DoesNotExist:
                 pass
 
             try:
@@ -161,12 +164,13 @@ class PaperNeighborsView(LoginRequiredMixin, ListView):
                 return get_neighbors_papers(self.paper_id, self.time_span)
 
     def get_context_usertaste(self):
-        user_taste = UserTaste.objects\
+        user_taste = PaperUser.objects\
             .filter(user=self.request.user)\
-            .values_list('paper_id', 'is_pinned', 'is_banned')
+            .values_list('paper_id', 'watch')
         # reformat to dict
-        user_taste = dict((key, {'liked': v1, 'is_banned': v2})
-                          for key, v1, v2 in user_taste)
+        user_taste = dict((key, {'liked': w == PAPER_PINNED,
+                                 'is_banned': w == PAPER_BANNED})
+                          for key, w in user_taste)
         return {'user_taste': user_taste}
 
     def get_context_data(self, **kwargs):

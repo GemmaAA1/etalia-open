@@ -201,14 +201,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
-    def get_paper_state(self, paper_id):
-        return dict(UserTaste.get_state(paper_id, self.id),
-                    **UserLibPaper.get_state(paper_id, self.id))
-
-    def get_counters(self):
-        return dict(UserTaste.get_counters(self.id),
-                    **UserLibPaper.get_counters(self.id))
-
     # Relationships methods
     # ----------------------
     def add_relationship(self, user, status):
@@ -585,59 +577,6 @@ class UserSettings(TimeStampedModel):
 
     def __str__(self):
         return self.user.email
-
-
-class UserTaste(TimeStampedModel):
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
-
-    paper = models.ForeignKey(Paper)
-
-    source = models.CharField(max_length=128)
-
-    is_banned = models.BooleanField(default=False)
-
-    is_pinned = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = [('user', 'paper'), ]
-
-    def __str__(self):
-        if self.is_pinned:
-            return '{user} pinned {pk} from {context}'.format(
-                user=self.user,
-                pk=self.paper.id,
-                context=self.source)
-        elif self.is_banned:
-            return '{user} banned {pk} with {context}'.format(
-                user=self.user,
-                pk=self.paper.id,
-                context=self.source)
-        else:
-            return '{user}/{pk}/{context} has an issue'.format(
-                user=self.user,
-                pk=self.paper.id,
-                context=self.source)
-
-    @classmethod
-    def get_state(cls, paper_id, user_id):
-        try:
-            ut = cls.objects.get(paper_id=paper_id, user_id=user_id)
-            return {'is_pinned': ut.is_pinned, 'is_banned': ut.is_banned}
-        except cls.DoesNotExist:
-            return {'is_pinned': False, 'is_banned': False}
-
-    @classmethod
-    def get_counters(cls, user_id):
-        try:
-            objs = cls.objects.filter(user_id=user_id)\
-                .values('is_pinned', 'is_banned')
-            return {
-                'pin': len([obj for obj in objs if obj['is_pinned']]),
-                'ban': len([obj for obj in objs if obj['is_banned']])
-            }
-        except cls.DoesNotExist:
-            return {'pin': None, 'ban': None}
 
 
 class Relationship(TimeStampedModel):

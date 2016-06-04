@@ -4,10 +4,9 @@ from __future__ import unicode_literals, absolute_import
 import json
 
 from django.http import JsonResponse
+from django.forms.models import model_to_dict
 
-from etalia.users.mixins import ProfileModalFormsMixin
-from etalia.feeds.mixins import CreateFeedModalMixin
-from etalia.feeds.models import StreamPapers, TrendPapers
+# from etalia.feeds.models import StreamPapers, TrendPapers
 
 
 class AjaxableResponseMixin(object):
@@ -38,11 +37,6 @@ class AjaxableResponseMixin(object):
         raise NotImplementedError
 
 
-class ModalMixin(ProfileModalFormsMixin, CreateFeedModalMixin):
-    """Pull Mixin in one"""
-    pass
-
-
 class NavFlapMixin(object):
     """To generate context for navigation flap"""
 
@@ -54,14 +48,8 @@ class NavFlapMixin(object):
     def get_context_counters_since_last_seen(self):
 
         return {
-            'stream_counter': StreamPapers.objects.filter(
-                stream__user=self.request.user,
-                stream__name='main',
-                new=True).count(),
-            'trend_counter': TrendPapers.objects.filter(
-                trend__user=self.request.user,
-                trend__name='main',
-                new=True).count(),
+            'stream_counter': 0,
+            'trend_counter': 0,
             'Threads_counter': 0
         }
 
@@ -113,3 +101,47 @@ class XMLMixin(object):
         filter_['filters'].append({'id': 'author', 'entries': entries})
 
         return {'filter': json.dumps(filter_)}
+
+
+class ModelDiffMixin(object):
+    """
+    A model mixin that tracks model fields' values and provide some useful api
+    to know what fields have been changed.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ModelDiffMixin, self).__init__(*args, **kwargs)
+        self.__initial = self._dict
+
+    @property
+    def diff(self):
+        d1 = self.__initial
+        d2 = self._dict
+        diffs = [(k, (v, d2[k])) for k, v in d1.items() if v != d2[k]]
+        return dict(diffs)
+
+    @property
+    def has_changed(self):
+        return bool(self.diff)
+
+    @property
+    def changed_fields(self):
+        return self.diff.keys()
+
+    def get_field_diff(self, field_name):
+        """
+        Returns a diff for field if it's changed and None otherwise.
+        """
+        return self.diff.get(field_name, None)
+
+    def save(self, *args, **kwargs):
+        """
+        Saves model and set initial state.
+        """
+        super(ModelDiffMixin, self).save(*args, **kwargs)
+        self.__initial = self._dict
+
+    @property
+    def _dict(self):
+        return model_to_dict(self, fields=[field.name for field in
+                             self._meta.fields])

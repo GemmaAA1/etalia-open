@@ -14,7 +14,9 @@ from django.conf import settings
 from endless_pagination.views import AjaxListView
 
 from etalia.altmetric.models import AltmetricModel
-from etalia.users.models import UserTaste, Author
+from etalia.users.models import Author
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_PINNED, PAPER_BANNED
 from etalia.core.utils import AttrDict
 from .tasks import failing_task
 
@@ -108,9 +110,9 @@ class BasePaperListView(AjaxListView):
         return queryset
 
     def filter_pin(self, queryset):
-        like_pks = UserTaste.objects\
+        like_pks = PaperUser.objects\
             .filter(user=self.request.user,
-                    is_pinned=True)\
+                    watch=PAPER_PINNED)\
             .values('paper__pk')
         queryset = queryset.filter(paper_id__in=like_pks)
 
@@ -150,12 +152,13 @@ class BasePaperListView(AjaxListView):
             return {'number_of_papers': 0}
 
     def get_context_usertaste(self):
-        user_taste = UserTaste.objects\
+        user_taste = PaperUser.objects\
             .filter(user=self.request.user)\
-            .values_list('paper_id', 'is_pinned', 'is_banned')
+            .values_list('paper_id', 'watch')
         # reformat to dict
-        user_taste = dict((key, {'is_pinned': v1, 'is_banned': v2})
-                          for key, v1, v2 in user_taste)
+        user_taste = dict((key, {'is_pinned': w == PAPER_PINNED,
+                                 'is_banned': w == PAPER_BANNED})
+                          for key, w in user_taste)
         return {'user_taste': user_taste}
 
     def get_context_userlib(self):

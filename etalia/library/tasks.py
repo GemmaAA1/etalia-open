@@ -55,20 +55,20 @@ def embed_papers(pks, model_name, batch_size=1000):
     pks_batched = [pks[i*batch_size:(1+i)*batch_size] for i in range(nb_batches)]
     pks_batched.append(pks[nb_batches * batch_size:])
 
-    for batch in pks_batched:
+    for i, batch in enumerate(pks_batched):
         model_task.delay('infer_papers', batch)
 
 
 def get_neighbors_papers(paper_pk, time_span):
 
     # Get active MostSimilar
-    pe = PaperEngine.objects.filter(is_active=True)
+    pe = PaperEngine.objects.filter(is_active=True)[0]
 
     # Get stored neighbors matches
     try:
-        neigh_data = PaperNeighbors.object.get(paper_id=paper_pk,
-                                               pe=pe,
-                                               time_lapse=time_span)
+        neigh_data = PaperNeighbors.objects.get(paper_id=paper_pk,
+                                                pe=pe,
+                                                time_lapse=time_span)
         if not neigh_data.neighbors or not max(neigh_data.neighbors):
             neigh_data.delete()
             raise PaperNeighbors.DoesNotExist
@@ -80,8 +80,7 @@ def get_neighbors_papers(paper_pk, time_span):
             raise PaperNeighbors.DoesNotExist
     except PaperNeighbors.DoesNotExist:   # refresh
         try:
-            pe_task = app.tasks[
-                'etalia.nlp.tasks.pe_{name}'.format(name=pe.model.name)]
+            pe_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
             res = pe_task.apply_async(args=('populate_neighbors',
                                             paper_pk,
                                             time_span),
@@ -89,7 +88,7 @@ def get_neighbors_papers(paper_pk, time_span):
                                       soft_timeout=5)
             neighbors = res.get()
         except SoftTimeLimitExceeded:
-            neighbors = []
+            return []
         except KeyError:
             raise
 

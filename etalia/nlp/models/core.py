@@ -1315,7 +1315,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
             return 0
         else:
             cutoff_date = (timezone.now() -
-                           timezone.timedelta(days=time_lapse)).date()
+                           timezone.timedelta(days=time_lapse))
             if max(self.data['date']) > cutoff_date:
                 return np.argmax(np.array(self.data['date']) > cutoff_date)
             else:

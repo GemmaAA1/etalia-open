@@ -25,8 +25,10 @@ from etalia.core.mixins import AjaxableResponseMixin, NavFlapMixin, \
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
-    UserEmailDigestSettingsForm, UserTasteForm, UserLibPaperForm
-from .models import Affiliation, UserLibPaper, UserTaste, UserSettings
+    UserEmailDigestSettingsForm, PaperUserForm, UserLibPaperForm
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_PINNED, PAPER_BANNED
+from .models import Affiliation, UserLibPaper, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
 
@@ -175,8 +177,8 @@ class UserLibraryPaperListView(BasePaperListView):
             .filter(userlib=self.request.user.lib, is_trashed=True)\
             .count()
         # Like counter
-        context['likes_counter'] = UserTaste.objects\
-            .filter(user=self.request.user, is_pinned=True)\
+        context['likes_counter'] = PaperUser.objects\
+            .filter(user=self.request.user, watch=PAPER_PINNED)\
             .count()
         # library counter
         context['library_counter'] = UserLibPaper.objects\
@@ -206,9 +208,9 @@ class UserLibraryPaperListView(BasePaperListView):
         self.original_qs = self.get_original_queryset()
 
         # Exclude rejected paper
-        papers_banned = UserTaste.objects\
+        papers_banned = PaperUser.objects\
             .filter(user=self.request.user,
-                    is_banned=True)\
+                    watch=PAPER_BANNED)\
             .values('paper')
         self.original_qs = self.original_qs.exclude(paper__in=papers_banned)
 
@@ -297,9 +299,9 @@ class BaseUserLibraryPinsView(UserLibraryPaperListView):
     control_session = 'control_pins'
 
     def get_original_queryset(self):
-        return UserTaste.objects\
+        return PaperUser.objects\
             .filter(user=self.request.user,
-                    is_pinned=True)\
+                    watch=PAPER_PINNED)\
             .select_related('paper',
                             'paper__journal',
                             'paper__altmetric')
@@ -341,8 +343,8 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
         context['library_counter'] = UserLibPaper.objects\
             .filter(userlib=self.request.user.lib, is_trashed=False)\
             .count()
-        context['likes_counter'] = UserTaste.objects\
-            .filter(user=self.request.user, is_pinned=True)\
+        context['likes_counter'] = PaperUser.objects\
+            .filter(user=self.request.user, watch=PAPER_PINNED)\
             .count()
         return context
 
@@ -664,7 +666,7 @@ class UserPaperCallView(LoginRequiredMixin, AjaxableResponseMixin, FormView):
 
 class PinCallView(UserPaperCallView):
 
-    form_class = UserTasteForm
+    form_class = PaperUserForm
 
     def __init__(self,  **kwargs):
         super(PinCallView, self).__init__(**kwargs)
@@ -673,12 +675,11 @@ class PinCallView(UserPaperCallView):
         return super(PinCallView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        ut, _ = UserTaste.objects.get_or_create(
+        ut, _ = PaperUser.objects.get_or_create(
             paper=form.cleaned_data['paper'],
             user=self.request.user
         )
-        ut.is_pinned = not ut.is_pinned
-        ut.source = form.cleaned_data['source']
+        ut.watch = PAPER_PINNED
         ut.save()
         return super(PinCallView, self).form_valid(form)
 
@@ -687,15 +688,14 @@ pin_call = PinCallView.as_view()
 
 class BanCallView(UserPaperCallView):
 
-    form_class = UserTasteForm
+    form_class = PaperUserForm
 
     def form_valid(self, form):
-        ut, _ = UserTaste.objects.get_or_create(
+        ut, _ = PaperUser.objects.get_or_create(
             paper=form.cleaned_data['paper'],
             user=self.request.user
         )
-        ut.is_banned = not ut.is_banned
-        ut.source = form.cleaned_data['source']
+        ut.watch = PAPER_BANNED
         ut.save()
         return super(BanCallView, self).form_valid(form)
 

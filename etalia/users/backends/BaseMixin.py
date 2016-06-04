@@ -9,8 +9,8 @@ from etalia.library.forms import PaperFormFillBlanks
 from etalia.library.tasks import embed_paper
 
 from ..models import UserLibPaper, UserLibJournal
-from ..models import UserTaste
-
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_PINNED
 
 class BackendLibMixin(object):
     """Mixin for provider backend"""
@@ -142,13 +142,11 @@ class BackendLibMixin(object):
         # Set Taste for paper to like if new unless it has been already
         # like/dislike previously (not new_ut)
         if new:
-            ut, new_ut = UserTaste.objects.get_or_create(paper=paper,
-                                                         user=user,
-                                                         source='library')
-            if new_ut:
-                ut.is_pinned = False
-                ut.is_banned = False
-                ut.save()
+            pu, new_pu = PaperUser.objects.get_or_create(paper=paper,
+                                                         user=user)
+            if new_pu:
+                pu.watch = PAPER_PINNED
+                pu.save()
 
         return new
 
