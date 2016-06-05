@@ -14,7 +14,8 @@ from etalia.core.mixins import ModelDiffMixin
 
 from .validators import validate_issn, validate_author_names
 from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS, \
-    PAPER_BANNED, PAPER_PINNED, PAPER_WATCH
+    PAPER_BANNED, PAPER_PINNED, PAPER_WATCH, PAPER_STORE, PAPER_ADDED, \
+    PAPER_TRASHED
 from .utils import langcode_to_langpap
 
 from langdetect import detect
@@ -555,6 +556,9 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
     # Pinned or banned
     watch = models.PositiveIntegerField(null=True, default=None,
                                         choices=PAPER_WATCH)
+    # Added or Trashed
+    store = models.PositiveIntegerField(null=True, default=None,
+                                        choices=PAPER_STORE)
 
     class Meta:
         unique_together = (('paper', 'user'),)
@@ -567,13 +571,24 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
         self.watch = PAPER_BANNED
         self.save()
 
+    def add(self, provider_id=None, info={}):
+        if not provider_id:
+            provider_id = self.user.lib.add_paper_to_provider(self.paper)
+        self.user.add_paper_to_etalia(self.paper, provider_id, info=info)
+        self.watch = PAPER_ADDED
+        self.save()
+
+    def trash(self):
+        self.watch = PAPER_TRASHED
+        self.save()
+
     def save(self, **kwargs):
         super(PaperUser, self).save(**kwargs)
-        PaperUserHistory.objects.create(paperuser=self,
+        PaperUserHistory.objects.create(paperuser_id=self.id,
                                         difference=json.dumps(self.diff))
 
 
-class PaperUserHistory(PaperUser):
+class PaperUserHistory(TimeStampedModel):
 
     paperuser = models.ForeignKey(PaperUser, related_name='history')
 

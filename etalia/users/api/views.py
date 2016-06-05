@@ -174,7 +174,7 @@ class UserLibPaperViewSet(MultiSerializerMixin,
 
     * **view=(str)**: Reformat output. choices: 'nested',
 
-    ** List: **
+    ** List: ** (Paper that are not trashed)
 
     * **view=(str)**: Reformat output. choices: 'nested',
 
@@ -195,8 +195,11 @@ class UserLibPaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return UserLibPaper.objects.filter(userlib=self.request.user.lib)
-        return UserLibPaper.objects.all()
+            return UserLibPaper.objects.filter(
+                is_trashed=False,
+                userlib=self.request.user.lib
+            )
+        return UserLibPaper.objects.filter(is_trashed=False)
 
 
 class RelationshipViewSet(viewsets.ModelViewSet):

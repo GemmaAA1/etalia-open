@@ -150,3 +150,7 @@ class PaperFilterSerializer(serializers.BaseSerializer):
                 }
             ]
         }
+
+
+class PaperStateSerializer(serializers.BaseSerializer):
+    pass

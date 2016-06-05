@@ -5,22 +5,25 @@ import operator
 from collections import Counter
 from functools import reduce
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, mixins
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 
 from django.db.models import Q
 from django.utils import timezone
+from django.db import connection
 
 from etalia.core.api.permissions import IsReadOnlyRequest
 from etalia.core.api.mixins import MultiSerializerMixin
+from etalia.core.api.permissions import IsOwner
 
-from ..models import Paper, Author, Journal, AuthorPaper
+from ..models import Paper, Author, Journal, PaperUser
+from etalia.users.models import UserLibPaper
 from ..constants import PAPER_BANNED, PAPER_PINNED
 
 from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
-    PaperNestedSerializer, PaperFilterSerializer
+    PaperNestedSerializer, PaperFilterSerializer, PaperStateSerializer
 
 
 class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
@@ -267,3 +270,40 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
     permission_classes = (IsReadOnlyRequest, )
+
+
+class PaperStateViewSet(MultiSerializerMixin,
+                        mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    """
+    Paper User state: Relation between a [User][ref1] and a [Paper][ref2]
+
+    ### Routes ###
+
+    * **[GET, POST] /states/**: List of Paper/User states
+    * **[GET, PUT, PATCH] /states/<id\>/**: Paper/User state instance
+
+    [ref1]: /api/v1/user/users/
+    [ref2]: /api/v1/library/papers/
+
+    """
+
+    queryset = PaperUser.objects.all()
+    serializer_class = {
+        'default': PaperStateSerializer,
+    }
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,
+                          )
+
+    def get_queryset(self):
+        # to raise proper 403 status code on not allowed access
+        if self.action == 'list':
+            return PaperUser.objects.filter(user=self.request.user)
+        return PaperUser.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

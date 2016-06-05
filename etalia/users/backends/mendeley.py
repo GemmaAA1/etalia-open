@@ -143,15 +143,15 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info'],
-                                               item.id) and new
+                    new = self.associate_paper(user,
+                                               paper,
+                                               item['key'],
+                                               entry['user_info'])
                     if new:
                         count += 1
                         not_new_stack_count = 0
                     else:
                         not_new_stack_count += 1
-                    if journal:
-                        self.associate_journal(journal, user)
                 else:
                     logger.info(
                         '- Item: {type_} from {user} / {backend}'.format(

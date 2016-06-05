@@ -715,7 +715,6 @@ class AddCallView(UserPaperCallView):
             backend.associate_paper(paper, self.request.user,
                                     {'created': timezone.now().date()},
                                     paper_provider_id)
-            backend.associate_journal(paper.journal, self.request.user)
             return super(AddCallView, self).form_valid(form)
         else:
             data = {'success': False,

@@ -14,7 +14,7 @@ from django.db.models import F, Min
 from django.utils import timezone
 
 
-from etalia.library.models import Paper, Journal, Author
+from etalia.library.models import Paper, Journal, Author, PaperUser
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
@@ -268,10 +268,6 @@ class UserLib(TimeStampedModel):
 
     papers = models.ManyToManyField(Paper, through='UserLibPaper')
 
-    journals = models.ManyToManyField(Journal, through='UserLibJournal')
-
-    authors = models.ManyToManyField(Author, through='UserLibAuthor')
-
     state = models.CharField(max_length=3, blank=True, default='NON',
         choices=(('NON', 'Uninitialized'),
                  ('IDL', 'Idle'),
@@ -300,37 +296,6 @@ class UserLib(TimeStampedModel):
         else:
             raise ValueError('Cannot set state. State value not allowed')
 
-    def update_authors(self):
-        authors = self.papers\
-            .values_list('authors', flat=True)
-        counter = collections.Counter(authors)
-        for a, v in counter.items():
-            ula, _ = UserLibAuthor.objects.get_or_create(userlib=self,
-                                                         author_id=a)
-            ula.occurrence = v
-            ula.save()
-
-    def get_authors_dist(self):
-        return UserLibAuthor.objects\
-                    .filter(userlib=self)\
-                    .values_list('author', 'occurrence')
-
-    def update_journals(self):
-        journals = self.papers\
-            .exclude(journal__isnull=True)\
-            .values_list('journal', flat=True)
-        counter = collections.Counter(journals)
-        for j, v in counter.items():
-            ula, _ = UserLibJournal.objects.get_or_create(userlib=self,
-                                                         journal_id=j)
-            ula.occurrence = v
-            ula.save()
-
-    def get_journals_dist(self):
-        return UserLibJournal.objects\
-                    .filter(userlib=self)\
-                    .values_list('journal', 'occurrence')
-
     def get_d_oldest(self):
         # get date_created for papers
         created_date = self.userlib_paper.values('pk', 'date_created')
@@ -341,6 +306,40 @@ class UserLib(TimeStampedModel):
     def set_d_oldest(self):
         self.d_oldest = self.get_d_oldest()
         self.save()
+
+    def get_session_backend(self):
+        provider_name = self.user.social_auth.first().provider
+        # get social
+        social = self.user.social_auth.get(provider=provider_name)
+        # get backend
+        backend = social.get_backend_instance()
+        # build session
+        session = backend.get_session(social, self.user)
+        return session, backend
+
+    def add_paper_to_provider(self, paper):
+        session, backend = self.get_session_backend()
+        # add paper to provider
+        err, paper_provider_id = backend.add_paper(session, paper)
+        return paper_provider_id
+
+    def add_paper_to_etalia(self, paper, provider_id, info={}):
+        ulp, new = UserLibPaper.objects.get_or_create(userlib=self,
+                                                      paper=paper)
+        ulp.date_created = info.get('created', None)
+        ulp.last_date_modified = info.get('last_modified', None)
+        ulp.authored = info.get('authored', None)
+        ulp.starred = info.get('starred', None)
+        ulp.scored = info.get('scored', 0.)
+        ulp.paper_provider_id = provider_id
+        ulp.save()
+
+    def trash_paper(self, paper):
+        session, backend = self.get_session_backend()
+        # remove paper from provider lib
+        ulp = UserLibPaper.get(paper=paper, user=self.user)
+        err = backend.trash_paper(session, ulp)
+        return err
 
 
 class UserLibPaper(TimeStampedModel):
@@ -362,7 +361,7 @@ class UserLibPaper(TimeStampedModel):
 
     paper_provider_id = models.CharField(max_length=64, default='')
 
-    is_trashed = models.BooleanField(default=False)
+    # is_trashed = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-date_created']
@@ -396,59 +395,6 @@ class UserLibPaper(TimeStampedModel):
     def __str__(self):
         return '{0}@{1}'.format(self.paper.short_title,
                                 self.userlib.user.email)
-
-
-class UserLibJournalManager(models.Manager):
-
-    def add(self, **kwargs):
-        obj, new = self.get_or_create(**kwargs)
-        obj.occurrence += 1
-        obj.save()
-        return obj
-
-
-class UserLibJournal(TimeStampedModel):
-    """Table - User/Journal relationship"""
-
-    userlib = models.ForeignKey(UserLib)
-
-    journal = models.ForeignKey(Journal)
-
-    occurrence = models.IntegerField(default=0, null=False)
-
-    objects = UserLibJournalManager()
-
-    class Meta:
-        unique_together = ('userlib', 'journal')
-        ordering = ('-occurrence', )
-
-    def update_occurrence(self):
-        self.occurrence = self.userlib.papers.filter(
-            journal=self.journal).count()
-        self.save()
-
-    def __str__(self):
-        return '%s@%s' % (self.userlib.user.email, self.journal.short_title)
-
-
-class UserLibAuthor(TimeStampedModel):
-
-    userlib = models.ForeignKey(UserLib)
-
-    author = models.ForeignKey(Author)
-
-    occurrence = models.IntegerField(default=0, null=False)
-
-    class Meta:
-        unique_together = ('userlib', 'author')
-        ordering = ('-occurrence', )
-
-    def __str__(self):
-        return '%s' % (self.author.last_name)
-
-    def update_occurence(self):
-        self.occurence = self.userlib.papers.filter(author=self.author).count()
-        self.save()
 
 
 class UserStatsManager(models.Manager):

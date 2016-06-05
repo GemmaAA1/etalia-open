@@ -8,9 +8,9 @@ from etalia.library.models import Paper, Journal, Author, AuthorPaper, CorpAutho
 from etalia.library.forms import PaperFormFillBlanks
 from etalia.library.tasks import embed_paper
 
-from ..models import UserLibPaper, UserLibJournal
+from ..models import UserLibPaper
 from etalia.library.models import PaperUser
-from etalia.library.constants import PAPER_PINNED
+from etalia.library.constants import PAPER_PINNED, PAPER_ADDED
 
 class BackendLibMixin(object):
     """Mixin for provider backend"""
@@ -115,46 +115,11 @@ class BackendLibMixin(object):
         return paper, journal
 
     @staticmethod
-    def associate_paper(paper, user, info, id):
-        """Update Paper/User.Lib relationship
-
-        Args:
-            paper: Paper instance
-            user: User instance
-            info (dict): Information from provider about e.g when the paper
-                was added by user in library
-
-        Returns:
-            (bool): True if association did not exist previously
-        """
-
-        ulp, new = UserLibPaper.objects.get_or_create(userlib=user.lib,
-                                                      paper=paper)
-        ulp.date_created = info.get('created', None)
-        ulp.last_date_modified = info.get('last_modified', None)
-        ulp.authored = info.get('authored', None)
-        ulp.starred = info.get('starred', None)
-        ulp.scored = info.get('scored', 0.)
-        ulp.paper_provider_id = id
-        ulp.is_trashed = False
-        ulp.save()
-
-        # Set Taste for paper to like if new unless it has been already
-        # like/dislike previously (not new_ut)
-        if new:
-            pu, new_pu = PaperUser.objects.get_or_create(paper=paper,
-                                                         user=user)
-            if new_pu:
-                pu.watch = PAPER_PINNED
-                pu.save()
-
+    def associate_paper(user, paper, provider_id, info):
+        """Update PaperUser and UserLibPaper table"""
+        pu, new = PaperUser.objects.get_or_create(user=user, paper=paper)
+        pu.add(provider_id, info)
         return new
-
-    @staticmethod
-    def associate_journal(journal, user):
-        """Update Paper/User.Lib relationship"""
-
-        UserLibJournal.objects.add(userlib=user.lib, journal=journal)
 
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')
