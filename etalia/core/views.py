@@ -173,22 +173,12 @@ class BasePaperListView(AjaxListView):
             .values_list('paper__journal__pk',
                          'paper__journal__title')
 
-        # Retrieve journal list from user lib
-        journals_userlib = self.request.user.lib.userlibjournal_set.all()\
-            .values_list('journal__pk',
-                         'journal__title')
-
         # Count journal occurrence in current stream
         journals_counter = Counter(journals)
         journals_occ_sorted = sorted(journals_counter, key=journals_counter.get,
                                      reverse=True)[:self.size_max_journal_filter]
 
-        # Concatenate userlibjournal and journal in current stream,
-        # checking for uniqueness
         journal_filter = []
-        for j in journals_userlib:
-            if j in journals_occ_sorted:
-                journal_filter.append(j)
         for j in journals_occ_sorted:
             if j not in journal_filter:
                 journal_filter.append(j)
