@@ -454,6 +454,12 @@ class Paper(TimeStampedModel):
         from .tasks import get_neighbors_papers
         return get_neighbors_papers(self.id, time_span)
 
+    def state(self, user):
+        if PaperUser.objects.filter(user=user, paper=self).exists():
+            return PaperUser.objects.get(user=user, paper=self)
+        else:
+            return None
+
     def __str__(self):
         return self.short_title
 

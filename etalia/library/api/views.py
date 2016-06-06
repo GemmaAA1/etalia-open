@@ -25,7 +25,8 @@ from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
     PaperUserUpdateSerializer
 
 
-class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
+class PaperViewSet(MultiSerializerMixin,
+                   viewsets.ReadOnlyModelViewSet):
     """
     Paper
 
@@ -127,11 +128,11 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         bool_filters_def = {
             'added': {
                 'query': [Q(paperuser__user=self.request.user),
-                          Q(paperuser__watch=PAPER_ADDED)],
+                          Q(paperuser__store=PAPER_ADDED)],
             },
             'trashed': {
                 'query': [Q(paperuser__user=self.request.user),
-                          Q(paperuser__watch=PAPER_TRASHED)],
+                          Q(paperuser__store=PAPER_TRASHED)],
             },
             'pinned': {
                 'query': [Q(paperuser__user=self.request.user),

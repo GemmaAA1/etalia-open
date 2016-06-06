@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from ..models import Paper, Journal, Author, PaperUser
 from ..constants import PAPER_ADDED, PAPER_TRASHED
@@ -45,6 +46,8 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
                       serializers.HyperlinkedModelSerializer):
     """Paper serializer"""
 
+    state = serializers.SerializerMethodField()
+
     class Meta:
         model = Paper
         extra_kwargs = {
@@ -65,6 +68,7 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'authors',
             'abstract',
             'url',
+            'state',
         )
         read_only_fields = (
             '__all__',
@@ -72,6 +76,23 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
         switch_kwargs = {
             'journal': {'serializer': JournalSerializer},
         }
+
+    def get_state(self, obj):
+        """Get state based on ThreadUser instance if exists"""
+        paperuser = obj.state(self.context['request'].user)
+        if paperuser:
+            if self.one2one_nested:
+                return PaperUserSerializer(
+                    instance=paperuser,
+                    context={'request': self.context['request']},
+                    one2one_nested=False
+                ).data
+            else:
+                return reverse('api:paperuser-detail',
+                               kwargs={'pk': paperuser.id},
+                               request=self.context.get('request', None),
+                               format=self.context.get('format', None))
+        return None
 
 
 class PaperNestedSerializer(PaperSerializer):
