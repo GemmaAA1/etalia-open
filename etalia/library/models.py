@@ -571,21 +571,32 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
         self.watch = PAPER_BANNED
         self.save()
 
-    def add(self, provider_id=None, info={}):
-        if not provider_id:
-            provider_id = self.user.lib.add_paper_to_provider(self.paper)
-        self.user.add_paper_to_etalia(self.paper, provider_id, info=info)
-        self.watch = PAPER_ADDED
-        self.save()
+    def add(self, provider_id=None, info=None):
+        if self.store == PAPER_ADDED:
+            if not provider_id:
+                provider_id = self.user.lib.add_paper_on_provider(self.paper)
+            self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
+            self.store = PAPER_ADDED
+            self.save()
 
     def trash(self):
-        self.watch = PAPER_TRASHED
-        self.save()
+        if self.store == PAPER_TRASHED:
+            paper_provider_id = self.user.lib.userlib_paper\
+                .get(paper=self.paper)\
+                .paper_provider_id
+            err = self.user.lib.trash_paper_on_provider(paper_provider_id)
+            if not err:
+                self.store = PAPER_TRASHED
+                self.save()
+                return None
+            else:
+                return err
 
     def save(self, **kwargs):
+        if self.id:
+            PaperUserHistory.objects.create(paperuser_id=self.id,
+                                            difference=json.dumps(self.diff))
         super(PaperUser, self).save(**kwargs)
-        PaperUserHistory.objects.create(paperuser_id=self.id,
-                                        difference=json.dumps(self.diff))
 
 
 class PaperUserHistory(TimeStampedModel):
@@ -596,3 +607,5 @@ class PaperUserHistory(TimeStampedModel):
 
     date = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ('-created', )

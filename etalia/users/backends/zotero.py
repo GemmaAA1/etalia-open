@@ -156,14 +156,12 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
             return None, None
 
     @staticmethod
-    def trash_paper(session, ulp):
+    def trash_paper(session, paper_provider_id):
         """Trash item from zotero library"""
         try:  # retrieve item by id
-            item = session.item(ulp.paper_provider_id)
+            item = session.item(paper_provider_id)
             if session.delete_item(item):
                 return 0
-            else:
-                logger.error('Trashing ulp {pk} failed'.format(ulp,pk))
         except ResourceNotFound:
             return 1
 

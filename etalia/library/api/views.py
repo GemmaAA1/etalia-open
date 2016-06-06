@@ -12,18 +12,17 @@ from rest_framework.response import Response
 
 from django.db.models import Q
 from django.utils import timezone
-from django.db import connection
 
 from etalia.core.api.permissions import IsReadOnlyRequest
 from etalia.core.api.mixins import MultiSerializerMixin
 from etalia.core.api.permissions import IsOwner
 
 from ..models import Paper, Author, Journal, PaperUser
-from etalia.users.models import UserLibPaper
-from ..constants import PAPER_BANNED, PAPER_PINNED
+from ..constants import PAPER_BANNED, PAPER_PINNED, PAPER_ADDED, PAPER_TRASHED
 
 from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
-    PaperNestedSerializer, PaperFilterSerializer, PaperStateSerializer
+    PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer, \
+    PaperUserUpdateSerializer
 
 
 class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
@@ -127,11 +126,12 @@ class PaperViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         # Bool filters definition
         bool_filters_def = {
             'added': {
-                'query': [Q(userlib_paper__user=self.request.user)],
+                'query': [Q(paperuser__user=self.request.user),
+                          Q(paperuser__watch=PAPER_ADDED)],
             },
             'trashed': {
-                'query': [Q(userlib_paper__user=self.request.user),
-                          Q(userlib_paper__is_trashed=True)],
+                'query': [Q(paperuser__user=self.request.user),
+                          Q(paperuser__watch=PAPER_TRASHED)],
             },
             'pinned': {
                 'query': [Q(paperuser__user=self.request.user),
@@ -285,6 +285,7 @@ class PaperStateViewSet(MultiSerializerMixin,
 
     * **[GET, POST] /states/**: List of Paper/User states
     * **[GET, PUT, PATCH] /states/<id\>/**: Paper/User state instance
+    * **[DELETE] /states/empty-trash**: Empty trash
 
     [ref1]: /api/v1/user/users/
     [ref2]: /api/v1/library/papers/
@@ -293,7 +294,9 @@ class PaperStateViewSet(MultiSerializerMixin,
 
     queryset = PaperUser.objects.all()
     serializer_class = {
-        'default': PaperStateSerializer,
+        'default': PaperUserSerializer,
+        'update': PaperUserUpdateSerializer,
+        'partial_update': PaperUserUpdateSerializer
     }
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,
@@ -307,3 +310,21 @@ class PaperStateViewSet(MultiSerializerMixin,
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @list_route(methods=['delete'], url_path='empty-trash')
+    def empty_trash(self, request):
+        from etalia.users.models import UserLibPaper
+        queryset = PaperUser.objects.raw(
+            "SELECT pu.id,"
+            "       ulp.id AS ulp_id "
+            "FROM library_paperuser pu "
+            "LEFT JOIN users_userlibpaper ulp ON pu.paper_id = ulp.paper_id "
+            "WHERE pu.store = %s "
+            "   AND pu.user_id = %s", (PAPER_TRASHED, request.user.id)
+        )
+        pu_ids = [d.id for d in queryset]
+        ulp_ids = [d.ulp_id for d in queryset]
+        PaperUser.objects.filter(id__in=pu_ids).delete()
+        UserLibPaper.objects.filter(id__in=ulp_ids).delete()
+        return Response('Trash empty', status=status.HTTP_200_OK)
+

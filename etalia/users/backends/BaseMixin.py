@@ -119,6 +119,8 @@ class BackendLibMixin(object):
         """Update PaperUser and UserLibPaper table"""
         pu, new = PaperUser.objects.get_or_create(user=user, paper=paper)
         pu.add(provider_id, info)
+        if new:
+            pu.pin()
         return new
 
     def get_session(self, social, user, *args, **kwargs):

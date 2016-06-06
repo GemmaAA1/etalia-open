@@ -243,6 +243,18 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
         return value
 
 
+class ThreadUserUpdateSerializer(ThreadUserSerializer):
+
+    class Meta(ThreadUserSerializer.Meta):
+
+        read_only_fields = (
+            'id',
+            'link',
+            'user',
+            'thread'
+        )
+
+
 class ThreadPostSerializer(One2OneNestedLinkSwitchMixin,
                            serializers.HyperlinkedModelSerializer):
     """ThreadPost serializer"""

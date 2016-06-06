@@ -174,7 +174,7 @@ class UserLibraryPaperListView(BasePaperListView):
         context = super(UserLibraryPaperListView, self).get_context_stats()
         # Trash counter
         context['trash_counter'] = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib, is_trashed=True)\
+            .filter(userlib=self.request.user.lib)\
             .count()
         # Like counter
         context['likes_counter'] = PaperUser.objects\
@@ -182,7 +182,7 @@ class UserLibraryPaperListView(BasePaperListView):
             .count()
         # library counter
         context['library_counter'] = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib, is_trashed=False)\
+            .filter(userlib=self.request.user.lib)\
             .count()
         return context
 
@@ -237,8 +237,7 @@ class BaseUserLibraryView(UserLibraryPaperListView):
 
     def get_original_queryset(self):
         return UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib,
-                    is_trashed=False)\
+            .filter(userlib=self.request.user.lib)\
             .select_related('paper',
                             'paper__journal',
                             'paper__altmetric')
@@ -268,8 +267,7 @@ class BaseUserLibraryTrashView(UserLibraryPaperListView):
 
     def get_original_queryset(self):
         return UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib,
-                    is_trashed=True)\
+            .filter(userlib=self.request.user.lib)\
             .select_related('paper',
                             'paper__journal',
                             'paper__altmetric')
@@ -341,7 +339,7 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
     def get_context_data(self, **kwargs):
         context = super(ProfileView, self).get_context_data(**kwargs)
         context['library_counter'] = UserLibPaper.objects\
-            .filter(userlib=self.request.user.lib, is_trashed=False)\
+            .filter(userlib=self.request.user.lib)\
             .count()
         context['likes_counter'] = PaperUser.objects\
             .filter(user=self.request.user, watch=PAPER_PINNED)\
@@ -738,8 +736,6 @@ class TrashCallView(UserPaperCallView):
         err = backend.trash_paper(session, ulp)
         if not err:
             # remove paper locally from user library
-            ulp.is_trashed = True
-            ulp.save(update_fields=['is_trashed'])
             return super(TrashCallView, self).form_valid(form)
         else:
             data = {'success': False,
@@ -754,13 +750,7 @@ trash_call = TrashCallView.as_view()
 @login_required
 def empty_trash_call(request):
     if request.method == 'POST':
-        ulps = request.user.lib.userlib_paper.filter(is_trashed=True)
-        ulps.delete()
-        if request.is_ajax():
-            data = {'counter': request.user.get_counters()}
-            return JsonResponse(data)
-        else:
-            redirect('user:library')
+        redirect('user:library')
 
 
 class RestoreCallView(UserPaperCallView):
@@ -775,9 +765,8 @@ class RestoreCallView(UserPaperCallView):
         if not err:
             # remove paper locally from user library
             ulp = self.request.user.lib.userlib_paper.get(paper=paper)
-            ulp.is_trashed = False
             ulp.paper_provider_id = paper_provider_id
-            ulp.save(update_fields=['is_trashed', 'paper_provider_id'])
+            ulp.save(update_fields=['paper_provider_id'])
             return super(RestoreCallView, self).form_valid(form)
         else:
             data = {'success': False,

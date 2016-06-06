@@ -25,7 +25,8 @@ from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED,
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
-    ThreadFilterSerializer, ThreadUserInviteSerializer, ThreadUserInviteUpdateSerializer
+    ThreadFilterSerializer, ThreadUserInviteSerializer, \
+    ThreadUserInviteUpdateSerializer, ThreadUserUpdateSerializer
 from etalia.core.api.mixins import MultiSerializerMixin
 
 User = get_user_model()
@@ -405,6 +406,8 @@ class ThreadUserViewSet(MultiSerializerMixin,
     queryset = ThreadUser.objects.all()
     serializer_class = {
         'default': ThreadUserSerializer,
+        'update': ThreadUserUpdateSerializer,
+        'partial_update': ThreadUserUpdateSerializer
     }
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,

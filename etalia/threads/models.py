@@ -193,14 +193,19 @@ class ThreadUser(ModelDiffMixin, TimeStampedModel):
         self.save()
 
     def save(self, **kwargs):
+        if self.id:
+            ThreadUserHistory.objects.create(threaduser=self,
+                                             difference=json.dumps(self.diff))
         super(ThreadUser, self).save(**kwargs)
-        ThreadUserHistory.objects.create(threaduser=self,
-                                         difference=json.dumps(self.diff))
 
 
 class ThreadUserHistory(TimeStampedModel):
+
     threaduser = models.ForeignKey(ThreadUser)
 
     difference = models.CharField(max_length=256, default='')
 
     date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created', )

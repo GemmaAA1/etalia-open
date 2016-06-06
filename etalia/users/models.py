@@ -317,28 +317,28 @@ class UserLib(TimeStampedModel):
         session = backend.get_session(social, self.user)
         return session, backend
 
-    def add_paper_to_provider(self, paper):
+    def add_paper_on_provider(self, paper):
         session, backend = self.get_session_backend()
         # add paper to provider
         err, paper_provider_id = backend.add_paper(session, paper)
         return paper_provider_id
 
-    def add_paper_to_etalia(self, paper, provider_id, info={}):
+    def add_paper_on_etalia(self, paper, provider_id, info=None):
         ulp, new = UserLibPaper.objects.get_or_create(userlib=self,
                                                       paper=paper)
-        ulp.date_created = info.get('created', None)
-        ulp.last_date_modified = info.get('last_modified', None)
-        ulp.authored = info.get('authored', None)
-        ulp.starred = info.get('starred', None)
-        ulp.scored = info.get('scored', 0.)
+        if info:
+            ulp.date_created = info.get('created', None)
+            ulp.last_date_modified = info.get('last_modified', None)
+            ulp.authored = info.get('authored', None)
+            ulp.starred = info.get('starred', None)
+            ulp.scored = info.get('scored', 0.)
         ulp.paper_provider_id = provider_id
         ulp.save()
 
-    def trash_paper(self, paper):
+    def trash_paper_on_provider(self, provider_id):
         session, backend = self.get_session_backend()
-        # remove paper from provider lib
-        ulp = UserLibPaper.get(paper=paper, user=self.user)
-        err = backend.trash_paper(session, ulp)
+        # remove paper from provider
+        err = backend.trash_paper(session, provider_id)
         return err
 
 
