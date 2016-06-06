@@ -3,26 +3,23 @@ from __future__ import unicode_literals, absolute_import
 
 from django.db.models import Q
 
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, mixins, status
+from rest_framework import viewsets, permissions, mixins
 from rest_framework.exceptions import ParseError
 
-from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly, \
-    IsInRelationship
+from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly
 
 from etalia.core.api.permissions import IsOwner, IsOwnerIfViewFull
-from etalia.core.api.mixins import MultiSerializerMixin, One2OneNestedLinkSwitchMixin
 from etalia.library.api.serializers import PaperSerializer, \
     PaperNestedSerializer
+from etalia.library.constants import PAPER_ADDED
 
 from etalia.core.api.mixins import MultiSerializerMixin
 from .serializers import UserLibSerializer, UserSerializer, UserFullSerializer, \
     UserLibNestedSerializer, UserLibPaperSerializer, RelationshipSerializer
 
 from ..models import UserLib, User, Relationship, UserLibPaper
-from etalia.users.constants import RELATIONSHIP_BLOCKED, RELATIONSHIP_FOLLOWING, \
-    RELATIONSHIP_STATUSES
 
 
 class UserViewSet(MultiSerializerMixin,
@@ -174,7 +171,7 @@ class UserLibPaperViewSet(MultiSerializerMixin,
 
     * **view=(str)**: Reformat output. choices: 'nested',
 
-    ** List: **
+    ** List: ** (Paper that are not trashed)
 
     * **view=(str)**: Reformat output. choices: 'nested',
 
@@ -195,8 +192,20 @@ class UserLibPaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return UserLibPaper.objects.filter(userlib=self.request.user.lib)
-        return UserLibPaper.objects.all()
+            return UserLibPaper.objects.raw(
+                "SELECT * "
+                "FROM users_userlibpaper ulp "
+                "LEFT JOIN library_paperuser pu ON ulp.paper_id = pu.paper_id "
+                "WHERE pu.store = %s "
+                "   AND ulp.userlib_id = %s", (PAPER_ADDED,
+                                               self.request.user.lib.id)
+            )
+        return UserLibPaper.objects.raw(
+                "SELECT * "
+                "FROM users_userlibpaper ulp "
+                "LEFT JOIN library_paperuser pu ON ulp.paper_id = pu.paper_id "
+                "WHERE pu.store = %s ", (PAPER_ADDED, )
+            )
 
 
 class RelationshipViewSet(viewsets.ModelViewSet):

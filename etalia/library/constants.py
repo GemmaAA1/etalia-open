@@ -190,3 +190,11 @@ PAPER_WATCH = (
     (PAPER_PINNED, 'Pinned'),
     (PAPER_BANNED, 'Banned'),
 )
+
+# ADD
+PAPER_ADDED = 1
+PAPER_TRASHED = 2
+PAPER_STORE = (
+    (PAPER_ADDED, 'Pinned'),
+    (PAPER_TRASHED, 'Trashed'),
+)

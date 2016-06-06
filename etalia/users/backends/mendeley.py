@@ -143,15 +143,15 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info'],
-                                               item.id) and new
+                    new = self.associate_paper(user,
+                                               paper,
+                                               item.id,
+                                               entry['user_info'])
                     if new:
                         count += 1
                         not_new_stack_count = 0
                     else:
                         not_new_stack_count += 1
-                    if journal:
-                        self.associate_journal(journal, user)
                 else:
                     logger.info(
                         '- Item: {type_} from {user} / {backend}'.format(
@@ -208,9 +208,9 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         return None, resp.id
 
     @staticmethod
-    def trash_paper(session, ulp):
+    def trash_paper(session, paper_provider_id):
         try:
-            doc = session.documents.get(id=ulp.paper_provider_id)
+            doc = session.documents.get(id=paper_provider_id)
             if doc:
                 resp = doc.move_to_trash()
                 return 0

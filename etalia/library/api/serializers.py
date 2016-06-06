@@ -3,7 +3,8 @@ from __future__ import unicode_literals, absolute_import
 
 from rest_framework import serializers
 
-from ..models import Paper, Journal, Author
+from ..models import Paper, Journal, Author, PaperUser
+from ..constants import PAPER_ADDED, PAPER_TRASHED
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 
 
@@ -150,3 +151,76 @@ class PaperFilterSerializer(serializers.BaseSerializer):
                 }
             ]
         }
+
+
+class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
+                          serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = PaperUser
+        extra_kwargs = {
+            'link': {'view_name': 'api:paperuser-detail'},
+            'user': {'view_name': 'api:user-detail'},
+            'paper': {'view_name': 'api:paper-detail'},
+        }
+        fields = (
+            'id',
+            'link',
+            'user',
+            'paper',
+            'watch',
+            'store'
+        )
+        read_only_fields = (
+            'id',
+            'link',
+        )
+        switch_kwargs = {
+            # 'user': {'serializer': UserSerializer,
+            #          'one2one_nested': False},
+            'paper': {'serializer': PaperSerializer,
+                      'one2one_nested': False},
+        }
+
+    def validate_user(self, value):
+        """User passed is same as user login"""
+        if not value == self.context['request'].user:
+            raise serializers.ValidationError(
+                "user deserialized and user logged are different")
+        return value
+
+    def validate_store(self, value):
+        """Check that paper is added if request is to trashed paper"""
+        if self.instance:
+            if value == PAPER_TRASHED and \
+                    not self.instance.store == PAPER_ADDED:
+                raise serializers.ValidationError(
+                    "You cannot trash a paper that you have not added")
+        return value
+
+
+class PaperUserUpdateSerializer(PaperUserSerializer):
+
+    class Meta(PaperUserSerializer.Meta):
+
+        read_only_fields = (
+            'id',
+            'link',
+            'paper',
+            'user'
+        )
+
+    def update(self, instance, validated_data):
+        """Trigger add() and trash() method as needed"""
+        serializers.raise_errors_on_nested_writes('update', self, validated_data)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if instance.store == PAPER_ADDED:
+            instance.add()
+        elif instance.store == PAPER_TRASHED:
+            instance.trash()
+        else:
+            instance.save()
+
+        return instance
