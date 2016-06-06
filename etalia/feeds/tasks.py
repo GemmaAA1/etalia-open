@@ -65,15 +65,15 @@ def reset_stream(user_pk, stream_name='main'):
 
 @app.task()
 def update_trend(user_pk, trend_name='main'):
-    df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
-    df.update()
+    trend, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
+    trend.update()
     return user_pk
 
 
 @app.task()
 def reset_trend(user_pk, trend_name='main'):
-    df, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
-    df.update()
+    trend, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
+    trend.update()
     return user_pk
 
 
