@@ -368,18 +368,21 @@ def init_models():
         MODELS = yaml.load(stream)
     model_params = [m for m in MODELS if m['name'] == MODEL_NAME][0]
 
-    model = Model.objects.create(**model_params)
-    papers = Paper.objects.filter(is_trusted=True,
-                                  title__regex=r'^.{5}.*',
-                                  abstract__regex=r'^.{10}.*')
-    model.dump(papers)
-    model.build_vocab_and_train()
-    model.activate()
+    if not Model.objects.filter(name=model_params['name']).exists():
 
-    # Populate paper with NLP signatures
-    model.save_journal_vec_from_bulk()
-    model.save_paper_vec_from_bulk()
+        model = Model.objects.create(**model_params)
+        papers = Paper.objects.filter(is_trusted=True,
+                                      title__regex=r'^.{5}.*',
+                                      abstract__regex=r'^.{10}.*')
+        model.dump(papers)
+        model.build_vocab_and_train()
+        model.activate()
 
+        # Populate paper with NLP signatures
+        model.save_journal_vec_from_bulk()
+        model.save_paper_vec_from_bulk()
+    else:
+        print('NLP Model already setup!')
 
 if __name__ == '__main__':
 
@@ -404,7 +407,7 @@ if __name__ == '__main__':
                         help="Populate database with test users",
                         action="store_true")
     parser.add_argument("-m", "--models",
-                        help="Update NLP models only",
+                        help="Init NLP models only",
                         action="store_true")
     parser.add_argument("--user", metavar='email',
                         help="Populate OAuth user with data only",

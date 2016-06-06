@@ -27,7 +27,6 @@ def paperengine_full_update_all():
     for peid in pe_ids:
         pe = PaperEngine.objects.load(id=peid, is_active=True)
         pe.full_update()
-        pe.activate()
 
 
 @app.task()

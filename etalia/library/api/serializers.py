@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from ..models import Paper, Journal, Author, PaperUser
-from ..constants import PAPER_ADDED, PAPER_TRASHED
+from ..constants import PAPER_ADDED, PAPER_TRASHED, PAPER_STORE
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 
 
@@ -236,14 +236,18 @@ class PaperUserUpdateSerializer(PaperUserSerializer):
         serializers.raise_errors_on_nested_writes('update', self, validated_data)
         err = None
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if instance.store == PAPER_ADDED:
-            err = instance.add()
-        elif instance.store == PAPER_TRASHED:
-            err = instance.trash()
-        else:
-            instance.save()
-        if err:
-            raise serializers.ValidationError(err)
+            if attr == 'store':
+                if value == PAPER_ADDED:
+                    err = instance.add()
+                elif value == PAPER_TRASHED:
+                    err = instance.trash()
+                else:
+                    raise serializers.ValidationError(
+                        'store value outside of choices ({0})'.format(PAPER_STORE))
+                if err:
+                    raise serializers.ValidationError(err)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
 
         return instance
