@@ -192,20 +192,20 @@ class UserLibPaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return UserLibPaper.objects.raw(
+            return list(UserLibPaper.objects.raw(
                 "SELECT * "
                 "FROM users_userlibpaper ulp "
                 "LEFT JOIN library_paperuser pu ON ulp.paper_id = pu.paper_id "
                 "WHERE pu.store = %s "
                 "   AND ulp.userlib_id = %s", (PAPER_ADDED,
-                                               self.request.user.lib.id)
-            )
-        return UserLibPaper.objects.raw(
+                                               self.request.user.id)
+            ))
+        return list(UserLibPaper.objects.raw(
                 "SELECT * "
                 "FROM users_userlibpaper ulp "
                 "LEFT JOIN library_paperuser pu ON ulp.paper_id = pu.paper_id "
                 "WHERE pu.store = %s ", (PAPER_ADDED, )
-            )
+            ))
 
 
 class RelationshipViewSet(viewsets.ModelViewSet):

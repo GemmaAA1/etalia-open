@@ -195,6 +195,6 @@ PAPER_WATCH = (
 PAPER_ADDED = 1
 PAPER_TRASHED = 2
 PAPER_STORE = (
-    (PAPER_ADDED, 'Pinned'),
+    (PAPER_ADDED, 'Added'),
     (PAPER_TRASHED, 'Trashed'),
 )

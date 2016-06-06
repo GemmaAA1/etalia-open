@@ -234,14 +234,16 @@ class PaperUserUpdateSerializer(PaperUserSerializer):
     def update(self, instance, validated_data):
         """Trigger add() and trash() method as needed"""
         serializers.raise_errors_on_nested_writes('update', self, validated_data)
-
+        err = None
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if instance.store == PAPER_ADDED:
-            instance.add()
+            err = instance.add()
         elif instance.store == PAPER_TRASHED:
-            instance.trash()
+            err = instance.trash()
         else:
             instance.save()
+        if err:
+            raise serializers.ValidationError(err)
 
         return instance
