@@ -102,7 +102,7 @@ class ThreadViewSet(MultiSerializerMixin,
         'invited': {'type': int, 'min': 0, 'max': 1},
         'invited-pending': {'type': int, 'min': 0, 'max': 1},
         'invited-accepted': {'type': int, 'min': 0, 'max': 1},
-        'time-span': {'type': int, 'min': 0, 'max': 1e6},
+        'time-span': {'type': int, 'min': -1, 'max': 1e6},
         'view': {'type': str},
         'sort-by': {'type': str},
         'type[]': {'type': list},
@@ -254,7 +254,7 @@ class ThreadViewSet(MultiSerializerMixin,
     def neighbors(self, request, pk=None):
         time_span = int(self.request.query_params.get('time-span',
                                                       self.neighbors_time_span))
-        instance = self.get_object()
+        instance = Thread.objects.get(id=pk)
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)
         serializer = self.get_serializer(neighbors, many=True)
