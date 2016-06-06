@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import operator
 import os
 import logging
 import glob
@@ -932,13 +933,16 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             top_n=k,
             journal_id=pv['paper__journal_id']))
 
-        # Remove input from res_search
+        # Remove input from res_search or extra neighbors id
         try:
             res_search.pop(paper_id)
         except KeyError:
-            pass
+            if len(res_search) > settings.NLP_MAX_KNN_NEIGHBORS:
+                res_search.pop(min(res_search, key=res_search.get))
 
-        return list(res_search.keys())
+        # sort
+        res_sorted = sorted(res_search.items(), key=operator.itemgetter(1))
+        return [r[0] for r in res_sorted]
 
     def knn_search(self, seed, time_lapse=-1, top_n=5, journal_id=None):
         """"""
@@ -1337,13 +1341,16 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
             time_lapse=time_lapse,
             top_n=k))
 
-        # Remove input from res_search
+        # Remove input from res_search or extra neighbors id
         try:
             res_search.pop(thread_id)
         except KeyError:
-            pass
+            if len(res_search) > settings.NLP_MAX_KNN_NEIGHBORS:
+                res_search.pop(min(res_search, key=res_search.get))
 
-        return list(res_search.keys())
+        # sort
+        res_sorted = sorted(res_search.items(), key=operator.itemgetter(1))
+        return [r[0] for r in res_sorted]
 
     def knn_search(self, seed, time_lapse=-1, top_n=5):
         """"""
