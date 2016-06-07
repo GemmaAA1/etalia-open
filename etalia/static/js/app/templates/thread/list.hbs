@@ -18,15 +18,18 @@
 
     <div class="list-controls">
         {{! only in threads tab }}
-        <button id="thread-create-modal" type="button" class="btn btn-primary" title="Start a new thread">New thread</button>
+        <button id="thread-create-modal" type="button" class="btn btn-primary" title="Start a new thread">New thread
+        </button>
 
         {{! only in threads tab }}
-        <button id="thread-invites-modal" type="button" class="btn btn-default" title="2 pending invites" data-count="0">
+        <button id="thread-invites-modal" type="button" class="btn btn-default" title="2 pending invites"
+                data-count="0">
             <span class="eai eai-invites"></span>
             <span class="count">2</span>
         </button>
 
-        <button id="thread-toggle-not-published" type="button" class="btn btn-default" title="Filter : not published threads">
+        <button id="thread-toggle-not-published" type="button" class="btn btn-default"
+                title="Filter : not published threads">
             <span class="eai eai-exclamation"></span>
         </button>
 
@@ -35,7 +38,8 @@
             <button id="thread-toggle-type-paper" type="button" class="btn btn-default" title="Filter : paper threads">
                 <span class="eai eai-paper"></span>
             </button>
-            <button id="thread-toggle-type-question" type="button" class="btn btn-default" title="Filter : question threads">
+            <button id="thread-toggle-type-question" type="button" class="btn btn-default"
+                    title="Filter : question threads">
                 <span class="eai eai-question"></span>
             </button>
         </div>
@@ -49,4 +53,6 @@
 
 <div data-list-placeholder></div>
 
-<a href="javascript: void(0)" id="thread-next-page">Show more</a>
+<a href="javascript: void(0)" id="thread-next-page">
+    {{loadingSprite}}
+</a>

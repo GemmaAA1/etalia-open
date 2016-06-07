@@ -3431,7 +3431,7 @@
         }
     }
 
-    // TODO: Use this.as('pe')?
+    // TODO: Use this.as('ms')?
     function duration_as__valueOf () {
         return (
             this._milliseconds +

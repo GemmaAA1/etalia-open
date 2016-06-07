@@ -260,7 +260,11 @@ gulp.task('styles', function() {
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(gulp.dest(config.dest + '/css'));
 
-    return merge(main, content, page, landing, elements, user);
+    var tinymce = gulp
+        .src(config.src + '/css/lib/tinymce/**')
+        .pipe(gulp.dest(config.dest + '/css/lib/tinymce'));
+
+    return merge(main, content, page, landing, elements, user, tinymce);
 });
 
 

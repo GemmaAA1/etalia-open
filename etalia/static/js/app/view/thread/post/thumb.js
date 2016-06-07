@@ -19,7 +19,7 @@ define([
         },
 
         initialize: function () {
-            this.listenTo(this.model, "change", this.render);
+            this.listenTo(this.model, "sync", this.render);
         },
 
         onEditClick: function(e) {
@@ -60,7 +60,7 @@ define([
         },
 
         render: function () {
-            App.log('PostThumbView::render');
+            App.log('PostThumbView::render', this.model.get('id'));
 
             var attributes = App._.extend(this.model.attributes, {
                 is_owner: this.model.isOwner(App.getCurrentUser())

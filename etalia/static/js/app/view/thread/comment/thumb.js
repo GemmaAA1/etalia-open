@@ -19,7 +19,7 @@ define([
         },
 
         initialize: function () {
-            this.listenTo(this.model, "change", this.render);
+            this.listenTo(this.model, "sync", this.render);
         },
 
         onEditClick: function(e) {
@@ -34,7 +34,7 @@ define([
             });
 
             this.listenToOnce(form, 'validation_success', function() {
-                form.model.save();
+                form.model.save(null, {wait: true});
             });
             this.listenToOnce(form, 'cancel', function() {
                 form.$el.replaceWith('<div data-comment-edit-form></div>');
@@ -57,7 +57,7 @@ define([
         },
 
         render: function () {
-            App.log('CommentThumbView::render');
+            App.log('CommentThumbView::render', this.model.get('id'));
 
             var attributes = App._.extend(this.model.attributes, {
                 is_owner: this.model.isOwner(App.getCurrentUser())

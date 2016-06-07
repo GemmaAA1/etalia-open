@@ -504,6 +504,7 @@
     margin-bottom: 20px;
     padding-bottom: 10px;
     /*overflow: hidden;*/
+    clear: both;
     border-bottom: 1px solid #dfe2e6;
 }
 
@@ -546,6 +547,14 @@
 
 .actions a.active {
     color: #00695c;
+}
+
+.actions-group {
+    margin-bottom: 40px;
+}
+
+.actions-group a:last-child {
+    margin-bottom: 0;
 }
 
 /* ------------------------------------ RESPONSIVE ------------------------------------ */

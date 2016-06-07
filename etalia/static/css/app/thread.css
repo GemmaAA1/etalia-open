@@ -49,6 +49,15 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, .33);
 }
 
+.alt .user-card {
+    padding: 10px 70px 10px 10px;
+    min-height: 70px;
+    top: -10px;
+    left: auto;
+    right: -10px;
+    border-radius: 6px 35px 35px 6px;
+}
+
 .user-card p {
     white-space: nowrap;
     margin: 0;
@@ -194,7 +203,7 @@
     position: relative;
     overflow: hidden;
     height: 80px;
-    transition:height 1s ease;
+    transition:height .3s ease;
 }
 
 .thread-members-list.expanded {

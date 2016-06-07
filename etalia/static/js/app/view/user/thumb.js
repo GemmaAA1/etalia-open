@@ -23,6 +23,8 @@ define([
         },
 
         render: function() {
+            //App.log('UserThumbView::render', this.model.get('id'));
+
             var that = this;
 
             App.getCurrentUser()

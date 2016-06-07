@@ -52,6 +52,7 @@ define([
                 relatedModel: App.Model.Post,
                 collectionType: App.Model.Posts,
                 includeInJSON: false,
+                parse: true,
                 reverseRelation: {
                     key: 'thread',
                     type: App.Backbone.HasOne,
@@ -180,19 +181,38 @@ define([
         }
     });
 
-    App.Model.Threads = App.Backbone.PageableCollection.extend({
+    App.Model.Threads = App.Backbone.Collection.extend({
+        url: App.config.api_root + path,
+        model: App.Model.Thread,
+
+        initialize: function(options) {
+            this.setQuery(options ? options.query : {});
+        },
+
+        setQuery: function(query) {
+            this.queryParams = App._.extend({
+                view: 'nested'
+            }, query);
+
+            return this;
+        }
+    });
+
+    App.Model.PageableThreads = App.Backbone.PageableCollection.extend({
         url: App.config.api_root + path,
         mode: 'infinite',
         model: App.Model.Thread,
 
         initialize: function(options) {
-            App._.defaults(options, {
-                query: {
-                    view: 'nested'
-                }
-            });
+            this.setQuery(options ? options.query : {});
+        },
 
-            this.queryParams = options.query;
+        setQuery: function(query) {
+            this.queryParams = App._.extend({
+                view: 'nested'
+            }, query);
+
+            return this;
         }
     });
 
@@ -226,6 +246,14 @@ define([
                 return {
                     type: 'title',
                     message: 'Title should be at least 10 characters long'
+                }
+            }
+        },
+        content: function(content) {
+            if (50 > String(content).length) {
+                return {
+                    type: 'content',
+                    message: 'Content should be at least 50 characters long'
                 }
             }
         }

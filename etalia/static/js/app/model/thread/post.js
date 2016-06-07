@@ -25,6 +25,7 @@ define(['app', 'app/model/thread/comment'], function (App) {
                 relatedModel: App.Model.Comment,
                 collectionType: App.Model.Comments,
                 includeInJSON: false,
+                parse: true,
                 reverseRelation: {
                     key: 'post',
                     type: App.Backbone.HasOne,
@@ -32,6 +33,13 @@ define(['app', 'app/model/thread/comment'], function (App) {
                 }
             }
         ],
+
+        parse: function(response, options) {
+            if (response.hasOwnProperty('thread') && App._.isObject(response.thread)) {
+                response.thread = response.thread.link;
+            }
+            return response;
+        },
 
         isOwner: function (user) {
             return this.get('user').get('id') === user.get('id');

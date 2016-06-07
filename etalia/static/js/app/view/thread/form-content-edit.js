@@ -5,7 +5,12 @@ define(['app', 'app/model/thread/thread'], function (App) {
     App.View.Thread.EditContentForm = App.Backbone.Form.extend({
 
         schema: {
-            content: {type: 'Tinymce', title: false, settings: {height: 400}}
+            content: {
+                type: 'Tinymce',
+                title: false,
+                settings: {height: 400},
+                validators: ['required', App.Model.Thread.validators.content]
+            }
         },
 
         template: App._.template('\
