@@ -1154,7 +1154,15 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
     is_active = models.BooleanField(default=False)
 
     # user boost
-    user_boost = models.FloatField(default=0.05, null=True, blank=True)
+    score_user_boost = models.FloatField(default=0.1, null=True, blank=True)
+
+    # user boost
+    score_paper_boost = models.FloatField(default=0.2, null=True, blank=True)
+
+    # Weighting to inject paper embedding into thread embedding array
+    score_thread_embedding_paper_weight = models.FloatField(default=1.,
+                                                            null=True,
+                                                            blank=True)
 
     objects = ThreadEngineManager()
 

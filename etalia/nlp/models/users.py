@@ -184,7 +184,8 @@ class UserFingerprint(TimeStampedModel):
             if not d.user_id == self.user_id:
                 data['thread-users-ids'].append(d.user_id)
             data['thread-embedding'].append(d.vector[:self.embedding_size])
-        data['embedding'] = np.array(data['embedding'])
+        data['thread-embedding'] = np.array(data['thread-embedding'])
+
         owner_count = Counter(data['thread-users-ids']).most_common()
 
         # Normalize averaged embedding

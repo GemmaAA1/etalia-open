@@ -215,6 +215,7 @@ class PaperEngineScoringMixin(object):
 
     embedding_size = None
 
+    # Matching PaperEngine class
     data = {'ids': [],
             'journal-ids': [],
             'authors-ids': [],
@@ -248,7 +249,7 @@ class PaperEngineScoringMixin(object):
         # Compute
         jboost = np.zeros((self.data['embedding'].shape[0], ))
         for i, jid in enumerate(self.data['journal-ids']):
-            if jid in jbdic.keys():
+            if jid in list(jbdic.keys()):
                 jboost[i] = jbdic[jid]
 
         aboost = np.zeros((self.data['embedding'].shape[0], ))
