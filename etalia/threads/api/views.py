@@ -267,26 +267,22 @@ class ThreadViewSet(MultiSerializerMixin,
 
     @list_route(methods=['get'])
     def filters(self, request):
-        queryset = self.get_queryset().select_related('posts__user',
-                                                      'posts__comments__user')
-        ids = []
-        ids += queryset.values_list('user_id', flat=True)
-        ids += queryset.values_list('posts__user', flat=True)
-        ids += queryset.values_list('posts__comments__user', flat=True)
-        ids = [id for id in ids if id is not None]
-        ids_count = Counter(ids)
-        ids_count_top = dict([(pk, count) for pk, count in ids_count.items()][:self.size_max_user_filter])
+        tids = self.get_queryset().values_list('id', flat=True)
+        values = ', '.join(['({0})'.format(i) for i in tids])
+        qu = User.objects.raw(
+                    "SELECT * "
+                    "FROM users_user u "
+                    "LEFT JOIN threads_thread t ON u.id = t.user_id "
+                    "WHERE t.id IN (VALUES {0}) ".format(values))
+        du = list(qu)
+        us_count = Counter(du).most_common()
+        users = []
+        for u, c in us_count[:self.size_max_user_filter]:
+            u.count = c
+            users.append(u)
 
-        clauses = ' '.join(['WHEN id=%s THEN %s' %
-                            (pk, count) for pk, count in enumerate(ids_count_top)])
-        ordering = 'CASE %s END' % clauses
-        users_ordered = list(User.objects\
-            .filter(pk__in=ids_count.keys())\
-            .extra(select={'ordering': ordering},order_by=('ordering',)))
-        for user in users_ordered:
-            user.count = ids_count[user.id]
         kwargs = {'context': self.get_serializer_context()}
-        serializer = ThreadFilterSerializer({'users': users_ordered}, **kwargs)
+        serializer = ThreadFilterSerializer({'users': users}, **kwargs)
         return Response(serializer.data,  status=status.HTTP_200_OK)
 
 
