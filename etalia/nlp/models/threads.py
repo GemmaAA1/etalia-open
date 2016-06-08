@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 
 from etalia.core.models import TimeStampedModel
-from etalia.core.utils import pad_vector, pad_neighbors
+from etalia.core.utils import pad_or_trim_vector, pad_neighbors
 
 from etalia.threads.models import Thread
 from etalia.threads.constant import THREAD_TIME_LAPSE_CHOICES
@@ -46,7 +46,7 @@ class ThreadVectors(TimeStampedModel):
                                            name=self.model.name)
 
     def set_vector(self, vector):
-        self.vector = pad_vector(vector)
+        self.vector = pad_or_trim_vector(vector)
         self.save()
 
     def get_vector(self):
