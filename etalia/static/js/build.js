@@ -45,7 +45,7 @@
         },
         {
             name: 'app',
-            exclude: ['require', 'jquery', 'underscore', 'backbone', 'handlebars', 'moment', 'bootstrap']
+            exclude: ['require', 'jquery', 'underscore', 'backbone', 'handlebars', 'moment', 'bootstrap', 'select2']
         },
         {
             name: 'app/thread/list',

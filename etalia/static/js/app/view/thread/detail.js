@@ -192,8 +192,7 @@ define([
         onInviteModalClick: function(e) {
             e.preventDefault();
 
-            var that = this,
-                form = App.View.Thread.InviteCreateForm.create({
+            var form = App.View.Thread.InviteCreateForm.create({
                     model: App.Model.Invite.createNew({
                         thread: this.model
                     })
@@ -228,6 +227,10 @@ define([
 
             form.on('cancel', function () {
                 modal.close();
+            });
+
+            modal.on('shown', function () {
+                form.postRender();
             });
 
             modal.on('hidden', function () {
@@ -282,7 +285,7 @@ define([
             this.pushSubView(
                 App.View.User.List.create({
                     model: this.model.get('members'),
-                    invite_button: is_member
+                    invite_button: is_owner || (is_member && is_public)
                 }, {
                     $target: this.$('[data-members-placeholder]')
                 })
