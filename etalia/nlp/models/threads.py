@@ -6,14 +6,17 @@ from gensim import matutils
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 
 from etalia.core.models import TimeStampedModel
-from etalia.core.utils import pad_vector, pad_neighbors
+from etalia.core.utils import pad_or_trim_vector, pad_neighbors
 
 from etalia.threads.models import Thread
 from etalia.threads.constant import THREAD_TIME_LAPSE_CHOICES
+from etalia.library.models import PaperUser
+from etalia.library.constants import PAPER_ADDED, PAPER_PINNED
 from etalia.users.models import UserSettings
 
 from .users import UserFingerprint
@@ -46,7 +49,7 @@ class ThreadVectors(TimeStampedModel):
                                            name=self.model.name)
 
     def set_vector(self, vector):
-        self.vector = pad_vector(vector)
+        self.vector = pad_or_trim_vector(vector)
         self.save()
 
     def get_vector(self):
@@ -138,11 +141,19 @@ class ModelThreadMixin(object):
 class ThreadEngineScoringMixin(object):
 
     SCORE_N_THREADS = 250
+    SCORE_USER_CAP_COUNT = 10
 
     model = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
     embedding_size = None
 
+    score_user_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_paper_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_thread_embedding_paper_weight = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    # Matching ThreadEngine class
     data = {'ids': [],
             'paper-ids': [],
             'users-ids': [],
@@ -156,21 +167,43 @@ class ThreadEngineScoringMixin(object):
         if UserFingerprint.objects.filter(user_id=user_id,
                                           name=name,
                                           model=self.model).exists():
-            f = UserFingerprint.objects.get(user_id=user_id, name=name,
+            f = UserFingerprint.objects.get(user_id=user_id,
+                                            name=name,
                                             model=self.model)
         else:
-            f = UserFingerprint.objects.create(user_id=user_id, name=name,
+            f = UserFingerprint.objects.create(user_id=user_id,
+                                               name=name,
                                                model=self.model)
             f.update()
-
-        # Convert user data
-        seed = np.array(f.embedding[:self.embedding_size])
 
         # Get user settings
         us = UserSettings.objects.get(user_id=user_id)
 
+        # Convert user data
+        seed = np.array(f.thread_embedding[:self.embedding_size]) \
+               + self.score_thread_embedding_paper_weight \
+               * np.array(f.embedding[:self.embedding_size])
+        ub = self.convert_to_user_boost(f.threads_users_counts)
+        ubdic = dict([(k, ub[i]) for i, k in enumerate(f.threads_users_ids)])
+
         # Compute
-        score = np.dot(self.data['embedding'], seed.T)
+        uboost = np.zeros((self.data['embedding'].shape[0], ))
+        for i, uid in enumerate(self.data['users-ids']):
+            if uid in list(ubdic.keys()):
+                uboost[i] = ubdic[uid]
+
+        user_pids = PaperUser.objects.filter(
+            Q(user_id=user_id) & (Q(store=PAPER_ADDED) | Q(watch=PAPER_PINNED))) \
+            .values_list('paper_id', flat=True)
+        pboost = np.zeros((self.data['embedding'].shape[0], ))
+        for i, pid in enumerate(self.data['paper-ids']):
+            if pid in user_pids:
+                pboost[i] = self.score_paper_boost
+
+        # Compute
+        score = np.dot(self.data['embedding'], seed.T) + \
+                uboost + \
+                pboost
 
         results = self.order_n(self.data['ids'],
                                score,
@@ -192,3 +225,17 @@ class ThreadEngineScoringMixin(object):
                  'score': float(vals[i]),
                  'date': date[i],
                  } for i in top_idx]
+
+    def convert_to_user_boost(self, count):
+        return self.convert_to_boost(count,
+                                     self.SCORE_USER_CAP_COUNT,
+                                     self.score_user_boost)
+
+    def convert_to_boost(self, count, cap, max_boost):
+        boost = []
+        for c in count:
+            if c >= cap:
+                boost.append(max_boost)
+            else:
+                boost.append(c / cap * max_boost)
+        return boost

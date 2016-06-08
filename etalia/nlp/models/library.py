@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 
 from etalia.core.models import TimeStampedModel
-from etalia.core.utils import pad_vector, pad_neighbors
+from etalia.core.utils import pad_or_trim_vector, pad_neighbors
 
 from etalia.library.constants import PAPER_TIME_LAPSE_CHOICES
 from etalia.library.models import Paper, Journal
@@ -49,7 +49,7 @@ class PaperVectors(TimeStampedModel):
                                           name=self.model.name)
 
     def set_vector(self, vector):
-        self.vector = pad_vector(vector)
+        self.vector = pad_or_trim_vector(vector)
         self.save()
 
     def get_vector(self):
@@ -82,7 +82,7 @@ class JournalVectors(TimeStampedModel):
             .format(short_title=self.journal.short_title, name=self.model.name)
 
     def set_vector(self, vector):
-        self.vector = pad_vector(vector)
+        self.vector = pad_or_trim_vector(vector)
         self.save()
 
     def get_vector(self):
@@ -215,6 +215,7 @@ class PaperEngineScoringMixin(object):
 
     embedding_size = None
 
+    # Matching PaperEngine class
     data = {'ids': [],
             'journal-ids': [],
             'authors-ids': [],
@@ -248,7 +249,7 @@ class PaperEngineScoringMixin(object):
         # Compute
         jboost = np.zeros((self.data['embedding'].shape[0], ))
         for i, jid in enumerate(self.data['journal-ids']):
-            if jid in jbdic.keys():
+            if jid in list(jbdic.keys()):
                 jboost[i] = jbdic[jid]
 
         aboost = np.zeros((self.data['embedding'].shape[0], ))
