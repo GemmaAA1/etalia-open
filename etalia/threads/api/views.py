@@ -55,6 +55,7 @@ class ThreadViewSet(MultiSerializerMixin,
     ** List: **
 
     * **view=(str)**: Reformat output. choices: 'nested',
+    * **owned=(int)**: Fetch only **owned** (if 1) or **non owned** (if 0) threads for current user (default = Null)
     * **pinned=(int)**: Fetch only **pinned** (if 1) or **non pinned** (if 0) threads for current user (default = Null)
     * **joined=(int)**: Fetch only **joined** (if 1) or **non joined** (if 0) threads for current user (default = Null)
     * **left=(int)**: Fetch only **left** (if 1) or **non left** (if 0) threads for current user (default = Null)
@@ -91,6 +92,7 @@ class ThreadViewSet(MultiSerializerMixin,
                           ThreadIsNotYetPublishedIsOwnerIfDeleteMethod)
 
     query_params_props = {
+        'owned': {'type': int, 'min': 0, 'max': 1},
         'joined': {'type': int, 'min': 0, 'max': 1},
         'pinned': {'type': int, 'min': 0, 'max': 1},
         'left': {'type': int, 'min': 0, 'max': 1},
@@ -146,6 +148,9 @@ class ThreadViewSet(MultiSerializerMixin,
         # Bool filters definition
         feed_name = self.request.query_params.get('feed', 'main')
         bool_filters_def = {
+            'owned': {
+                'query': [Q(threaduser__user=self.request.user)],
+            },
             'joined': {
                 'query': [Q(threaduser__user=self.request.user),
                           Q(threaduser__participate=THREAD_JOINED)],
