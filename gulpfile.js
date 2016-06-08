@@ -84,12 +84,12 @@ gulp.task('libraries', ['clean-libraries'], function() {
             rename: 'forms-bootstrap.js',
             dest: '/js/lib/backbone'
         },
-        {
+        /*{
             src: 'bower_components/backbone-forms/distribution.amd/templates/bootstrap3.css',
             base: 'bower_components/backbone-forms/distribution.amd/templates',
             rename: 'backbone-forms-bootstrap.css',
             dest: '/css/lib'
-        },
+        },*/
         {
             src: 'bower_components/handlebars/handlebars.js',
             base: 'bower_components/handlebars',
@@ -148,6 +148,18 @@ gulp.task('libraries', ['clean-libraries'], function() {
             dest: '/js/lib/moment'
         },
         {
+            src: [
+                'bower_components/select2/dist/js/select2.js'
+            ],
+            base: 'bower_components/select2/dist/js',
+            dest: '/js/lib/select2'
+        },
+        {
+            src: 'bower_components/select2/dist/css/select2.css',
+            base: 'bower_components/select2/dist/css',
+            dest: '/css/lib'
+        },
+        { // TODO remove
             src: 'node_modules/hogan.js/dist/hogan-3.0.2.amd.js',
             base: 'node_modules/hogan.js/dist',
             rename: 'hogan.js',
@@ -260,7 +272,11 @@ gulp.task('styles', function() {
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(gulp.dest(config.dest + '/css'));
 
-    return merge(main, content, page, landing, elements, user);
+    var tinymce = gulp
+        .src(config.src + '/css/lib/tinymce/**')
+        .pipe(gulp.dest(config.dest + '/css/lib/tinymce'));
+
+    return merge(main, content, page, landing, elements, user, tinymce);
 });
 
 

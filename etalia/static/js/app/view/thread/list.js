@@ -10,6 +10,9 @@ define([
     'app/view/thread/invite/treat'
 ], function (App, template) {
 
+    var $window = $(window),
+        $document = $(document);
+
     App.View.Thread = App.View.Thread || {};
 
     var ListControls = App.Backbone.Model.extend({
@@ -26,7 +29,15 @@ define([
             if (this.get('not_published')) {
                 context.published = 0;
             }
-            // TODO type (paper / question)
+            if (this.get('type_paper') || this.get('type_question')) {
+                context.type = [];
+                if (this.get('type_paper')) {
+                    context.type.push(App.Model.Thread.TYPE_PAPER);
+                }
+                if (this.get('type_question')) {
+                    context.type.push(App.Model.Thread.TYPE_QUESTION);
+                }
+            }
             if (this.get('private')) {
                 context.private = 1;
             }
@@ -92,6 +103,13 @@ define([
             // Collection
             this.listenTo(this, "model:remove", this.onModelRemove);
             this.listenTo(this, "model:detail", this.openDetail);
+
+            this.onWindowScroll = App._.bind(this.onWindowScroll, this);
+        },
+
+        remove: function() {
+            $window.off('scroll', this.onWindowScroll);
+            App.Backbone.View.prototype.remove.apply(this, arguments);
         },
 
         render: function () {
@@ -114,8 +132,9 @@ define([
         },
 
         load: function() {
-            App.Layout.setBusy();
+            //App.Layout.setBusy();
 
+            $window.off('scroll', this.onWindowScroll);
             this.clearList();
 
             if (this.collection) {
@@ -125,7 +144,7 @@ define([
                 this.collection.reset();
             }
 
-            this.collection = new App.Model.Threads({
+            this.collection = new App.Model.PageableThreads({
                 query: App._.extend(
                     this.listControls.getContext(),
                     this.controlsView.getContext(),
@@ -142,11 +161,46 @@ define([
                 .then(function() {
                     if (that.collection.hasNextPage()) {
                         that.$('#thread-next-page').show();
+                        $window.on('scroll', that.onWindowScroll);
                     } else {
                         that.$('#thread-next-page').hide();
                     }
-                    App.Layout.setAvailable();
+                    //App.Layout.setAvailable();
                 });
+        },
+
+        onWindowScroll: function() {
+            App.log('ThreadListView::onWindowScroll');
+            var delta = $document.height() - $window.height() - $window.scrollTop();
+            if (delta < 60) {
+                this._loadNextPage();
+            }
+        },
+
+        onNextPageClick: function (e) {
+            e.preventDefault();
+
+            this._loadNextPage();
+        },
+
+        _loadNextPage: function() {
+            $window.off('scroll', this.onWindowScroll);
+
+            var that = this;
+            if (this.collection.hasNextPage()) {
+                //App.Layout.setBusy();
+
+                this.collection.getNextPage(null)
+                    .then(function () {
+                        if (that.collection.hasNextPage()) {
+                            that.$('#thread-next-page').show();
+                            $window.on('scroll', that.onWindowScroll);
+                        } else {
+                            that.$('#thread-next-page').hide();
+                        }
+                        //App.Layout.setAvailable();
+                    });
+            }
         },
 
         _loadFilters: function() {
@@ -245,13 +299,13 @@ define([
             }
 
             var that = this,
-                detailModel = new App.Model.Detail({
-                //list: this,
-                //prev: 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null,
-                //next: this.collection.fullCollection.at(modelIndex + 1),
-                view: new App.View.Thread.Detail({
-                    model: model
-                })
+                options = {model: model};
+            if (this.tabsView.getActiveTab().buttons) {
+                options.buttons = this.tabsView.getActiveTab().buttons;
+            }
+
+            var detailModel = new App.Model.Detail({
+                view: new App.View.Thread.Detail(options)
             });
             detailModel.setCenterButton({
                 icon: 'close',
@@ -308,21 +362,6 @@ define([
 
             this.collection.remove(model);
             this.collection.fullCollection.remove(model);
-        },
-
-        onNextPageClick: function (e) {
-            e.preventDefault();
-
-            var that = this;
-            if (this.collection.hasNextPage()) {
-                this.collection.getNextPage(null).then(function() {
-                    if (that.collection.hasNextPage()) {
-                        that.$('#thread-next-page').show();
-                    } else {
-                        that.$('#thread-next-page').hide();
-                    }
-                });
-            }
         },
 
         onCreateModalClick: function(e) {

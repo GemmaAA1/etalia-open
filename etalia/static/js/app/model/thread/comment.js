@@ -21,8 +21,19 @@ define(['app', 'app/model/user/user'], function (App) {
             }
         ],
 
+        parse: function(response, options) {
+            if (response.hasOwnProperty('post') && App._.isObject(response.post)) {
+                response.post = response.post.link;
+            }
+            return response;
+        },
+
         isOwner: function (user) {
-            return this.get('user').get('id') === user.get('id');
+            var owner = this.get('user');
+            if (owner) {
+                return owner.get('id') === user.get('id');
+            }
+            return false;
         }
     });
 

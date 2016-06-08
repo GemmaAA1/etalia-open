@@ -1,35 +1,38 @@
 <div id="detail-actions" class="actions">
     <div class="card">
-        <a href="javascript: void(0)"
-           class="detail-pin{{thread_pin_class}}"
-           title="Pin/Unpin">
-            <span class="eai eai-pin"></span>
-        </a>
-
-        {{! TODO Only in "My stream" }}
-        <a href="javascript: void(0)"
-           class="detail-ban{{thread_ban_class}}"
-           title="Remove from feed">
-            <span class="eai eai-remove"></span>
-        </a>
-        {{! TODO Only in "My threads" = leave icon }}
-        <a href="javascript: void(0)"
-           class="detail-library-trash loading-button"
-           title="Move to trash">
-            <span class="eai eai-library-trash"></span>
-        </a>
-
-        <a href="javascript: void(0)"
-           class="detail-mail" title="Email">
-            <span class="eai eai-mail"></span>
-        </a>
-        <a href="javascript: void(0)" class="detail-twitter" title="Share on twitter">
-            <span class="eai eai-twitter"></span>
-        </a>
-        <a href="javascript: void(0)" class="detail-google-plus" title="Share on Google+">
-            <span class="eai eai-google-plus"></span>
-        </a>
-
+        <div class="actions-group">
+            <a href="javascript: void(0)"
+               class="detail-pin{{thread_pin_class}}"
+               title="Pin/Unpin">
+                <span class="eai eai-pin"></span>
+            </a>
+            {{#if ban_button}} {{! Only in "My stream" }}
+            <a href="javascript: void(0)"
+               class="detail-ban{{thread_ban_class}}"
+               title="Remove from my stream">
+                <span class="eai eai-remove"></span>
+            </a>
+            {{/if}}
+            {{#if leave_button}} {{! Only in "My threads" = leave icon }}
+            <a href="javascript: void(0)"
+               class="detail-leave loading-button"
+               title="Leave this thread">
+                <span class="eai eai-leave"></span>
+            </a>
+            {{/if}}
+        </div>
+        <div class="actions-group">
+            <a href="javascript: void(0)"
+               class="detail-mail" title="Email">
+                <span class="eai eai-mail"></span>
+            </a>
+            <a href="javascript: void(0)" class="detail-twitter" title="Share on twitter">
+                <span class="eai eai-twitter"></span>
+            </a>
+            <a href="javascript: void(0)" class="detail-google-plus" title="Share on Google+">
+                <span class="eai eai-google-plus"></span>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -128,17 +131,13 @@
             Join this thread
         </button>
     </p>
-    {{!-- {{else}}
-    <p style="padding:20px 0;text-align:center">
-        <button type="button" class="btn btn-primary thread-leave">
-            Leave this thread
-        </button>
-    </p> --}}
     {{/if}}
 
     <div data-posts-placeholder></div>
 
-    <div class="neighbors-thumbs">
+    <div data-neighbors-placeholder></div>
+
+    {{!-- <div class="neighbors-thumbs">
         <h2>Similar threads</h2>
         <ul class="neighbors-timespan-selector">
             <li>
@@ -152,7 +151,7 @@
             </li>
         </ul>
         <div data-neighbors-placeholder></div>
-    </div>
-    {{/if}}
+    </div> --}}
+    {{/if}}{{! endif published_at }}
 
 </div>

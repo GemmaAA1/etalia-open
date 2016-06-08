@@ -2,7 +2,7 @@ define(['jquery'], function($) {
 
     var Sticky = function(options) {
         var config = $.extend({
-            debug: true,
+            debug: false,
             element: null,
             parent: null,
             top: 0,

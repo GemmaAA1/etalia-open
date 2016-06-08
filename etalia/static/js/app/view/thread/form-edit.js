@@ -45,7 +45,7 @@ define(['app', 'app/model/thread/thread'], function (App) {
 
             result.title = {
                 type: 'Text',
-                    validators: ['required', App.Model.Thread.validators.title]
+                validators: ['required', App.Model.Thread.validators.title]
             };
 
             return result;

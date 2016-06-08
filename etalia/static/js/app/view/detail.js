@@ -1,8 +1,9 @@
 define([
     'app',
     'text!app/templates/detail.hbs',
+    'app/util/sticky',
     'app/model/detail'
-], function (App, template) {
+], function (App, template, Sticky) {
 
     //var defaults = {};
 
@@ -37,6 +38,7 @@ define([
         tagName: 'div',
         id: 'detail',
 
+        sticky: null,
         template: App.Handlebars.compile(template),
 
         events: {
@@ -79,7 +81,24 @@ define([
                 that.close();
             });
 
+            // Sticky actions
+            that.applySticky();
+            this.listenTo(view, 'rendered', that.applySticky);
+
             return this.open();
+        },
+
+        applySticky: function() {
+            if (this.sticky) {
+                this.sticky.disable();
+                this.sticky = null;
+            }
+            this.sticky = new Sticky({
+                element: '#detail-actions',
+                parent: '#detail-document',
+                top: 20,
+                bottom: 20
+            }).enable();
         },
 
         onClick: function(e) {

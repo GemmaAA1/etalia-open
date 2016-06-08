@@ -42,6 +42,7 @@ requirejs.config({
         jquery: 'lib/jquery',
         'jquery-ui': 'lib/jquery-ui',
         moment: 'lib/moment/moment',
+        select2: 'lib/select2/select2',
         tinymce: 'lib/tinymce/tinymce',
         underscore: 'lib/underscore'
     },

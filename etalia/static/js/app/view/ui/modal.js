@@ -41,11 +41,13 @@ define([
 
         attributes: {
             'class': 'modal fade',
-            'tabindex': '-1',
+            //'tabindex': '-1', Select2 bug : http://stackoverflow.com/questions/18487056/select2-doesnt-work-when-embedded-in-a-bootstrap-modal
             'role': 'dialog'
         },
 
         events: {
+            "shown.bs.modal": "_onShown",
+            "show.bs.modal": "_onShow",
             "hidden.bs.modal": "_onHidden",
             "hide.bs.modal": "_onHide"
         },
@@ -125,6 +127,14 @@ define([
             } else {
                 $footer.hide();
             }
+        },
+
+        _onShown: function () {
+            this.trigger('shown');
+        },
+
+        _onShow: function () {
+            this.trigger('show');
         },
 
         _onHidden: function () {

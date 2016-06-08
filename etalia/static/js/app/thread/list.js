@@ -22,9 +22,12 @@ define([
                 name: 'threads',
                 title: 'Threads',
                 data: {
-                    view: 'nested',
-                    joined: "1",
-                    banned: "0"
+                    view: 'nested'
+                    //joined: "1",
+                    //banned: "0"
+                },
+                buttons: {
+                    leave: true
                 }
             },
             {

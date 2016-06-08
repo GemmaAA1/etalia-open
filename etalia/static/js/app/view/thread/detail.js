@@ -1,13 +1,15 @@
 define([
     'app',
     'text!app/templates/thread/detail.hbs',
+    //'app/util/utils',
     'app/view/ui/modal',
     'app/view/user/thumb',
     'app/view/user/list',
     'app/view/thread/post/list',
     'app/view/thread/form-edit',
     'app/view/thread/form-content-edit',
-    'app/view/thread/invite/form-create'
+    'app/view/thread/invite/form-create',
+    'app/view/thread/neighbors'
 ], function (App, template) {
 
     App.View.Thread = App.View.Thread || {};
@@ -17,26 +19,38 @@ define([
         className: 'inner',
 
         template: App.Handlebars.compile(template),
+        buttons: {
+            ban: false,
+            leave: false
+        },
 
         events: {
+            "click .detail-pin": "onPinClick",
+            "click .detail-ban": "onBanClick",
+            "click .detail-leave": "onLeaveClick",
+
+            "click .detail-mail": "onMailClick",
+            "click .detail-twitter": "onTwitterClick",
+            "click .detail-google-plus": "onGooglePlusClick",
+
             "click .thread-edit": "onEditClick",
             "click .thread-delete": "onDeleteClick",
             "click .thread-publish": "onPublishClick",
             "click .thread-content-edit": "onContentEditClick",
             "click .thread-join": "onJoinClick",
             "click .thread-leave": "onLeaveClick",
+
             "click .thread-members-invite-modal": "onInviteModalClick"
         },
 
-        //listView: null,
 
         initialize: function (options) {
-            /*if (!options.listView) {
-                throw 'options.listView is mandatory';
+            if (options.buttons) {
+                this.buttons = _.extend(this.buttons, options.buttons);
             }
-            this.listView = options.listView;*/
 
-            this.listenTo(this.model, "sync change", this.render);
+            this.listenTo(this.model, "sync", this.render);
+            this.listenTo(this.model, "change:state", this.render);
             this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
             this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
         },
@@ -44,7 +58,8 @@ define([
         onEditClick: function(e) {
             e.preventDefault();
 
-            var form = App.View.Thread.EditForm.create({
+            var that = this,
+                form = App.View.Thread.EditForm.create({
                     model: this.model
                 }),
                 modal = new App.View.Ui.Modal({
@@ -54,10 +69,12 @@ define([
                 });
 
             form.once('validation_success', function () {
+                // TODO patch with content (see thread state toggleBanned)
                 form.model.save(null, {
                     wait: true,
                     validate: false,
                     success: function () {
+                        //that.render();
                         modal.close();
                     },
                     error: function () {
@@ -100,14 +117,47 @@ define([
                 $target: this.$('[data-thread-edit-form]')
             });
 
-            this.listenToOnce(form, 'validation_success', function() {
-                form.model.save(null, {wait: true});
+            this.listenTo(form, 'validation_success', function() {
+                form.model.save(null, {wait: true, validate: false});
             });
-            this.listenToOnce(form, 'cancel', function() {
+            this.listenTo(form, 'cancel', function() {
                 form.$el.replaceWith('<div data-thread-edit-form></div>');
                 form.remove();
                 $contents.show();
             });
+        },
+
+        onPinClick: function(e) {
+            e.preventDefault();
+
+            this.model.getState().togglePinned();
+        },
+
+        onBanClick: function(e) {
+            e.preventDefault();
+
+            this.model.getState().toggleBanned();
+        },
+
+        onMailClick: function(e) {
+            e.preventDefault();
+
+            // TODO
+            console.log('Not yet implemented');
+        },
+
+        onTwitterClick: function(e) {
+            e.preventDefault();
+
+            // TODO
+            console.log('Not yet implemented');
+        },
+
+        onGooglePlusClick: function(e) {
+            e.preventDefault();
+
+            // TODO
+            console.log('Not yet implemented');
         },
 
         onPublishClick: function(e) {
@@ -136,13 +186,13 @@ define([
                 .done(function() {
                     model.fetch();
                 });
+            // TODO or close detail ?
         },
 
         onInviteModalClick: function(e) {
             e.preventDefault();
 
-            var that = this,
-                form = App.View.Thread.InviteCreateForm.create({
+            var form = App.View.Thread.InviteCreateForm.create({
                     model: App.Model.Invite.createNew({
                         thread: this.model
                     })
@@ -170,7 +220,7 @@ define([
                     },
                     error: function () {
                         // TODO
-                        console.log('error', arguments);
+                        App.log('Error', arguments);
                     }
                 });
             });
@@ -179,8 +229,13 @@ define([
                 modal.close();
             });
 
+            modal.on('shown', function () {
+                form.postRender();
+            });
+
             modal.on('hidden', function () {
-                // TODO unbind form
+                form.off('validation_success');
+                form.off('cancel');
                 form = null;
                 modal = null;
             });
@@ -196,7 +251,7 @@ define([
         },
 
         render: function() {
-            App.log('ThreadDetailView::render');
+            App.log('ThreadDetailView::render', this.model.get('id'));
 
             var is_owner = this.model.isOwner(App.getCurrentUser()),
                 is_member = this.model.isMember(App.getCurrentUser()),
@@ -207,6 +262,9 @@ define([
                 is_member: is_member,
 
                 can_join: is_public && !is_member,
+
+                ban_button: this.buttons.ban,
+                leave_button: this.buttons.leave && is_member,
 
                 members_count: this.model.getMembersCount(),
                 posts_count: this.model.getPostsCount()
@@ -227,7 +285,7 @@ define([
             this.pushSubView(
                 App.View.User.List.create({
                     model: this.model.get('members'),
-                    invite_button: is_owner
+                    invite_button: is_owner || (is_member && is_public)
                 }, {
                     $target: this.$('[data-members-placeholder]')
                 })
@@ -248,11 +306,15 @@ define([
             // TODO
             // No next/prev/close buttons but a back button (return to source detail).
 
-            /*this.pushSubView(
-                App.View.Thread.PostList.create({}, {
+            this.pushSubView(
+                App.View.Thread.Neighbors.create({
+                    thread_id: this.model.get('id')
+                }, {
                     $target: this.$('[data-neighbors-placeholder]')
                 })
-            );*/
+            );
+
+            this.trigger('rendered');
 
             return this;
         }

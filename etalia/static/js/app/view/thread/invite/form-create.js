@@ -1,4 +1,4 @@
-define(['app', 'app/model/thread/invite'], function (App) {
+define(['app', 'app/model/thread/invite', 'select2'], function (App) {
 
     App.View.Thread.InviteCreateForm = App.Backbone.Form.extend({
 
@@ -6,7 +6,8 @@ define(['app', 'app/model/thread/invite'], function (App) {
             to_user: {
                 type: 'Select',
                 title: 'Who',
-                options: function(callback) {
+                options: [],
+                /*options: function(callback) {
                     var users = new App.Model.Users();
 
                     // TODO users.url
@@ -25,7 +26,7 @@ define(['app', 'app/model/thread/invite'], function (App) {
                         }, function(jqXHR, textStatus, errorThrown) {
                             throw textStatus + ' ' + errorThrown;
                         });
-                },
+                },*/
                 validators: ['required', App.Model.Invite.validators.to_user]
             }
         },
@@ -55,6 +56,53 @@ define(['app', 'app/model/thread/invite'], function (App) {
             App.Backbone.Form.prototype.initialize.apply(this, arguments);
 
             this.listenTo(this, "submit", this._onSubmit);
+        },
+
+        postRender: function() {
+
+            function formatResult(state) {
+                console.log(state);
+                if (!state.id) {
+                    return $('<span>' + state.text + '</span>');
+                }
+
+                return $('<span>' + state.first_name + ' ' + state.last_name + '</span>');
+            }
+
+            App.$('select[name="to_user"]').select2({
+                ajax: {
+                    url: App.config.api_root + "/user/users/",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            'last-name': params.term, // search term
+                            page: params.page
+                        };
+                    },
+                    processResults: function (data, params) {
+                        // parse the results into the format expected by Select2
+                        // since we are using custom formatting functions we do not need to
+                        // alter the remote JSON data, except to indicate that infinite
+                        // scrolling can be used
+                        params.page = params.page || 1;
+
+                        return {
+                            results: data.results,
+                            pagination: {
+                                more: (params.page * 30) < data.total_count
+                            }
+                        };
+                    },
+                    cache: true
+                },
+                escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+                minimumInputLength: 3,
+                templateResult: formatResult, // omitted for brevity, see the source of this page
+                templateSelection: formatResult // omitted for brevity, see the source of this page
+            });
+
+            return this;
         },
 
         _onSubmit: function(e) {

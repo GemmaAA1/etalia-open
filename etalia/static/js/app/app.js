@@ -25,14 +25,42 @@ define([
         });
         return _sync(method, model, options);
     };
+
+    var BBColFetch = Backbone.Collection.prototype.fetch;
+    Backbone.Collection.prototype.fetch = function (options) {
+        options = options || {};
+        if (!options.data && this.queryParams) {
+            options.data = this.queryParams;
+        }
+        return BBColFetch.call(this, options);
+    };
     Backbone.Collection.prototype.parse = function (response, options) {
         if (_.has(response, 'results')) {
             return response.results;
         }
-        return response;
     };
 
-    Backbone.View.prototype.__remove = Backbone.View.prototype.remove;
+    var BBViewRemove = Backbone.View.prototype.remove;
+    Backbone.View.prototype.pushSubView = function (view) {
+        if (!this.subViews) {
+            this.subViews = [];
+        }
+        this.subViews.push(view);
+    };
+    Backbone.View.prototype.clearSubViews = function() {
+        if (this.subViews) {
+            _.each(this.subViews, function (view) {
+                view.remove();
+            });
+            this.subViews = null;
+        }
+    };
+    Backbone.View.prototype.remove = function () {
+        this.clearSubViews();
+        BBViewRemove.apply(this, arguments);
+    };
+
+    /*Backbone.View.prototype.__remove = Backbone.View.prototype.remove;
     Backbone.View = Backbone.View.extend({
         pushSubView: function (view) {
             if (!this.subViews) {
@@ -50,9 +78,9 @@ define([
         },
         remove: function () {
             this.clearSubViews();
-            Backbone.View.prototype.__remove.call(this, arguments);
+            Backbone.View.prototype.__remove.apply(this, arguments);
         }
-    });
+    });*/
 
     /**
      * Backbone Relational
@@ -384,6 +412,21 @@ define([
             format = 'MMM D, YYYY';
         }
         return Moment(date).format(format);
+    });
+    Handlebars.registerHelper('loadingSprite', function () {
+        return new Handlebars.SafeString(
+            '<div class="sk-cube-grid">'+
+                '<div class="sk-cube sk-cube1"></div>'+
+                '<div class="sk-cube sk-cube2"></div>'+
+                '<div class="sk-cube sk-cube3"></div>'+
+                '<div class="sk-cube sk-cube4"></div>'+
+                '<div class="sk-cube sk-cube5"></div>'+
+                '<div class="sk-cube sk-cube6"></div>'+
+                '<div class="sk-cube sk-cube7"></div>'+
+                '<div class="sk-cube sk-cube8"></div>'+
+                '<div class="sk-cube sk-cube9"></div>'+
+            '</div>'
+        );
     });
 
 
