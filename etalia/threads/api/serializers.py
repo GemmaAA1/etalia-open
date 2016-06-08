@@ -224,9 +224,9 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
 
     def validate_participate(self, value):
         """Check that thread is joined if request is to leave thread"""
-        if self.initial_data:
+        if self.instance:
             if value == THREAD_LEFT and \
-                    not self.initial_data.get('participate') == THREAD_JOINED:
+                    not self.instance.participate == THREAD_JOINED:
                 raise serializers.ValidationError(
                     "You cannot leave a thread that you have not joined")
         return value
@@ -462,7 +462,7 @@ class ThreadUserInviteSerializer(One2OneNestedLinkSwitchMixin,
 
     def validate_from_user(self, value):
         """from_user must be the current user"""
-        if not self.initial_data and not value == self.context['request'].user:
+        if not self.instance and not value == self.context['request'].user:
             raise serializers.ValidationError(
                 "from_user deserialized and current user are different")
         return value
