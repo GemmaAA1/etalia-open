@@ -202,7 +202,7 @@ class ThreadIsNotYetPublishedIsOwnerIfDeleteMethod(IsOwner):
 
     def has_object_permission(self, request, view, obj):
         if view.action in ['destroy']:
-            return obj.published_at is None and obj == request.user
+            return obj.published_at is None and obj.user == request.user
         return True
 
 
