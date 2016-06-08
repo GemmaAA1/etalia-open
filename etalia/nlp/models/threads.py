@@ -144,6 +144,8 @@ class ThreadEngineScoringMixin(object):
     embedding_size = None
 
     data = {'ids': [],
+            'paper-ids': [],
+            'users-ids': [],
             'date': [],
             'embedding': np.empty(0)
             }

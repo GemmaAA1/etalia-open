@@ -265,7 +265,7 @@ class Model(ModelThreadMixin,
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
             self.save_db_only()
-            self.push_to_s3(ext='mod')
+            self.push_to_s3()
             self.upload_state = 'IDL'
         # save to db
         self.save_db_only(*args, **kwargs)
@@ -719,7 +719,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
             self.save_db_only()
-            self.push_to_s3(ext='pe')
+            self.push_to_s3()
             self.upload_state = 'IDL'
 
     def save_db_only(self, *args, **kwargs):
@@ -1203,7 +1203,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
             self.save_db_only()
-            self.push_to_s3(ext='te')
+            self.push_to_s3()
             self.upload_state = 'IDL'
 
     def save_db_only(self, *args, **kwargs):
@@ -1263,7 +1263,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
             self.data['ids'].append(d.id)
             self.data['date'].append(d.published_at)
             self.data['paper-ids'].append(d.paper_id)
-            self.data['users-ids'].append([d.user_id]) # add owner only for now
+            self.data['users-ids'].append([d.user_id])  # only add owner here
             self.data['embedding'].append(d.vector[:self.embedding_size])
         self.data['embedding'] = np.array(self.data['embedding'])
 
