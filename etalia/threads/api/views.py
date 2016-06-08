@@ -228,9 +228,10 @@ class ThreadViewSet(MultiSerializerMixin,
         uids = [int(id_) for id_ in self.request.query_params.getlist('user_id[]', None)]
         if uids:
             queryset = queryset.filter(
-                Q(user_id__in=uids) |
-                Q(posts__user_id__in=uids) |
-                Q(posts__comments__user_id__in=uids))
+                Q(user_id__in=uids)
+                # | Q(posts__user_id__in=uids) \
+                # | Q(posts__comments__user_id__in=uids)
+            )
 
         # time-span filter
         time_span = self.request.query_params.get('time-span', None)
