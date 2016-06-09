@@ -78,7 +78,7 @@ class UserViewSet(MultiSerializerMixin,
 
         # search
         search = self.request.query_params.get('search', None)
-        if search is not None:
+        if search is not None and not search == 'null':
             queryset = queryset.filter(
                 Q(first_name__icontains=search) |
                 Q(last_name__icontains=search) |
