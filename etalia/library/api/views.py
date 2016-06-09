@@ -172,7 +172,7 @@ class PaperViewSet(MultiSerializerMixin,
         # search
         search = self.request.query_params.get('search', None)
         if search is not None:
-            queryset = self.queryset.filter(
+            queryset = queryset.filter(
                 Q(title__icontains=search) |
                 Q(journal__title__icontains=search) |
                 Q(authors__first_name__icontains=search) |

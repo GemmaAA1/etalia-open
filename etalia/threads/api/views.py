@@ -245,12 +245,11 @@ class ThreadViewSet(MultiSerializerMixin,
         # search
         search = self.request.query_params.get('search', None)
         if search is not None:
-            queryset = self.queryset.filter(
+            queryset = queryset.filter(
                 Q(title__icontains=search) |
                 Q(user__first_name__icontains=search) |
                 Q(user__last_name__icontains=search)
             )
-
 
         order_by = self.request.query_params.get('sort-by', None)
         if order_by:
