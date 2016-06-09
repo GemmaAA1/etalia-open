@@ -57,6 +57,7 @@ class PaperViewSet(MultiSerializerMixin,
     * **time-span=(int)**: Fetch only papers published in the past time-span days
     * **journal_id[]=(int)**: Filter papers by journal_id
     * **author_id[]=(int)**: Filter papers by author_id
+    * **search=(str)**: Filter papers on title, journal, authors first and last names
 
     ** Sub-routes: **
 
@@ -166,6 +167,16 @@ class PaperViewSet(MultiSerializerMixin,
         if aids:
             queryset = queryset.filter(
                 Q(authors__in=aids)
+            )
+
+        # search
+        search = self.request.query_params.get('search', None)
+        if search is not None:
+            queryset = self.queryset.filter(
+                Q(title__icontains=search) |
+                Q(journal__title__icontains=search) |
+                Q(authors__first_name__icontains=search) |
+                Q(authors__last_name__icontains=search)
             )
 
         # Paper feeds

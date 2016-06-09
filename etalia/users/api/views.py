@@ -44,6 +44,7 @@ class UserViewSet(MultiSerializerMixin,
 
     * **first-name=(str)**: Filter User list based on first name
     * **last-name=(str)**: Filter User list based on last name
+    * **search=(str)**: Filter User list based on last name, first name and institution
 
     ** Detail: **
 
@@ -74,6 +75,15 @@ class UserViewSet(MultiSerializerMixin,
         last_name = self.request.query_params.get('last-name', None)
         if last_name is not None:
             queryset = self.queryset.filter(last_name__icontains=last_name)
+
+        # search
+        search = self.request.query_params.get('search', None)
+        if search is not None:
+            queryset = self.queryset.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(affiliation__institution__icontains=search)
+            )
 
         return queryset
 
