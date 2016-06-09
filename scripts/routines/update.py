@@ -21,6 +21,7 @@ NB_THREADS = 50
 NB_POSTS = 200
 NB_COMMENTS = 200
 NB_USERS = 50
+NB_OAUTH_INVITE = 5
 NB_RELATIONSHIPS = 100
 NB_THREADUSER = 400
 NB_THREADS_USER = 10
@@ -88,6 +89,17 @@ def update_oauth_user(email):
                               field_values={'user': user})
         fixture.create(NB_THREADUSER_USER -
                        ThreadUser.objects.filter(user=user).count())
+
+    # Add invites
+    if ThreadUserInvite.objects.filter(to_user=user).count() < NB_OAUTH_INVITE:
+        nb_threads = Thread.objects.all().exclude(user=user).count()
+        idx = [random.randint(0, nb_threads-1) for _ in range(NB_OAUTH_INVITE)]
+        threads = [Thread.objects.all().exclude(user=user)[i] for i in idx]
+        for thread in threads:
+            ThreadUserInvite.objects.get_or_create(
+                        thread=thread,
+                        from_user=thread.user,
+                        to_user=user)
 
     # Relationships
     if Relationship.objects.filter(from_user=user).count() < NB_RELATIONSHIPS_USER:
