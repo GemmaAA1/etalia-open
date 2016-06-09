@@ -270,12 +270,15 @@ class ThreadViewSet(MultiSerializerMixin,
     def filters(self, request):
         tids = self.get_queryset().values_list('id', flat=True)
         values = ', '.join(['({0})'.format(i) for i in tids])
-        qu = User.objects.raw(
-                    "SELECT * "
-                    "FROM users_user u "
-                    "LEFT JOIN threads_thread t ON u.id = t.user_id "
-                    "WHERE t.id IN (VALUES {0}) ".format(values))
-        du = list(qu)
+        du = []
+        if values:
+            qu = User.objects.raw(
+                        "SELECT * "
+                        "FROM users_user u "
+                        "LEFT JOIN threads_thread t ON u.id = t.user_id "
+                        "WHERE t.id IN (VALUES {0}) ".format(values))
+            du = list(qu)
+
         us_count = Counter(du).most_common()
         users = []
         for u, c in us_count[:self.size_max_user_filter]:
