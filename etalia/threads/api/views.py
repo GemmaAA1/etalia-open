@@ -71,6 +71,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
     * **user_id[]=(int)**: Filter threads by user_id
     * **type[]=(int)**: Filter threads by type
+    * **search=(str)**: Filter threads on title, owner first and last names
 
     ** Sub-routes: **
 
@@ -204,9 +205,10 @@ class ThreadViewSet(MultiSerializerMixin,
         # base queryset
         queryset = Thread.objects.all() \
             .exclude(Q(published_at=None) & ~Q(user=self.request.user)) \
-            .exclude(Q(privacy=THREAD_PRIVATE) & ~(
-            Q(threaduser__user=self.request.user) & Q(
-                threaduser__participate=THREAD_JOINED)))
+            .exclude(Q(privacy=THREAD_PRIVATE) &
+                     ~(Q(threaduser__user=self.request.user) &
+                       Q(threaduser__participate=THREAD_JOINED))
+                     )
 
         # boolean filters
         for key, props in bool_filters_def.items():
@@ -239,6 +241,16 @@ class ThreadViewSet(MultiSerializerMixin,
             cutoff_datetime = timezone.now() - timezone.timedelta(
                 days=int(time_span))
             queryset = queryset.filter(published_at__gt=cutoff_datetime)
+
+        # search
+        search = self.request.query_params.get('search', None)
+        if search is not None:
+            queryset = self.queryset.filter(
+                Q(title__icontains=search) |
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search)
+            )
+
 
         order_by = self.request.query_params.get('sort-by', None)
         if order_by:
