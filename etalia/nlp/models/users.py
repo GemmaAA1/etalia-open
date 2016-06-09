@@ -184,7 +184,10 @@ class UserFingerprint(TimeStampedModel):
             if not d.user_id == self.user_id:
                 data['thread-users-ids'].append(d.user_id)
             data['thread-embedding'].append(d.vector[:self.embedding_size])
-        data['thread-embedding'] = np.array(data['thread-embedding'])
+        if data['thread-embedding']:
+            data['thread-embedding'] = np.array(data['thread-embedding'])
+        else:
+            data['thread-embedding'] = np.zeros((1, self.embedding_size), )
 
         owner_count = Counter(data['thread-users-ids']).most_common()
 
