@@ -45,27 +45,31 @@ CELERYBEAT_SCHEDULE = {
     },
     'update-userlib-all': {
         'task': 'etalia.users.tasks.userlib_update_all',
-        'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
+        'schedule': crontab(minute=0, hour=1),  # every day at UTC+1
     },
     'update-pe-all': {
         'task': 'etalia.nlp.tasks.paperengine_update_all',
-        'schedule': crontab(minute=0, hour=0),  # every day at UTC+0
+        'schedule': crontab(minute=0, hour=2),  # every day at UTC+2
     },
     'update-te-all': {
         'task': 'etalia.nlp.tasks.threadengine_update_all',
-        'schedule': crontab(minute=30, hour=0),  # every day at UTC+0
+        'schedule': crontab(minute=0, hour=3),  # every day at UTC+3
+    },
+    'update-all-userfingerprints': {
+        'task': 'etalia.nlp.tasks.userfingerprints_update_all',
+        'schedule': crontab(minute=0, hour=4, day_of_week='*/2'),  # every 2 days at UTC+4
     },
     'update-all-main-streams': {
         'task': 'etalia.feeds.tasks.update_all_main_streams',
-        'schedule': crontab(minute=0, hour=1),  # every day at UTC+1
+        'schedule': crontab(minute=0, hour=5),  # every day at UTC+5
     },
     'update-all-main-trends': {
         'task': 'etalia.feeds.tasks.update_all_main_trends',
-        'schedule': crontab(minute=0, hour=2),  # every day at UTC+2
+        'schedule': crontab(minute=0, hour=6),  # every day at UTC+6
     },
     'pubmed-once-a-day': {
         'task': 'etalia.consumers.tasks.pubmed_run_all',
-        'schedule': crontab(minute=0, hour=6),  # daily at UCT+6
+        'schedule': crontab(minute=0, hour=7),  # daily at UTC+6
     },
     'arxiv-once-a-day': {
         'task': 'etalia.consumers.tasks.arxiv_run_all',

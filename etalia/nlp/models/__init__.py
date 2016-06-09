@@ -5,3 +5,4 @@ from .core import Model, PaperEngine, ThreadEngine
 from .library import PaperNeighbors, PaperVectors, JournalNeighbors, \
     JournalVectors
 from .threads import ThreadVectors, ThreadNeighbors
+from .users import UserFingerprint

@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from .models import Model, PaperEngine, ThreadEngine
+from .models import UserFingerprint
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,13 @@ def threadengine_update_all():
     for teid in te_ids:
         te = ThreadEngine.objects.load(id=teid, is_active=True)
         te.update()
+
+
+@app.task()
+def userfingerprints_update_all():
+    ufps = UserFingerprint.objects.all()
+    for ufp in ufps:
+        ufp.update()
 
 
 @app.task()
