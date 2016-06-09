@@ -192,7 +192,7 @@ def fix_thread_logic(threads, posts, comments):
 
     # fix thread logic type
     for thread in threads:
-        if thread.type == 1:
+        if thread.type == THREAD_QUESTION:
             thread.paper = None
             thread.save()
     # fix thread members + Invites
@@ -456,7 +456,8 @@ if __name__ == '__main__':
     from etalia.nlp.models import ThreadEngine, PaperEngine, Model
     from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
         ThreadUser, ThreadUserInvite
-    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED
+    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED, \
+        THREAD_PAPER, THREAD_QUESTION
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
     from utils.avatar import AvatarGenerator
