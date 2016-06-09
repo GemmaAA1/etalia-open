@@ -150,48 +150,48 @@ class ThreadViewSet(MultiSerializerMixin,
         feed_name = self.request.query_params.get('feed', 'main')
         bool_filters_def = {
             'owned': {
-                'query': [Q(threaduser__user=self.request.user)],
+                'toggle': [Q(threaduser__user=self.request.user)],
             },
             'joined': {
-                'query': [Q(threaduser__user=self.request.user),
-                          Q(threaduser__participate=THREAD_JOINED)],
+                'base': [Q(threaduser__user=self.request.user), ],
+                'toggle': [Q(threaduser__participate=THREAD_JOINED), ]
             },
             'pinned': {
-                'query': [Q(threaduser__user=self.request.user),
-                          Q(threaduser__watch=THREAD_PINNED)],
+                'base': [Q(threaduser__user=self.request.user), ],
+                'toggle': [Q(threaduser__participate=THREAD_PINNED), ]
             },
             'left': {
-                'query': [Q(threaduser__user=self.request.user),
-                          Q(threaduser__participate=THREAD_LEFT)],
+                'base': [Q(threaduser__user=self.request.user), ],
+                'toggle': [Q(threaduser__participate=THREAD_LEFT), ]
             },
             'banned': {
-                'query': [Q(threaduser__user=self.request.user),
-                          Q(threaduser__watch=THREAD_BANNED)],
+                'base': [Q(threaduser__user=self.request.user), ],
+                'toggle': [Q(threaduser__watch=THREAD_BANNED), ]
             },
             'published': {
-                'query': [Q(user=self.request.user),
-                          ~Q(published_at=None)],
+                'base': [Q(user=self.request.user), ],
+                'toggle': [~Q(published_at=None), ],
             },
             'scored': {
-                'query': [Q(threadfeedthreads__threadfeed__name=feed_name),
-                          Q(threadfeedthreads__threadfeed__user=self.request.user)],
+                'base': [Q(threadfeedthreads__threadfeed__name=feed_name),
+                         Q(threadfeedthreads__threadfeed__user=self.request.user)],
             },
             'private': {
-                'query': [Q(privacy=THREAD_PRIVATE)],
+                'toggle': [Q(privacy=THREAD_PRIVATE)],
             },
             'public': {
-                'query': [Q(privacy=THREAD_PUBLIC)],
+                'toggle': [Q(privacy=THREAD_PUBLIC)],
             },
             'invited': {
-                'query': [Q(threaduserinvite__to_user=self.request.user)],
+                'toggle': [Q(threaduserinvite__to_user=self.request.user)],
             },
             'invited-pending': {
-                'query': [Q(threaduserinvite__to_user=self.request.user),
-                          Q(threaduserinvite__status=THREAD_INVITE_PENDING)],
+                'base': [Q(threaduserinvite__to_user=self.request.user), ],
+                'toggle': [Q(threaduserinvite__status=THREAD_INVITE_PENDING), ],
             },
             'invited-accepted': {
-                'query': [Q(threaduserinvite__to_user=self.request.user),
-                          Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED)],
+                'base': [Q(threaduserinvite__to_user=self.request.user), ],
+                'toggle': [Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED), ],
             },
         }
 
@@ -213,11 +213,16 @@ class ThreadViewSet(MultiSerializerMixin,
         # boolean filters
         for key, props in bool_filters_def.items():
             param = self.request.query_params.get(key, None)
-            query = reduce(operator.and_, props['query'])
-            if param == '1':
-                queryset = queryset.filter(query)
-            elif param == '0':
-                queryset = queryset.exclude(query)
+            if param is not None and not param == 'null':
+                if props.get('base', None):
+                    base = reduce(operator.and_, props['base'])
+                    queryset = queryset.filter(base)
+                if props.get('toggle', None):
+                    toggle = reduce(operator.and_, props['toggle'])
+                    if param == '1':
+                        queryset = queryset.filter(toggle)
+                    elif param == '0':
+                        queryset = queryset.exclude(toggle)
 
         # Thread Types
         thread_types = [int(id_) for id_ in self.request.query_params.getlist('type[]', None)]
