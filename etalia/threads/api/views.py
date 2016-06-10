@@ -156,13 +156,13 @@ class ThreadViewSet(MultiSerializerMixin,
                 'base': [Q(threaduser__user=self.request.user), ],
                 'toggle': [Q(threaduser__participate=THREAD_JOINED), ]
             },
-            'pinned': {
-                'base': [Q(threaduser__user=self.request.user), ],
-                'toggle': [Q(threaduser__participate=THREAD_PINNED), ]
-            },
             'left': {
                 'base': [Q(threaduser__user=self.request.user), ],
                 'toggle': [Q(threaduser__participate=THREAD_LEFT), ]
+            },
+            'pinned': {
+                'base': [Q(threaduser__user=self.request.user), ],
+                'toggle': [Q(threaduser__watch=THREAD_PINNED), ]
             },
             'banned': {
                 'base': [Q(threaduser__user=self.request.user), ],
@@ -257,7 +257,7 @@ class ThreadViewSet(MultiSerializerMixin,
                               Q(user__last_name__icontains=word))
             if subset:
                 queryset = queryset\
-                    .filter(reduce(operator.and_, subset))\
+                    .filter(reduce(operator.or_, subset))\
                     .distinct()
 
         order_by = self.request.query_params.get('sort-by', 'null')
