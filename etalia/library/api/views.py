@@ -128,20 +128,20 @@ class PaperViewSet(MultiSerializerMixin,
         # Bool filters definition
         bool_filters_def = {
             'added': {
-                'query': [Q(paperuser__user=self.request.user),
-                          Q(paperuser__store=PAPER_ADDED)],
+                'base': [Q(paperuser__user=self.request.user), ],
+                'toggle': [Q(paperuser__store=PAPER_ADDED), ]
             },
             'trashed': {
-                'query': [Q(paperuser__user=self.request.user),
-                          Q(paperuser__store=PAPER_TRASHED)],
+                'base': [Q(paperuser__user=self.request.user), ],
+                'toggle': [Q(paperuser__store=PAPER_TRASHED), ]
             },
             'pinned': {
-                'query': [Q(paperuser__user=self.request.user),
-                          Q(paperuser__watch=PAPER_PINNED)],
+                'base': [Q(paperuser__user=self.request.user), ],
+                'toggle': [Q(paperuser__watch=PAPER_PINNED), ]
             },
             'banned': {
-                'query': [Q(paperuser__user=self.request.user),
-                          Q(paperuser__watch=PAPER_BANNED)],
+                'base': [Q(paperuser__user=self.request.user), ],
+                'toggle': [Q(paperuser__watch=PAPER_BANNED), ]
             },
         }
 
@@ -150,12 +150,17 @@ class PaperViewSet(MultiSerializerMixin,
 
         # boolean filters
         for key, props in bool_filters_def.items():
-            param = self.request.query_params.get(key, None)
-            query = reduce(operator.and_, props['query'])
-            if param == '1':
-                queryset = queryset.filter(query)
-            elif param == '0':
-                queryset = queryset.exclude(query)
+            param = self.request.query_params.get(key, 'null')
+            if not param == 'null':
+                if props.get('base', None):
+                    base = reduce(operator.and_, props['base'])
+                    queryset = queryset.filter(base)
+                if props.get('toggle', None):
+                    toggle = reduce(operator.and_, props['toggle'])
+                    if param == '1':
+                        queryset = queryset.filter(toggle)
+                    elif param == '0':
+                        queryset = queryset.exclude(toggle)
 
         # Filters
         jids = [int(id_) for id_ in self.request.query_params.getlist('journal_id[]', None)]
@@ -170,8 +175,8 @@ class PaperViewSet(MultiSerializerMixin,
             )
 
         # search
-        search = self.request.query_params.get('search', None)
-        if search is not None and not search == 'null':
+        search = self.request.query_params.get('search', 'null')
+        if not search == 'null':
             queryset = queryset.filter(
                 Q(title__icontains=search) |
                 Q(journal__title__icontains=search) |
@@ -180,10 +185,10 @@ class PaperViewSet(MultiSerializerMixin,
             )
 
         # Paper feeds
-        scored = self.request.query_params.get('scored', None)
+        scored = self.request.query_params.get('scored', 'null')
         type = self.request.query_params.get('type', 'stream')
         feed_name = self.request.query_params.get('feed', 'main')
-        time_span = self.request.query_params.get('time-span', None)
+        time_span = self.request.query_params.get('time-span', 'null')
         if scored == '1':
             if type == 'stream':
                 queryset = queryset.filter(

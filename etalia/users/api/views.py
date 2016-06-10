@@ -68,17 +68,17 @@ class UserViewSet(MultiSerializerMixin,
         queryset = self.queryset
 
         # filter first_name
-        first_name = self.request.query_params.get('first-name', None)
-        if first_name is not None:
+        first_name = self.request.query_params.get('first-name', 'null')
+        if not first_name == 'null':
             queryset = queryset.filter(first_name__icontains=first_name)
         # filter first_name
-        last_name = self.request.query_params.get('last-name', None)
-        if last_name is not None:
+        last_name = self.request.query_params.get('last-name', 'null')
+        if not last_name == 'null':
             queryset = queryset.filter(last_name__icontains=last_name)
 
         # search
-        search = self.request.query_params.get('search', None)
-        if search is not None and not search == 'null':
+        search = self.request.query_params.get('search', 'null')
+        if not search == 'null':
             queryset = queryset.filter(
                 Q(first_name__icontains=search) |
                 Q(last_name__icontains=search) |
@@ -241,23 +241,6 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     permissions_classes = (permissions.IsAuthenticated,
                            IsOwner)
 
-    def validate_query_params(self):
-        for key, props in self.query_params_props.items():
-            param = self.request.query_params.get(key, None)
-            if param:
-                try:
-                    val = props['type'](param)
-                    if 'min' in props:
-                        assert val >= props['min'], \
-                            'is inferior to allowed min ({min})'.format(
-                                min=props['min'])
-                    if 'max' in props:
-                        assert val <= props['max'], \
-                            'is superior to allowed max ({max})'.format(
-                                max=props['max'])
-                except (ValueError, AssertionError) as err:
-                    raise ParseError('{key}: {err}'.format(key=key, err=err))
-
     def get_queryset(self):
 
         # to raise proper 403 status code on not allowed access
@@ -266,15 +249,15 @@ class RelationshipViewSet(viewsets.ModelViewSet):
                 filter(Q(from_user=self.request.user) |
                        Q(to_user=self.request.user))
 
-            if 'status' in self.request.query_params.keys():
-                param = self.request.query_params.get('status', None)
-                queryset = queryset.filter(status=param)
-            if 'from_user' in self.request.query_params.keys():
-                param = self.request.query_params.get('from-user', None)
-                queryset = queryset.filter(from_user=param)
-            if 'to_user' in self.request.query_params.keys():
-                param = self.request.query_params.get('to-user', None)
-                queryset = queryset.filter(to_user=param)
+            status = self.request.query_params.get('status', 'null')
+            if not status == 'null':
+                queryset = queryset.filter(status=status)
+            from_user = self.request.query_params.get('from_user', 'null')
+            if not from_user == 'null':
+                queryset = queryset.filter(from_user=from_user)
+            to_user = self.request.query_params.get('to_user', 'null')
+            if not to_user == 'null':
+                queryset = queryset.filter(to_user=to_user)
 
             return queryset
         return Relationship.objects.all()

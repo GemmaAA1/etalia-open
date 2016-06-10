@@ -212,8 +212,8 @@ class ThreadViewSet(MultiSerializerMixin,
 
         # boolean filters
         for key, props in bool_filters_def.items():
-            param = self.request.query_params.get(key, None)
-            if param is not None and not param == 'null':
+            param = self.request.query_params.get(key, 'null')
+            if not param == 'null':
                 if props.get('base', None):
                     base = reduce(operator.and_, props['base'])
                     queryset = queryset.filter(base)
@@ -241,23 +241,23 @@ class ThreadViewSet(MultiSerializerMixin,
             )
 
         # time-span filter
-        time_span = self.request.query_params.get('time-span', None)
-        if time_span:
+        time_span = self.request.query_params.get('time-span', 'null')
+        if not time_span == 'null':
             cutoff_datetime = timezone.now() - timezone.timedelta(
                 days=int(time_span))
             queryset = queryset.filter(published_at__gt=cutoff_datetime)
 
         # search
-        search = self.request.query_params.get('search', None)
-        if search is not None and not search == 'null':
+        search = self.request.query_params.get('search', 'null')
+        if not search == 'null':
             queryset = queryset.filter(
                 Q(title__icontains=search) |
                 Q(user__first_name__icontains=search) |
                 Q(user__last_name__icontains=search)
             )
 
-        order_by = self.request.query_params.get('sort-by', None)
-        if order_by:
+        order_by = self.request.query_params.get('sort-by', 'null')
+        if not order_by == 'null':
             queryset = queryset.order_by(order_by_map.get(order_by))
 
         return queryset
@@ -349,8 +349,8 @@ class ThreadPostViewSet(MultiSerializerMixin,
             queryset = ThreadPost.objects.filter(thread__in=threads_joined)
 
             # filter based on thread_id
-            thread_id = self.request.query_params.get('thread_id', None)
-            if thread_id is not None:
+            thread_id = self.request.query_params.get('thread_id', 'null')
+            if not thread_id == 'null':
                 queryset = queryset.filter(thread_id=thread_id)
 
             return queryset
@@ -397,8 +397,8 @@ class ThreadCommentViewSet(MultiSerializerMixin,
                 post__thread__in=threads_joined)
 
             # filter based on post_id
-            post_id = self.request.query_params.get('post_id', None)
-            if post_id is not None:
+            post_id = self.request.query_params.get('post_id', 'null')
+            if not post_id == 'null':
                 queryset = queryset.filter(post_id=post_id)
 
             return queryset
@@ -486,16 +486,16 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
                 Q(from_user=self.request.user) |
                 Q(to_user=self.request.user))
             # filter from_user
-            from_user = self.request.query_params.get('from-user', None)
-            if from_user is not None:
+            from_user = self.request.query_params.get('from-user', 'null')
+            if not from_user == 'null':
                 queryset = queryset.filter(from_user=from_user)
             # filter to_user
-            to_user = self.request.query_params.get('to-user', None)
-            if to_user is not None:
+            to_user = self.request.query_params.get('to-user', 'null')
+            if not to_user == 'null':
                 queryset = queryset.filter(to_user=to_user)
             # filter status
-            status = self.request.query_params.get('status', None)
-            if status is not None:
+            status = self.request.query_params.get('status', 'null')
+            if not status == 'null':
                 queryset = queryset.filter(status=status)
 
             return queryset
