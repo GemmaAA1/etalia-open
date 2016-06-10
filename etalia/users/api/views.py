@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import operator
+from functools import reduce
 from django.db.models import Q
 
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, mixins
-from rest_framework.exceptions import ParseError
 
 from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly
 
@@ -79,11 +80,17 @@ class UserViewSet(MultiSerializerMixin,
         # search
         search = self.request.query_params.get('search', 'null')
         if not search == 'null':
-            queryset = queryset.filter(
-                Q(first_name__icontains=search) |
-                Q(last_name__icontains=search) |
-                Q(affiliation__institution__icontains=search)
-            )
+            subset = []
+            for word in search.split():
+                subset.append(
+                    Q(first_name__icontains=word) |
+                    Q(last_name__icontains=word) |
+                    Q(affiliation__institution__icontains=word)
+                )
+            if subset:
+                queryset = queryset\
+                    .filter(reduce(operator.and_, subset))\
+                    .distinct()
 
         return queryset
 

@@ -177,12 +177,18 @@ class PaperViewSet(MultiSerializerMixin,
         # search
         search = self.request.query_params.get('search', 'null')
         if not search == 'null':
-            queryset = queryset.filter(
-                Q(title__icontains=search) |
-                Q(journal__title__icontains=search) |
-                Q(authors__first_name__icontains=search) |
-                Q(authors__last_name__icontains=search)
-            )
+            subset = []
+            for word in search.split():
+                subset.append(
+                    Q(title__icontains=word) |
+                    Q(journal__title__icontains=word) |
+                    Q(authors__first_name__icontains=word) |
+                    Q(authors__last_name__icontains=word)
+                )
+            if subset:
+                queryset = queryset\
+                    .filter(reduce(operator.and_, subset))\
+                    .distinct()
 
         # Paper feeds
         scored = self.request.query_params.get('scored', 'null')

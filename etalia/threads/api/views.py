@@ -250,11 +250,15 @@ class ThreadViewSet(MultiSerializerMixin,
         # search
         search = self.request.query_params.get('search', 'null')
         if not search == 'null':
-            queryset = queryset.filter(
-                Q(title__icontains=search) |
-                Q(user__first_name__icontains=search) |
-                Q(user__last_name__icontains=search)
-            )
+            subset = []
+            for word in search.split():
+                subset.append(Q(title__icontains=word) |
+                              Q(user__first_name__icontains=word) |
+                              Q(user__last_name__icontains=word))
+            if subset:
+                queryset = queryset\
+                    .filter(reduce(operator.and_, subset))\
+                    .distinct()
 
         order_by = self.request.query_params.get('sort-by', 'null')
         if not order_by == 'null':
@@ -300,6 +304,27 @@ class ThreadViewSet(MultiSerializerMixin,
         for u, c in us_count[:self.size_max_user_filter]:
             u.count = c
             users.append(u)
+
+        # # Move preferential users to top (followed and owner of threads joined)
+        # qu = User.objects.raw(
+        #     "SELECT id "
+        #     "FROM users_user u "
+        #     "LEFT JOIN threads_threaduser tu ON u.id = tu.user_id "
+        #     "LEFT JOIN users_relationship r ON u.id = r.to_user_id "
+        #     "WHERE tu.participate = %s"
+        #     "   AND tu.user_id = %s"
+        #     "   AND r.from_user_id = %s", (THREAD_JOINED, request.user.id, request.user.id)
+        # )
+        #
+        # qu = User.objects.raw(
+        #     "SELECT u.id "
+        #     "FROM users_user u "
+        #     "LEFT JOIN threads_threaduser tu ON u.id = tu.user_id "
+        #     "LEFT JOIN users_relationship r ON u.id = r.to_user_id "
+        #     "WHERE tu.participate = %s"
+        #     "   AND tu.user_id = %s"
+        #     "   OR r.from_user_id = %s", (1, 55, 55)
+        # )
 
         kwargs = {'context': self.get_serializer_context()}
         serializer = ThreadFilterSerializer({'users': users}, **kwargs)
