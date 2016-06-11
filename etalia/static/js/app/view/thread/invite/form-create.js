@@ -7,26 +7,6 @@ define(['app', 'app/model/thread/invite', 'select2'], function (App) {
                 type: 'Select',
                 title: 'Who',
                 options: [],
-                /*options: function(callback) {
-                    var users = new App.Model.Users();
-
-                    // TODO users.url
-                    users
-                        .fetch()
-                        .then(function() {
-                            var options = [];
-                            users.each(function (user) {
-                                var label = String(user.get('first_name') + ' ' + user.get('last_name')).trim();
-                                if (0 == label.length) {
-                                    label = '&lt;' + user.get('email') + '&gt;';
-                                }
-                                options.push({val: user.get('id'), label: label});
-                            });
-                            callback(options);
-                        }, function(jqXHR, textStatus, errorThrown) {
-                            throw textStatus + ' ' + errorThrown;
-                        });
-                },*/
                 validators: ['required', App.Model.Invite.validators.to_user]
             }
         },
@@ -76,7 +56,7 @@ define(['app', 'app/model/thread/invite', 'select2'], function (App) {
                     delay: 250,
                     data: function (params) {
                         return {
-                            'last-name': params.term, // search term
+                            search: params.term, // search term
                             page: params.page
                         };
                     },

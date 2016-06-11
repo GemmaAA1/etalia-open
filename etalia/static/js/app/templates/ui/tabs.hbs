@@ -3,7 +3,7 @@
         {{#each tabs as |tab|}}
         <li>
             <a href="javascript: void(0)" data-name="{{tab.name}}"{{#if tab.active }} class="active"{{/if}}>
-                <strong>{{tab.title}}</strong> {{#ifCond tab.count '>' 0}}(<span>{{tab.count}}</span>){{/ifCond}}
+                <strong>{{tab.title}}</strong> {{#ifCond tab.count '>' 0}}<span>({{tab.count}})</span>{{/ifCond}}
             </a>
         </li>
         {{/each}}

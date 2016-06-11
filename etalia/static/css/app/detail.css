@@ -179,6 +179,10 @@ body.detail-opened #detail {
     padding-bottom: 15px;
 }
 
+#detail .thumb-list .card {
+    margin-right: 0;
+}
+
 #detail .thumb-list .card .title {
     font-size: 16px;
     line-height: 20px;

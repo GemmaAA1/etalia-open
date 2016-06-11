@@ -74,7 +74,7 @@ define([
         initialize: function (options) {
             // List controls
             this.listControls = new ListControls();
-            this.listenTo(this.listControls, "change", this._loadFilters);
+            this.listenTo(this.listControls, "change", this.onListControlsChange);
 
             // Controls (top bar)
             if (!options.controlsView) {
@@ -475,56 +475,71 @@ define([
                 });
         },
 
+        onListControlsChange: function() {
+            this._loadFilters();
+
+            this.$('#thread-toggle-not-published')
+                .toggleClass('active', this.listControls.get('not_published'));
+            this.$('#thread-toggle-type-paper')
+                .toggleClass('active', this.listControls.get('type_paper'));
+            this.$('#thread-toggle-type-question')
+                .toggleClass('active', this.listControls.get('type_question'));
+            this.$('#thread-toggle-private')
+                .toggleClass('active', this.listControls.get('private'));
+        },
+
         onToggleNotPublishedClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('not_published');
-            this.listControls.set('not_published', active);
-
-            if (active) {
-                this.$('#thread-toggle-not-published').addClass('active');
-            } else {
-                this.$('#thread-toggle-not-published').removeClass('active');
-            }
+            this.listControls.set('not_published', !this.listControls.get('not_published'));
         },
 
         onToggleTypePaperClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('type_paper');
-            this.listControls.set('type_paper', active);
+            var paperActive = this.listControls.get('type_paper'),
+                questionActive = this.listControls.get('type_question');
 
-            if (active) {
-                this.$('#thread-toggle-type-paper').addClass('active');
+            if (paperActive) {
+                paperActive = false;
             } else {
-                this.$('#thread-toggle-type-paper').removeClass('active');
+                if (questionActive) {
+                    questionActive = false;
+                }
+                paperActive = true;
             }
+
+            this.listControls.set({
+                type_question: questionActive,
+                type_paper: paperActive
+            });
         },
 
         onToggleTypeQuestionClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('type_question');
-            this.listControls.set('type_question', active);
+            var paperActive = this.listControls.get('type_paper'),
+                questionActive = this.listControls.get('type_question');
 
-            if (active) {
-                this.$('#thread-toggle-type-question').addClass('active');
+            if (questionActive) {
+                questionActive = false;
             } else {
-                this.$('#thread-toggle-type-question').removeClass('active');
+                if (paperActive) {
+                    paperActive = false;
+                }
+                questionActive = true;
             }
+
+            this.listControls.set({
+                type_question: questionActive,
+                type_paper: paperActive
+            });
         },
 
         onTogglePrivateClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('private');
-            this.listControls.set('private', active);
-
-            if (active) {
-                this.$('#thread-toggle-private').addClass('active');
-            } else {
-                this.$('#thread-toggle-private').removeClass('active');
-            }
+            this.listControls.set('private', !this.listControls.get('private'));
         }
     });
 

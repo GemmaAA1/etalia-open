@@ -23,8 +23,8 @@ define([
                 title: 'Threads',
                 count: 0,
                 data: {
-                    view: 'nested'
-                    //joined: "1",
+                    view: 'nested',
+                    joined: "1"
                     //banned: "0"
                 },
                 actions: {
