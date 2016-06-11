@@ -1,7 +1,8 @@
 define([
     'app',
-    'text!app/templates/thread/neighbors.hbs'
-], function (App, template) {
+    'text!app/templates/thread/neighbors.hbs',
+    'app/view/detail'
+], function (App, template, Detail) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -14,9 +15,11 @@ define([
         template: App.Handlebars.compile(template),
 
         threadId: null,
-        activeTimespan: null,
+        buttons: null,
+        returnCallback: null,
 
         thumbPrefix: 'thread-neighbors-thumb-',
+        activeTimespan: null,
         listView: null,
 
         events: {
@@ -27,6 +30,14 @@ define([
             this.threadId = parseInt(options.thread_id);
             if (!this.threadId) {
                 throw 'options.thread_id is mandatory';
+            }
+            if (!options.buttons) {
+                throw 'options.buttons is mandatory';
+            }
+            this.buttons = options.buttons;
+            this.returnCallback = options.return_callback;
+            if (!(typeof this.returnCallback == 'function')) {
+                throw 'options.return_callback is mandatory';
             }
 
             this.collection = new App.Model.Threads();
@@ -43,7 +54,24 @@ define([
         },
 
         openDetail: function(model) {
+            var options = {
+                model: model,
+                buttons: this.buttons
+            };
+            var detailModel = new App.Model.Detail({
+                view: new App.View.Thread.Detail(options)
+            });
+            detailModel.setCenterButton({
+                icon: 'close',
+                title: 'Back to previous thread',
+                callback: this.returnCallback
+            });
 
+            model
+                .fetch({data: {view: 'nested'}})
+                .done(function() {
+                    Detail.setModel(detailModel);
+                });
         },
 
         render: function () {

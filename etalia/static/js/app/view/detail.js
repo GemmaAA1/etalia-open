@@ -45,14 +45,25 @@ define([
             "click": 'onClick'
         },
 
-        initialize: function (options) {
-            if (!options.model) {
-                throw 'options.model is mandatory';
+        clear: function () {
+            if (this.model) {
+                var view = this.model.get('view');
+                this.off(view, 'close');
+                this.off(view, 'rendered');
+                this.model.destroy();
+                this.model = null;
             }
+            this.clearSubViews();
         },
 
-        render: function () {
-            App.$('div[data-detail-placeholder]').replaceWith(this.$el.html(this.template({})));
+        setModel: function (model) {
+            if (!model) {
+                return;
+            }
+
+            this.clear();
+
+            this.model = model;
 
             var that = this,
                 $bar = this.$('.bar > .wrapper > .inner').empty(),
@@ -77,15 +88,19 @@ define([
             $document.append(view.$el);
             that.pushSubView(view);
 
-            this.listenToOnce(view, 'close', function() {
-                that.close();
-            });
-
-            // Sticky actions
-            that.applySticky();
+            this.listenToOnce(view, 'close', that.close);
             this.listenTo(view, 'rendered', that.applySticky);
+            that.applySticky();
+
+            this.$('.document').scrollTop(0);
 
             return this.open();
+        },
+
+        render: function () {
+            App.$('div[data-detail-placeholder]').replaceWith(this.$el.html(this.template({})));
+
+            return this;
         },
 
         applySticky: function() {
@@ -122,5 +137,7 @@ define([
         }
     });
 
-    return App.View.Detail;
+    return new App.View.Detail().render();
+
+    //return App.View.Detail;
 });

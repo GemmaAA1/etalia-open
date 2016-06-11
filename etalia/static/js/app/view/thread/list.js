@@ -1,14 +1,14 @@
 define([
     'app',
     'text!app/templates/thread/list.hbs',
+    'app/view/detail',
     'app/model/thread/thread',
     'app/view/list',
-    'app/view/detail',
     'app/view/ui/modal',
     'app/view/thread/detail',
     'app/view/thread/thumb',
     'app/view/thread/invite/treat'
-], function (App, template) {
+], function (App, template, Detail) {
 
     var $window = $(window),
         $document = $(document);
@@ -55,9 +55,7 @@ define([
         controlsView: null,
         tabsView: null,
         filtersView: null,
-
         listView: null,
-        detailView: null,
 
         invites: null,
 
@@ -105,27 +103,6 @@ define([
             this.listenTo(this, "model:detail", this.openDetail);
 
             this.onWindowScroll = App._.bind(this.onWindowScroll, this);
-
-            var that = this;
-            // TODO
-            App.on('etalia.thread.pin', function(thread) {
-                console.log('On etalia.thread.pin', thread);
-            });
-            App.on('etalia.thread.unpin', function(thread) {
-                console.log('On etalia.thread.unpin', thread);
-            });
-            App.on('etalia.thread.ban', function(thread) {
-                console.log('On etalia.thread.ban', thread);
-            });
-            App.on('etalia.thread.unban', function(thread) {
-                console.log('On etalia.thread.unban', thread);
-            });
-            App.on('etalia.thread.join', function(thread) {
-                console.log('On etalia.thread.join', thread);
-            });
-            App.on('etalia.thread.leave', function(thread) {
-                console.log('On etalia.thread.leave', thread);
-            });
         },
 
         remove: function() {
@@ -325,7 +302,10 @@ define([
             }
 
             var that = this,
-                options = {model: model};
+                options = {
+                    model: model,
+                    listView: this
+                };
             if (this.tabsView.getActiveTab().actions) {
                 options.buttons = this.tabsView.getActiveTab().actions;
             }
@@ -337,7 +317,7 @@ define([
                 icon: 'close',
                 title: 'Back to threads list',
                 callback: function() {
-                    if (that.detailView) that.detailView.close();
+                    Detail.close();
                 }
             });
 
@@ -363,23 +343,10 @@ define([
                 });
             }
 
-            if (this.detailView) {
-                this.detailView.clearSubViews();
-                this.detailView.model.destroy();
-                this.detailView.model = detailModel;
-            } else {
-                this.detailView = new App.View.Detail({
-                    listView: this,
-                    model: detailModel
-                });
-                //this.listenTo(this.detailView, "detail:prev", this.openDetail);
-                //this.listenTo(this.detailView, "detail:next", this.openDetail);
-            }
-
             model
                 .fetch({data: {view: 'nested'}})
                 .done(function() {
-                    that.detailView.render();
+                    Detail.setModel(detailModel);
                 });
         },
 
