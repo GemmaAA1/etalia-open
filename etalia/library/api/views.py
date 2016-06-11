@@ -128,20 +128,24 @@ class PaperViewSet(MultiSerializerMixin,
         # Bool filters definition
         bool_filters_def = {
             'added': {
-                'base': [Q(paperuser__user=self.request.user), ],
-                'toggle': [Q(paperuser__store=PAPER_ADDED), ]
+                'base': [],
+                'toggle': [Q(paperuser__user=self.request.user),
+                           Q(paperuser__store=PAPER_ADDED), ]
             },
             'trashed': {
-                'base': [Q(paperuser__user=self.request.user), ],
-                'toggle': [Q(paperuser__store=PAPER_TRASHED), ]
+                'base': [],
+                'toggle': [Q(paperuser__user=self.request.user),
+                           Q(paperuser__store=PAPER_TRASHED), ]
             },
             'pinned': {
-                'base': [Q(paperuser__user=self.request.user), ],
-                'toggle': [Q(paperuser__watch=PAPER_PINNED), ]
+                'base': [],
+                'toggle': [Q(paperuser__user=self.request.user),
+                           Q(paperuser__watch=PAPER_PINNED), ]
             },
             'banned': {
-                'base': [Q(paperuser__user=self.request.user), ],
-                'toggle': [Q(paperuser__watch=PAPER_BANNED), ]
+                'base': [],
+                'toggle': [Q(paperuser__user=self.request.user),
+                           Q(paperuser__watch=PAPER_BANNED), ]
             },
         }
 

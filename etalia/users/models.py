@@ -396,6 +396,14 @@ class UserLibPaper(TimeStampedModel):
         return '{0}@{1}'.format(self.paper.short_title,
                                 self.userlib.user.email)
 
+    @property
+    def is_trashed(self):
+        #Deprecated with API
+        if self.paper.paperuser_set.filter(user_id=self.id).exists():
+            if self.paper.paperuser_set.filter(user_id=self.id).store == 2:
+                return True
+        return False
+
 
 class UserStatsManager(models.Manager):
     """"""

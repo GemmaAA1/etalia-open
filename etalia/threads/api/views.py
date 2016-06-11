@@ -153,28 +153,32 @@ class ThreadViewSet(MultiSerializerMixin,
                 'toggle': [Q(threaduser__user=self.request.user)],
             },
             'joined': {
-                'base': [Q(threaduser__user=self.request.user), ],
-                'toggle': [Q(threaduser__participate=THREAD_JOINED), ]
+                'base': [],
+                'toggle': [Q(threaduser__user=self.request.user),
+                           Q(threaduser__participate=THREAD_JOINED), ]
             },
             'left': {
-                'base': [Q(threaduser__user=self.request.user), ],
-                'toggle': [Q(threaduser__participate=THREAD_LEFT), ]
+                'base': [],
+                'toggle': [Q(threaduser__user=self.request.user),
+                           Q(threaduser__participate=THREAD_LEFT), ]
             },
             'pinned': {
-                'base': [Q(threaduser__user=self.request.user), ],
-                'toggle': [Q(threaduser__watch=THREAD_PINNED), ]
+                'base': [],
+                'toggle': [Q(threaduser__user=self.request.user),
+                           Q(threaduser__watch=THREAD_PINNED), ]
             },
             'banned': {
-                'base': [Q(threaduser__user=self.request.user), ],
-                'toggle': [Q(threaduser__watch=THREAD_BANNED), ]
+                'base': [],
+                'toggle': [Q(threaduser__user=self.request.user),
+                           Q(threaduser__watch=THREAD_BANNED), ]
             },
             'published': {
                 'base': [Q(user=self.request.user), ],
                 'toggle': [~Q(published_at=None), ],
             },
             'scored': {
-                'base': [Q(threadfeedthreads__threadfeed__name=feed_name),
-                         Q(threadfeedthreads__threadfeed__user=self.request.user)],
+                'toggle': [Q(threadfeedthreads__threadfeed__name=feed_name),
+                           Q(threadfeedthreads__threadfeed__user=self.request.user)],
             },
             'private': {
                 'toggle': [Q(privacy=THREAD_PRIVATE)],
@@ -186,12 +190,14 @@ class ThreadViewSet(MultiSerializerMixin,
                 'toggle': [Q(threaduserinvite__to_user=self.request.user)],
             },
             'invited-pending': {
-                'base': [Q(threaduserinvite__to_user=self.request.user), ],
-                'toggle': [Q(threaduserinvite__status=THREAD_INVITE_PENDING), ],
+                'base': [],
+                'toggle': [Q(threaduserinvite__to_user=self.request.user),
+                           Q(threaduserinvite__status=THREAD_INVITE_PENDING), ],
             },
             'invited-accepted': {
-                'base': [Q(threaduserinvite__to_user=self.request.user), ],
-                'toggle': [Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED), ],
+                'base': [],
+                'toggle': [Q(threaduserinvite__to_user=self.request.user),
+                           Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED), ],
             },
         }
 

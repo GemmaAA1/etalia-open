@@ -13,7 +13,8 @@ from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
-    THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING, THREAD_INVITE_ACCEPTED
+    THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING, THREAD_INVITE_ACCEPTED, \
+    THREAD_BANNED
 
 User = get_user_model()
 
@@ -182,6 +183,7 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
                 if paper is not None:
                     raise serializers.ValidationError(
                         "Thread type <Question> cannot have related paper")
+
         return data
 
 
@@ -241,6 +243,12 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
                     or value.user == self.context['request'].user:
                 raise serializers.ValidationError("Thread is private. You need an invite to join")
         return value
+
+    def validate(self, data):
+        """Check that you cannot banned a unpublished thread"""
+        if data['watch'] == THREAD_BANNED:
+            print('')
+        return data
 
 
 class ThreadUserUpdateSerializer(ThreadUserSerializer):
