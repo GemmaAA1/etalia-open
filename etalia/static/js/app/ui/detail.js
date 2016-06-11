@@ -12,8 +12,8 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
         this.$element = $(this.config.element);
         this.$document = this.$element.find(this.config.document);
 
-        this.$nextButton = $('.detail-nav-left button');
-        this.$prevButton = $('.detail-nav-right button');
+        this.$nextButton = $('.detail-nav-left');
+        this.$prevButton = $('.detail-nav-right');
 
         this.loaded = false;
         this.loadXhr = null;
@@ -134,7 +134,7 @@ define(['jquery', 'app/ui/paper'], function ($, Paper) {
 
         this.$document.hide().find('.inner').html('');
 
-        var $navButtons = $('.detail-nav');
+        var $navButtons = $('.detail-nav-left, .detail-nav-right');
         $navButtons.hide().removeAttr('title');
         $navButtons.find('> button').off('click');
         $navButtons.find('> span').empty();
