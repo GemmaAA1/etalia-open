@@ -105,6 +105,27 @@ define([
             this.listenTo(this, "model:detail", this.openDetail);
 
             this.onWindowScroll = App._.bind(this.onWindowScroll, this);
+
+            var that = this;
+            // TODO
+            App.on('etalia.thread.pin', function(thread) {
+                console.log('On etalia.thread.pin', thread);
+            });
+            App.on('etalia.thread.unpin', function(thread) {
+                console.log('On etalia.thread.unpin', thread);
+            });
+            App.on('etalia.thread.ban', function(thread) {
+                console.log('On etalia.thread.ban', thread);
+            });
+            App.on('etalia.thread.unban', function(thread) {
+                console.log('On etalia.thread.unban', thread);
+            });
+            App.on('etalia.thread.join', function(thread) {
+                console.log('On etalia.thread.join', thread);
+            });
+            App.on('etalia.thread.leave', function(thread) {
+                console.log('On etalia.thread.leave', thread);
+            });
         },
 
         remove: function() {
@@ -145,7 +166,7 @@ define([
             }
 
             this.collection = new App.Model.PageableThreads({
-                query: App._.extend(
+                query: App._.extend({},
                     this.listControls.getContext(),
                     this.controlsView.getContext(),
                     this.tabsView.getContext(),
@@ -158,7 +179,8 @@ define([
 
             var that = this;
             this.collection.fetch()
-                .then(function() {
+                .then(function(data) {
+                    that.tabsView.setTabCount(null, data.count);
                     if (that.collection.hasNextPage()) {
                         that.$('#thread-next-page').show();
                         $window.on('scroll', that.onWindowScroll);
@@ -206,7 +228,7 @@ define([
         _loadFilters: function() {
             this.filtersView.load(
                 App.config.api_root + '/thread/threads/filters/',
-                App._.extend(
+                App._.extend({},
                     this.listControls.getContext(),
                     this.controlsView.getContext(),
                     this.tabsView.getContext()
@@ -271,11 +293,15 @@ define([
             App.log('ThreadListView::onCollectionAdd');
 
             // Render the thumb
-            var thumbView = new App.View.Thread.Thumb({
+            var options = {
                 id: 'thread-thumb-' + model.get('id'),
                 model: model,
                 list: this
-            });
+            };
+            if (this.tabsView.getActiveTab().actions) {
+                options.buttons = this.tabsView.getActiveTab().actions;
+            }
+            var thumbView = new App.View.Thread.Thumb(options);
 
             this.listView.addThumbView(thumbView);
         },
@@ -300,8 +326,8 @@ define([
 
             var that = this,
                 options = {model: model};
-            if (this.tabsView.getActiveTab().buttons) {
-                options.buttons = this.tabsView.getActiveTab().buttons;
+            if (this.tabsView.getActiveTab().actions) {
+                options.buttons = this.tabsView.getActiveTab().actions;
             }
 
             var detailModel = new App.Model.Detail({
@@ -346,8 +372,8 @@ define([
                     listView: this,
                     model: detailModel
                 });
-                this.listenTo(this.detailView, "detail:prev", this.openDetail);
-                this.listenTo(this.detailView, "detail:next", this.openDetail);
+                //this.listenTo(this.detailView, "detail:prev", this.openDetail);
+                //this.listenTo(this.detailView, "detail:next", this.openDetail);
             }
 
             model

@@ -1,14 +1,25 @@
 {{#if list_mode}}
 <div class="actions">
-    {{!-- TODO Not in "Left" tab--}}
-    <a href="javascript: void(0)" class="thumb-pin{{thread_pin_class}}" title="Pin/Unpin">
+    {{#if pin_button}} {{! Only in "My stream" and "My threads : Threads / Pins" }}
+    <a href="javascript: void(0)" class="thumb-pin{{thread_pin_class}} loading-button" title="Pin/Unpin">
         <span class="eai eai-pin"></span>
     </a>
-    {{!-- TODO "Leave" icon if joined --}}
-    <a href="javascript: void(0)" class="thumb-ban{{thread_ban_class}}" title="Remove from my threads">
-        <span class="eai eai-remove"></span>
-    </a>
-    {{!-- TODO "Join" icon if in "Pins" or "Left" tab --}}
+    {{/if}}
+    {{#if ban_button}} {{! Only in "My stream" }}
+        <a href="javascript: void(0)" class="thumb-ban{{thread_ban_class}}" title="Ban">
+            <span class="eai eai-remove"></span>
+        </a>
+    {{/if}}
+    {{#if join_button}} {{! Only in "My threads : Pins / Left" }}
+        <a href="javascript: void(0)" class="thumb-join loading-button" title="Join this thread">
+            <span class="eai eai-join"></span>
+        </a>
+    {{/if}}
+    {{#if leave_button}} {{! Only in "My threads : Threads" and if joined }}
+        <a href="javascript: void(0)" class="thumb-leave loading-button" title="Leave this thread">
+            <span class="eai eai-leave"></span>
+        </a>
+    {{/if}}
 </div>
 {{/if}}
 <div class="card{{#if list_mode}}{{else}} standalone{{/if}}">

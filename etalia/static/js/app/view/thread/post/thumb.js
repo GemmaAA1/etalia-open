@@ -62,7 +62,7 @@ define([
         render: function () {
             App.log('PostThumbView::render', this.model.get('id'));
 
-            var attributes = App._.extend(this.model.attributes, {
+            var attributes = App._.extend({}, this.model.attributes, {
                 is_owner: this.model.isOwner(App.getCurrentUser())
             });
 

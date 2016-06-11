@@ -32,25 +32,18 @@ define([
             this.collection = new App.Model.Threads();
             this.collection.url = App.config.api_root + '/thread/threads/' + this.threadId + '/neighbors';
 
-            //this.collection.on("add", this.onCollectionAdd, this);
-            //this.collection.on("remove", this.onCollectionRemove, this);
+            this.collection.on("add", this.onCollectionAdd, this);
+            this.collection.on("remove", this.onCollectionRemove, this);
+
+            this.listenTo(this, "model:detail", this.openDetail);
 
             // Collection
-            this.listenTo(this.collection, "add", this.onCollectionAdd);
-            this.listenTo(this.collection, "remove", this.onCollectionRemove);
+            //this.listenTo(this.collection, "add", this.onCollectionAdd);
+            //this.listenTo(this.collection, "remove", this.onCollectionRemove);
         },
 
-        onTimespanSelectorClick: function(e) {
-            e.preventDefault();
+        openDetail: function(model) {
 
-            this.$('.neighbors-timespan-selector li').removeClass('active');
-
-            var $link = $(e.target).closest('a');
-            this.activeTimespan = parseInt($link.data('value'));
-
-            $link.closest('li').addClass('active');
-
-            this.load();
         },
 
         render: function () {
@@ -81,6 +74,19 @@ define([
             });
 
             this.collection.fetch();
+        },
+
+        onTimespanSelectorClick: function(e) {
+            e.preventDefault();
+
+            this.$('.neighbors-timespan-selector li').removeClass('active');
+
+            var $link = $(e.target).closest('a');
+            this.activeTimespan = parseInt($link.data('value'));
+
+            $link.closest('li').addClass('active');
+
+            this.load();
         },
 
         onCollectionAdd: function (model) {

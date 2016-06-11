@@ -14,15 +14,19 @@ define([
 
     App.View.Thread = App.View.Thread || {};
 
+    var buttonsDefaults = {
+        pin: false,
+        ban: false,
+        join: false,
+        leave: false
+    };
+
     return App.View.Thread.Detail = App.Backbone.View.extend({
         tagName: 'div',
         className: 'inner',
 
         template: App.Handlebars.compile(template),
-        buttons: {
-            ban: false,
-            leave: false
-        },
+        buttons: buttonsDefaults,
 
         events: {
             "click .detail-pin": "onPinClick",
@@ -46,7 +50,7 @@ define([
 
         initialize: function (options) {
             if (options.buttons) {
-                this.buttons = _.extend(this.buttons, options.buttons);
+                this.buttons = App._.extend(buttonsDefaults, options.buttons);
             }
 
             this.listenTo(this.model, "sync", this.render);
@@ -257,13 +261,15 @@ define([
                 is_member = this.model.isMember(App.getCurrentUser()),
                 is_public = this.model.isPublic();
 
-            var attributes = App._.extend(this.model.attributes, {
+            var attributes = App._.extend({}, this.model.attributes, {
                 is_owner: is_owner,
                 is_member: is_member,
 
                 can_join: is_public && !is_member,
 
+                pin_button: this.buttons.pin,
                 ban_button: this.buttons.ban,
+                join_button: this.buttons.join && is_public && !is_member,
                 leave_button: this.buttons.leave && is_member,
 
                 members_count: this.model.getMembersCount(),
@@ -280,6 +286,10 @@ define([
                     $target: this.$('[data-user-placeholder]')
                 })
             );
+
+            if (!this.model.get('published_at')) {
+                return this;
+            }
 
             // Members list
             this.pushSubView(

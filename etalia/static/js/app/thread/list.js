@@ -21,29 +21,40 @@ define([
             {
                 name: 'threads',
                 title: 'Threads',
+                count: 0,
                 data: {
                     view: 'nested'
                     //joined: "1",
                     //banned: "0"
                 },
-                buttons: {
+                actions: {
+                    pin: true,
                     leave: true
                 }
             },
             {
                 name: 'pins',
                 title: 'Pins',
+                count: 0,
                 data: {
                     view: 'nested',
                     pinned: 1
+                },
+                actions: {
+                    pin: true,
+                    join: true
                 }
             },
             {
                 name: 'left',
                 title: 'Left',
+                count: 0,
                 data: {
                     view: 'nested',
                     left: 1
+                },
+                actions: {
+                    join: true
                 }
             }
         ]
