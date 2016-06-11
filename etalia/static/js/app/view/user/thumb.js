@@ -30,11 +30,9 @@ define([
             App.getCurrentUser()
                 .isFollowed(that.model)
                 .then(function (followed) {
-                    var attributes = that.model.attributes;
-
-                    App._.extend(attributes, {
+                    var attributes = App._.extend({}, that.model.attributes, {
                         followed: followed,
-                        current: App.getCurrentUser().get('id') === attributes.id
+                        current: App.getCurrentUser().get('id') === that.model.get('id')
                     });
 
                     that.$el.html(that.template(attributes));

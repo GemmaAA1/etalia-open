@@ -1,7 +1,8 @@
 define([
     'app',
-    'text!app/templates/thread/neighbors.hbs'
-], function (App, template) {
+    'text!app/templates/thread/neighbors.hbs',
+    'app/view/detail'
+], function (App, template, Detail) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -14,9 +15,11 @@ define([
         template: App.Handlebars.compile(template),
 
         threadId: null,
-        activeTimespan: null,
+        buttons: null,
+        returnCallback: null,
 
         thumbPrefix: 'thread-neighbors-thumb-',
+        activeTimespan: null,
         listView: null,
 
         events: {
@@ -28,29 +31,47 @@ define([
             if (!this.threadId) {
                 throw 'options.thread_id is mandatory';
             }
+            if (!options.buttons) {
+                throw 'options.buttons is mandatory';
+            }
+            this.buttons = options.buttons;
+            this.returnCallback = options.return_callback;
+            if (!(typeof this.returnCallback == 'function')) {
+                throw 'options.return_callback is mandatory';
+            }
 
             this.collection = new App.Model.Threads();
             this.collection.url = App.config.api_root + '/thread/threads/' + this.threadId + '/neighbors';
 
-            //this.collection.on("add", this.onCollectionAdd, this);
-            //this.collection.on("remove", this.onCollectionRemove, this);
+            this.collection.on("add", this.onCollectionAdd, this);
+            this.collection.on("remove", this.onCollectionRemove, this);
+
+            this.listenTo(this, "model:detail", this.openDetail);
 
             // Collection
-            this.listenTo(this.collection, "add", this.onCollectionAdd);
-            this.listenTo(this.collection, "remove", this.onCollectionRemove);
+            //this.listenTo(this.collection, "add", this.onCollectionAdd);
+            //this.listenTo(this.collection, "remove", this.onCollectionRemove);
         },
 
-        onTimespanSelectorClick: function(e) {
-            e.preventDefault();
+        openDetail: function(model) {
+            var options = {
+                model: model,
+                buttons: this.buttons
+            };
+            var detailModel = new App.Model.Detail({
+                view: new App.View.Thread.Detail(options)
+            });
+            detailModel.setCenterButton({
+                icon: 'close',
+                title: 'Back to previous thread',
+                callback: this.returnCallback
+            });
 
-            this.$('.neighbors-timespan-selector li').removeClass('active');
-
-            var $link = $(e.target).closest('a');
-            this.activeTimespan = parseInt($link.data('value'));
-
-            $link.closest('li').addClass('active');
-
-            this.load();
+            model
+                .fetch({data: {view: 'nested'}})
+                .done(function() {
+                    Detail.setModel(detailModel);
+                });
         },
 
         render: function () {
@@ -81,6 +102,19 @@ define([
             });
 
             this.collection.fetch();
+        },
+
+        onTimespanSelectorClick: function(e) {
+            e.preventDefault();
+
+            this.$('.neighbors-timespan-selector li').removeClass('active');
+
+            var $link = $(e.target).closest('a');
+            this.activeTimespan = parseInt($link.data('value'));
+
+            $link.closest('li').addClass('active');
+
+            this.load();
         },
 
         onCollectionAdd: function (model) {

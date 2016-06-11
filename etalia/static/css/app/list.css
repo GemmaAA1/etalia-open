@@ -359,7 +359,9 @@
 }
 
 .filter-group ul a.active .filter-checkbox:before {
+    /*noinspection CssNoGenericFontName*/
     font-family: 'etalia' !important;
+    /*noinspection CssUnknownProperty*/
     speak: none;
     font-style: normal;
     font-weight: normal;
@@ -420,7 +422,7 @@
     display: inline-block;
     line-height: 36px;
     padding: 0 1px;
-    width: 33%;
+    width: 30%;
 }
 
 .list-tabs ul > li > a {
@@ -449,10 +451,13 @@
     color: #004f46;
 }
 
+.list-tabs ul > li > a > span {
+    display: none;
+}
+
 .list-header {
     overflow: hidden;
     border-bottom: 1px solid #dfe2e6;
-    padding-bottom: 10px;
     margin-bottom: 16px;
 }
 
@@ -465,19 +470,19 @@
 }
 
 .list-controls {
-    float: right;
-    text-align: right;
+    text-align: center;
+    padding-bottom: 10px;
 }
 
 .list-controls > div,
 .list-controls > button {
     display: inline-block;
-    margin-right: 10px;
+    margin-left: 10px;
 }
 
-.list-controls > div:last-child,
-.list-controls > button:last-child {
-    margin-right: 0;
+.list-controls > div:first-child,
+.list-controls > button:first-child {
+    margin-left: 0;
 }
 
 #user-library-trash-clear {
@@ -566,19 +571,23 @@
 
 /* Portrait small table */
 @media (min-width: 600px) {
-    /*.list-title .btn {
-        float: right;
-        margin: 0 10px 0 0;
+    .list-tabs ul > li > a > span {
+        display: inline;
     }
 
-    .list-title .btn:first-child {
-        margin-right: 0;
-    }*/
+    .list-controls.left {
+        float: left;
+        text-align: left;
+    }
+
+    .list-controls.right {
+        float: right;
+        text-align: right;
+    }
 }
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px) {
-
 }
 
 /* Medium devices (desktops, 992px and up) */

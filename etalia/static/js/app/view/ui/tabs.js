@@ -25,6 +25,20 @@ define([
             });
         },
 
+        setTabCount: function(name, count, add) {
+            add = add || false;
+            var tab;
+            if (name) {
+                tab = this._findTabByName(name);
+            } else {
+                tab = this.getActiveTab();
+            }
+            if (tab) {
+                tab.count = add ? tab.count + count : count;
+            }
+            this.render();
+        },
+
         getContext: function() {
             return this.getActiveTab().data;
         },

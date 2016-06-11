@@ -38,6 +38,7 @@ define([
         if (_.has(response, 'results')) {
             return response.results;
         }
+        return response;
     };
 
     var BBViewRemove = Backbone.View.prototype.remove;
@@ -458,7 +459,7 @@ define([
     /**
      * App
      */
-    window.App = App = {
+    window.App = App = _.extend({
         $: $,
         _: _,
         Backbone: Backbone,
@@ -505,7 +506,7 @@ define([
         getProperty: function(object, path) {
             return object.hasOwnProperty(path) ? object[path] : object.get(path);
         }
-    };
+    }, Backbone.Events);
 
     return App;
 });

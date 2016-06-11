@@ -1,14 +1,14 @@
 define([
     'app',
     'text!app/templates/thread/list.hbs',
+    'app/view/detail',
     'app/model/thread/thread',
     'app/view/list',
-    'app/view/detail',
     'app/view/ui/modal',
     'app/view/thread/detail',
     'app/view/thread/thumb',
     'app/view/thread/invite/treat'
-], function (App, template) {
+], function (App, template, Detail) {
 
     var $window = $(window),
         $document = $(document);
@@ -55,9 +55,7 @@ define([
         controlsView: null,
         tabsView: null,
         filtersView: null,
-
         listView: null,
-        detailView: null,
 
         invites: null,
 
@@ -76,7 +74,7 @@ define([
         initialize: function (options) {
             // List controls
             this.listControls = new ListControls();
-            this.listenTo(this.listControls, "change", this._loadFilters);
+            this.listenTo(this.listControls, "change", this.onListControlsChange);
 
             // Controls (top bar)
             if (!options.controlsView) {
@@ -145,7 +143,7 @@ define([
             }
 
             this.collection = new App.Model.PageableThreads({
-                query: App._.extend(
+                query: App._.extend({},
                     this.listControls.getContext(),
                     this.controlsView.getContext(),
                     this.tabsView.getContext(),
@@ -158,7 +156,8 @@ define([
 
             var that = this;
             this.collection.fetch()
-                .then(function() {
+                .then(function(data) {
+                    that.tabsView.setTabCount(null, data.count);
                     if (that.collection.hasNextPage()) {
                         that.$('#thread-next-page').show();
                         $window.on('scroll', that.onWindowScroll);
@@ -206,7 +205,7 @@ define([
         _loadFilters: function() {
             this.filtersView.load(
                 App.config.api_root + '/thread/threads/filters/',
-                App._.extend(
+                App._.extend({},
                     this.listControls.getContext(),
                     this.controlsView.getContext(),
                     this.tabsView.getContext()
@@ -271,11 +270,15 @@ define([
             App.log('ThreadListView::onCollectionAdd');
 
             // Render the thumb
-            var thumbView = new App.View.Thread.Thumb({
+            var options = {
                 id: 'thread-thumb-' + model.get('id'),
                 model: model,
                 list: this
-            });
+            };
+            if (this.tabsView.getActiveTab().actions) {
+                options.buttons = this.tabsView.getActiveTab().actions;
+            }
+            var thumbView = new App.View.Thread.Thumb(options);
 
             this.listView.addThumbView(thumbView);
         },
@@ -299,9 +302,12 @@ define([
             }
 
             var that = this,
-                options = {model: model};
-            if (this.tabsView.getActiveTab().buttons) {
-                options.buttons = this.tabsView.getActiveTab().buttons;
+                options = {
+                    model: model,
+                    listView: this
+                };
+            if (this.tabsView.getActiveTab().actions) {
+                options.buttons = this.tabsView.getActiveTab().actions;
             }
 
             var detailModel = new App.Model.Detail({
@@ -311,7 +317,7 @@ define([
                 icon: 'close',
                 title: 'Back to threads list',
                 callback: function() {
-                    if (that.detailView) that.detailView.close();
+                    Detail.close();
                 }
             });
 
@@ -337,23 +343,10 @@ define([
                 });
             }
 
-            if (this.detailView) {
-                this.detailView.clearSubViews();
-                this.detailView.model.destroy();
-                this.detailView.model = detailModel;
-            } else {
-                this.detailView = new App.View.Detail({
-                    listView: this,
-                    model: detailModel
-                });
-                this.listenTo(this.detailView, "detail:prev", this.openDetail);
-                this.listenTo(this.detailView, "detail:next", this.openDetail);
-            }
-
             model
                 .fetch({data: {view: 'nested'}})
                 .done(function() {
-                    that.detailView.render();
+                    Detail.setModel(detailModel);
                 });
         },
 
@@ -482,56 +475,71 @@ define([
                 });
         },
 
+        onListControlsChange: function() {
+            this._loadFilters();
+
+            this.$('#thread-toggle-not-published')
+                .toggleClass('active', this.listControls.get('not_published'));
+            this.$('#thread-toggle-type-paper')
+                .toggleClass('active', this.listControls.get('type_paper'));
+            this.$('#thread-toggle-type-question')
+                .toggleClass('active', this.listControls.get('type_question'));
+            this.$('#thread-toggle-private')
+                .toggleClass('active', this.listControls.get('private'));
+        },
+
         onToggleNotPublishedClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('not_published');
-            this.listControls.set('not_published', active);
-
-            if (active) {
-                this.$('#thread-toggle-not-published').addClass('active');
-            } else {
-                this.$('#thread-toggle-not-published').removeClass('active');
-            }
+            this.listControls.set('not_published', !this.listControls.get('not_published'));
         },
 
         onToggleTypePaperClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('type_paper');
-            this.listControls.set('type_paper', active);
+            var paperActive = this.listControls.get('type_paper'),
+                questionActive = this.listControls.get('type_question');
 
-            if (active) {
-                this.$('#thread-toggle-type-paper').addClass('active');
+            if (paperActive) {
+                paperActive = false;
             } else {
-                this.$('#thread-toggle-type-paper').removeClass('active');
+                if (questionActive) {
+                    questionActive = false;
+                }
+                paperActive = true;
             }
+
+            this.listControls.set({
+                type_question: questionActive,
+                type_paper: paperActive
+            });
         },
 
         onToggleTypeQuestionClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('type_question');
-            this.listControls.set('type_question', active);
+            var paperActive = this.listControls.get('type_paper'),
+                questionActive = this.listControls.get('type_question');
 
-            if (active) {
-                this.$('#thread-toggle-type-question').addClass('active');
+            if (questionActive) {
+                questionActive = false;
             } else {
-                this.$('#thread-toggle-type-question').removeClass('active');
+                if (paperActive) {
+                    paperActive = false;
+                }
+                questionActive = true;
             }
+
+            this.listControls.set({
+                type_question: questionActive,
+                type_paper: paperActive
+            });
         },
 
         onTogglePrivateClick: function(e) {
             e.preventDefault();
 
-            var active = !this.listControls.get('private');
-            this.listControls.set('private', active);
-
-            if (active) {
-                this.$('#thread-toggle-private').addClass('active');
-            } else {
-                this.$('#thread-toggle-private').removeClass('active');
-            }
+            this.listControls.set('private', !this.listControls.get('private'));
         }
     });
 

@@ -1,11 +1,13 @@
 <div id="detail-actions" class="actions">
     <div class="card">
         <div class="actions-group">
+            {{#if pin_button}} {{! Only in "My stream" and "My threads : Threads / Pins" }}
             <a href="javascript: void(0)"
-               class="detail-pin{{thread_pin_class}}"
+               class="detail-pin{{thread_pin_class}} loading-button"
                title="Pin/Unpin">
                 <span class="eai eai-pin"></span>
             </a>
+            {{/if}}
             {{#if ban_button}} {{! Only in "My stream" }}
             <a href="javascript: void(0)"
                class="detail-ban{{thread_ban_class}}"
@@ -13,7 +15,14 @@
                 <span class="eai eai-remove"></span>
             </a>
             {{/if}}
-            {{#if leave_button}} {{! Only in "My threads" = leave icon }}
+            {{#if join_button}} {{! Only in "My threads : Pins / Left" }}
+            <a href="javascript: void(0)"
+               class="detail-join loading-button"
+               title="Join this thread">
+                <span class="eai eai-join"></span>
+            </a>
+            {{/if}}
+            {{#if leave_button}} {{! Only in "My threads : Threads" and if joined }}
             <a href="javascript: void(0)"
                class="detail-leave loading-button"
                title="Leave this thread">
@@ -37,7 +46,7 @@
 </div>
 
 <div class="content">
-    <div class="card">
+    <div class="card thread">
 
         <div data-user-placeholder></div>
 

@@ -12,6 +12,12 @@ define([
         className: 'thumb',
 
         template: App.Handlebars.compile(template),
+        buttons: {
+            pin: false,
+            ban: false,
+            join: false,
+            leave: false
+        },
 
         mode: null,
         list: null,
@@ -19,7 +25,9 @@ define([
         events: {
             "click .title a": "onTitleClick",
             "click .thumb-pin": "onPinClick",
-            "click .thumb-ban": "onBanClick"
+            "click .thumb-ban": "onBanClick",
+            "click .thumb-join": "onJoinClick",
+            "click .thumb-leave": "onLeaveClick"
         },
 
         initialize: function (options) {
@@ -29,6 +37,10 @@ define([
                     throw '"options.list" is mandatory is list mode.';
                 }
                 this.list = options.list;
+            }
+
+            if (options.buttons) {
+                this.buttons = App._.extend({}, this.buttons, options.buttons);
             }
 
             this.listenTo(this.model, "change", this.render);
@@ -45,9 +57,9 @@ define([
             }
         },
 
-        onThreadStateChange: function(state, thread) {
+        onThreadStateChange: function(state) {
             if (state.get('watch') === App.Model.State.WATCH_BANNED) {
-                this.list.trigger('model:remove', thread);
+                this.list.trigger('model:remove', state.get('thread'));
             } else {
                 this.render();
             }
@@ -65,6 +77,32 @@ define([
             this.model.getState().toggleBanned();
         },
 
+        onJoinClick: function(e) {
+            e.preventDefault();
+
+            this.model.getState().join();
+
+            /*var model = this.model;
+            model.getState()
+                .join()
+                .done(function() {
+                    model.fetch();
+                });*/
+        },
+
+        onLeaveClick: function(e) {
+            e.preventDefault();
+
+            this.model.getState().leave();
+
+            /*var model = this.model;
+            model.getState()
+                .leave()
+                .done(function() {
+                    model.fetch();
+                });*/
+        },
+
         updateMembersCount: function() {
             this.$('.icons .member .count').text(this.model.getMembersCount());
         },
@@ -76,8 +114,18 @@ define([
         render: function() {
             App.log('ThreadThumbView::render');
 
-            var attributes = App._.extend(this.model.attributes, {
+            var //is_owner = this.model.isOwner(App.getCurrentUser()),
+                is_member = this.model.isMember(App.getCurrentUser()),
+                is_public = this.model.isPublic();
+
+            var attributes = App._.extend({}, this.model.attributes, {
                 list_mode: this.mode == App.View.Thread.Thumb.MODE_LIST,
+
+                pin_button: this.buttons.pin,
+                ban_button: this.buttons.ban,
+                join_button: this.buttons.join && is_public && !is_member,
+                leave_button: this.buttons.leave && is_member,
+
                 members_count: this.model.getMembersCount(),
                 posts_count: this.model.getPostsCount()
             });
