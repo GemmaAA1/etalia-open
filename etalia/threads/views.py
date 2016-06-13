@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.views.generic import TemplateView, DetailView, ListView
+from django.template.response import TemplateResponse
 from braces.views import LoginRequiredMixin
 
 from etalia.core.mixins import AjaxableResponseMixin
@@ -24,11 +25,5 @@ class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
 thread = ThreadView.as_view()
 
 
-class MyThreadsView(LoginRequiredMixin, AjaxableResponseMixin, ListView):
-
-    template_name = 'threads/list.html'
-
-    def get_queryset(self):
-        return Thread.objects.all()
-
-my_threads = MyThreadsView.as_view()
+def my_threads(request):
+    return TemplateResponse(request, 'threads/list.html', {})
