@@ -51,6 +51,9 @@ define([
 
         template: App.Handlebars.compile(template),
 
+        newButton: false,
+        invitesButton: false,
+
         listControls: null,
         controlsView: null,
         tabsView: null,
@@ -72,6 +75,9 @@ define([
         },
 
         initialize: function (options) {
+            this.newButton = options.newButton ? options.newButton : false;
+            this.invitesButton = options.invitesButton ? options.invitesButton : false;
+
             // List controls
             this.listControls = new ListControls();
             this.listenTo(this.listControls, "change", this.onListControlsChange);
@@ -100,22 +106,43 @@ define([
             this.listenTo(this.filtersView, "loaded", this.load);
             this.listenTo(this.filtersView, "context-change", this.load);
 
-            // Collection
-            this.listenTo(this, "model:remove", this.onModelRemove);
+            // Detail
             this.listenTo(this, "model:detail", this.openDetail);
 
-            this.onWindowScroll = App._.bind(this.onWindowScroll, this);
+            App._.bindAll(this,
+                'onThreadPin', 'onThreadUnpin',
+                'onThreadBan', 'onThreadUnban',
+                'onThreadJoin', 'onThreadLeave',
+                'onWindowScroll');
+
+            App.on('etalia.thread.pin', this.onThreadPin);
+            App.on('etalia.thread.unpin', this.onThreadUnpin);
+            App.on('etalia.thread.ban', this.onThreadBan);
+            App.on('etalia.thread.unban', this.onThreadUnban);
+            App.on('etalia.thread.join', this.onThreadJoin);
+            App.on('etalia.thread.leave', this.onThreadLeave);
         },
 
         remove: function() {
+            App.off('etalia.thread.pin', this.onThreadPin);
+            App.off('etalia.thread.unpin', this.onThreadUnpin);
+            App.off('etalia.thread.ban', this.onThreadBan);
+            App.off('etalia.thread.unban', this.onThreadUnban);
+            App.off('etalia.thread.join', this.onThreadJoin);
+            App.off('etalia.thread.leave', this.onThreadLeave);
+
             $window.off('scroll', this.onWindowScroll);
+
             App.Backbone.View.prototype.remove.apply(this, arguments);
         },
 
         render: function () {
             App.log('ThreadListView::render');
 
-            this.$el.html(this.template({}));
+            this.$el.html(this.template({
+                newButton: this.newButton,
+                invitesButton: this.invitesButton
+            }));
 
             // Thumbs list
             this.listView = new App.View.List.create({}, {
@@ -268,6 +295,44 @@ define([
         onTabsContextChange: function() {
             this._updateListControlsVisibility();
             this._loadFilters();
+        },
+
+        onThreadPin: function(thread) {
+        },
+
+        onThreadUnpin: function(thread) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'pins') {
+                this.onModelRemove(thread);
+            }
+        },
+
+        onThreadBan: function(thread) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'threads' || tabName == 'pins') {
+                this.onModelRemove(thread);
+            }
+        },
+
+        onThreadUnban: function(thread) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'left') {
+                this.onModelRemove(thread);
+            }
+        },
+
+        onThreadJoin: function(thread) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'left') {
+                this.onModelRemove(thread);
+            }
+        },
+
+        onThreadLeave: function(thread) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'threads' || tabName == 'pins') {
+                this.onModelRemove(thread);
+            }
         },
 
         onCollectionAdd: function (model) {

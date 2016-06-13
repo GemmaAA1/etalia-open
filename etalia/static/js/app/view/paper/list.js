@@ -54,15 +54,33 @@ define([
             this.listenTo(this.filtersView, "loaded", this.load);
             this.listenTo(this.filtersView, "context-change", this.load);
 
-            // Collection
-            this.listenTo(this, "model:remove", this.onModelRemove);
+            // Detail
             this.listenTo(this, "model:detail", this.openDetail);
 
-            this.onWindowScroll = App._.bind(this.onWindowScroll, this);
+            App._.bindAll(this,
+                'onPaperPin', 'onPaperUnpin',
+                'onPaperBan', 'onPaperUnban',
+                'onPaperAdd', 'onPaperTrash',
+                'onWindowScroll');
+
+            App.on('etalia.paper.pin', this.onPaperPin);
+            App.on('etalia.paper.unpin', this.onPaperUnpin);
+            App.on('etalia.paper.ban', this.onPaperBan);
+            App.on('etalia.paper.unban', this.onPaperUnban);
+            App.on('etalia.paper.add', this.onPaperAdd);
+            App.on('etalia.paper.trash', this.onPaperTrash);
         },
 
         remove: function() {
+            App.off('etalia.paper.pin', this.onPaperPin);
+            App.off('etalia.paper.unpin', this.onPaperUnpin);
+            App.off('etalia.paper.ban', this.onPaperBan);
+            App.off('etalia.paper.unban', this.onPaperUnban);
+            App.off('etalia.paper.add', this.onPaperAdd);
+            App.off('etalia.paper.trash', this.onPaperTrash);
+
             $window.off('scroll', this.onWindowScroll);
+
             App.Backbone.View.prototype.remove.apply(this, arguments);
         },
 
@@ -173,6 +191,44 @@ define([
                     this.tabsView.getContext()
                 )
             );
+        },
+
+        onPaperPin: function(paper) {
+        },
+
+        onPaperUnpin: function(paper) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'pins') {
+                this.onModelRemove(paper);
+            }
+        },
+
+        onPaperBan: function(paper) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'papers' || tabName == 'pins') {
+                this.onModelRemove(paper);
+            }
+        },
+
+        onPaperUnban: function(paper) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'trash') {
+                this.onModelRemove(paper);
+            }
+        },
+
+        onPaperAdd: function(paper) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'trash') {
+                this.onModelRemove(paper);
+            }
+        },
+
+        onPaperTrash: function(paper) {
+            var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'papers' || tabName == 'pins') {
+                this.onModelRemove(paper);
+            }
         },
 
         onCollectionAdd: function (model) {

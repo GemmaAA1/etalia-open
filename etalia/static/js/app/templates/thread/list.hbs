@@ -14,15 +14,20 @@
 
     <div class="list-controls left">
         {{! only in threads tab }}
-        <button id="thread-create-modal" type="button" class="btn btn-primary" title="Start a new thread">New thread
+        {{#if newButton}}
+        <button id="thread-create-modal" type="button" class="btn btn-primary" title="Start a new thread">
+            New thread
         </button>
+        {{/if}}
 
         {{! only in threads tab }}
+        {{#if invitesButton}}
         <button id="thread-invites-modal" type="button" class="btn btn-default" title="2 pending invites"
                 data-count="0">
             <span class="eai eai-invites"></span>
             <span class="count">2</span>
         </button>
+        {{/if}}
     </div>
 
     <div class="list-controls right">
