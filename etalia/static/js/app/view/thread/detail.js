@@ -58,7 +58,7 @@ define([
                 this.buttons = App._.extend(buttonsDefaults, options.buttons);
             }
 
-            this.listenTo(this.model, "sync", this.render);
+            this.listenTo(this.model, "change", this.render);
             this.listenTo(this.model, "change:state", this.render);
             this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
             this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
@@ -318,9 +318,6 @@ define([
             }
 
             // Neighbors
-            // TODO
-            // No next/prev/close buttons but a back button (return to source detail).
-
             if (this.listView) {
                 var that = this;
                 this.pushSubView(
@@ -339,6 +336,8 @@ define([
             this.trigger('rendered');
 
             return this;
-        }
+        },
+
+        postRender: function() {}
     });
 });

@@ -88,8 +88,11 @@ define([
             $document.append(view.$el);
             that.pushSubView(view);
 
+            view.postRender();
+
             this.listenToOnce(view, 'close', that.close);
             this.listenTo(view, 'rendered', that.applySticky);
+            this.listenTo(view, 'scrollToId', that.scrollToId);
             that.applySticky();
 
             this.$('.document').scrollTop(0);
@@ -114,6 +117,13 @@ define([
                 top: 20,
                 bottom: 20
             }).enable();
+        },
+
+        scrollToId: function(id) {
+            var $target = this.$('#' + id);
+            if ($target.length) {
+                this.$('.document').scrollTop($target.offset().top - 50);
+            }
         },
 
         onClick: function(e) {

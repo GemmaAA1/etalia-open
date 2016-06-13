@@ -1,11 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Papers</title>
-</head>
-<body>
-This is papers
-<a href="{% url 'feeds:my_feeds' %}">my_feeds</a>
-</body>
-</html>
+{% extends 'list_base.html' %}
+
+{% block content %}
+{% spaceless %}
+
+<div id="list" class="document">
+    <div class="wrapper">
+        <div data-tabs-placeholder></div>
+        <div class="inner">
+            <div data-list-placeholder></div>
+        </div>
+    </div>
+</div>
+
+<div data-detail-placeholder></div>
+
+{% endspaceless %}
+{% endblock content %}
+
+{% block javascript %}
+<script>requirejs(['app/paper/list']);</script>
+{% endblock javascript %}

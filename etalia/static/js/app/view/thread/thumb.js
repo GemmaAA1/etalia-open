@@ -58,7 +58,7 @@ define([
         },
 
         onThreadStateChange: function(state) {
-            if (state.get('watch') === App.Model.State.WATCH_BANNED) {
+            if (state.get('watch') === App.Model.ThreadState.WATCH_BANNED) {
                 this.list.trigger('model:remove', state.get('thread'));
             } else {
                 this.render();

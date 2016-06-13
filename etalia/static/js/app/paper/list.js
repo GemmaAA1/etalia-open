@@ -3,8 +3,7 @@ define([
     'app/view/ui/controls',
     'app/view/ui/filters',
     'app/view/ui/tabs',
-    'app/view/thread/list',
-    'app/view/thread/form-create'
+    'app/view/paper/list'
 ], function (App) {
 
     var controlsView, filtersView, tabsView;
@@ -13,23 +12,20 @@ define([
         $target: App.$('div[data-controls-placeholder]')
     });
     controlsView.cluster.disable();
-    controlsView.timespan.disable();
-    controlsView.pin.disable();
 
     tabsView = new App.View.Ui.Tabs.create({
         tabs: [
             {
-                name: 'threads',
-                title: 'Threads',
+                name: 'papers',
+                title: 'Papers',
                 count: 0,
                 data: {
                     view: 'nested',
-                    joined: 1
-                    //banned: "0"
+                    added: 1
                 },
                 actions: {
                     pin: true,
-                    leave: true
+                    trash: true
                 }
             },
             {
@@ -38,23 +34,24 @@ define([
                 count: 0,
                 data: {
                     view: 'nested',
+                    added: 1,
                     pinned: 1
                 },
                 actions: {
                     pin: true,
-                    join: true
+                    trash: true
                 }
             },
             {
-                name: 'left',
-                title: 'Left',
+                name: 'trash',
+                title: 'Trash',
                 count: 0,
                 data: {
                     view: 'nested',
-                    left: 1
+                    trashed: 1
                 },
                 actions: {
-                    join: true
+                    add: true
                 }
             }
         ]
@@ -66,7 +63,7 @@ define([
         $target: App.$('div[data-right-flap-placeholder]')
     });
 
-    App.View.Thread.List.create({
+    App.View.Paper.List.create({
         controlsView: controlsView,
         tabsView: tabsView,
         filtersView: filtersView
