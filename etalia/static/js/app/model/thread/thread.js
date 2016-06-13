@@ -38,7 +38,7 @@ define([
             {
                 type: App.Backbone.HasOne,
                 key: 'state',
-                relatedModel: App.Model.State,
+                relatedModel: App.Model.ThreadState,
                 includeInJSON: false,
                 reverseRelation: {
                     key: 'thread',
@@ -145,7 +145,7 @@ define([
         getState: function() {
             var state = this.get('state');
             if (!state) {
-                state = new App.Model.State({
+                state = new App.Model.ThreadState({
                     user: App.getCurrentUser(),
                     thread: this
                 });
@@ -289,13 +289,13 @@ define([
      * Handlebars helpers
      */
     App.Handlebars.registerHelper('thread_pin_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.State.WATCH_PINNED) {
+        if (this.state && this.state.get('watch') === App.Model.ThreadState.WATCH_PINNED) {
             return ' active';
         }
         return '';
     });
     App.Handlebars.registerHelper('thread_ban_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.State.WATCH_BANNED) {
+        if (this.state && this.state.get('watch') === App.Model.ThreadState.WATCH_BANNED) {
             return ' active';
         }
         return '';

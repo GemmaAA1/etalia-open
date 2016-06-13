@@ -1,12 +1,12 @@
 define([
     'app',
-    'text!app/templates/thread/neighbors.hbs',
+    'text!app/templates/paper/neighbors.hbs',
     'app/view/detail'
 ], function (App, template, Detail) {
 
-    App.View.Thread = App.View.Thread || {};
+    App.View.Paper = App.View.Paper || {};
 
-    App.View.Thread.Neighbors = App.Backbone.View.extend({
+    App.View.Paper.Neighbors = App.Backbone.View.extend({
         tagName: 'div',
         attributes: {
             'class': 'neighbors-thumbs'
@@ -14,11 +14,11 @@ define([
 
         template: App.Handlebars.compile(template),
 
-        threadId: null,
+        paperId: null,
         buttons: null,
         returnCallback: null,
 
-        thumbPrefix: 'thread-neighbors-thumb-',
+        thumbPrefix: 'paper-neighbors-thumb-',
         activeTimespan: null,
         listView: null,
 
@@ -27,9 +27,9 @@ define([
         },
 
         initialize: function (options) {
-            this.threadId = parseInt(options.thread_id);
-            if (!this.threadId) {
-                throw 'options.thread_id is mandatory';
+            this.paperId = parseInt(options.paper_id);
+            if (!this.paperId) {
+                throw 'options.paper_id is mandatory';
             }
             if (!options.buttons) {
                 throw 'options.buttons is mandatory';
@@ -40,8 +40,8 @@ define([
                 throw 'options.return_callback is mandatory';
             }
 
-            this.collection = new App.Model.Threads();
-            this.collection.url = App.config.api_root + '/thread/threads/' + this.threadId + '/neighbors';
+            this.collection = new App.Model.Papers();
+            this.collection.url = App.config.api_root + '/library/papers/' + this.paperId + '/neighbors';
 
             this.collection.on("add", this.onCollectionAdd, this);
             this.collection.on("remove", this.onCollectionRemove, this);
@@ -59,11 +59,11 @@ define([
                 buttons: this.buttons
             };
             var detailModel = new App.Model.Detail({
-                view: new App.View.Thread.Detail(options)
+                view: new App.View.Paper.Detail(options)
             });
             detailModel.setCenterButton({
                 icon: 'close',
-                title: 'Back to previous thread',
+                title: 'Back to previous paper',
                 callback: this.returnCallback
             });
 
@@ -75,7 +75,7 @@ define([
         },
 
         render: function () {
-            App.log('ThreadNeighborsView::render');
+            App.log('PaperNeighborsView::render');
 
             this.$el.html(this.template({}));
 
@@ -118,10 +118,10 @@ define([
         },
 
         onCollectionAdd: function (model) {
-            //App.log('ThreadNeighborsView::onCollectionAdd');
+            //App.log('PaperNeighborsView::onCollectionAdd');
 
             // Render the thumb
-            var thumbView = new App.View.Thread.Thumb({
+            var thumbView = new App.View.Paper.Thumb({
                 id: this.thumbPrefix + model.get('id'),
                 model: model,
                 list: this
@@ -131,7 +131,7 @@ define([
         },
 
         onCollectionRemove: function (model) {
-            //App.log('ThreadNeighborsView::onCollectionRemove');
+            //App.log('PaperNeighborsView::onCollectionRemove');
 
             this.listView.removeThumbById(this.thumbPrefix + model.get('id'));
         },
@@ -142,10 +142,10 @@ define([
     });
 
 
-    App.View.Thread.Neighbors.create = function(options, createOptions) {
+    App.View.Paper.Neighbors.create = function(options, createOptions) {
         options = options || {};
 
-        var view = new App.View.Thread.Neighbors(options);
+        var view = new App.View.Paper.Neighbors(options);
         if (createOptions) {
             App.View.create(view, createOptions);
         }
@@ -153,5 +153,5 @@ define([
         return view;
     };
 
-    return App.View.Thread.Neighbors;
+    return App.View.Paper.Neighbors;
 });

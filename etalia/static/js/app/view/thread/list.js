@@ -88,7 +88,9 @@ define([
                 throw 'options.tabsView is mandatory';
             }
             this.tabsView = options.tabsView;
-            this.listenTo(this.tabsView, "context-change", this.onTabsContextChange);
+            if (!options.silentTabs) {
+                this.listenTo(this.tabsView, "context-change", this.onTabsContextChange);
+            }
 
             // Filters (right flap)
             if (!options.filtersView) {
@@ -169,7 +171,7 @@ define([
         },
 
         onWindowScroll: function() {
-            App.log('ThreadListView::onWindowScroll');
+            //App.log('ThreadListView::onWindowScroll');
             var delta = $document.height() - $window.height() - $window.scrollTop();
             if (delta < 60) {
                 this._loadNextPage();
@@ -203,6 +205,8 @@ define([
         },
 
         _loadFilters: function() {
+            this.listView.clear();
+            this.$('#thread-next-page').show();
             this.filtersView.load(
                 App.config.api_root + '/thread/threads/filters/',
                 App._.extend({},
@@ -267,7 +271,7 @@ define([
         },
 
         onCollectionAdd: function (model) {
-            App.log('ThreadListView::onCollectionAdd');
+            //App.log('ThreadListView::onCollectionAdd');
 
             // Render the thumb
             var options = {
@@ -284,7 +288,7 @@ define([
         },
 
         onCollectionRemove: function (model) {
-            App.log('ThreadListView::onCollectionRemove');
+            //App.log('ThreadListView::onCollectionRemove');
 
             this.listView.removeThumbById('thread-thumb-' + model.get('id'));
         },

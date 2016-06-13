@@ -337,8 +337,8 @@ define([
 
             // TODO Cluster
 
-            var search = String(this.search.model.get('value'));
-            if (0 < search.length) {
+            var search = this.search.model.get('value');
+            if (search && 0 < String(search).length) {
                 data.search = search;
             }
 

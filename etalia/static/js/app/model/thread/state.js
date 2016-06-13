@@ -4,7 +4,7 @@ define([
     'app/model/user/user-lib'
 ], function (App) {
 
-    App.Model.State = App.Backbone.RelationalModel.extend({
+    App.Model.ThreadState = App.Backbone.RelationalModel.extend({
 
         urlRoot: App.config.api_root + '/thread/states',
 
@@ -40,9 +40,9 @@ define([
                 event = null;
 
             if (watch === null) {
-                watch = App.Model.State.WATCH_PINNED;
+                watch = App.Model.ThreadState.WATCH_PINNED;
                 event = 'etalia.thread.pin';
-            } else if(watch === App.Model.State.WATCH_PINNED) {
+            } else if(watch === App.Model.ThreadState.WATCH_PINNED) {
                 watch = null;
                 event = 'etalia.thread.unpin';
             } else {
@@ -62,9 +62,9 @@ define([
                 event = null;
 
             if (watch === null) {
-                watch = App.Model.State.WATCH_BANNED;
+                watch = App.Model.ThreadState.WATCH_BANNED;
                 event = 'etalia.thread.ban';
-            } else if (watch === App.Model.State.WATCH_BANNED) {
+            } else if (watch === App.Model.ThreadState.WATCH_BANNED) {
                 watch = null;
                 event = 'etalia.thread.unban';
             } else {
@@ -82,8 +82,8 @@ define([
             var that = this,
                 participate = this.get('participate');
 
-            if (participate === null || App.Model.State.PARTICIPATE_LEFT) {
-                participate = App.Model.State.PARTICIPATE_JOINED;
+            if (participate === null || App.Model.ThreadState.PARTICIPATE_LEFT) {
+                participate = App.Model.ThreadState.PARTICIPATE_JOINED;
             } else {
                 throw 'Unexpected participate state.';
             }
@@ -99,8 +99,8 @@ define([
             var that = this,
                 participate = this.get('participate');
 
-            if (App.Model.State.PARTICIPATE_JOINED) {
-                participate = App.Model.State.PARTICIPATE_LEFT;
+            if (App.Model.ThreadState.PARTICIPATE_JOINED) {
+                participate = App.Model.ThreadState.PARTICIPATE_LEFT;
             } else {
                 throw 'Unexpected participate state.';
             }
@@ -113,11 +113,11 @@ define([
         }
     });
 
-    App.Model.State.WATCH_PINNED = 1;
-    App.Model.State.WATCH_BANNED = 2;
+    App.Model.ThreadState.WATCH_PINNED = 1;
+    App.Model.ThreadState.WATCH_BANNED = 2;
 
-    App.Model.State.PARTICIPATE_JOINED = 1;
-    App.Model.State.PARTICIPATE_LEFT = 2;
+    App.Model.ThreadState.PARTICIPATE_JOINED = 1;
+    App.Model.ThreadState.PARTICIPATE_LEFT = 2;
 
-    return App.Model.State;
+    return App.Model.ThreadState;
 });

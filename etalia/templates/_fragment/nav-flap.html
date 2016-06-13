@@ -7,22 +7,19 @@
     <div class="flap-scroll">
         <div class="flap-inner">
             <ul id="main-nav">
-                <li class="{% active request 'feed/stream.+' %}">
-                    <a href="{% url 'feeds:stream' %}">My stream</a>
-{#                    {% if stream_counter > 0 %}<span>({{ stream_counter }})</span>{% endif %}#}
+                <li class="{% active request 'feeds.+' %}">
+                    <a href="{% url 'feeds:my_feeds' %}">My Feeds</a>
                 </li>
-                <li class="{% active request 'user/Threads.+' %}">
+                <li class="{% active request 'papers.+' %}">
+                    <a href="{% url 'papers:my_papers' %}">My Papers</a>
+                </li>
+                <li class="{% active request 'threads.+' %}">
+                    {# TODO change route name 'my_threads' #}
                     <a href="{% url 'threads:my_threads' %}">My Threads</a>
-{#                    {% if threads_counter > 0 %}<span>({{ threads_counter }})</span>{% endif %}#}
                 </li>
-                <li class="{% active request 'feed/trend.+' %}">
-                    <a href="{% url 'feeds:trend' %}">Trends</a>
-{#                    {% if trend_counter > 0 %}<span>({{ trend_counter }})</span>{% endif %}#}
-                </li>
-                <li class="{% active request 'user/library.+' %}">
-                    <a href="{% url 'user:library' %}">Library</a>
-                </li>
+
                 <li class="separator"></li>
+
                 <li class="{% active request 'user/settings.+' %}">
                     <a href="{% url 'user:settings' %}">Settings</a>
                 </li>

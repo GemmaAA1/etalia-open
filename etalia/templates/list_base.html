@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+
+
+{% load staticfiles %}
+
+
+{% block top-bar_controls %}
+{% spaceless %}
+<div data-controls-placeholder></div>
+{% endspaceless %}
+{% endblock top-bar_controls %}
+
+
+{% block left-flap %}
+{% include '_fragment/nav-flap.html' %}
+{% endblock left-flap %}
+
+
+{% block right-flap %}
+<a id="toggle-filter" href="javascript: void(0)">
+    <span class="eai eai-left"></span>
+</a>
+<div data-right-flap-placeholder></div>
+{% endblock right-flap %}
+
+
+{% block stylesheets %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/elements.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/list.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/card.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/detail.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/app/thread.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
+{% endblock stylesheets %}
+
+
+{% block javascript %}
+<script>requirejs(['app/default']);</script>
+{% endblock javascript %}

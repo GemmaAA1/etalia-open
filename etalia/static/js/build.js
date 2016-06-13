@@ -48,6 +48,14 @@
             exclude: ['require', 'jquery', 'underscore', 'backbone', 'handlebars', 'moment', 'bootstrap', 'select2']
         },
         {
+            name: 'app/feed/list',
+            exclude: ['app/app']
+        },
+        {
+            name: 'app/paper/list',
+            exclude: ['app/app']
+        },
+        {
             name: 'app/thread/list',
             exclude: ['app/app']
         }
