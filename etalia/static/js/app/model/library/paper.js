@@ -81,6 +81,10 @@ define([
 
         isTrashed: function() {
             return this.get('state').get('store') === App.Model.PaperState.STORE_TRASHED;
+        },
+
+        isInLibrary: function() {
+            return this.isAdded() || !this.isTrashed();
         }
     });
 

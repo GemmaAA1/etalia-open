@@ -44,7 +44,7 @@ define([
             }
 
             this.listenTo(this.model, "change", this.render);
-            this.listenTo(this.model, "change:state", this.onThreadStateChange);
+            this.listenTo(this.model, "change:state", this.render);
             this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
             this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
         },
@@ -54,14 +54,6 @@ define([
 
             if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
                 this.list.trigger('model:detail', this.model, this);
-            }
-        },
-
-        onThreadStateChange: function(state) {
-            if (state.get('watch') === App.Model.ThreadState.WATCH_BANNED) {
-                this.list.trigger('model:remove', state.get('thread'));
-            } else {
-                this.render();
             }
         },
 
@@ -81,26 +73,12 @@ define([
             e.preventDefault();
 
             this.model.getState().join();
-
-            /*var model = this.model;
-            model.getState()
-                .join()
-                .done(function() {
-                    model.fetch();
-                });*/
         },
 
         onLeaveClick: function(e) {
             e.preventDefault();
 
             this.model.getState().leave();
-
-            /*var model = this.model;
-            model.getState()
-                .leave()
-                .done(function() {
-                    model.fetch();
-                });*/
         },
 
         updateMembersCount: function() {

@@ -86,8 +86,8 @@ define([
 
                 pin_button: this.buttons.pin,
                 ban_button: this.buttons.ban,
-                add_button: this.buttons.add && !this.model.isTrashed(),
-                trash_button: this.buttons.trash && !this.model.isAdded()
+                add_button: this.buttons.add && !this.model.isInLibrary(),
+                trash_button: this.buttons.trash && this.model.isAdded()
             });
 
             this.$el.html(this.template(attributes));

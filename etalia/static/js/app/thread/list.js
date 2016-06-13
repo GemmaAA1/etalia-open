@@ -67,6 +67,8 @@ define([
     });
 
     App.View.Thread.List.create({
+        newButton: true,
+        invitesButton: true,
         controlsView: controlsView,
         tabsView: tabsView,
         filtersView: filtersView
