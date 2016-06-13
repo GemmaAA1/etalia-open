@@ -18,7 +18,7 @@ else:
     urlpatterns = [
         url(r'^', include('etalia.core.urls', namespace='core')),
         url(r'^library/', include('etalia.library.urls', namespace='library')),
-        url(r'^papers/', include('etalia.library.urls2', namespace='library')),
+        url(r'^papers/', include('etalia.library.urls2', namespace='papers')),
         url(r'^feeds/', include('etalia.feeds.urls', namespace='feeds')),
         # url(r'^feeds/', include('etalia.feeds.urls2', namespace='feeds')),
         url(r'^threads/', include('etalia.threads.urls', namespace='threads')),
