@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
+from django.views.generic import TemplateView, DetailView, ListView
 
 from braces.views import LoginRequiredMixin
 
@@ -16,6 +17,12 @@ from etalia.core.mixins import NavFlapMixin, XMLMixin
 
 from .models import Stream, StreamPapers, TrendPapers
 from .tasks import update_stream, update_trend, reset_stream, reset_trend
+
+from django.template.response import TemplateResponse
+
+
+def my_feeds(request):
+    return TemplateResponse(request, 'feeds/list.html', {})
 
 
 class FeedPaperListView(BasePaperListView):
@@ -195,3 +202,6 @@ def ajax_user_feed_message(request, name):
             data = {'done': False,
                     'message': userfeed.message}
         return JsonResponse(data)
+
+
+

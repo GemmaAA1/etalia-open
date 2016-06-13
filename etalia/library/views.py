@@ -28,6 +28,13 @@ from .models import Journal, Paper
 from .constants import PAPER_TYPE
 
 
+from django.template.response import TemplateResponse
+
+
+def my_papers(request):
+    return TemplateResponse(request, 'papers/list.html', {})
+
+
 def library(request):
 
     context = {'journal_count': Journal.objects.count(),
