@@ -128,55 +128,51 @@ class PaperViewSet(MultiSerializerMixin,
         # Bool filters definition
         bool_filters_def = {
             'added': {
-                'base': [],
-                'toggle': [Q(paperuser__user=self.request.user),
-                           Q(paperuser__store=PAPER_ADDED), ]
+                'base': None,
+                'toggle': Q(paperuser__user=self.request.user) &
+                          Q(paperuser__store=PAPER_ADDED)
             },
             'trashed': {
-                'base': [],
-                'toggle': [Q(paperuser__user=self.request.user),
-                           Q(paperuser__store=PAPER_TRASHED), ]
+                'base': None,
+                'toggle': Q(paperuser__user=self.request.user) &
+                          Q(paperuser__store=PAPER_TRASHED)
             },
             'pinned': {
-                'base': [],
-                'toggle': [Q(paperuser__user=self.request.user),
-                           Q(paperuser__watch=PAPER_PINNED), ]
+                'base': None,
+                'toggle': Q(paperuser__user=self.request.user) &
+                          Q(paperuser__watch=PAPER_PINNED)
             },
             'banned': {
-                'base': [],
-                'toggle': [Q(paperuser__user=self.request.user),
-                           Q(paperuser__watch=PAPER_BANNED), ]
+                'base': None,
+                'toggle': Q(paperuser__user=self.request.user) &
+                          Q(paperuser__watch=PAPER_BANNED)
             },
         }
 
         # base queryset
         queryset = self.queryset
+        query_args = []
+        order_by = '-userlib_paper__date_created'
 
         # boolean filters
         for key, props in bool_filters_def.items():
             param = self.request.query_params.get(key, 'null')
             if not param == 'null':
                 if props.get('base', None):
-                    base = reduce(operator.and_, props['base'])
-                    queryset = queryset.filter(base)
+                    query_args.append(props['base'])
                 if props.get('toggle', None):
-                    toggle = reduce(operator.and_, props['toggle'])
                     if param == '1':
-                        queryset = queryset.filter(toggle)
+                        query_args.append(props['toggle'])
                     elif param == '0':
-                        queryset = queryset.exclude(toggle)
+                        query_args.append(~props['toggle'])
 
         # Filters
         jids = [int(id_) for id_ in self.request.query_params.getlist('journal_id[]', None)]
         if jids:
-            queryset = queryset.filter(
-                Q(journal_id__in=jids)
-            )
+            query_args.append(Q(journal_id__in=jids))
         aids = [int(id_) for id_ in self.request.query_params.getlist('author_id[]', None)]
         if aids:
-            queryset = queryset.filter(
-                Q(authors__in=aids)
-            )
+            query_args.append(Q(authors__in=aids))
 
         # search
         search = self.request.query_params.get('search', 'null')
@@ -190,9 +186,7 @@ class PaperViewSet(MultiSerializerMixin,
                     Q(authors__last_name__icontains=word)
                 )
             if subset:
-                queryset = queryset\
-                    .filter(reduce(operator.and_, subset))\
-                    .distinct()
+                query_args.append(reduce(operator.and_, subset))
 
         # Paper feeds
         scored = self.request.query_params.get('scored', 'null')
@@ -201,28 +195,30 @@ class PaperViewSet(MultiSerializerMixin,
         time_span = self.request.query_params.get('time-span', 'null')
         if scored == '1':
             if type == 'stream':
-                queryset = queryset.filter(
-                    Q(streampapers__stream__name=feed_name),
-                    Q(streampapers__stream__user=self.request.user))\
-                    .order_by('-streampapers__score')
+                query_args.append(
+                    Q(streampapers__stream__name=feed_name) &
+                    Q(streampapers__stream__user=self.request.user))
+                order_by = '-streampapers__score'
             elif type == 'trend':
-                queryset = queryset.filter(
-                    Q(trendpapers__trend__name=feed_name),
-                    Q(trendpapers__trend__user=self.request.user))\
-                    .order_by('-trendpapers__score')
+                query_args.append(
+                    Q(trendpapers__trend__name=feed_name) &
+                    Q(trendpapers__trend__user=self.request.user))
+                order_by = '-trendpapers__score'
 
             # time-span filter
             if time_span:
                 cutoff_datetime = timezone.now() - timezone.timedelta(
                     days=int(time_span))
                 if type == 'stream':
-                    queryset = queryset.filter(streampapers__date__gt=cutoff_datetime)
+                    query_args.append(Q(streampapers__date__gt=cutoff_datetime))
                 elif type == 'trend':
-                    queryset = queryset.filter(trendpapers__date__gt=cutoff_datetime)
+                    query_args.append(Q(trendpapers__date__gt=cutoff_datetime))
 
-            return queryset
-
-        queryset = queryset.order_by('-userlib_paper__date_created')
+        if query_args:
+            queryset = queryset.filter(reduce(operator.and_, query_args))\
+                .order_by(order_by)
+        else:
+            queryset = queryset.order_by(order_by)
 
         return queryset
 

@@ -209,11 +209,13 @@ class ThreadViewSet(MultiSerializerMixin,
         }
 
         # Baseline query
+        queryset = self.queryset
         query_args = [
             ~(Q(published_at=None) & ~Q(user=self.request.user)),
             ~(Q(privacy=THREAD_PRIVATE) &
               ~(Q(threaduser__user=self.request.user) & Q(threaduser__participate=THREAD_JOINED)))
         ]
+        order_by = None
 
         # boolean filters
         for key, props in bool_filters_def.items():
@@ -221,16 +223,12 @@ class ThreadViewSet(MultiSerializerMixin,
             if not param == 'null':
                 if props.get('base', None):
                     query_args.append(props['base'])
-                    # base = reduce(operator.and_, props['base'])
-                    # queryset = queryset.filter(base)
                 if props.get('toggle', None):
                     # toggle = reduce(operator.and_, props['toggle'])
                     if param == '1':
                         query_args.append(props['toggle'])
-                    #     queryset = queryset.filter(toggle)
                     elif param == '0':
-                        query_args.append(operator.not_(props['toggle']))
-                        # queryset = queryset.exclude(toggle)
+                        query_args.append(~props['toggle'])
 
         # Thread Types
         thread_types = [int(id_) for id_ in self.request.query_params.getlist('type[]', None)]
@@ -242,8 +240,6 @@ class ThreadViewSet(MultiSerializerMixin,
         if uids:
             query_args.append(
                 Q(user_id__in=uids)
-                # | Q(posts__user_id__in=uids) \
-                # | Q(posts__comments__user_id__in=uids)
             )
 
         # time-span filter
@@ -264,13 +260,14 @@ class ThreadViewSet(MultiSerializerMixin,
             if subset:
                 query_args.append(reduce(operator.and_, subset))
 
-        queryset = Thread.objects.all().filter(reduce(operator.and_, query_args)).distinct()
+        if query_args:
+            queryset = queryset.filter(reduce(operator.and_, query_args))
 
         order_by = self.request.query_params.get('sort-by', 'null')
         if not order_by == 'null':
             queryset = queryset.order_by(order_by_map.get(order_by))
 
-        return queryset
+        return queryset.distinct()
 
     @detail_route(methods=['put', 'patch'],
                   permission_classes=(ThreadIsNotYetPublished,))

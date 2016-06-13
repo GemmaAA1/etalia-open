@@ -67,15 +67,16 @@ class UserViewSet(MultiSerializerMixin,
 
     def get_queryset(self):
         queryset = self.queryset
+        query_args = []
 
         # filter first_name
         first_name = self.request.query_params.get('first-name', 'null')
         if not first_name == 'null':
-            queryset = queryset.filter(first_name__icontains=first_name)
+            query_args.append(Q(first_name__icontains=first_name))
         # filter first_name
         last_name = self.request.query_params.get('last-name', 'null')
         if not last_name == 'null':
-            queryset = queryset.filter(last_name__icontains=last_name)
+            query_args.append(Q(last_name__icontains=last_name))
 
         # search
         search = self.request.query_params.get('search', 'null')
@@ -88,11 +89,12 @@ class UserViewSet(MultiSerializerMixin,
                     Q(affiliation__institution__icontains=word)
                 )
             if subset:
-                queryset = queryset\
-                    .filter(reduce(operator.and_, subset))\
-                    .distinct()
+                query_args.append(reduce(operator.and_, subset))
 
-        return queryset
+        if query_args:
+            queryset = queryset.filter(reduce(operator.and_, query_args))
+
+        return queryset.distinct()
 
     def render_list(self, queryset):
         page = self.paginate_queryset(queryset)
