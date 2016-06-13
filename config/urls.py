@@ -18,9 +18,9 @@ else:
     urlpatterns = [
         url(r'^', include('etalia.core.urls', namespace='core')),
         url(r'^library/', include('etalia.library.urls', namespace='library')),
+        url(r'^papers/', include('etalia.library.urls2', namespace='library')),
         url(r'^feed/', include('etalia.feeds.urls', namespace='feeds')),
-        url(r'^feeds/', my_feeds, name='my_feeds'),
-        url(r'^papers/', my_papers, name='my_papers'),
+        url(r'^feeds/', include('etalia.feeds.urls2', namespace='feeds')),
         url(r'^threads/', include('etalia.threads.urls', namespace='threads')),
         url(r'^user/', include('etalia.users.urls', namespace='user')),
         url(r'^user/', include('social.apps.django_app.urls', namespace='social')),
