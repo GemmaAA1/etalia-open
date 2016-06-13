@@ -6,6 +6,7 @@ from . import views
 
 urlpatterns = [
     # url(r'^$', views.stream_main, name='main'),
+    url(r'^$', views.my_feeds, name='my_feeds'),
     url(r'stream/$', views.stream, name='home'),
     url(r'stream/$', views.stream, name='stream'),
     url(r'stream/xml$', views.stream_xml, name='stream_xml'),
