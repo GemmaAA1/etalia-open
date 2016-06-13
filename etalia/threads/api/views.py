@@ -150,54 +150,54 @@ class ThreadViewSet(MultiSerializerMixin,
         feed_name = self.request.query_params.get('feed', 'main')
         bool_filters_def = {
             'owned': {
-                'toggle': [Q(threaduser__user=self.request.user)],
+                'toggle': Q(user=self.request.user)
             },
             'joined': {
-                'base': [],
-                'toggle': [Q(threaduser__user=self.request.user),
-                           Q(threaduser__participate=THREAD_JOINED), ]
+                'base': None,
+                'toggle': Q(threaduser__user=self.request.user) &
+                          Q(threaduser__participate=THREAD_JOINED)
             },
             'left': {
-                'base': [],
-                'toggle': [Q(threaduser__user=self.request.user),
-                           Q(threaduser__participate=THREAD_LEFT), ]
+                'base': None,
+                'toggle': Q(threaduser__user=self.request.user) &
+                          Q(threaduser__participate=THREAD_LEFT)
             },
             'pinned': {
-                'base': [],
-                'toggle': [Q(threaduser__user=self.request.user),
-                           Q(threaduser__watch=THREAD_PINNED), ]
+                'base': None,
+                'toggle': Q(threaduser__user=self.request.user) &
+                          Q(threaduser__watch=THREAD_PINNED)
             },
             'banned': {
-                'base': [],
-                'toggle': [Q(threaduser__user=self.request.user),
-                           Q(threaduser__watch=THREAD_BANNED), ]
+                'base': None,
+                'toggle': Q(threaduser__user=self.request.user) &
+                          Q(threaduser__watch=THREAD_BANNED)
             },
             'published': {
-                'base': [Q(user=self.request.user), ],
-                'toggle': [~Q(published_at=None), ],
+                'base': Q(user=self.request.user),
+                'toggle': ~Q(published_at=None)
             },
             'scored': {
-                'toggle': [Q(threadfeedthreads__threadfeed__name=feed_name),
-                           Q(threadfeedthreads__threadfeed__user=self.request.user)],
+                'toggle': Q(threadfeedthreads__threadfeed__name=feed_name) &
+                          Q(threadfeedthreads__threadfeed__user=self.request.user)
             },
             'private': {
-                'toggle': [Q(privacy=THREAD_PRIVATE)],
+                'toggle': Q(privacy=THREAD_PRIVATE)
             },
             'public': {
-                'toggle': [Q(privacy=THREAD_PUBLIC)],
+                'toggle': Q(privacy=THREAD_PUBLIC)
             },
             'invited': {
-                'toggle': [Q(threaduserinvite__to_user=self.request.user)],
+                'toggle': Q(threaduserinvite__to_user=self.request.user)
             },
             'invited-pending': {
-                'base': [],
-                'toggle': [Q(threaduserinvite__to_user=self.request.user),
-                           Q(threaduserinvite__status=THREAD_INVITE_PENDING), ],
+                'base': None,
+                'toggle': Q(threaduserinvite__to_user=self.request.user) &
+                          Q(threaduserinvite__status=THREAD_INVITE_PENDING)
             },
             'invited-accepted': {
-                'base': [],
-                'toggle': [Q(threaduserinvite__to_user=self.request.user),
-                           Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED), ],
+                'base': None,
+                'toggle': Q(threaduserinvite__to_user=self.request.user) &
+                          Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED)
             },
         }
 
@@ -208,39 +208,39 @@ class ThreadViewSet(MultiSerializerMixin,
             'score': '-threadscore__score',
         }
 
-        # base queryset
-        queryset = Thread.objects.all() \
-            .exclude(Q(published_at=None) & ~Q(user=self.request.user)) \
-            .exclude(Q(privacy=THREAD_PRIVATE) &
-                     ~(Q(threaduser__user=self.request.user) &
-                       Q(threaduser__participate=THREAD_JOINED))
-                     )
+        # Baseline query
+        query_args = [
+            ~(Q(published_at=None) & ~Q(user=self.request.user)),
+            ~(Q(privacy=THREAD_PRIVATE) &
+              ~(Q(threaduser__user=self.request.user) & Q(threaduser__participate=THREAD_JOINED)))
+        ]
 
         # boolean filters
         for key, props in bool_filters_def.items():
             param = self.request.query_params.get(key, 'null')
             if not param == 'null':
                 if props.get('base', None):
-                    base = reduce(operator.and_, props['base'])
-                    queryset = queryset.filter(base)
+                    query_args.append(props['base'])
+                    # base = reduce(operator.and_, props['base'])
+                    # queryset = queryset.filter(base)
                 if props.get('toggle', None):
-                    toggle = reduce(operator.and_, props['toggle'])
+                    # toggle = reduce(operator.and_, props['toggle'])
                     if param == '1':
-                        queryset = queryset.filter(toggle)
+                        query_args.append(props['toggle'])
+                    #     queryset = queryset.filter(toggle)
                     elif param == '0':
-                        queryset = queryset.exclude(toggle)
+                        query_args.append(operator.not_(props['toggle']))
+                        # queryset = queryset.exclude(toggle)
 
         # Thread Types
         thread_types = [int(id_) for id_ in self.request.query_params.getlist('type[]', None)]
         if thread_types:
-            queryset = queryset.filter(
-                Q(type__in=thread_types)
-            )
+            query_args.append(Q(type__in=thread_types))
 
-        # Filters
+        # Owner of thread
         uids = [int(id_) for id_ in self.request.query_params.getlist('user_id[]', None)]
         if uids:
-            queryset = queryset.filter(
+            query_args.append(
                 Q(user_id__in=uids)
                 # | Q(posts__user_id__in=uids) \
                 # | Q(posts__comments__user_id__in=uids)
@@ -251,7 +251,7 @@ class ThreadViewSet(MultiSerializerMixin,
         if not time_span == 'null':
             cutoff_datetime = timezone.now() - timezone.timedelta(
                 days=int(time_span))
-            queryset = queryset.filter(published_at__gt=cutoff_datetime)
+            query_args.append(Q(published_at__gt=cutoff_datetime))
 
         # search
         search = self.request.query_params.get('search', 'null')
@@ -262,9 +262,9 @@ class ThreadViewSet(MultiSerializerMixin,
                               Q(user__first_name__icontains=word) |
                               Q(user__last_name__icontains=word))
             if subset:
-                queryset = queryset\
-                    .filter(reduce(operator.or_, subset))\
-                    .distinct()
+                query_args.append(reduce(operator.and_, subset))
+
+        queryset = Thread.objects.all().filter(reduce(operator.and_, query_args)).distinct()
 
         order_by = self.request.query_params.get('sort-by', 'null')
         if not order_by == 'null':
@@ -310,27 +310,6 @@ class ThreadViewSet(MultiSerializerMixin,
         for u, c in us_count[:self.size_max_user_filter]:
             u.count = c
             users.append(u)
-
-        # # Move preferential users to top (followed and owner of threads joined)
-        # qu = User.objects.raw(
-        #     "SELECT id "
-        #     "FROM users_user u "
-        #     "LEFT JOIN threads_threaduser tu ON u.id = tu.user_id "
-        #     "LEFT JOIN users_relationship r ON u.id = r.to_user_id "
-        #     "WHERE tu.participate = %s"
-        #     "   AND tu.user_id = %s"
-        #     "   AND r.from_user_id = %s", (THREAD_JOINED, request.user.id, request.user.id)
-        # )
-        #
-        # qu = User.objects.raw(
-        #     "SELECT u.id "
-        #     "FROM users_user u "
-        #     "LEFT JOIN threads_threaduser tu ON u.id = tu.user_id "
-        #     "LEFT JOIN users_relationship r ON u.id = r.to_user_id "
-        #     "WHERE tu.participate = %s"
-        #     "   AND tu.user_id = %s"
-        #     "   OR r.from_user_id = %s", (1, 55, 55)
-        # )
 
         kwargs = {'context': self.get_serializer_context()}
         serializer = ThreadFilterSerializer({'users': users}, **kwargs)

@@ -246,8 +246,8 @@ class ThreadUserSerializer(One2OneNestedLinkSwitchMixin,
 
     def validate(self, data):
         """Check that you cannot banned a unpublished thread"""
-        if data['watch'] == THREAD_BANNED:
-            print('')
+        if data['thread'].published_at is None and data.get('watch') == THREAD_BANNED:
+            serializers.ValidationError("Cannot ban an unpublished thread")
         return data
 
 
