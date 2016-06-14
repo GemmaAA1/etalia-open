@@ -261,8 +261,8 @@ class PaperEngineScoringMixin(object):
             aboost[i] = min([b, self.score_author_boost])
 
         score = us.stream_vector_weight * np.dot(self.data['embedding'], seed.T) + \
-                us.stream_vector_weight * jboost + \
-                us.stream_vector_weight * aboost
+                us.stream_journal_weight * jboost + \
+                us.stream_author_weight * aboost
 
         results = self.order_n(self.data['ids'], score, self.data['date'], self.SCORE_N_PAPERS)
 
