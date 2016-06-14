@@ -267,6 +267,22 @@ class ThreadViewSet(MultiSerializerMixin,
         if not order_by == 'null':
             queryset = queryset.order_by(order_by_map.get(order_by))
 
+        # Store persistent user control states
+        scored = self.request.query_params.get('scored', 'null')
+        pin = self.request.query_params.get('pinned', 'null')
+        if scored == '1':
+            self.request.session['feeds-control-states'] = {
+                'time-span': time_span,
+                'search': search,
+                'pin': 1 if pin == 1 else 0
+            }
+        else:
+            self.request.session['threads-control-states'] = {
+                'time-span': time_span,
+                'search': search,
+                'pin': 1 if pin == 1 else 0
+            }
+
         return queryset.distinct()
 
     @detail_route(methods=['put', 'patch'],

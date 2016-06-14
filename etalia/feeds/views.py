@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import json
 from django.http import JsonResponse
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
@@ -22,7 +23,11 @@ from django.template.response import TemplateResponse
 
 
 def my_feeds(request):
-    return TemplateResponse(request, 'feeds/list.html', {})
+    return TemplateResponse(
+        request,
+        'feeds/list.html',
+        {'control_states': str(request.session.get('feeds-control-states'))}
+    )
 
 
 class FeedPaperListView(BasePaperListView):

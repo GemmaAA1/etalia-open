@@ -32,7 +32,11 @@ from django.template.response import TemplateResponse
 
 
 def my_papers(request):
-    return TemplateResponse(request, 'papers/list.html', {})
+    return TemplateResponse(
+        request,
+        'papers/list.html',
+        {'control_states': str(request.session.get('library-control-states', {}))}
+    )
 
 
 def library(request):

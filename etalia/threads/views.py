@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import json
 from django.views.generic import TemplateView, DetailView, ListView
 from django.template.response import TemplateResponse
 from braces.views import LoginRequiredMixin
@@ -26,4 +27,8 @@ thread = ThreadView.as_view()
 
 
 def my_threads(request):
-    return TemplateResponse(request, 'threads/list.html', {})
+    return TemplateResponse(
+        request,
+        'threads/list.html',
+        {'control_states': str(request.session.get('threads-control-states', {}))}
+    )

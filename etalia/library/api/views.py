@@ -229,6 +229,21 @@ class PaperViewSet(MultiSerializerMixin,
         else:
             queryset = queryset.order_by(order_by)
 
+        # Store persistent user control states
+        pin = self.request.query_params.get('pinned', 'null')
+        if scored == '1':
+            self.request.session['feeds-control-states'] = {
+                'time-span': time_span,
+                'search': search,
+                'pin': 1 if pin == 1 else 0
+            }
+        else:
+            self.request.session['library-control-states'] = {
+                'time-span': time_span,
+                'search': search,
+                'pin': 1 if pin == 1 else 0
+            }
+
         return queryset
 
     @detail_route(methods=['get'])
