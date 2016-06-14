@@ -23,7 +23,7 @@ from .tasks import failing_task
 
 def home(request):
     if request.user.is_authenticated():
-        return redirect('feeds:stream')
+        return redirect('feeds:my_feeds')
     else:
         # Get some trending altmetric matches
         d = timezone.datetime.now().date() - \
