@@ -51,16 +51,16 @@ define([
                     $target: this.$el,
                     append: true
                 };
-            if (tabName == 'papers' || tabName == 'trend') {
+            if (0 <= ['feed:papers', 'feed:trend'].indexOf(tabName)) {
                 //this.controlsView.cluster.enable();
-                this.controlsView.timespan.enable();
-                this.controlsView.pin.enable();
+                //this.controlsView.timespan.enable();
+                //this.controlsView.pin.enable();
 
                 this.listView = new App.View.Paper.List.create(viewOptions, createOptions);
-            } else if (tabName == 'threads') {
+            } else if (tabName == 'feed:threads') {
                 //this.controlsView.cluster.disable();
-                this.controlsView.timespan.disable();
-                this.controlsView.pin.disable();
+                //this.controlsView.timespan.disable();
+                //this.controlsView.pin.disable();
 
                 this.listView = new App.View.Thread.List.create(viewOptions, createOptions);
             } else {
@@ -68,7 +68,6 @@ define([
             }
         }
     });
-
 
     App.View.Feed.List.create = function(options, createOptions) {
         options = options || {};

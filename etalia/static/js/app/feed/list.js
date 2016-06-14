@@ -16,7 +16,7 @@ define([
     tabsView = new App.View.Ui.Tabs.create({
         tabs: [
             {
-                name: 'papers',
+                name: 'feed:papers',
                 title: 'Papers',
                 count: 0,
                 data: {
@@ -27,25 +27,26 @@ define([
                 },
                 actions: {
                     pin: true,
-                    ban: true
+                    ban: true,
+                    add: true
                 }
             },
             {
-                name: 'trend',
+                name: 'feed:trend',
                 title: 'Trend',
                 count: 0,
                 data: {
                     view: 'nested',
                     scored: 1,
                     banned: 0,
-                    type: 'feed'
+                    type: 'trend'
                 },
                 actions: {
                     pin: true
                 }
             },
             {
-                name: 'threads',
+                name: 'feed:threads',
                 title: 'Threads',
                 count: 0,
                 data: {
@@ -54,6 +55,8 @@ define([
                     banned: 0
                 },
                 actions: {
+                    pin: true,
+                    ban: true,
                     join: true
                 }
             }

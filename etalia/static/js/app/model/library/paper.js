@@ -17,7 +17,9 @@ define([
             di_pii: null,
             di_oth: null,
             title: null,
-            url: null
+            url: null,
+            new: false,
+            linked_threads_count: 0
         },
 
         relations: [
@@ -68,19 +70,19 @@ define([
         },
 
         isPinned: function() {
-            return this.get('state').get('watch') === App.Model.PaperState.WATCH_PINNED;
+            return this.getState().get('watch') === App.Model.PaperState.WATCH_PINNED;
         },
 
         isBanned: function() {
-            return this.get('state').get('watch') === App.Model.PaperState.WATCH_BANNED;
+            return this.getState().get('watch') === App.Model.PaperState.WATCH_BANNED;
         },
 
         isAdded: function() {
-            return this.get('state').get('store') === App.Model.PaperState.STORE_ADDED;
+            return this.getState().get('store') === App.Model.PaperState.STORE_ADDED;
         },
 
         isTrashed: function() {
-            return this.get('state').get('store') === App.Model.PaperState.STORE_TRASHED;
+            return this.getState().get('store') === App.Model.PaperState.STORE_TRASHED;
         },
 
         isInLibrary: function() {
@@ -137,30 +139,34 @@ define([
         return new App.Handlebars.SafeString(output);
     });
     App.Handlebars.registerHelper('paper_authors', function() {
-        var authors = this.authors.map(function (author) {
+        var authors = this.hasOwnProperty('authors') ? this.authors : this.get('authors');
+        authors = authors.map(function (author) {
             return author.get('first_name') + " " + author.get('last_name');
         });
         return new App.Handlebars.SafeString(authors.join(', '));
     });
     App.Handlebars.registerHelper('paper_journal', function() {
-        return new App.Handlebars.SafeString(this.journal.get('title'));
-    });
-    App.Handlebars.registerHelper('paper_first_seen', function() {
-        return new App.Handlebars.SafeString('17 May 2016');
+        var journal = this.hasOwnProperty('journal') ? this.journal : this.get('journal');
+        return new App.Handlebars.SafeString(journal.get('title'));
     });
     App.Handlebars.registerHelper('paper_new_icon', function() {
-        return false ? new App.Handlebars.SafeString('<span class="new">new</span>') : ''; // TODO
+        var is_new = this.hasOwnProperty('new') ? this.new : this.get('is_new');
+        return is_new ? new App.Handlebars.SafeString('<span class="new">new</span>') : '';
     });
     App.Handlebars.registerHelper('paper_altmetric_icon', function() {
+        var id_doi = this.hasOwnProperty('id_doi') ? this.id_doi : this.get('id_doi'),
+            id_arx = this.hasOwnProperty('id_arx') ? this.id_arx : this.get('id_arx'),
+            id_pmi = this.hasOwnProperty('id_pmi') ? this.id_pmi : this.get('id_pmi');
+
         var badge = '<span class="metric">' +
             '<span class="altmetric-embed" data-badge-type="donut" data-link-target="_blank" ' +
                 'data-hide-no-mentions="true" data-badge-popover="bottom"';
-        if (this.id_doi) {
-            badge += ' data-doi="' + this.id_doi + '"';
-        } else if (this.id_arx) {
-            badge += ' data-arxiv-id="' + this.id_arx + '"';
-        } else if (this.id_pmi) {
-            badge += ' data-pmid="' + this.id_pmi + '"';
+        if (id_doi) {
+            badge += ' data-doi="' + id_doi + '"';
+        } else if (id_arx) {
+            badge += ' data-arxiv-id="' + id_arx + '"';
+        } else if (id_pmi) {
+            badge += ' data-pmid="' + id_pmi + '"';
         } else {
             return '';
         }
@@ -169,25 +175,29 @@ define([
         return new App.Handlebars.SafeString(badge);
     });
     App.Handlebars.registerHelper('paper_pin_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.PaperState.WATCH_PINNED) {
+        var state = this.hasOwnProperty('state') ? this.state : this.getState();
+        if (state && state.get('watch') === App.Model.PaperState.WATCH_PINNED) {
             return ' active';
         }
         return '';
     });
     App.Handlebars.registerHelper('paper_ban_class', function() {
-        if (this.state && this.state.get('watch') === App.Model.PaperState.WATCH_BANNED) {
+        var state = this.hasOwnProperty('state') ? this.state : this.getState();
+        if (state && state.get('watch') === App.Model.PaperState.WATCH_BANNED) {
             return ' active';
         }
         return '';
     });
     App.Handlebars.registerHelper('paper_add_class', function() {
-        if (this.state && this.state.get('store') === App.Model.PaperState.STORE_ADDED) {
+        var state = this.hasOwnProperty('state') ? this.state : this.getState();
+        if (state && state.get('store') === App.Model.PaperState.STORE_ADDED) {
             return ' active';
         }
         return '';
     });
     App.Handlebars.registerHelper('paper_trash_class', function() {
-        if (this.state && this.state.get('store') === App.Model.PaperState.STORE_TRASHED) {
+        var state = this.hasOwnProperty('state') ? this.state : this.getState();
+        if (state && state.get('store') === App.Model.PaperState.STORE_TRASHED) {
             return ' active';
         }
         return '';

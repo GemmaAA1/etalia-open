@@ -37,44 +37,52 @@ define([
         togglePinned: function() {
             var that = this,
                 watch = this.get('watch'),
-                event = null;
+                events = [];
 
-            if (watch === null) {
-                watch = App.Model.ThreadState.WATCH_PINNED;
-                event = 'etalia.thread.pin';
-            } else if(watch === App.Model.ThreadState.WATCH_PINNED) {
+            if (watch === App.Model.ThreadState.WATCH_BANNED) {
+                events.push('etalia.thread.unban');
+            }
+
+            if (watch === App.Model.ThreadState.WATCH_PINNED) {
                 watch = null;
-                event = 'etalia.thread.unpin';
+                events.push('etalia.thread.unpin');
             } else {
-                throw 'Unexpected watch state.';
+                watch = App.Model.ThreadState.WATCH_PINNED;
+                events.push('etalia.thread.pin');
             }
 
             return this
                 .save({watch: watch}, {patch: true, wait: true})
                 .done(function() {
-                    App.trigger(event, that.get('thread'));
+                    App._.each(events, function(event) {
+                        App.trigger(event, that.get('thread'));
+                    });
                 });
         },
 
         toggleBanned: function() {
             var that = this,
                 watch = this.get('watch'),
-                event = null;
+                events = [];
 
-            if (watch === null) {
-                watch = App.Model.ThreadState.WATCH_BANNED;
-                event = 'etalia.thread.ban';
-            } else if (watch === App.Model.ThreadState.WATCH_BANNED) {
+            if (watch === App.Model.ThreadState.WATCH_PINNED) {
+                events.push('etalia.thread.unpin');
+            }
+
+            if (watch === App.Model.ThreadState.WATCH_BANNED) {
                 watch = null;
-                event = 'etalia.thread.unban';
+                events.push('etalia.thread.unban');
             } else {
-                throw 'Unexpected watch state.';
+                watch = App.Model.ThreadState.WATCH_BANNED;
+                events.push('etalia.thread.ban');
             }
 
             return this
                 .save({watch: watch}, {patch: true, wait: true})
                 .done(function() {
-                    App.trigger(event, that.get('thread'));
+                    App._.each(events, function(event) {
+                        App.trigger(event, that.get('thread'));
+                    });
                 });
         },
 

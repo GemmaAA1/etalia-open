@@ -86,7 +86,7 @@ define([
 
                 pin_button: this.buttons.pin,
                 ban_button: this.buttons.ban,
-                add_button: this.buttons.add && !this.model.isInLibrary(),
+                add_button: this.buttons.add && !this.model.isAdded(),
                 trash_button: this.buttons.trash && this.model.isAdded()
             });
 

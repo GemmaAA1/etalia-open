@@ -40,17 +40,17 @@
     <div class="infos">
         <p class="truncate">
             {{paper_journal}}
-            <em>{{ paper_first_seen }}</em>
+            <em>{{formatDate date}}</em>
         </p>
         <p class="icons">
             {{! cluster icon }}
 
             {{paper_altmetric_icon}}
 
-            {{!-- <span class="comment" title="{{posts_count}} post(s)">
-                <span class="count">{{posts_count}}</span>
+            <span class="comment" title="{{linked_threads_count}} thread(s)">
+                <span class="count">{{linked_threads_count}}</span>
                 <span class="eai eai-comment"></span>
-            </span> --}}
+            </span>
         </p>
     </div>
 </div>

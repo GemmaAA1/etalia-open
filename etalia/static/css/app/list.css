@@ -469,6 +469,14 @@
     line-height: 34px;
 }
 
+.list-empty-message {
+    text-align: center;
+    font-style: italic;
+    font-size: 16px;
+    padding: 24px 0;
+    color: #999;
+}
+
 .list-controls {
     text-align: center;
     padding-bottom: 10px;
@@ -521,45 +529,16 @@
     float: right;
 }
 
+.thumb .actions a {
+    margin-bottom: 12px;
+}
+
 .thumb .card {
     margin-right: 45px;
 }
 
 .thumb .card.standalone {
     margin-right: 0;
-}
-
-/* ------------------------------------ ACTIONS ------------------------------------ */
-
-.actions a {
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-    line-height: 20px;
-    color: #cbced1;
-    margin-bottom: 20px;
-}
-
-.actions a:last-child {
-    margin-bottom: 0;
-}
-
-.actions a:hover {
-    color: #313233;
-    text-decoration: none;
-}
-
-.actions a.active {
-    color: #00695c;
-}
-
-.actions-group {
-    margin-bottom: 40px;
-}
-
-.actions-group a:last-child {
-    margin-bottom: 0;
 }
 
 /* ------------------------------------ RESPONSIVE ------------------------------------ */

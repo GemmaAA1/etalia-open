@@ -6,6 +6,8 @@ define([
         tagName: 'div',
         className: 'thumb-list',
 
+        $emptyMessage: null,
+
         addThumbView: function(view) {
             this.$el.append(view.render().$el);
             this.pushSubView(view);
@@ -33,7 +35,30 @@ define([
             this.subViews = null;
         },
 
+        showEmptyMessage: function(msg) {
+            msg = msg || 'No result';
+
+            if (this.subViews && this.subViews.length) {
+                this.hideEmptyMessage();
+            } else {
+                this.$emptyMessage.html(msg).show();
+            }
+
+            return this;
+        },
+
+        hideEmptyMessage: function() {
+            this.$emptyMessage.hide();
+
+            return this;
+        },
+
         render: function () {
+            this.$emptyMessage = $('<p></p>')
+                .addClass('list-empty-message')
+                .appendTo(this.$el)
+                .hide();
+
             return this;
         }
     });

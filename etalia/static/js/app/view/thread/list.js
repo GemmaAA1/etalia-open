@@ -167,6 +167,8 @@ define([
             if (this.collection) {
                 this.collection.fullCollection.off("add", this.onCollectionAdd);
                 this.collection.fullCollection.off("remove", this.onCollectionRemove);
+                this.collection.fullCollection.off("reset", this.onCollectionUpdate);
+                this.collection.fullCollection.off("update", this.onCollectionUpdate);
                 this.collection.fullCollection.reset();
                 this.collection.reset();
             }
@@ -182,6 +184,8 @@ define([
 
             this.collection.fullCollection.on("add", this.onCollectionAdd, this);
             this.collection.fullCollection.on("remove", this.onCollectionRemove, this);
+            this.collection.fullCollection.on("reset", this.onCollectionUpdate, this);
+            this.collection.fullCollection.on("update", this.onCollectionUpdate, this);
 
             var that = this;
             this.collection.fetch()
@@ -248,17 +252,17 @@ define([
             var tab = this.tabsView.getActiveTab();
 
             switch(tab.name) {
-                case 'threads':
+                case 'thread:threads':
                     this.$('#thread-create-modal').css({display: 'inline-block'});
                     var $invites = this.$('#thread-invites-modal');
                     if (0 < $invites.data('count')) {
                         $invites.css({display: 'inline-block'});
                     }
                     break;
-                case 'pins':
+                case 'thread:pins':
                     this.$('#thread-create-modal, #thread-invites-modal').hide();
                     break;
-                case 'left':
+                case 'thread:left':
                     this.$('#thread-create-modal, #thread-invites-modal').hide();
                     break;
             }
@@ -286,7 +290,7 @@ define([
 
                     // Visibility
                     $button.attr('title', title);
-                    if ((0 < invites.length) && (that.tabsView.getActiveTab().name == 'threads')) {
+                    if ((0 < invites.length) && (that.tabsView.getActiveTab().name == 'thread:threads')) {
                         $button.show();
                     }
                 });
@@ -298,41 +302,54 @@ define([
         },
 
         onThreadPin: function(thread) {
+            this.tabsView.setTabCount('thread:pins', 1, true);
         },
 
         onThreadUnpin: function(thread) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'pins') {
+            if (tabName == 'thread:pins') {
                 this.onModelRemove(thread);
             }
+            this.tabsView.setTabCount('thread:pins', -1, true);
         },
 
         onThreadBan: function(thread) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'threads' || tabName == 'pins') {
+            if (0 <= ['feed:threads', 'thread:threads', 'thread:pins'].indexOf(tabName)) {
                 this.onModelRemove(thread);
+                Detail.close();
             }
+            this.tabsView.setTabCount('feed:threads', -1, true);
+            this.tabsView.setTabCount('paper:threads', -1, true);
         },
 
         onThreadUnban: function(thread) {
-            var tabName = this.tabsView.getActiveTab().name;
+            /*var tabName = this.tabsView.getActiveTab().name;
             if (tabName == 'left') {
                 this.onModelRemove(thread);
-            }
+            }*/
+            // TODO ???
         },
 
         onThreadJoin: function(thread) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'left') {
+            if (0 <= ['feed:threads', 'thread:left'].indexOf(tabName)) {
                 this.onModelRemove(thread);
             }
+            this.tabsView.setTabCount('feed:threads', -1, true);
+            this.tabsView.setTabCount('thread:left', -1, true);
+            this.tabsView.setTabCount('thread:threads', 1, true);
         },
 
         onThreadLeave: function(thread) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'threads' || tabName == 'pins') {
+            if (0 <= ['thread:threads', 'thread:pins'].indexOf(tabName)) {
                 this.onModelRemove(thread);
+                Detail.close();
             }
+            this.tabsView.setTabCount('thread:threads', -1, true);
+            //this.tabsView.setTabCount('thread:pins', -1, true);
+            this.tabsView.setTabCount('thread:left', 1, true);
         },
 
         onCollectionAdd: function (model) {
@@ -358,8 +375,14 @@ define([
             this.listView.removeThumbById('thread-thumb-' + model.get('id'));
         },
 
+        onCollectionUpdate: function() {
+            //App.log('ThreadListView::onCollectionUpdate');
+
+            this.listView.showEmptyMessage('No thread found.');
+        },
+
         clearList: function() {
-            this.listView.clear();
+            this.listView.hideEmptyMessage().clear();
         },
 
         openDetail: function (model) {

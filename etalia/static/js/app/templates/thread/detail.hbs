@@ -31,6 +31,12 @@
             {{/if}}
         </div>
         <div class="actions-group">
+            <a href="#thread-neighbors"
+               class="detail-neighbors" title="Related threads">
+                <span class="eai eai-suggestions"></span>
+            </a>
+        </div>
+        <div class="actions-group">
             <a href="javascript: void(0)"
                class="detail-mail" title="Email">
                 <span class="eai eai-mail"></span>
@@ -60,7 +66,7 @@
         <div class="infos">
             <p>
                 <strong>{{full_name user}}</strong>
-                - <em>{{date created}}</em>
+                - <em>{{formatDate created}}</em>
                 {{#if is_owner}}
                 - <a href="javascript: void(0)" class="thread-edit">edit</a>
                 {{/if}}
@@ -109,7 +115,7 @@
 
         {{#if content}}
         <p class="thread-info element-info">
-            <strong>{{full_name user}}</strong> - <em>{{date created}}</em>
+            <strong>{{full_name user}}</strong> - <em>{{formatDate created}}</em>
             {{#if is_owner}}
             - <a href="javascript: void(0)" class="thread-content-edit">edit</a>
             {{/if}}

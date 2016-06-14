@@ -32,8 +32,6 @@ define([
             "click .detail-add": "onAddClick",
             "click .detail-trash": "onTrashClick",
 
-            "click .detail-neighbors": "onNeighborsClick",
-
             "click .detail-mail": "onMailClick",
             "click .detail-twitter": "onTwitterClick",
             "click .detail-google-plus": "onGooglePlusClick"
@@ -76,18 +74,6 @@ define([
             this.model.getState().trash();
         },
 
-        onRelatedThreadsClick: function(e) {
-            e.preventDefault();
-
-            this.trigger('scrollToId', 'paper-related-threads');
-        },
-
-        onNeighborsClick: function(e) {
-            e.preventDefault();
-
-            this.trigger('scrollToId', 'paper-neighbors');
-        },
-
         onMailClick: function(e) {
             e.preventDefault();
 
@@ -116,14 +102,14 @@ define([
                 attributes = App._.extend({}, this.model.attributes, {
                     pin_button: this.buttons.pin,
                     ban_button: this.buttons.ban,
-                    add_button: this.buttons.add && !this.model.isTrashed(),
+                    add_button: this.buttons.add && !this.model.isAdded(),
                     trash_button: this.buttons.trash && this.model.isAdded()
                 });
 
             this.$el.html(this.template(attributes));
 
             // Related Threads
-            /* TODO if (this.listView) {
+            if (this.listView) {
                 this.pushSubView(
                     App.View.Paper.RelatedThreads.create({
                         paper_id: this.model.get('id'),
@@ -135,7 +121,7 @@ define([
                         $target: this.$('[data-related-threads-placeholder]')
                     })
                 );
-            }*/
+            }
 
             // Neighbors
             if (this.listView) {
