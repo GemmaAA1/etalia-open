@@ -3,6 +3,7 @@
 from .common import *
 
 CONFIG_FILE = __file__
+# CONFIG_FILE = 'production'
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -13,7 +14,7 @@ TEMPLATE_DEBUG = DEBUG
 # ------------------------------------------------------------------------------
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 # INSTALLED_APPS += ('debug_toolbar', )
-# MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware', ) + \
+# MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolabarMiddleware', ) + \
 #                      MIDDLEWARE_CLASSES
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -47,6 +48,16 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
+
+if 'production' in CONFIG_FILE:
+    ROOT_DIR_m1 = ROOT_DIR.path() - 1
+    STATIC_ROOT = str(ROOT_DIR_m1.path('static'))
+    STATIC_URL = '/static/'
+
+
+    STATICFILES_DIRS = (
+        str(APPS_DIR.path('static/compiled')),
+    )
 
 # AWS S3 Buckets
 NLP_DATA_BUCKET_NAME = 'etalia-development-nlp-data'
