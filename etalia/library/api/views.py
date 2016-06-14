@@ -235,13 +235,13 @@ class PaperViewSet(MultiSerializerMixin,
             self.request.session['feeds-control-states'] = {
                 'time-span': time_span,
                 'search': search,
-                'pin': 1 if pin == 1 else 0
+                'pin': 1 if pin == '1' else 0
             }
         else:
             self.request.session['library-control-states'] = {
                 'time-span': time_span,
                 'search': search,
-                'pin': 1 if pin == 1 else 0
+                'pin': 1 if pin == '1' else 0
             }
 
         return queryset
