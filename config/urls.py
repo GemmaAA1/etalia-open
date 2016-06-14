@@ -6,8 +6,6 @@ from django.contrib import admin
 from django.conf import settings
 
 from etalia.core.api.router import api_urls
-from etalia.feeds.views import my_feeds
-from etalia.library.views import my_papers
 
 if settings.INVITE_MODE:
     urlpatterns = [
@@ -20,7 +18,6 @@ else:
         url(r'^library/', include('etalia.library.urls', namespace='library')),
         url(r'^papers/', include('etalia.library.urls2', namespace='papers')),
         url(r'^feeds/', include('etalia.feeds.urls', namespace='feeds')),
-        # url(r'^feeds/', include('etalia.feeds.urls2', namespace='feeds')),
         url(r'^threads/', include('etalia.threads.urls', namespace='threads')),
         url(r'^user/', include('etalia.users.urls', namespace='user')),
         url(r'^user/', include('social.apps.django_app.urls', namespace='social')),

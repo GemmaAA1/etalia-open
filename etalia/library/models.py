@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import json
 from django.db import models, connection
+from django.db.models import Q
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -11,6 +12,7 @@ from model_utils.fields import MonitorField
 
 from etalia.core.models import TimeStampedModel, NullableCharField
 from etalia.core.mixins import ModelDiffMixin
+from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
 
 from .validators import validate_issn, validate_author_names
 from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS, \
@@ -287,6 +289,11 @@ class Paper(TimeStampedModel):
             return self.title
 
     @property
+    def date(self):
+        dates = [self.date_ep, self.date_fs, self.date_pp]
+        return min([date for date in dates if date is not None])
+
+    @property
     def print_compact_authors(self):
         authors = self.authors.all()
         authors_str = ''
@@ -453,6 +460,34 @@ class Paper(TimeStampedModel):
     def get_neighbors(self, time_span):
         from .tasks import get_neighbors_papers
         return get_neighbors_papers(self.id, time_span)
+
+    def get_related_threads(self, user_id, time_span=-1):
+        from etalia.nlp.models import ThreadEngine
+        from etalia.threads.models import Thread
+        from config.celery import celery_app as app
+
+        threads = list(self.thread_set
+                       .filter(~(Q(published_at=None) & ~Q(user_id=user_id)),
+                               ~(Q(privacy=THREAD_PRIVATE) &
+                                 ~(Q(threaduser__user_id=user_id) &
+                                   Q(threaduser__participate=THREAD_JOINED))))
+                       .order_by('-published_at'))
+        # Search for knn threads based on paper vector
+        try:
+            if len(threads) < settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS:  # add some knn neighbors
+                te = ThreadEngine.objects.filter(is_active=True)[0]
+                te_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
+                res = te_task.apply_async(args=('get_knn_from_paper', self.id),
+                                          kwargs={'time_lapse': time_span,
+                                           'k': settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS},
+                                          timeout=10,
+                                          soft_timeout=5)
+                neighbors = res.get()
+                threads += list(Thread.objects.filter(id__in=neighbors[:settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS - len(threads)]))
+        except IndexError:
+            pass
+
+        return threads
 
     def state(self, user):
         if PaperUser.objects.filter(user=user, paper=self).exists():

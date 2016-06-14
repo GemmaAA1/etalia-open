@@ -11,6 +11,7 @@ from rest_framework.fields import empty
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
+from etalia.feeds.models import ThreadFeedThreads
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
     THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING, THREAD_INVITE_ACCEPTED, \
@@ -66,6 +67,7 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
     state = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
+    new = serializers.SerializerMethodField()
 
     class Meta:
         model = Thread
@@ -88,7 +90,8 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
             'posts',
             'created',
             'modified',
-            'published_at'
+            'published_at',
+            'new',
         )
         read_only_fields = (
             'id',
@@ -98,7 +101,8 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
             'posts',
             'created',
             'modified',
-            'published_at'
+            'published_at',
+            'new',
         )
         switch_kwargs = {
             'user': {'serializer': UserSerializer},
@@ -162,6 +166,20 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
                             format=self.context.get('format', None))
                 )
         return posts_urls
+
+    def get_new(self, obj):
+        request = self.context['request']
+        scored = request.query_params.get('scored')
+        feed_name = request.query_params.get('feed', 'main')
+        try:
+            if scored == '1':
+                return obj.threadfeedthreads_set.get(
+                    threadfeed__user=request.user,
+                    threadfeed__name=feed_name).new
+        except ThreadFeedThreads.DoesNotExist:
+            pass
+
+        return None
 
     def validate_user(self, value):
         if not value == self.context['request'].user:

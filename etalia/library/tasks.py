@@ -92,7 +92,7 @@ def get_neighbors_papers(paper_pk, time_span):
         except KeyError:
             raise
 
-    neigh_pk_list = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS] if neigh]
+    neigh_pk_list = [neigh for neigh in neighbors[:settings.LIBRARY_NUMBER_OF_NEIGHBORS] if neigh]
 
     clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i)
                         for i, pk in enumerate(neigh_pk_list)])

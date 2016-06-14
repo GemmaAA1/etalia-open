@@ -86,7 +86,7 @@ def get_neighbors_threads(thread_pk, time_span):
         except KeyError:
             raise
 
-    neigh_pk_list = [neigh for neigh in neighbors[:settings.NUMBER_OF_NEIGHBORS]
+    neigh_pk_list = [neigh for neigh in neighbors[:settings.THREADS_NUMBER_OF_NEIGHBORS]
                      if neigh]
 
     clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i)

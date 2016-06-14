@@ -16,6 +16,7 @@ from django.utils import timezone
 from etalia.core.api.permissions import IsReadOnlyRequest
 from etalia.core.api.mixins import MultiSerializerMixin
 from etalia.core.api.permissions import IsOwner
+from etalia.threads.api.serializers import ThreadSerializer
 
 from ..models import Paper, Author, Journal, PaperUser
 from ..constants import PAPER_BANNED, PAPER_PINNED, PAPER_ADDED, PAPER_TRASHED
@@ -38,6 +39,7 @@ class PaperViewSet(MultiSerializerMixin,
     * **[GET] /papers/filters**: Filter list for request papers list
     * **[GET, PUT, PATCH] /papers/<id\>/**: Paper instance
     * **[GET] /papers/<id\>/neighbors**: Paper neighbors
+    * **[GET] /papers/<id\>/related-threads**: Related threads
 
     ### Optional Kwargs ###
 
@@ -61,7 +63,8 @@ class PaperViewSet(MultiSerializerMixin,
 
     ** Sub-routes: **
 
-    * **[GET] /papers/<id\>/neighbors**: Paper neighbors:
+    * **[GET] /papers/<id\>/neighbors**: Paper neighbors
+    * **[GET] /papers/<id\>/related-threads**: Related threads
 
         * **time-span=(int)**: Fetch neighbors papers published in the past time-span days (default=60)
     """
@@ -90,9 +93,10 @@ class PaperViewSet(MultiSerializerMixin,
         'author_id[]': {'type': list},
     }
 
-    size_max_journal_filter = 40
-    size_max_author_filter = 40
-    neighbors_time_span = 60
+    SIZE_MAX_JOURNAL_FILTER = 40
+    SIZE_MAX_AUTHOR_FILTER = 40
+    NEIGHBORS_TIME_SPAN = 60
+    TIME_SPAN_DEFAULT = 30
 
     def get_paper_id(self):
         return self.kwargs['pk']
@@ -192,7 +196,12 @@ class PaperViewSet(MultiSerializerMixin,
         scored = self.request.query_params.get('scored', 'null')
         type = self.request.query_params.get('type', 'stream')
         feed_name = self.request.query_params.get('feed', 'main')
-        time_span = self.request.query_params.get('time-span', 'null')
+        time_span_str = self.request.query_params.get('time-span',
+                                                  self.TIME_SPAN_DEFAULT)
+        try:
+            time_span = int(time_span_str)
+        except ValueError:
+            time_span = self.TIME_SPAN_DEFAULT
         if scored == '1':
             if type == 'stream':
                 query_args.append(
@@ -225,11 +234,23 @@ class PaperViewSet(MultiSerializerMixin,
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):
         time_span = int(self.request.query_params.get('time-span',
-                                                      self.neighbors_time_span))
+                                                      self.NEIGHBORS_TIME_SPAN))
         instance = self.get_object()
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)
         serializer = self.get_serializer(neighbors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @detail_route(methods=['get'], url_path='related-threads')
+    def related_threads(self, request, pk=None):
+        time_span = int(self.request.query_params.get('time-span',
+                                                      self.NEIGHBORS_TIME_SPAN))
+        instance = self.get_object()
+        self.check_object_permissions(request, instance)
+        threads = instance.get_related_threads(request.user.id, time_span)
+        serializer = ThreadSerializer(threads,
+                                      context=self.get_serializer_context(),
+                                      many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @list_route(methods=['get'])
@@ -239,27 +260,30 @@ class PaperViewSet(MultiSerializerMixin,
         data = queryset.select_related('journal')
         pids = [d.id for d in data]
 
-        # Journals
-        js = [d.journal for d in data]
-        js_count = Counter(js).most_common()
-        journals = []
-        for j, c in js_count[:self.size_max_journal_filter]:
-            j.count = c
-            journals.append(j)
-
-        # Authors
-        values = ', '.join(['({0})'.format(i) for i in pids])
-        qa = Author.objects.raw(
-                    "SELECT * "
-                    "FROM library_author a "
-                    "LEFT JOIN library_authorpaper ap ON a.id = ap.author_id "
-                    "WHERE ap.paper_id IN (VALUES {0}) ".format(values))
-        da = list(qa)
-        as_count = Counter(da).most_common()
         authors = []
-        for a, c in as_count[:self.size_max_author_filter]:
-            a.count = c
-            authors.append(a)
+        journals = []
+        if pids:
+            # Journals
+            js = [d.journal for d in data if d.journal.title]
+            js_count = Counter(js).most_common()
+            for j, c in js_count[:self.SIZE_MAX_JOURNAL_FILTER]:
+                j.count = c
+                journals.append(j)
+
+            # Authors
+            values = ', '.join(['({0})'.format(i) for i in pids])
+            qa = Author.objects.raw(
+                        "SELECT * "
+                        "FROM library_author a "
+                        "LEFT JOIN library_authorpaper ap ON a.id = ap.author_id "
+                        "WHERE ap.paper_id IN (VALUES {0}) "
+                        "   AND (a.first_name <> '' OR a.last_name <> '')".format(values))
+            da = list(qa)
+            as_count = Counter(da).most_common()
+
+            for a, c in as_count[:self.SIZE_MAX_AUTHOR_FILTER]:
+                a.count = c
+                authors.append(a)
 
         kwargs = {'context': self.get_serializer_context()}
         serializer = PaperFilterSerializer({'authors': authors,

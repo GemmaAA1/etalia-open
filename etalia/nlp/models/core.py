@@ -1360,6 +1360,21 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
         res_sorted = sorted(res_search.items(), key=operator.itemgetter(1))
         return [r[0] for r in res_sorted]
 
+    def get_knn_from_paper(self, paper_id, time_lapse=-1, k=1):
+
+        pv = PaperVectors.objects \
+                .filter(paper_id=paper_id, model=self.model) \
+                .values('vector')[0]
+
+        res_search = dict(self.knn_search(
+            np.array(pv['vector'][:self.embedding_size]),
+            time_lapse=time_lapse,
+            top_n=k))
+
+        # sort
+        res_sorted = sorted(res_search.items(), key=operator.itemgetter(1))
+        return [r[0] for r in res_sorted]
+
     def knn_search(self, seed, time_lapse=-1, top_n=5):
         """"""
 

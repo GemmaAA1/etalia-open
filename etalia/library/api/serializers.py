@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from django.db.models import Q
+
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
+from etalia.feeds.models import StreamPapers, TrendPapers
+from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
+
 from ..models import Paper, Journal, Author, PaperUser
 from ..constants import PAPER_ADDED, PAPER_TRASHED, PAPER_STORE
-from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 
 
 class JournalSerializer(serializers.HyperlinkedModelSerializer):
@@ -47,6 +52,8 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
     """Paper serializer"""
 
     state = serializers.SerializerMethodField()
+    new = serializers.SerializerMethodField()
+    linked_threads_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Paper
@@ -68,7 +75,10 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'authors',
             'abstract',
             'url',
+            'date',
             'state',
+            'new',
+            'linked_threads_count',
         )
         read_only_fields = (
             '__all__',
@@ -93,6 +103,33 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
                                request=self.context.get('request', None),
                                format=self.context.get('format', None))
         return None
+
+    def get_new(self, obj):
+        request = self.context['request']
+        scored = request.query_params.get('scored')
+        type = request.query_params.get('type', 'stream')
+        feed_name = request.query_params.get('feed', 'main')
+        try:
+            if scored == '1':
+                if type == 'stream':
+                    return obj.streampapers_set.get(stream__user=request.user,
+                                                    stream__name=feed_name).new
+                if type == 'trend':
+                    return obj.trendpapers_set.get(trend__user=request.user,
+                                                   trend__name=feed_name).new
+        except StreamPapers.DoesNotExist or TrendPapers.DoesNotExist:
+            pass
+
+        return None
+
+    def get_linked_threads_count(self, obj):
+        user_id = self.context['request'].user.id
+        return obj.thread_set\
+            .filter(~(Q(published_at=None) & ~Q(user_id=user_id)),
+                    ~(Q(privacy=THREAD_PRIVATE) &
+                      ~(Q(threaduser__user_id=user_id) &
+                        Q(threaduser__participate=THREAD_JOINED))))\
+            .count()
 
 
 class PaperNestedSerializer(PaperSerializer):
