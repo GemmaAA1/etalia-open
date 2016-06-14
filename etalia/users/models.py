@@ -503,7 +503,7 @@ class UserSettings(TimeStampedModel):
 
     # vector weight
     stream_vector_weight = models.FloatField(default=1.0,
-                                             verbose_name='Content weight')
+                                             verbose_name='Title/Abstract weight')
 
     # delta-time in MONTHS to roll back stream
     stream_roll_back_deltatime = models.IntegerField(
@@ -520,7 +520,7 @@ class UserSettings(TimeStampedModel):
 
     # doc vector weight
     trend_doc_weight = models.FloatField(default=1.0,
-                                         verbose_name='Content weight')
+                                         verbose_name='Title/Abstract weight')
 
     # altmetric vector weight
     trend_altmetric_weight = models.FloatField(default=1.0,
