@@ -333,9 +333,15 @@ define([
                 data.pinned = 1;
             }
 
-            // TODO Timespan
+            var timespan = parseInt(this.timespan.model.get('value'));
+            if (0 < timespan) {
+                data['time-span'] = timespan;
+            }
 
-            // TODO Cluster
+            /* TODO var cluster = parseInt(this.cluster.model.get('value'));
+            if (0 < cluster) {
+                data['cluster'] = cluster;
+            }*/
 
             var search = this.search.model.get('value');
             if (search && 0 < String(search).length) {

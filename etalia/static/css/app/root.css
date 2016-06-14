@@ -162,6 +162,41 @@ span.count {
     width: 18px;
 }
 
+
+
+/* ------------------------------------ ACTIONS ------------------------------------ */
+
+.actions a {
+    display: block;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 20px;
+    color: #cbced1;
+    margin-bottom: 20px;
+}
+
+.actions a:last-child {
+    margin-bottom: 0;
+}
+
+.actions a:hover {
+    color: #313233;
+    text-decoration: none;
+}
+
+.actions a.active {
+    color: #00695c;
+}
+
+.actions-group {
+    margin-bottom: 40px;
+}
+
+.actions-group a:last-child {
+    margin-bottom: 0;
+}
+
 /* ------------------------------------ TOP BAR ------------------------------------ */
 
 #top-bar {

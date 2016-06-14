@@ -31,16 +31,16 @@
             {{/if}}
         </div>
         <div class="actions-group">
-            {{!-- TODO <a href="javascript: void(0)"
-               class="detail-threads" title="Related threads">
+            <a href="#paper-related-threads"
+               class="detail-related-threads" title="Related threads">
                 <span class="eai eai-comments"></span>
-            </a> --}}
-            <a href="javascript: void(0)"
+            </a>
+            <a href="#paper-neighbors"
                class="detail-neighbors" title="Related papers">
                 <span class="eai eai-suggestions"></span>
             </a>
-            <a href="javascript: void(0)"
-               class="detail-external" title="Related threads" target="_blank">
+            <a href="{{url}}"
+               class="detail-external" title="External link / PDF" target="_blank">
                 <span class="eai eai-pdf"></span>
             </a>
         </div>
@@ -76,17 +76,17 @@
         <div class="infos">
             <p class="truncate">
                 {{paper_journal}}
-                <em>{{ paper_first_seen }}</em>
+                <em>{{formatDate date}}</em>
             </p>
             <p class="icons">
                 {{! cluster icon }}
 
                 {{paper_altmetric_icon}}
 
-                {{!-- <span class="comment" title="{{posts_count}} post(s)">
-                    <span class="count">{{posts_count}}</span>
+                <span class="comment" title="{{linked_threads_count}} thread(s)">
+                    <span class="count">{{linked_threads_count}}</span>
                     <span class="eai eai-comment"></span>
-                </span> --}}
+                </span>
             </p>
         </div>
     </div>

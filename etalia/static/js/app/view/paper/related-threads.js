@@ -1,8 +1,9 @@
 define([
     'app',
     'text!app/templates/paper/related-threads.hbs',
-    'app/model/thread/thread',
-    'app/view/detail'
+    'app/view/detail',
+    'app/view/thread/thumb',
+    'app/view/thread/detail'
 ], function (App, template, Detail) {
 
     App.View.Paper = App.View.Paper || {};
@@ -10,7 +11,7 @@ define([
     App.View.Paper.RelatedThreads = App.Backbone.View.extend({
         tagName: 'div',
         attributes: {
-            'class': 'related-threads-thumbs'
+            'class': 'neighbors-thumbs'
         },
 
         template: App.Handlebars.compile(template),
@@ -24,7 +25,7 @@ define([
         listView: null,
 
         events: {
-            "click .related-threads-timespan-selector a": "onTimespanSelectorClick"
+            "click .neighbors-timespan-selector a": "onTimespanSelectorClick"
         },
 
         initialize: function (options) {
@@ -42,8 +43,7 @@ define([
             }
 
             this.collection = new App.Model.Threads();
-            throw '[TODO] Url is not defined';
-            this.collection.url = App.config.api_root + '/library/papers/' + this.paperId + '/neighbors';
+            this.collection.url = App.config.api_root + '/library/papers/' + this.paperId + '/related-threads';
 
             this.collection.on("add", this.onCollectionAdd, this);
             this.collection.on("remove", this.onCollectionRemove, this);
@@ -61,7 +61,7 @@ define([
                 buttons: this.buttons
             };
             var detailModel = new App.Model.Detail({
-                view: new App.View.Paper.Detail(options)
+                view: new App.View.Thread.Detail(options)
             });
             detailModel.setCenterButton({
                 icon: 'close',
@@ -88,7 +88,7 @@ define([
             this.pushSubView(this.listView);
 
             // Initial timespan
-            this.activeTimespan = parseInt(this.$('.related-threads-timespan-selector li.active a').data('value'));
+            this.activeTimespan = parseInt(this.$('.neighbors-timespan-selector li.active a').data('value'));
 
             this.load();
 
@@ -109,7 +109,7 @@ define([
         onTimespanSelectorClick: function(e) {
             e.preventDefault();
 
-            this.$('.related-threads-timespan-selector li').removeClass('active');
+            this.$('.neighbors-timespan-selector li').removeClass('active');
 
             var $link = $(e.target).closest('a');
             this.activeTimespan = parseInt($link.data('value'));
@@ -123,7 +123,7 @@ define([
             //App.log('PaperRelatedThreadsView::onCollectionAdd');
 
             // Render the thumb
-            var thumbView = new App.View.Paper.Thumb({
+            var thumbView = new App.View.Thread.Thumb({
                 id: this.thumbPrefix + model.get('id'),
                 model: model,
                 list: this

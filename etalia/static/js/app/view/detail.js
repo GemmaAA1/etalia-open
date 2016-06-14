@@ -92,7 +92,6 @@ define([
 
             this.listenToOnce(view, 'close', that.close);
             this.listenTo(view, 'rendered', that.applySticky);
-            this.listenTo(view, 'scrollToId', that.scrollToId);
             that.applySticky();
 
             this.$('.document').scrollTop(0);
@@ -119,13 +118,6 @@ define([
             }).enable();
         },
 
-        scrollToId: function(id) {
-            var $target = this.$('#' + id);
-            if ($target.length) {
-                this.$('.document').scrollTop($target.offset().top - 50);
-            }
-        },
-
         onClick: function(e) {
             if (App.$(e.target).attr('id') === 'detail-document') {
                 this.close();
@@ -141,7 +133,7 @@ define([
         close: function() {
             App.$('body').removeClass('detail-opened');
 
-            this.clearSubViews();
+            this.clear();
 
             return this;
         }

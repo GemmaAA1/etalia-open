@@ -7,7 +7,7 @@ define([
     'app/view/ui/modal',
     'app/view/paper/detail',
     'app/view/paper/thumb',
-    'altmetric'
+    //'altmetric'
 ], function (App, template, Detail) {
 
     var $window = $(window),
@@ -19,6 +19,8 @@ define([
         tagName: 'div',
 
         template: App.Handlebars.compile(template),
+
+        altmetricTimeout: 0,
 
         controlsView: null,
         tabsView: null,
@@ -109,6 +111,8 @@ define([
             if (this.collection) {
                 this.collection.fullCollection.off("add", this.onCollectionAdd);
                 this.collection.fullCollection.off("remove", this.onCollectionRemove);
+                this.collection.fullCollection.off("reset", this.onCollectionUpdate);
+                this.collection.fullCollection.off("update", this.onCollectionUpdate);
                 this.collection.fullCollection.reset();
                 this.collection.reset();
             }
@@ -123,6 +127,8 @@ define([
 
             this.collection.fullCollection.on("add", this.onCollectionAdd, this);
             this.collection.fullCollection.on("remove", this.onCollectionRemove, this);
+            this.collection.fullCollection.on("reset", this.onCollectionUpdate, this);
+            this.collection.fullCollection.on("update", this.onCollectionUpdate, this);
 
             var that = this;
             this.collection.fetch()
@@ -156,7 +162,10 @@ define([
 
         _renderAltmetricBadges: function() {
             // TODO this is ugly : should be triggered once the last thumb has been rendered
-            setTimeout(_altmetric_embed_init, 300);
+            if (this.altmetricTimeout) {
+                clearTimeout(this.altmetricTimeout);
+            }
+            this.altmetricTimeout = setTimeout(_altmetric_embed_init, 250);
         },
 
         _loadNextPage: function() {
@@ -194,41 +203,65 @@ define([
         },
 
         onPaperPin: function(paper) {
+            this._renderAltmetricBadges();
+
+            this.tabsView.setTabCount('paper:pins', 1, true);
         },
 
         onPaperUnpin: function(paper) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'pins') {
+            if (tabName == 'paper:pins') {
                 this.onModelRemove(paper);
+            } else {
+                this._renderAltmetricBadges();
             }
+            this.tabsView.setTabCount('paper:pins', -1, true);
         },
 
         onPaperBan: function(paper) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'papers' || tabName == 'pins') {
+            if (0 <= ['feed:papers', 'paper:papers', 'paper:pins'].indexOf(tabName)) {
                 this.onModelRemove(paper);
+                Detail.close();
+            } else {
+                this._renderAltmetricBadges();
             }
+            this.tabsView.setTabCount('feed:papers', -1, true);
+            this.tabsView.setTabCount('paper:papers', -1, true);
         },
 
         onPaperUnban: function(paper) {
-            var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'trash') {
+            /*var tabName = this.tabsView.getActiveTab().name;
+            if (tabName == 'paper:trash') {
                 this.onModelRemove(paper);
-            }
+            } else {
+                this._renderAltmetricBadges();
+            }*/
+            // TODO ???
         },
 
         onPaperAdd: function(paper) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'trash') {
+            if (0 <= ['feed:papers', 'paper:trash'].indexOf(tabName)) {
                 this.onModelRemove(paper);
+            } else {
+                this._renderAltmetricBadges();
             }
+            this.tabsView.setTabCount('feed:papers', -1, true);
+            this.tabsView.setTabCount('paper:trash', -1, true);
+            this.tabsView.setTabCount('paper:papers', 1, true);
         },
 
         onPaperTrash: function(paper) {
             var tabName = this.tabsView.getActiveTab().name;
-            if (tabName == 'papers' || tabName == 'pins') {
+            if (0 <= ['paper:papers', 'paper:pins'].indexOf(tabName)) {
                 this.onModelRemove(paper);
+            } else {
+                this._renderAltmetricBadges();
             }
+            this.tabsView.setTabCount('paper:papers', -1, true);
+            //this.tabsView.setTabCount('paper:pins', -1, true);
+            this.tabsView.setTabCount('paper:trash', 1, true);
         },
 
         onCollectionAdd: function (model) {
@@ -254,8 +287,14 @@ define([
             this.listView.removeThumbById('paper-thumb-' + model.get('id'));
         },
 
+        onCollectionUpdate: function() {
+            //App.log('PaperListView::onCollectionUpdate');
+
+            this.listView.showEmptyMessage('No paper found.');
+        },
+
         clearList: function() {
-            this.listView.clear();
+            this.listView.hideEmptyMessage().clear();
         },
 
         openDetail: function (model) {

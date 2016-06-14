@@ -16,7 +16,7 @@ define([
     tabsView = new App.View.Ui.Tabs.create({
         tabs: [
             {
-                name: 'papers',
+                name: 'paper:papers',
                 title: 'Papers',
                 count: 0,
                 data: {
@@ -29,21 +29,21 @@ define([
                 }
             },
             {
-                name: 'pins',
+                name: 'paper:pins',
                 title: 'Pins',
                 count: 0,
                 data: {
                     view: 'nested',
-                    added: 1,
                     pinned: 1
                 },
                 actions: {
                     pin: true,
+                    add: true,
                     trash: true
                 }
             },
             {
-                name: 'trash',
+                name: 'paper:trash',
                 title: 'Trash',
                 count: 0,
                 data: {
