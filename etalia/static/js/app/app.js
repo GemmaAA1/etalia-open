@@ -408,7 +408,7 @@ define([
                 return options.inverse(this);
         }
     });
-    Handlebars.registerHelper('date', function (date, format) {
+    Handlebars.registerHelper('formatDate', function (date, format) {
         if (!_.isString(format)) {
             format = 'MMM D, YYYY';
         }

@@ -37,44 +37,52 @@ define([
         togglePinned: function() {
             var that = this,
                 watch = this.get('watch'),
-                event = null;
+                events = [];
 
-            if (watch === null) {
-                watch = App.Model.PaperState.WATCH_PINNED;
-                event = 'etalia.paper.pin';
-            } else if(watch === App.Model.PaperState.WATCH_PINNED) {
+            if (watch === App.Model.ThreadState.WATCH_BANNED) {
+                events.push('etalia.paper.unban');
+            }
+
+            if (watch === App.Model.PaperState.WATCH_PINNED) {
                 watch = null;
-                event = 'etalia.paper.unpin';
+                events.push('etalia.paper.unpin');
             } else {
-                throw 'Unexpected watch state.';
+                watch = App.Model.PaperState.WATCH_PINNED;
+                events.push('etalia.paper.pin');
             }
 
             return this
                 .save({watch: watch}, {patch: true, wait: true})
                 .done(function() {
-                    App.trigger(event, that.get('paper'));
+                    App._.each(events, function(event) {
+                        App.trigger(event, that.get('paper'));
+                    });
                 });
         },
 
         toggleBanned: function() {
             var that = this,
                 watch = this.get('watch'),
-                event = null;
+                events = [];
 
-            if (watch === null) {
-                watch = App.Model.PaperState.WATCH_BANNED;
-                event = 'etalia.paper.ban';
-            } else if (watch === App.Model.PaperState.WATCH_BANNED) {
+            if (watch === App.Model.ThreadState.WATCH_PINNED) {
+                events.push('etalia.paper.unpin');
+            }
+
+            if (watch === App.Model.PaperState.WATCH_BANNED) {
                 watch = null;
-                event = 'etalia.paper.unban';
+                events.push('etalia.paper.unban');
             } else {
-                throw 'Unexpected watch state.';
+                watch = App.Model.PaperState.WATCH_BANNED;
+                events.push('etalia.paper.ban');
             }
 
             return this
                 .save({watch: watch}, {patch: true, wait: true})
                 .done(function() {
-                    App.trigger(event, that.get('paper'));
+                    App._.each(events, function(event) {
+                        App.trigger(event, that.get('paper'));
+                    });
                 });
         },
 

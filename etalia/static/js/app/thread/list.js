@@ -13,13 +13,13 @@ define([
         $target: App.$('div[data-controls-placeholder]')
     });
     controlsView.cluster.disable();
-    controlsView.timespan.disable();
-    controlsView.pin.disable();
+    //controlsView.timespan.disable();
+    //controlsView.pin.disable();
 
     tabsView = new App.View.Ui.Tabs.create({
         tabs: [
             {
-                name: 'threads',
+                name: 'thread:threads',
                 title: 'Threads',
                 count: 0,
                 data: {
@@ -33,7 +33,7 @@ define([
                 }
             },
             {
-                name: 'pins',
+                name: 'thread:pins',
                 title: 'Pins',
                 count: 0,
                 data: {
@@ -46,7 +46,7 @@ define([
                 }
             },
             {
-                name: 'left',
+                name: 'thread:left',
                 title: 'Left',
                 count: 0,
                 data: {
