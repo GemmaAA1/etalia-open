@@ -341,6 +341,19 @@ class UserLib(TimeStampedModel):
         err = backend.trash_paper(session, provider_id)
         return err
 
+    def update(self):
+        # get social
+        social = self.user.social_auth.first()
+
+        # get backend
+        backend = social.get_backend_instance()
+
+        # build session
+        session = backend.get_session(social, self.user)
+
+        # update lib
+        backend.update_lib(self.user, session)
+
 
 class UserLibPaper(TimeStampedModel):
     """Table - User/Paper relationship"""
