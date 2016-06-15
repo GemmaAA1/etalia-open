@@ -613,25 +613,23 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
         self.save()
 
     def add(self, provider_id=None, info=None):
-        if not self.store == PAPER_ADDED:
-            if not provider_id:
-                provider_id = self.user.lib.add_paper_on_provider(self.paper)
-            self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
-            self.store = PAPER_ADDED
-            self.save()
+        if not provider_id:
+            provider_id = self.user.lib.add_paper_on_provider(self.paper)
+        self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
+        self.store = PAPER_ADDED
+        self.save()
 
     def trash(self):
-        if not self.store == PAPER_TRASHED:
-            paper_provider_id = self.user.lib.userlib_paper\
-                .get(paper=self.paper)\
-                .paper_provider_id
-            err = self.user.lib.trash_paper_on_provider(paper_provider_id)
-            if not err:
-                self.store = PAPER_TRASHED
-                self.save()
-                return None
-            else:
-                return err
+        paper_provider_id = self.user.lib.userlib_paper\
+            .get(paper=self.paper)\
+            .paper_provider_id
+        err = self.user.lib.trash_paper_on_provider(paper_provider_id)
+        if not err:
+            self.store = PAPER_TRASHED
+            self.save()
+            return None
+        else:
+            return err
 
     def save(self, **kwargs):
         if self.id:

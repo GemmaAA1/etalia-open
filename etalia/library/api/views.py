@@ -381,8 +381,8 @@ class PaperStateViewSet(MultiSerializerMixin,
     queryset = PaperUser.objects.all()
     serializer_class = {
         'default': PaperUserSerializer,
-        'update': PaperUserUpdateSerializer,
-        'partial_update': PaperUserUpdateSerializer
+        # 'update': PaperUserUpdateSerializer,
+        # 'partial_update': PaperUserUpdateSerializer
     }
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,
