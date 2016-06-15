@@ -35,7 +35,7 @@ def my_papers(request):
     return TemplateResponse(
         request,
         'papers/list.html',
-        {'control_states': str(request.session.get('library-control-states', {}))}
+        {'control_states': json.dumps(request.session.get('library-control-states', {}))}
     )
 
 

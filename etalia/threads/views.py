@@ -30,5 +30,5 @@ def my_threads(request):
     return TemplateResponse(
         request,
         'threads/list.html',
-        {'control_states': str(request.session.get('threads-control-states', {}))}
+        {'control_states': json.dumps(request.session.get('threads-control-states', {}))}
     )

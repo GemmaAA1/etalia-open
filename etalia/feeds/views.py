@@ -26,7 +26,7 @@ def my_feeds(request):
     return TemplateResponse(
         request,
         'feeds/list.html',
-        {'control_states': str(request.session.get('feeds-control-states'))}
+        {'control_states': json.dumps(request.session.get('feeds-control-states', {}))}
     )
 
 
