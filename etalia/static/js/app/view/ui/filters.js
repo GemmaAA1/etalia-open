@@ -204,9 +204,9 @@ define([
 
                 $list.append(groupView.render().$el);
 
-                if (i == 0) {
+                //if (i == 0) {
                     groupView.expand();
-                }
+                //}
 
                 that.pushSubView(groupView);
             });

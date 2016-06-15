@@ -32,7 +32,7 @@
     <script src="{% static 'js/ie9.js' %}"></script>
     <![endif]-->
 </head>
-<body {% if busy_url %}data-busy-check={{ busy_url }}{% endif %} data-user-id="{{ user.id }}">
+<body {% if busy_url %}data-busy-check={{ busy_url }}{% endif %} data-user-id="{{ user.id }}" data-controls-states='{{ control_states|safe }}'>
 
 {% block body %}{% endblock body %}
 
