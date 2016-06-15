@@ -1,6 +1,7 @@
 define([
     'app',
     'text!app/templates/thread/detail.hbs',
+    'app/view/detail',
     //'app/util/utils',
     'app/view/ui/modal',
     'app/view/user/thumb',
@@ -9,8 +10,9 @@ define([
     'app/view/thread/form-edit',
     'app/view/thread/form-content-edit',
     'app/view/thread/invite/form-create',
-    'app/view/thread/neighbors'
-], function (App, template) {
+    'app/view/thread/neighbors',
+    'app/view/paper/detail'
+], function (App, template, Detail) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -45,6 +47,8 @@ define([
             "click .thread-content-edit": "onContentEditClick",
             "click .thread-join": "onJoinClick",
             "click .thread-leave": "onLeaveClick",
+
+            "click .thread-related-paper": "onRelatedPaperClick",
 
             "click .thread-members-invite-modal": "onInviteModalClick"
         },
@@ -183,6 +187,37 @@ define([
                 .join()
                 .done(function() {
                     model.fetch();
+                });
+        },
+
+        onRelatedPaperClick: function(e) {
+            e.preventDefault();
+
+            var model = this.model.get('paper');
+            if (!model) {
+                throw 'Undefined paper';
+            }
+
+            var that = this,
+                options = {
+                model: model,
+                buttons: this.buttons
+            };
+            var detailModel = new App.Model.Detail({
+                view: new App.View.Paper.Detail(options)
+            });
+            detailModel.setCenterButton({
+                icon: 'close',
+                title: 'Back to previous thread',
+                callback: function() {
+                    that.listView.openDetail(that.model);
+                }
+            });
+
+            model
+                .fetch({data: {view: 'nested'}})
+                .done(function() {
+                    Detail.setModel(detailModel);
                 });
         },
 
