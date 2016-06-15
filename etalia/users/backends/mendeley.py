@@ -204,7 +204,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 authors=mend_authors,
             )
         except MendeleyApiException:
-            return 1
+            return 1, None, None
 
         return None, resp.id, {'created': parse(str(resp.created) or 'Nothing'),
                                'last_modified': parse(str(resp.last_modified) or 'Nothing')}

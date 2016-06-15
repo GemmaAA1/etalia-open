@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from dateutil.parser import parse
 from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
 from pyzotero.zotero_errors import ResourceNotFound
@@ -150,10 +151,14 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         # push
         resp = session.create_items([template])
         if not resp['failed']:
-            return None, resp['success']['0']
+            return None, \
+                   resp['success']['0'], \
+                   {'created': parse(str(resp['successful']['0']['data']['dateAdded'])),
+                    'last_modified': parse(str(resp['successful']['0']['data']['dateModified']))
+                    }
         else:
             logger.warning(resp['failed'])
-            return None, None
+            return None, None, None
 
     @staticmethod
     def trash_paper(session, paper_provider_id):
