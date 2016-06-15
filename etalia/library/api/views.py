@@ -97,6 +97,8 @@ class PaperViewSet(MultiSerializerMixin,
     SIZE_MAX_AUTHOR_FILTER = 40
     NEIGHBORS_TIME_SPAN = 60
     TIME_SPAN_DEFAULT = 30
+    AUTHOR_COUNT_BUMPER = 1.  # in percent of all journals in user fingerprint
+    JOURNAL_COUNT_BUMPER = 5.  # in percent of all journals in user fingerprint
 
     def get_paper_id(self):
         return self.kwargs['pk']
@@ -278,12 +280,29 @@ class PaperViewSet(MultiSerializerMixin,
         authors = []
         journals = []
         if pids:
+
+            # Get user fingerprint
+            f = request.user.fingerprint\
+                .values('authors_ids', 'authors_counts', 'journals_ids', 'journals_counts')[0]
+            # Get journal_id and author_id that are bumping up the list
+            sac = sum(f['authors_counts'])
+            sjc = sum(f['journals_counts'])
+            aids_bumping = [aid for i, aid in enumerate(f['authors_ids'])
+                            if f['authors_counts'][i]/sac > self.AUTHOR_COUNT_BUMPER/100.]
+            jids_bumping = [jid for i, jid in enumerate(f['journals_ids'])
+                            if f['journals_counts'][i]/sjc > self.AUTHOR_COUNT_BUMPER/100.]
+
             # Journals
             js = [d.journal for d in data if d.journal.title]
             js_count = Counter(js).most_common()
             for j, c in js_count[:self.SIZE_MAX_JOURNAL_FILTER]:
                 j.count = c
                 journals.append(j)
+
+            # Bump journals
+            for i, j in enumerate(journals):
+                if j.id in jids_bumping:
+                    journals.insert(0, journals.pop(i))
 
             # Authors
             values = ', '.join(['({0})'.format(i) for i in pids])
@@ -299,6 +318,11 @@ class PaperViewSet(MultiSerializerMixin,
             for a, c in as_count[:self.SIZE_MAX_AUTHOR_FILTER]:
                 a.count = c
                 authors.append(a)
+
+            # Bump authors
+            for i, a in enumerate(authors):
+                if a.id in aids_bumping:
+                    authors.insert(0, authors.pop(i))
 
         kwargs = {'context': self.get_serializer_context()}
         serializer = PaperFilterSerializer({'authors': authors,
