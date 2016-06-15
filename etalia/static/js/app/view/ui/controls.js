@@ -25,7 +25,6 @@ define([
             if (!options.model) {
                 var value = options.initialValue ? options.initialValue : null;
                 if (value === 'null') value = null;
-                console.log(value);
                 this.model = new ControlModel({value: value});
             }
 
@@ -326,7 +325,6 @@ define([
             };
             try {
                 states = App._.extend(states, App.$('body').data('controls-states'));
-                console.log(states);
             } catch(e) {
                 console.log(e);
             }

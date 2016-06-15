@@ -42,7 +42,9 @@ define([
                     type: 'trend'
                 },
                 actions: {
-                    pin: true
+                    pin: true,
+                    ban: true,
+                    add: true
                 }
             },
             {
