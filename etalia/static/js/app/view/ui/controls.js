@@ -23,7 +23,10 @@ define([
             this.controlsView = options.controlsView;
 
             if (!options.model) {
-                this.model = new ControlModel();
+                var value = options.initialValue ? options.initialValue : null;
+                if (value === 'null') value = null;
+                console.log(value);
+                this.model = new ControlModel({value: value});
             }
 
             this.listenTo(this.model, 'change', this.onChange);
@@ -232,18 +235,28 @@ define([
             var model = this.model,
                 $input = this.$('input');
             this.keyUpTimeout = setTimeout(function() {
-                model.set('value', $input.val())
+                model.set('value', $input.val());
             }, 800);
         },
 
         onSubmitClick: function() {
             this._clearTimeout();
 
-            this.model.set('value', this.$('input').val())
+            this.model.set('value', this.$('input').val());
         },
 
         onCloseClick: function() {
             this.close();
+        },
+
+        render: function () {
+            this.$el.html(this.template({}));
+
+            this._handleVisibility();
+
+            this.$('input').val(this.model.get('value'));
+
+            return this;
         }
     });
 
@@ -260,6 +273,10 @@ define([
             "click": "onClick"
         },
 
+        _updateActiveClass: function() {
+            this.$el.toggleClass('active', !!this.model.get('value'));
+        },
+
         onClick: function(e) {
             e.preventDefault();
 
@@ -268,12 +285,7 @@ define([
 
         onChange: function() {
             this._handleVisibility();
-
-            if (this.model.get('value')) {
-                this.$el.addClass('active');
-            } else {
-                this.$el.removeClass('active');
-            }
+            this._updateActiveClass();
 
             this.controlsView.dispatchChange();
         },
@@ -282,6 +294,7 @@ define([
             this.$el.html('<span class="eai eai-pin"></span>');
 
             this._handleVisibility();
+            this._updateActiveClass();
 
             return this;
         }
@@ -305,20 +318,34 @@ define([
         },
 
         initialize: function() {
+            var states = {
+                'time-span': 30,
+                cluster: 0,
+                search: null,
+                pin: 0
+            };
+            try {
+                states = App._.extend(states, App.$('body').data('controls-states'));
+                console.log(states);
+            } catch(e) {
+                console.log(e);
+            }
+
             this.search = new SearchView({
-                controlsView: this
+                controlsView: this,
+                initialValue: states.search
             });
             this.cluster = new ClusterView({
-                controlsView: this
+                controlsView: this,
+                initialValue: states.cluster || 0
             });
             this.timespan = new TimespanView({
                 controlsView: this,
-                model: new ControlModel({
-                    value: 7
-                })
+                initialValue: states['time-span'] || 30
             });
             this.pin = new PinView({
-                controlsView: this
+                controlsView: this,
+                initialValue: !!states.pin
             });
         },
 

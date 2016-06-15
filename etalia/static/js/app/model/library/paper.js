@@ -149,6 +149,12 @@ define([
         var journal = this.hasOwnProperty('journal') ? this.journal : this.get('journal');
         return new App.Handlebars.SafeString(journal.get('title'));
     });
+    App.Handlebars.registerHelper('paper_url', function(paper) {
+        if (!paper) {
+            throw 'Expected paper as first argument';
+        }
+        return new App.Handlebars.SafeString(paper.get('url'));
+    });
     App.Handlebars.registerHelper('paper_new_icon', function() {
         var is_new = this.hasOwnProperty('new') ? this.new : this.get('is_new');
         return is_new ? new App.Handlebars.SafeString('<span class="new">new</span>') : '';
