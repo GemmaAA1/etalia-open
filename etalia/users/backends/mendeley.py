@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
+from dateutil.parser import parse
 from social.backends.oauth import BaseOAuth2
 from social.backends.mendeley import MendeleyMixin
 from mendeley import Mendeley
@@ -200,12 +201,13 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 pages=paper.page,
                 abstract=paper.abstract,
                 source=paper.journal.title,
-                authors=mend_authors
+                authors=mend_authors,
             )
         except MendeleyApiException:
             return 1
 
-        return None, resp.id
+        return None, resp.id, {'created': parse(str(resp.created) or 'Nothing'),
+                               'last_modified': parse(str(resp.last_modified) or 'Nothing')}
 
     @staticmethod
     def trash_paper(session, paper_provider_id):

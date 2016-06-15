@@ -162,8 +162,8 @@ class PaperViewSet(MultiSerializerMixin,
 
         # boolean filters
         for key, props in bool_filters_def.items():
-            param = self.request.query_params.get(key, 'null')
-            if not param == 'null':
+            param = self.request.query_params.get(key, None)
+            if param:
                 if props.get('base', None):
                     query_args.append(props['base'])
                 if props.get('toggle', None):
@@ -181,8 +181,8 @@ class PaperViewSet(MultiSerializerMixin,
             query_args.append(Q(authors__in=aids))
 
         # search
-        search = self.request.query_params.get('search', 'null')
-        if not search == 'null':
+        search = self.request.query_params.get('search', None)
+        if search:
             subset = []
             for word in search.split():
                 subset.append(
@@ -195,7 +195,7 @@ class PaperViewSet(MultiSerializerMixin,
                 query_args.append(reduce(operator.and_, subset))
 
         # Paper feeds
-        scored = self.request.query_params.get('scored', 'null')
+        scored = self.request.query_params.get('scored', None)
         type = self.request.query_params.get('type', 'stream')
         feed_name = self.request.query_params.get('feed', 'main')
         time_span_str = self.request.query_params.get('time-span',
@@ -232,7 +232,7 @@ class PaperViewSet(MultiSerializerMixin,
             queryset = queryset.order_by(order_by)
 
         # Store persistent user control states
-        pin = self.request.query_params.get('pinned', 'null')
+        pin = self.request.query_params.get('pinned', None)
         if scored == '1':
             self.request.session['feeds-control-states'] = {
                 'time-span': time_span,
@@ -293,7 +293,7 @@ class PaperViewSet(MultiSerializerMixin,
                             if f['journals_counts'][i]/sjc > self.AUTHOR_COUNT_BUMPER/100.]
 
             # Journals
-            js = [d.journal for d in data if d.journal.title]
+            js = [d.journal for d in data if d.journal and d.journal.title]
             js_count = Counter(js).most_common()
             for j, c in js_count[:self.SIZE_MAX_JOURNAL_FILTER]:
                 j.count = c

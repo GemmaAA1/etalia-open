@@ -219,8 +219,8 @@ class ThreadViewSet(MultiSerializerMixin,
 
         # boolean filters
         for key, props in bool_filters_def.items():
-            param = self.request.query_params.get(key, 'null')
-            if not param == 'null':
+            param = self.request.query_params.get(key, None)
+            if param:
                 if props.get('base', None):
                     query_args.append(props['base'])
                 if props.get('toggle', None):
@@ -243,15 +243,15 @@ class ThreadViewSet(MultiSerializerMixin,
             )
 
         # time-span filter
-        time_span = self.request.query_params.get('time-span', 'null')
-        if not time_span == 'null':
+        time_span = self.request.query_params.get('time-span', None)
+        if time_span:
             cutoff_datetime = timezone.now() - timezone.timedelta(
                 days=int(time_span))
             query_args.append(Q(published_at__gt=cutoff_datetime))
 
         # search
-        search = self.request.query_params.get('search', 'null')
-        if not search == 'null':
+        search = self.request.query_params.get('search', None)
+        if search:
             subset = []
             for word in search.split():
                 subset.append(Q(title__icontains=word) |
@@ -263,13 +263,13 @@ class ThreadViewSet(MultiSerializerMixin,
         if query_args:
             queryset = queryset.filter(reduce(operator.and_, query_args))
 
-        order_by = self.request.query_params.get('sort-by', 'null')
-        if not order_by == 'null':
+        order_by = self.request.query_params.get('sort-by', None)
+        if order_by:
             queryset = queryset.order_by(order_by_map.get(order_by))
 
         # Store persistent user control states
-        scored = self.request.query_params.get('scored', 'null')
-        pin = self.request.query_params.get('pinned', 'null')
+        scored = self.request.query_params.get('scored', None)
+        pin = self.request.query_params.get('pinned', None)
         if scored == '1':
             self.request.session['feeds-control-states'] = {
                 'time-span': time_span,
@@ -372,8 +372,8 @@ class ThreadPostViewSet(MultiSerializerMixin,
             queryset = ThreadPost.objects.filter(thread__in=threads_joined)
 
             # filter based on thread_id
-            thread_id = self.request.query_params.get('thread_id', 'null')
-            if not thread_id == 'null':
+            thread_id = self.request.query_params.get('thread_id', None)
+            if thread_id:
                 queryset = queryset.filter(thread_id=thread_id)
 
             return queryset
@@ -420,8 +420,8 @@ class ThreadCommentViewSet(MultiSerializerMixin,
                 post__thread__in=threads_joined)
 
             # filter based on post_id
-            post_id = self.request.query_params.get('post_id', 'null')
-            if not post_id == 'null':
+            post_id = self.request.query_params.get('post_id', None)
+            if post_id:
                 queryset = queryset.filter(post_id=post_id)
 
             return queryset
@@ -509,17 +509,17 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
                 Q(from_user=self.request.user) |
                 Q(to_user=self.request.user))
             # filter from_user
-            from_user = self.request.query_params.get('from-user', 'null')
-            if not from_user == 'null':
+            from_user = self.request.query_params.get('from-user', None)
+            if from_user:
                 queryset = queryset.filter(from_user=from_user)
             # filter to_user
-            to_user = self.request.query_params.get('to-user', 'null')
-            if not to_user == 'null':
+            to_user = self.request.query_params.get('to-user', None)
+            if to_user:
                 queryset = queryset.filter(to_user=to_user)
             # filter status
-            status = self.request.query_params.get('status', 'null')
-            if not status == 'null':
-                queryset = queryset.filter(status=status)
+            status_ = self.request.query_params.get('status', None)
+            if status_:
+                queryset = queryset.filter(status=status_)
 
             return queryset
 

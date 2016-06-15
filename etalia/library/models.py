@@ -614,7 +614,7 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
 
     def add(self, provider_id=None, info=None):
         if not provider_id:
-            provider_id = self.user.lib.add_paper_on_provider(self.paper)
+            provider_id, info = self.user.lib.add_paper_on_provider(self.paper)
         self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
         self.store = PAPER_ADDED
         self.save()

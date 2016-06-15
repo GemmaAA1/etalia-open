@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
+from django.conf import settings
 from django.views.generic import TemplateView, DetailView, ListView
 from django.template.response import TemplateResponse
 from braces.views import LoginRequiredMixin
@@ -30,5 +31,12 @@ def my_threads(request):
     return TemplateResponse(
         request,
         'threads/list.html',
-        {'control_states': json.dumps(request.session.get('threads-control-states', {}))}
+        {'control_states': json.dumps(
+            request.session.get('threads-control-states',
+                                {'time-span': None,
+                                 'search': None,
+                                 'pin': 0}
+                                )
+        )
+        }
     )

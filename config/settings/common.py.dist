@@ -326,6 +326,9 @@ FEED_MAX_TARGETS = 200000
 # Number of Clusters
 FEED_NB_CLUSTERS = 5
 
+# Feeds default controls states
+FEEDS_DEFAULT_TIME_SPAN = 30
+
 HIDE_CLUSTER_ICON = True
 
 # ALTMETRIC APP

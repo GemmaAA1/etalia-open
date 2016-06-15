@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import collections
 
+from dateutil.parser import parse
 from nameparser import HumanName
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
@@ -320,8 +321,8 @@ class UserLib(TimeStampedModel):
     def add_paper_on_provider(self, paper):
         session, backend = self.get_session_backend()
         # add paper to provider
-        err, paper_provider_id = backend.add_paper(session, paper)
-        return paper_provider_id
+        err, id, info = backend.add_paper(session, paper)
+        return id, info
 
     def add_paper_on_etalia(self, paper, provider_id, info=None):
         ulp, new = UserLibPaper.objects.get_or_create(userlib=self,
@@ -342,15 +343,7 @@ class UserLib(TimeStampedModel):
         return err
 
     def update(self):
-        # get social
-        social = self.user.social_auth.first()
-
-        # get backend
-        backend = social.get_backend_instance()
-
-        # build session
-        session = backend.get_session(social, self.user)
-
+        session, backend = self.get_session_backend()
         # update lib
         backend.update_lib(self.user, session)
 

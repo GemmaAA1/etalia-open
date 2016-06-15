@@ -35,7 +35,14 @@ def my_papers(request):
     return TemplateResponse(
         request,
         'papers/list.html',
-        {'control_states': json.dumps(request.session.get('library-control-states', {}))}
+        {'control_states': json.dumps(
+            request.session.get('library-control-states',
+                                {'time-span': None,
+                                 'search': None,
+                                 'pin': 0}
+                                )
+        )
+        }
     )
 
 
