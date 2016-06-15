@@ -135,7 +135,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                                                         e_issn=paper.journal.id_eissn)
         elif paper.journal.id_issn:
             template['ISSN'] = paper.journal.id_issn
-        elif paper.journa.id_eissn:
+        elif paper.journal.id_eissn:
             template['ISSN'] = paper.journal.id_eissn
         else:
             template['ISSN'] = ''
