@@ -1,0 +1,405 @@
+.coming-soon {
+    font-size: 24px;
+    padding-top: 80px;
+    text-align: center;
+}
+
+/* ---- COMMONS ---- */
+
+.element-content {
+
+}
+
+.element-info {
+    color: #86b5b0;
+}
+
+/* ---- USER ---- */
+
+.user {
+    display: none;
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.user img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+}
+
+.user.followed img {
+    background-color: #00695c;
+    border: 2px solid #00695c;
+}
+
+.user-card {
+    position: absolute;
+    display: none;
+    padding: 10px 10px 10px 70px;
+    min-height: 70px;
+    top: -10px;
+    left: -10px;
+    background: #ffffff;
+    border-radius: 35px 6px 6px 35px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .33);
+}
+
+.alt .user-card {
+    padding: 10px 70px 10px 10px;
+    min-height: 70px;
+    top: -10px;
+    left: auto;
+    right: -10px;
+    border-radius: 6px 35px 35px 6px;
+}
+
+.user-card p {
+    white-space: nowrap;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: left;
+}
+
+.user-card .user-name,
+.user-card .user-affiliation {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card .user-name {
+    font-size: 14px;
+    color: #313233;
+    font-weight: 600;
+}
+
+.user-card .user-affiliation {
+    color: #86b5b0;
+}
+
+.user-card .user-actions a {
+    float: right;
+}
+
+.user-card .user-actions a:first-child {
+    float: left;
+}
+
+.user.hover img,
+.user:hover img {
+    z-index: 99;
+}
+
+.user.hover .user-card,
+.user:hover .user-card {
+    display: block;
+    z-index: 98;
+}
+
+/* Small devices */
+@media (min-width: 768px) {
+    .user {
+        display: block;
+    }
+}
+
+/* -------------------------- LIST -------------------------- */
+
+.card .user {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 50px;
+    min-height: 90px;
+    text-align: center;
+    color: #00695c;
+    font-weight: bold;
+}
+
+.card .user img {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    margin-bottom: 12px;
+}
+
+#thread-invites-modal {
+    display: none;
+}
+
+/* -------------------------- DETAIL -------------------------- */
+
+#detail .content > .card .user {
+    width: 80px;
+    min-height: 110px;
+    top: 14px;
+}
+
+#detail .content > .card .user img {
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    margin-bottom: 0;
+}
+
+#detail .content > .card .user-card {
+    border-radius: 50px 10px 10px 50px;
+    padding: 12px 12px 12px 100px;
+    min-height: 100px;
+}
+
+#detail .content > .card .user-card p {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+#detail .content > .card .user-card .user-name {
+    font-size: 18px;
+}
+
+
+#detail .content > .card .infos p:first-child {
+    font-size: 16px;
+}
+
+.materials {
+    color: #7a7d80;
+    font-size: 18px;
+}
+
+.materials span {
+    margin-right: 10px;
+}
+
+/* ---- THREAD ---- */
+
+.thread {
+    color: #444444;
+    font-size: 16px;
+    line-height: 22px;
+}
+
+.thread-box {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e1e3e6;
+}
+
+/* ---- THREAD MEMBERS ---- */
+
+.thread-members-list {
+    position: relative;
+    overflow: hidden;
+    height: 80px;
+    transition:height .3s ease;
+}
+
+.thread-members-list.expanded {
+    height: auto;
+}
+
+.thread-members .user {
+    display: inline-block;
+    margin: 10px 17px 20px 17px;
+}
+
+.thread-members-toggle {
+    border-top: 1px solid #e1e3e6;
+    margin: 7px 0;
+    position: relative;
+    height: 1px;
+    overflow: visible;
+}
+
+.thread-members-toggle a {
+    position: relative;
+    top: -7px;
+    display: block;
+    width: 100%;
+    height: 14px;
+    text-align: center;
+}
+
+.thread-members-toggle a span {
+    position: relative;
+    top: -2px;
+    color: #7a7d80;
+    display: inline-block;
+    width: 40px;
+    height: 14px;
+    background-color: #ffffff;
+}
+
+.thread-members-toggle a:hover span {
+    color: #00695c;
+}
+
+.thread-members-invite-modal {
+    position: relative;
+    display: inline-block;
+    margin: 10px 17px 20px 17px;
+    width: 50px;
+    height: 50px;
+}
+
+.thread-members-invite-modal span {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    border: 1px solid #cbced1;
+    text-align: center;
+    line-height: 48px;
+    font-size: 26px;
+    color: #7a7d80;
+}
+
+.thread-members-invite-modal:hover span {
+    color: #00695c;
+}
+
+/* ---- THREAD POSTS ---- */
+
+.thread-posts {
+
+}
+
+.thread-post {
+    border-top: 1px solid #e1e3e6;
+    margin-top: 16px;
+    padding: 16px 0 0 0;
+    position: relative;
+}
+
+.thread-post > .user {
+    position: absolute;
+    top: 20px;
+    left: 0;
+}
+
+.thread-post .post-content {
+    min-height: 32px;
+}
+
+.thread-post:first-child {
+    margin-top: 0;
+    border-top: none;
+}
+
+/* ---- THREAD COMMENTS ---- */
+
+.thread-comments {
+    line-height: 1.2;
+    font-size: 14px;
+}
+
+.thread-comment {
+    border-top: 1px solid #e1e3e6;
+    margin-top: 12px;
+    padding: 12px 0 0 20px;
+    position: relative;
+}
+
+.thread-comment > .user {
+    position: absolute;
+    top: 16px;
+    left: 0;
+    width: 32px;
+    height: 32px;
+}
+
+.thread-post .comment-content {
+    min-height: 24px;
+}
+
+.thread-comment > .user.hover img,
+.thread-comment > .user:hover img {
+    width: 50px;
+    height: 50px;
+}
+
+.thread-comment-form {
+    position: relative;
+    padding: 0 30px 0 0;
+}
+
+.thread-comment-form .form-group {
+    margin-bottom: 5px;
+}
+
+.thread-comment-form button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    border-radius: 4px;
+    padding: 0;
+    margin: 0;
+    z-index: 2;
+}
+
+.thread-comment-form button[type="button"] {
+    top: 30px;
+}
+
+.thread-comment-form textarea {
+    resize: none;
+}
+
+/* ---- THREAD INVITE ---- */
+
+.invite-treat {
+
+}
+
+.invite-treat-preview {
+    overflow: hidden;
+    height: 60px;
+    transition: height .6s;
+}
+
+.invite-treat-preview.expanded {
+    height: auto;
+}
+
+/* ---- RESPONSIVE ---- */
+
+/* Small devices */
+@media (min-width: 768px) {
+    .card.thread {
+        padding-left: 70px;
+    }
+
+    #detail .content > .card.thread {
+        padding-left: 110px;
+    }
+
+    #detail .thumb-list .card.thread .user {
+        top: 4px;
+    }
+
+    .user {
+        display: block;
+    }
+
+    .thread-post {
+        padding: 16px 0 0 70px;
+    }
+
+    .thread-comment {
+        padding: 12px 0 0 52px;
+    }
+}

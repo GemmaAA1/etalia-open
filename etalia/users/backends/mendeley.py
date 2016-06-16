@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
+from dateutil.parser import parse
 from social.backends.oauth import BaseOAuth2
 from social.backends.mendeley import MendeleyMixin
 from mendeley import Mendeley
@@ -143,15 +144,15 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info'],
-                                               item.id)
+                    new = self.associate_paper(user,
+                                               paper,
+                                               item.id,
+                                               entry['user_info'])
                     if new:
                         count += 1
                         not_new_stack_count = 0
                     else:
                         not_new_stack_count += 1
-                    if journal:
-                        self.associate_journal(journal, user)
                 else:
                     logger.info(
                         '- Item: {type_} from {user} / {backend}'.format(
@@ -200,25 +201,20 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 pages=paper.page,
                 abstract=paper.abstract,
                 source=paper.journal.title,
-                authors=mend_authors
+                authors=mend_authors,
             )
         except MendeleyApiException:
-            return 1
+            return 1, None, None
 
-        return None, resp.id
+        return None, resp.id, {'created': parse(str(resp.created) or 'Nothing'),
+                               'last_modified': parse(str(resp.last_modified) or 'Nothing')}
 
     @staticmethod
-    def trash_paper(session, ulp):
+    def trash_paper(session, paper_provider_id):
         try:
-            doc = session.documents.get(id=ulp.paper_provider_id)
+            doc = session.documents.get(id=paper_provider_id)
             if doc:
                 resp = doc.move_to_trash()
                 return 0
         except MendeleyApiException:
             return 1
-
-
-
-
-
-

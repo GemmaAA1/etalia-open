@@ -32,19 +32,23 @@ body.detail-opened #detail {
     padding-bottom: 8px !important;
     text-align: center;
     overflow: hidden;
+    min-height: 56px;
 }
 
-#detail > .bar button {
+.detail-nav,
+.detail-nav > button {
     display: inline-block;
 }
 
-#detail > .bar .eai {
+.detail-nav .eai {
     font-size: 16px;
 }
 
-#detail-close {
+.detail-nav-center {
     position: absolute;
     left: 50%;
+    width: 10px;
+    height: 40px;
     margin-left: -20px;
 }
 
@@ -54,31 +58,31 @@ body.detail-opened #detail {
     font-style: italic;
 }
 
-/* Prev button */
-#detail-prev {
+/* Left button */
+.detail-nav-left {
     float: left;
     text-align: left;
 }
-#detail-prev > span {
+.detail-nav-left > span {
     display: none;
     float: left;
     margin-left: 10px;
 }
-#detail-prev > button {
+.detail-nav-left > button {
     float: left;
 }
 
 /* Next button */
-#detail-next {
+.detail-nav-right {
     float: right;
     text-align: right;
 }
-#detail-next > span {
+.detail-nav-right > span {
     display: none;
     float: right;
     margin-right: 10px;
 }
-#detail-next > button {
+.detail-nav-right > button {
     float: right;
 }
 
@@ -95,9 +99,11 @@ body.detail-opened #detail {
     overflow-y: auto;
 }
 
-#detail > .document > .wrapper > .inner {
+#detail > .document > .wrapper {
+    background-color: #ffffff;
     border-left: 1px solid #cbced1;
     border-right: 1px solid #cbced1;
+    min-height: 100%;
 }
 
 #detail > .document > .wrapper > .inner > .actions {
@@ -173,6 +179,10 @@ body.detail-opened #detail {
     padding-bottom: 15px;
 }
 
+/*#detail .thumb-list .card {
+    margin-right: 0;
+}*/
+
 #detail .thumb-list .card .title {
     font-size: 16px;
     line-height: 20px;
@@ -184,20 +194,6 @@ body.detail-opened #detail {
     line-height: 16px;
 }
 
-#detail .thumb-list .card .journal {
-    font-size: 13px;
-    line-height: 24px;
-    height: 24px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#detail .thumb-list .card .date {
-    font-size: 13px;
-    line-height: 24px;
-}
-
 #detail .thumb-list .card .icons {
     height: 24px;
 }
@@ -206,6 +202,8 @@ body.detail-opened #detail {
 #detail .thumb-list .card .icons img {
     width: 24px;
     height: 24px;
+    line-height: 24px;
+    font-size: 14px;
 }
 
 #detail .thumb-list .card .cluster-icon span {
@@ -231,18 +229,41 @@ body.detail-opened #detail {
 
 /* ---------------------------------- RESPONSIVE --------------------------------- */
 
+@media (min-width: 600px) {
+    #detail .document .content {
+        padding-right: 35px;
+    }
+
+    #detail > .document > .wrapper > .inner > .actions {
+        position: absolute;
+        top: 30px;
+        right: 15px;
+    }
+
+    #detail .thumb-list .card .infos p:first-child {
+        font-size: 13px;
+        line-height: 24px;
+        height: 24px;
+    }
+}
+
 @media (min-width: 768px) {
-    #detail-prev > span,
-    #detail-next > span {
+    #detail .document .content {
+        padding-right: 25px;
+    }
+
+    #detail > .document > .wrapper > .inner > .actions {
+        position: absolute;
+        top: 40px;
+        right: 20px;
+    }
+
+    .detail-nav-left > span,
+    .detail-nav-right > span {
         display: inline-block;
         max-width: 240px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
-    /*#detail .card .journal {
-        line-height: 24px;
-        height: 24px;
-    }*/
 }

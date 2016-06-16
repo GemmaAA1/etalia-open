@@ -24,7 +24,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
 class MyDoc2Vec(Doc2Vec):
     pass
 
-def paper2tokens(paper, **kwargs):
+def obj2tokens(paper, **kwargs):
     """Convert paper instance to tokens list
     """
     if 'fields' in kwargs:

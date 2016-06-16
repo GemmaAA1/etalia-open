@@ -359,7 +359,9 @@
 }
 
 .filter-group ul a.active .filter-checkbox:before {
+    /*noinspection CssNoGenericFontName*/
     font-family: 'etalia' !important;
+    /*noinspection CssUnknownProperty*/
     speak: none;
     font-style: normal;
     font-weight: normal;
@@ -420,7 +422,7 @@
     display: inline-block;
     line-height: 36px;
     padding: 0 1px;
-    width: 33.33333333%;
+    width: 30%;
 }
 
 .list-tabs ul > li > a {
@@ -449,6 +451,48 @@
     color: #004f46;
 }
 
+.list-tabs ul > li > a > span {
+    display: none;
+}
+
+.list-header {
+    overflow: hidden;
+    border-bottom: 1px solid #dfe2e6;
+    margin-bottom: 16px;
+}
+
+.list-title {
+    float: left;
+    color: #7a7d80;
+    font-size: 16px;
+    font-style: italic;
+    line-height: 34px;
+}
+
+.list-empty-message {
+    text-align: center;
+    font-style: italic;
+    font-size: 16px;
+    padding: 24px 0;
+    color: #999;
+}
+
+.list-controls {
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+.list-controls > div,
+.list-controls > button {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.list-controls > div:first-child,
+.list-controls > button:first-child {
+    margin-left: 0;
+}
+
 #user-library-trash-clear {
     display: block;
     position: absolute;
@@ -469,19 +513,11 @@
 
 /* ------------------------------------ THUMB ------------------------------------ */
 
-.list-title {
-    color: #7a7d80;
-    font-size: 16px;
-    font-style: italic;
-    border-bottom: 1px solid #dfe2e6;
-    padding-bottom: 16px;
-    margin-bottom: 16px;
-}
-
 .thumb {
     margin-bottom: 20px;
-    padding-bottom: 20px;
-    overflow: hidden;
+    padding-bottom: 10px;
+    /*overflow: hidden;*/
+    clear: both;
     border-bottom: 1px solid #dfe2e6;
 }
 
@@ -493,44 +529,44 @@
     float: right;
 }
 
+.thumb .actions a {
+    margin-bottom: 12px;
+}
+
 .thumb .card {
     margin-right: 45px;
 }
 
-/* ------------------------------------ ACTIONS ------------------------------------ */
-
-.actions a {
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-    line-height: 20px;
-    color: #cbced1;
-    margin-bottom: 20px;
-}
-
-.actions a:last-child {
-    margin-bottom: 0;
-}
-
-.actions a:hover {
-    color: #313233;
-    text-decoration: none;
-}
-
-.actions a.active {
-    color: #00695c;
+.thumb .card.standalone {
+    margin-right: 0;
 }
 
 /* ------------------------------------ RESPONSIVE ------------------------------------ */
 
-@media (min-width: 400px) {
+/* Landscape smartphones */
+@media (min-width: 480px) {
 
+}
+
+/* Portrait small table */
+@media (min-width: 600px) {
+    .list-tabs ul > li > a > span {
+        display: inline;
+    }
+
+    .list-controls.left {
+        float: left;
+        text-align: left;
+    }
+
+    .list-controls.right {
+        float: right;
+        text-align: right;
+    }
 }
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px) {
-
 }
 
 /* Medium devices (desktops, 992px and up) */

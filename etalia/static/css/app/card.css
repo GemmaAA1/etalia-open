@@ -1,5 +1,5 @@
 .card {
-    overflow: hidden;
+    position: relative;
 }
 
 .card p {
@@ -21,14 +21,20 @@
     text-decoration: none;
 }
 
-.card .title a span {
+.card .title span {
+    color: #00695c;
     display: inline-block;
-    font-size: 60%;
-    line-height: 0.7;
+    font-size: 70%;
+    vertical-align: 5%;
+}
+
+.card .title span.new {
     color: #ffffff;
     background-color: #00695c;
     padding: 2px 3px 3px 3px;
     border-radius: 2px;
+    font-size: 60%;
+    line-height: 0.7;
     vertical-align: 40%;
 }
 
@@ -43,23 +49,29 @@
     color: #00695c;
 }
 
-.card .journal {
+.card .infos p:first-child {
     font-size: 14px;
-    line-height: 18px;
+    line-height: 16px;
+    margin-bottom: 8px;
     color: #86b5b0;
-    font-weight: 700;
 }
 
-.card .date {
-    font-size: 14px;
-    line-height: 32px;
-    color: #86b5b0;
-    float: left;
+.card .infos p.truncate {
+    display: block;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card .infos p.truncate em {
+    display:block;
+    font-weight: normal;
+    font-style: italic;
 }
 
 .card .icons {
-    float: right;
-    height: 32px;
+    height: 36px;
     width: 116px;
 }
 
@@ -67,12 +79,12 @@
     display: inline-block;
     width: 32px;
     height: 32px;
-    margin-left: 10px;
-    float: right;
+    margin-right: 10px;
+    float: left;
 }
 
 .card .icons > span:last-child {
-    margin-left: 0;
+    margin-right: 0;
 }
 
 .card .altmetric-embed,
@@ -85,7 +97,9 @@
 
 }
 
-.card .comment {
+.card .type,
+.card .comment,
+.card .member {
     background-color: #ffffff;
     border: 1px solid #cbced1;
     border-radius: 16px;
@@ -96,19 +110,9 @@
     text-align: center;
 }
 
-.card .comment .count {
-    background-color: #ffffff;
-    border: 1px solid #cbced1;
-    border-radius: 9px;
-    bottom: -3px;
-    color: #6b6d70;
-    display: block;
-    font-size: 10px;
-    height: 18px;
-    left: -3px;
-    line-height: 15px;
-    position: absolute;
-    width: 18px;
+.card .comment .count,
+.card .member .count {
+    border-color: 1px solid #cbced1;
 }
 
 .card .cluster-icon span {
@@ -132,23 +136,46 @@
     border-radius: 0 0 0 15px;
 }
 
-/* Small devices (tablets, 768px and up) */
-@media (min-width: 768px) {
+/* Landscape smartphones  */
+@media (min-width: 480px) {
+    .card .infos {
+        position: relative;
+        padding: 0 136px 4px 0;
+    }
+
+    .card .infos p.truncate {
+        margin-bottom: 0;
+    }
+
+    .card .icons {
+        position: absolute;
+        right: 0;
+        top: 0;
+        text-align: right;
+    }
+}
+
+/* Small devices */
+@media (min-width: 600px) {
     .card .authors {
         margin-bottom: 4px;
     }
-    .card .journal {
-        float:left;
-        line-height: 32px;
+
+    .card .infos p:first-child {
         height: 32px;
-        width: 56%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 32px;
     }
 
-    .card .date, .icons {
-        float:left;
-        width: 22%;
+    .card .infos p.truncate {
+        position: relative;
+        padding-right: 100px;
+    }
+
+    .card .infos p.truncate em {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 80px;
+        text-align: right;
     }
 }

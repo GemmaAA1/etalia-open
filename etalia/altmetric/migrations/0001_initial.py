@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AltmetricModel',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('score', models.FloatField(default=0.0, db_index=True)),
@@ -51,7 +51,9 @@ class Migration(migrations.Migration):
                 ('cited_by_wikipedia_count', models.IntegerField(default=0)),
                 ('readers_citeulike', models.IntegerField(default=0)),
                 ('readers_mendeley', models.IntegerField(default=0)),
-                ('paper', models.OneToOneField(related_name='altmetric', to='library.Paper')),
+                ('image', models.URLField(default='')),
+                ('type', models.CharField(default='zzzzzzzz', max_length=8)),
+                ('paper', models.OneToOneField(to='library.Paper', related_name='altmetric')),
             ],
             options={
                 'ordering': ['-score'],

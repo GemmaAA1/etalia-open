@@ -3,26 +3,27 @@ from __future__ import unicode_literals, absolute_import
 
 import collections
 
+from dateutil.parser import parse
 from nameparser import HumanName
-from jsonfield import JSONField
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import F, Min
 from django.utils import timezone
 
-from etalia.library.models import Paper, Journal, Author
-from etalia.nlp.models import Model
-from etalia.feeds.models import Stream, Trend
+
+from etalia.library.models import Paper, Journal, Author, PaperUser
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
-from etalia.core.constants import NLP_TIME_LAPSE_CHOICES, \
-    NLP_NARROWNESS_CHOICES, EMAIL_DIGEST_FREQUENCY_CHOICES
+from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
+from etalia.threads.models import Thread
 
 from .validators import validate_first_name, validate_last_name
-from .constants import INIT_STEPS
+from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
+    RELATIONSHIP_STATUSES
 
 
 class Affiliation(TimeStampedModel):
@@ -86,9 +87,9 @@ class UserManager(BaseUserManager):
         # create user settings
         UserSettings.objects.create(user=user)
         # create user default (main) feed
-        Stream.objects.create_main(user=user)
+        # Stream.objects.create_main(user=user)
         # create user default (main) feed
-        Trend.objects.create(user=user, name='main')
+        # Trend.objects.create(user=user, name='main')
         return user
 
     def create_superuser(self, **kwargs):
@@ -136,7 +137,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     affiliation = models.ForeignKey(Affiliation, null=True, default=None)
 
-    photo = models.ImageField(upload_to='photos', null=True)
+    # photo = models.ImageField(upload_to='photos', null=True)
+    #
+    relationships = models.ManyToManyField('self', through='Relationship',
+                                          symmetrical=False,
+                                          related_name='related_to')
 
     objects = UserManager()
 
@@ -197,13 +202,64 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
-    def get_paper_state(self, paper_id):
-        return dict(UserTaste.get_state(paper_id, self.id),
-                    **UserLibPaper.get_state(paper_id, self.id))
+    # Relationships methods
+    # ----------------------
+    def add_relationship(self, user, status):
+        relationship, created = Relationship.objects.get_or_create(
+            from_user=self,
+            to_user=user,
+            status=status)
+        return relationship, created
 
-    def get_counters(self):
-        return dict(UserTaste.get_counters(self.id),
-                    **UserLibPaper.get_counters(self.id))
+    def remove_relationship(self, user, status):
+        Relationship.objects.filter(
+            from_user=self,
+            to_user=user,
+            status=status).delete()
+        return _, False
+
+    def get_relationships(self, status):
+        return self.relationships.filter(
+            relation_to_users__status=status,
+            relation_to_users__from_user=self)
+
+    def get_related_to(self, status):
+        return self.related_to.filter(
+            relation_from_users__status=status,
+            relation_from_users__to_user=self)
+
+    def get_following(self):
+        return self.get_relationships(RELATIONSHIP_FOLLOWING)
+
+    def get_blocked(self):
+        return self.get_relationships(RELATIONSHIP_BLOCKED)
+
+    def get_followers(self):
+        return self.get_related_to(RELATIONSHIP_FOLLOWING)
+
+    def follow(self, user):
+        return self.add_relationship(user, RELATIONSHIP_FOLLOWING)
+
+    def block(self, user):
+        return self.add_relationship(user, RELATIONSHIP_BLOCKED)
+
+    def unfollow(self, user):
+        return self.remove_relationship(user, RELATIONSHIP_FOLLOWING)
+
+    def unblock(self, user):
+        return self.remove_relationship(user, RELATIONSHIP_BLOCKED)
+
+    @property
+    def followers(self):
+        return self.get_followers()
+
+    @property
+    def following(self):
+        return self.get_following()
+
+    @property
+    def blocked(self):
+        return self.get_blocked()
 
 
 class UserLib(TimeStampedModel):
@@ -212,10 +268,6 @@ class UserLib(TimeStampedModel):
     user = models.OneToOneField(User, primary_key=True, related_name='lib')
 
     papers = models.ManyToManyField(Paper, through='UserLibPaper')
-
-    journals = models.ManyToManyField(Journal, through='UserLibJournal')
-
-    authors = models.ManyToManyField(Author, through='UserLibAuthor')
 
     state = models.CharField(max_length=3, blank=True, default='NON',
         choices=(('NON', 'Uninitialized'),
@@ -245,37 +297,6 @@ class UserLib(TimeStampedModel):
         else:
             raise ValueError('Cannot set state. State value not allowed')
 
-    def update_authors(self):
-        authors = self.papers\
-            .values_list('authors', flat=True)
-        counter = collections.Counter(authors)
-        for a, v in counter.items():
-            ula, _ = UserLibAuthor.objects.get_or_create(userlib=self,
-                                                         author_id=a)
-            ula.occurrence = v
-            ula.save()
-
-    def get_authors_dist(self):
-        return UserLibAuthor.objects\
-                    .filter(userlib=self)\
-                    .values_list('author', 'occurrence')
-
-    def update_journals(self):
-        journals = self.papers\
-            .exclude(journal__isnull=True)\
-            .values_list('journal', flat=True)
-        counter = collections.Counter(journals)
-        for j, v in counter.items():
-            ula, _ = UserLibJournal.objects.get_or_create(userlib=self,
-                                                         journal_id=j)
-            ula.occurrence = v
-            ula.save()
-
-    def get_journals_dist(self):
-        return UserLibJournal.objects\
-                    .filter(userlib=self)\
-                    .values_list('journal', 'occurrence')
-
     def get_d_oldest(self):
         # get date_created for papers
         created_date = self.userlib_paper.values('pk', 'date_created')
@@ -286,6 +307,45 @@ class UserLib(TimeStampedModel):
     def set_d_oldest(self):
         self.d_oldest = self.get_d_oldest()
         self.save()
+
+    def get_session_backend(self):
+        provider_name = self.user.social_auth.first().provider
+        # get social
+        social = self.user.social_auth.get(provider=provider_name)
+        # get backend
+        backend = social.get_backend_instance()
+        # build session
+        session = backend.get_session(social, self.user)
+        return session, backend
+
+    def add_paper_on_provider(self, paper):
+        session, backend = self.get_session_backend()
+        # add paper to provider
+        err, id, info = backend.add_paper(session, paper)
+        return id, info
+
+    def add_paper_on_etalia(self, paper, provider_id, info=None):
+        ulp, new = UserLibPaper.objects.get_or_create(userlib=self,
+                                                      paper=paper)
+        if info:
+            ulp.date_created = info.get('created', None)
+            ulp.last_date_modified = info.get('last_modified', None)
+            ulp.authored = info.get('authored', None)
+            ulp.starred = info.get('starred', None)
+            ulp.scored = info.get('scored', 0.)
+        ulp.paper_provider_id = provider_id
+        ulp.save()
+
+    def trash_paper_on_provider(self, provider_id):
+        session, backend = self.get_session_backend()
+        # remove paper from provider
+        err = backend.trash_paper(session, provider_id)
+        return err
+
+    def update(self):
+        session, backend = self.get_session_backend()
+        # update lib
+        backend.update_lib(self.user, session)
 
 
 class UserLibPaper(TimeStampedModel):
@@ -307,7 +367,7 @@ class UserLibPaper(TimeStampedModel):
 
     paper_provider_id = models.CharField(max_length=64, default='')
 
-    is_trashed = models.BooleanField(default=False)
+    # is_trashed = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-date_created']
@@ -342,58 +402,13 @@ class UserLibPaper(TimeStampedModel):
         return '{0}@{1}'.format(self.paper.short_title,
                                 self.userlib.user.email)
 
-
-class UserLibJournalManager(models.Manager):
-
-    def add(self, **kwargs):
-        obj, new = self.get_or_create(**kwargs)
-        obj.occurrence += 1
-        obj.save()
-        return obj
-
-
-class UserLibJournal(TimeStampedModel):
-    """Table - User/Journal relationship"""
-
-    userlib = models.ForeignKey(UserLib)
-
-    journal = models.ForeignKey(Journal)
-
-    occurrence = models.IntegerField(default=0, null=False)
-
-    objects = UserLibJournalManager()
-
-    class Meta:
-        unique_together = ('userlib', 'journal')
-        ordering = ('-occurrence', )
-
-    def update_occurrence(self):
-        self.occurrence = self.userlib.papers.filter(
-            journal=self.journal).count()
-        self.save()
-
-    def __str__(self):
-        return '%s@%s' % (self.userlib.user.email, self.journal.short_title)
-
-
-class UserLibAuthor(TimeStampedModel):
-
-    userlib = models.ForeignKey(UserLib)
-
-    author = models.ForeignKey(Author)
-
-    occurrence = models.IntegerField(default=0, null=False)
-
-    class Meta:
-        unique_together = ('userlib', 'author')
-        ordering = ('-occurrence', )
-
-    def __str__(self):
-        return '%s' % (self.author.last_name)
-
-    def update_occurence(self):
-        self.occurence = self.userlib.papers.filter(author=self.author).count()
-        self.save()
+    @property
+    def is_trashed(self):
+        #Deprecated with API
+        if self.paper.paperuser_set.filter(user_id=self.id).exists():
+            if self.paper.paperuser_set.filter(user_id=self.id).store == 2:
+                return True
+        return False
 
 
 class UserStatsManager(models.Manager):
@@ -459,19 +474,6 @@ class UserStats(TimeStampedModel):
     objects = UserStatsManager()
 
 
-class UserSettingsManager(models.Manager):
-
-    def create(self, **kwargs):
-        # if nlp_model not defined, default to first nlp_model
-        if 'model' not in kwargs:
-            model = Model.objects.first()
-            kwargs['stream_model'] = model
-            kwargs['trend_model'] = model
-        obj = self.model(**kwargs)
-        obj.save(using=self._db)
-        return obj
-
-
 class UserSettings(TimeStampedModel):
     """Table - User Settings"""
 
@@ -479,71 +481,39 @@ class UserSettings(TimeStampedModel):
                                 related_name='settings')
 
     ##  Stream settings
-    # NLP model to use
-    stream_model = models.ForeignKey(Model, verbose_name='NLP Model',
-                                     related_name='stream_model')
 
     # scoring method to use
     stream_method = models.IntegerField(verbose_name='Method', default=0,
                                         choices=STREAM_METHODS)
 
     # author weight
-    stream_author_weight = models.FloatField(default=0.5,
+    stream_author_weight = models.FloatField(default=1.0,
                                              verbose_name='Author weight')
 
     # journal weight
-    stream_journal_weight = models.FloatField(default=0.5,
+    stream_journal_weight = models.FloatField(default=1.0,
                                               verbose_name='Journal weight')
 
     # vector weight
-    stream_vector_weight = models.FloatField(default=0.5,
-                                             verbose_name='Content weight')
+    stream_vector_weight = models.FloatField(default=1.0,
+                                             verbose_name='Title/Abstract weight')
 
     # delta-time in MONTHS to roll back stream
-    stream_roll_back_deltatime = models.IntegerField(default=36,
-                                             verbose_name='Roll-back time (months)')
-
-    # DEPRECATED
-    # in days
-    stream_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
-                                            choices=NLP_TIME_LAPSE_CHOICES,
-                                            verbose_name='Time range')
-    # DEPRECATED
-    # arbitrary units
-    stream_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
-                                            choices=NLP_NARROWNESS_CHOICES,
-                                            verbose_name='Narrowness')
-
-    # DEPRECATED
-    # stream method arguments
-    stream_method_args = JSONField(null=True, default=None, blank=True)
+    stream_roll_back_deltatime = models.IntegerField(
+        default=None,
+        verbose_name='Roll-back time (months)',
+        null=True,
+        blank=True)
 
     # Trend settings
-    # nlp model
-    trend_model = models.ForeignKey(Model, verbose_name='NLP Model',
-                                    related_name='trend_model')
 
     # scoring method to use
     trend_method = models.IntegerField(verbose_name='Method', default=0,
                                        choices=TREND_METHODS)
-    # DEPRECATED
-    # in days
-    trend_time_lapse = models.IntegerField(default=NLP_TIME_LAPSE_CHOICES[2][0],
-                                           choices=NLP_TIME_LAPSE_CHOICES,
-                                           verbose_name='Time range')
-
-    # DEPRECATED
-    # arbitrary units
-    trend_narrowness = models.IntegerField(default=NLP_NARROWNESS_CHOICES[2][0],
-                                            choices=NLP_NARROWNESS_CHOICES,
-                                            verbose_name='Narrowness')
-    # DEPRECATED
-    # stream method arguments
-    trend_method_args = JSONField(null=True, default=None, blank=True)
 
     # doc vector weight
-    trend_doc_weight = models.FloatField(default=0.5,
-                                         verbose_name='Content weight')
+    trend_doc_weight = models.FloatField(default=1.0,
+                                         verbose_name='Title/Abstract weight')
 
     # altmetric vector weight
     trend_altmetric_weight = models.FloatField(default=0.5,
@@ -555,71 +525,39 @@ class UserSettings(TimeStampedModel):
         choices=EMAIL_DIGEST_FREQUENCY_CHOICES,
         verbose_name='Email digest frequency')
 
-    objects = UserSettingsManager()
+    def init_stream_roll_back_deltatime(self):
+        if not self.stream_roll_back_deltatime:
+            first_created = self.user.lib.userlib_paper.all()\
+                .aggregate(min_date=Min(F('date_created')))['min_date']
+            delta_months = (timezone.now().date() - first_created).days // \
+                           (365 / 12)
+            self.stream_roll_back_deltatime = delta_months
+            self.save()
+        return self.stream_roll_back_deltatime
 
     def __str__(self):
         return self.user.email
 
-    def init(self):
-        """Initialize user settings"""
-        # default roll back deltatime (either default or user.lib.d_oldest)
-        d_oldest_month = (timezone.now().date() - self.user.lib.d_oldest).days // 30
-        if self.stream_roll_back_deltatime > d_oldest_month:
-            self.stream_roll_back_deltatime = d_oldest_month
-            self.save()
 
+class Relationship(TimeStampedModel):
 
-class UserTaste(TimeStampedModel):
+    from_user = models.ForeignKey(User, related_name='relation_from_users')
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tastes')
+    to_user = models.ForeignKey(User, related_name='relation_to_users')
 
-    paper = models.ForeignKey(Paper)
+    status = models.IntegerField(choices=RELATIONSHIP_STATUSES,
+                                 default=RELATIONSHIP_FOLLOWING)
 
-    source = models.CharField(max_length=128)
+    def follow(self):
+        self.status = RELATIONSHIP_FOLLOWING
+        self.save()
 
-    is_banned = models.BooleanField(default=False)
-
-    is_pinned = models.BooleanField(default=False)
+    def block(self):
+        self.status = RELATIONSHIP_BLOCKED
+        self.save()
 
     class Meta:
-        unique_together = [('user', 'paper'), ]
-
-    def __str__(self):
-        if self.is_pinned:
-            return '{user} pinned {pk} from {context}'.format(
-                user=self.user,
-                pk=self.paper.id,
-                context=self.source)
-        elif self.is_banned:
-            return '{user} banned {pk} with {context}'.format(
-                user=self.user,
-                pk=self.paper.id,
-                context=self.source)
-        else:
-            return '{user}/{pk}/{context} has an issue'.format(
-                user=self.user,
-                pk=self.paper.id,
-                context=self.source)
-
-    @classmethod
-    def get_state(cls, paper_id, user_id):
-        try:
-            ut = cls.objects.get(paper_id=paper_id, user_id=user_id)
-            return {'is_pinned': ut.is_pinned, 'is_banned': ut.is_banned}
-        except cls.DoesNotExist:
-            return {'is_pinned': False, 'is_banned': False}
-
-    @classmethod
-    def get_counters(cls, user_id):
-        try:
-            objs = cls.objects.filter(user_id=user_id)\
-                .values('is_pinned', 'is_banned')
-            return {
-                'pin': len([obj for obj in objs if obj['is_pinned']]),
-                'ban': len([obj for obj in objs if obj['is_banned']])
-            }
-        except cls.DoesNotExist:
-            return {'pin': None, 'ban': None}
+        unique_together = ('from_user', 'to_user')
 
 
 

@@ -3,11 +3,19 @@ API
 
 Restfull (Hateoas) API.
 
+based on [django-rest-framework](http://www.django-rest-framework.org/)
+
+The API is browsable. [Api root](/api/v1/)
+
 ## Apis
 
-- [Tocles](tocles.md)
+- [Threads](threads.md)
+- [Users](users.md)
+- [Library](library.md)
 
 ## Resources
+
+- [django-rest-framework](http://www.django-rest-framework.org/)
 
 - [JSON-LD - JSON for Linked Data](http://json-ld.org/)
 - [Hydra](http://www.hydra-cg.com/)

@@ -11,9 +11,12 @@ class MyRouter(object):
         if task.startswith('etalia.users'):
             return {'queue': 'default',
                     'routing_key': 'default.users'}
-        if task.startswith('etalia.nlp.tasks.mostsimilar'):
-            return {'queue': 'mostsimilar',
-                    'routing_key': 'mostsimilar'}
+        if task.startswith('etalia.nlp.tasks.pe'):
+            return {'queue': 'pe',
+                    'routing_key': 'pe'}
+        if task.startswith('etalia.nlp.tasks.te'):
+            return {'queue': 'te',
+                    'routing_key': 'te'}
         if task.startswith('etalia.feeds'):
             return {'queue': 'feed',
                     'routing_key': 'feed'}

@@ -42,29 +42,10 @@ fi
 : "${AWS_SECRET_ACCESS_KEY?Error: Need to set env var AWS_SECRET_ACCESS_KEY}"
 : "${AWS_STORAGE_BUCKET_NAME?Error: Need to set env var AWS_STORAGE_BUCKET_NAME}"
 : "${DJANGO_SETTINGS_MODULE?Error: Need to set env var DJANGO_SETTINGS_MODULE}"
-: "${DISQUS_WEBSITE_SHORTNAME?Error: Need to set env var DISQUS_WEBSITE_SHORTNAME}"
-: "${DISQUS_PUBLIC_KEY?Error: Need to set env var DISQUS_PUBLIC_KEY}"
-: "${DISQUS_SECRET_KEY?Error: Need to set env var DISQUS_SECRET_KEY}"
 : "${ALTMETRIC_API_KEY?Error: Need to set env var ALTMETRIC_API_KEY}"
 
-
-# MAKE MIGRATIONS AND MIGRATE
-../manage.py makemigrations
-../manage.py migrate
-
-# POPULATE DATABASE
-# populate library with some test data
-../manage.py populate publisher all
-../manage.py populate journal thomson_local
-../manage.py populate journal pubmed_local
-../manage.py populate journal arxiv_local
-# populate consumers
-../manage.py populate consumer pubmed --name pubmed_all --local
-../manage.py populate consumer arxiv --name arxiv_all
-../manage.py populate consumer elsevier --name elsevier_all
-
 # init database with papers, nlp models and altmetric data
-../manage.py shell < routines/init.py
+../manage.py shell < routines/update.py --init
 
 # RUN TEST
 # py.test

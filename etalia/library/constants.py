@@ -172,3 +172,29 @@ LANGUAGES_DETECT = (
     ('CY', 'WEL'),
     (''  , 'UND'),
 )
+
+
+PAPER_TIME_LAPSE_CHOICES = (
+    (7, 'Week'),
+    (30, 'Month'),
+    (60, 'Two Months'),
+    (180, 'Six Months'),
+    (365, 'Year'),
+)
+
+
+# WATCH
+PAPER_PINNED = 1
+PAPER_BANNED = 2
+PAPER_WATCH = (
+    (PAPER_PINNED, 'Pinned'),
+    (PAPER_BANNED, 'Banned'),
+)
+
+# ADD
+PAPER_ADDED = 1
+PAPER_TRASHED = 2
+PAPER_STORE = (
+    (PAPER_ADDED, 'Added'),
+    (PAPER_TRASHED, 'Trashed'),
+)

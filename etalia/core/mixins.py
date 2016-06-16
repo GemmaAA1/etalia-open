@@ -2,10 +2,11 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
+
 from django.http import JsonResponse
-from etalia.users.mixins import ProfileModalFormsMixin
-from etalia.feeds.mixins import CreateFeedModalMixin
-from etalia.feeds.models import StreamMatches, TrendMatches
+from django.forms.models import model_to_dict
+
+# from etalia.feeds.models import StreamPapers, TrendPapers
 
 
 class AjaxableResponseMixin(object):
@@ -32,13 +33,8 @@ class AjaxableResponseMixin(object):
         else:
             return response
 
-    def get_ajax_data(self, *kwargs):
+    def get_ajax_data(self, *args, **kwargs):
         raise NotImplementedError
-
-
-class ModalMixin(ProfileModalFormsMixin, CreateFeedModalMixin):
-    """Pull Mixin in one"""
-    pass
 
 
 class NavFlapMixin(object):
@@ -52,62 +48,51 @@ class NavFlapMixin(object):
     def get_context_counters_since_last_seen(self):
 
         return {
-            'stream_counter': StreamMatches.objects.filter(
-                stream__user=self.request.user,
-                stream__name='main',
-                new=True).count(),
-            'trend_counter': TrendMatches.objects.filter(
-                trend__user=self.request.user,
-                trend__name='main',
-                new=True).count(),
+            'stream_counter': 0,
+            'trend_counter': 0,
             'Threads_counter': 0
         }
 
 
-class XMLMixin(object):
-    """Mixin to add to context json data corresponding to controls.
-
-    Requires Class BasePaperListView.
+class ModelDiffMixin(object):
+    """
+    A model mixin that tracks model fields' values and provide some useful api
+    to know what fields have been changed.
     """
 
-    def get_context_data(self, **kwargs):
-        context = super(XMLMixin, self).get_context_data(**kwargs)
-        context.update(self.get_context_filter_json(context))
-        return context
+    def __init__(self, *args, **kwargs):
+        super(ModelDiffMixin, self).__init__(*args, **kwargs)
+        self.__initial = self._dict
 
-    def get_context_filter_json(self, context):
-        # build JSON object
-        filter_ = {
-            'filters': [],
-            'pin': self.like_flag,
-            'time_span': self.time_span,
-            'cluster': None,
-            'search_query': self.search_query,
-            'number_of_papers': context['number_of_papers'],
-        }
+    @property
+    def diff(self):
+        d1 = self.__initial
+        d2 = self._dict
+        diffs = [(k, (v, d2[k])) for k, v in d1.items() if v != d2[k]]
+        return dict(diffs)
 
-        # add to journal filter context if journal is checked
-        entries = []
-        for j in context['journals']:
-            is_checked = j[0] in self.journals_filter
-            entries.append({
-                'pk': j[0],
-                'name': j[1],
-                'count': j[2],
-                'is_checked': is_checked
-            })
-        filter_['filters'].append({'id': 'journal', 'entries': entries})
+    @property
+    def has_changed(self):
+        return bool(self.diff)
 
-        # add to author filter context if author is checked
-        entries = []
-        for a in context['authors']:
-            is_checked = a[0] in self.authors_filter
-            entries.append({
-                'pk': a[0],
-                'name': a[1],
-                'count': None,
-                'is_checked': is_checked
-            })
-        filter_['filters'].append({'id': 'author', 'entries': entries})
+    @property
+    def changed_fields(self):
+        return self.diff.keys()
 
-        return {'filter': json.dumps(filter_)}
+    def get_field_diff(self, field_name):
+        """
+        Returns a diff for field if it's changed and None otherwise.
+        """
+        return self.diff.get(field_name, None)
+
+    def save(self, *args, **kwargs):
+        """
+        Saves model and set initial state.
+        """
+        super(ModelDiffMixin, self).save(*args, **kwargs)
+        self.__initial = self._dict
+
+    @property
+    def _dict(self):
+        return model_to_dict(self, fields=[field.name for field in
+                             self._meta.fields])

@@ -29,15 +29,7 @@ fi
 ../manage.py migrate
 
 # POPULATE DATABASE
-# populate library
-../manage.py populate publisher all
-../manage.py populate journal thomson
-../manage.py populate journal pubmed
-../manage.py populate journal arxiv
-# populate consumers
-../manage.py populate consumer pubmed --name pubmed_all
-../manage.py populate consumer arxiv --name arxiv_all
-../manage.py populate consumer elsevier --name elsevier_all
+../manage.py shell < routines/update.py --init-production
 
 # RUN TEST
 #py.test

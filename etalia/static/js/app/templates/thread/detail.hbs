@@ -1,0 +1,172 @@
+<div id="detail-actions" class="actions">
+    <div class="card">
+        <div class="actions-group">
+            {{#if pin_button}} {{! Only in "My stream" and "My threads : Threads / Pins" }}
+            <a href="javascript: void(0)"
+               class="detail-pin{{thread_pin_class}} loading-button"
+               title="Pin/Unpin">
+                <span class="eai eai-pin"></span>
+            </a>
+            {{/if}}
+            {{#if ban_button}} {{! Only in "My stream" }}
+            <a href="javascript: void(0)"
+               class="detail-ban{{thread_ban_class}}"
+               title="Remove from my stream">
+                <span class="eai eai-remove"></span>
+            </a>
+            {{/if}}
+            {{#if join_button}} {{! Only in "My threads : Pins / Left" }}
+            <a href="javascript: void(0)"
+               class="detail-join loading-button"
+               title="Join this thread">
+                <span class="eai eai-join"></span>
+            </a>
+            {{/if}}
+            {{#if leave_button}} {{! Only in "My threads : Threads" and if joined }}
+            <a href="javascript: void(0)"
+               class="detail-leave loading-button"
+               title="Leave this thread">
+                <span class="eai eai-leave"></span>
+            </a>
+            {{/if}}
+        </div>
+        <div class="actions-group">
+            <a href="#thread-neighbors"
+               class="detail-neighbors" title="Related threads">
+                <span class="eai eai-suggestions"></span>
+            </a>
+        </div>
+        <div class="actions-group">
+            <a href="javascript: void(0)"
+               class="detail-mail" title="Email">
+                <span class="eai eai-mail"></span>
+            </a>
+            <a href="javascript: void(0)" class="detail-twitter" title="Share on twitter">
+                <span class="eai eai-twitter"></span>
+            </a>
+            <a href="javascript: void(0)" class="detail-google-plus" title="Share on Google+">
+                <span class="eai eai-google-plus"></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="card thread">
+
+        <div data-user-placeholder></div>
+
+        <p class="title">
+            <a href="javascript: void(0)">
+                {{thread_not_published_icon}}
+                {{thread_privacy_icon}}
+                {{title}}
+            </a>
+        </p>
+        <div class="infos">
+            <p>
+                <strong>{{full_name user}}</strong>
+                - <em>{{formatDate created}}</em>
+                {{#if is_owner}}
+                - <a href="javascript: void(0)" class="thread-edit">edit</a>
+                {{/if}}
+                {{#ifCond is_owner 'andNot' published_at}}
+                - <a href="javascript: void(0)" class="thread-delete">delete</a>
+                {{/ifCond}}
+            </p>
+            <p class="icons">
+                <span class="type">
+                    {{thread_type_icon}}
+                </span>
+                <span class="comment">
+                    <span class="count">{{posts_count}}</span>
+                    <span class="eai eai-comment"></span>
+                </span>
+                <span class="member">
+                    <span class="count">{{members_count}}</span>
+                    <span class="eai eai-user"></span>
+                </span>
+            </p>
+        </div>
+        <div class="materials">
+            {{#if paper}}
+            <p>
+                <span class="eai eai-pdf"></span>
+                On <a class="thread-related-paper" href="javascript: void(0)">{{paper_title_authors paper}}</a>
+            </p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="thread thread-box">
+        <div class="thread-content element-content">
+            {{#if content}}
+                {{{content}}}
+            {{else}}
+                {{#if is_owner}}
+                <p style="padding:50px 0;text-align:center">
+                    <button type="button" class="btn btn-primary btn-lg thread-content-edit">
+                        Start writing !
+                    </button>
+                </p>
+                {{/if}}
+            {{/if}}
+        </div>
+
+        {{#if content}}
+        <p class="thread-info element-info">
+            <strong>{{full_name user}}</strong> - <em>{{formatDate created}}</em>
+            {{#if is_owner}}
+            - <a href="javascript: void(0)" class="thread-content-edit">edit</a>
+            {{/if}}
+        </p>
+        {{/if}}
+
+        <div data-thread-edit-form></div>
+
+        {{#ifCond content 'andNot' published_at}}
+        <div class="alert alert-info thread-info">
+            <button type="button" class="btn btn-primary thread-publish" style="float:right; margin: 0 0 0 15px;">
+                Publish
+            </button>
+            <p style="line-height: 34px">
+                When you will be ready, don't forget to publish your thread !
+            </p>
+        </div>
+        {{/ifCond}}
+    </div>
+
+    {{#if published_at}}
+
+    <div data-members-placeholder></div>
+
+    {{#if can_join}}
+    <p style="padding:20px 0;text-align:center">
+        <button type="button" class="btn btn-primary btn-lg thread-join">
+            Join this thread
+        </button>
+    </p>
+    {{/if}}
+
+    <div data-posts-placeholder></div>
+
+    <div data-neighbors-placeholder></div>
+
+    {{!-- <div class="neighbors-thumbs">
+        <h2>Similar threads</h2>
+        <ul class="neighbors-timespan-selector">
+            <li>
+                <a href="javascript: void(0)" data-value="365">1 year</a>
+            </li>
+            <li class="active">
+                <a href="javascript: void(0)" data-value="30">1 month</a>
+            </li>
+            <li>
+                <a href="javascript: void(0)" data-value="7">Week</a>
+            </li>
+        </ul>
+        <div data-neighbors-placeholder></div>
+    </div> --}}
+    {{/if}}{{! endif published_at }}
+
+</div>

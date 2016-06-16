@@ -3,7 +3,9 @@ from __future__ import unicode_literals, absolute_import
 
 from django.db import models
 
-# Create your models here.
+from django.contrib.postgres.fields import ArrayField
+from django.conf import settings
+
 
 # Abstract models
 class TimeStampedModel(models.Model):

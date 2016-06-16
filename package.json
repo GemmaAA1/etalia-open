@@ -15,6 +15,7 @@
     "hogan.js": "^3.0.2",
     "merge-stream": "^1.0.0",
     "requirejs": "^2.1.22",
-    "run-sequence": "^1.1.5"
+    "run-sequence": "^1.1.5",
+    "upndown": "^2.0.2"
   }
 }

@@ -51,7 +51,7 @@ def get_celery_worker_status():
     return d
 
 
-def pad_vector(vector):
+def pad_or_trim_vector(vector):
     if isinstance(vector, np.ndarray):
         if vector.size == 1:
             vector = [np.squeeze(vector).tolist()]
@@ -61,7 +61,7 @@ def pad_vector(vector):
     if len(vector) <= settings.NLP_MAX_VECTOR_SIZE:
         vector += [0.0] * (settings.NLP_MAX_VECTOR_SIZE - len(vector))
     else:
-        raise ValidationError('vector is larger than NLP_MAX_VECTOR_SIZE')
+        return vector[:settings.NLP_MAX_VECTOR_SIZE]
 
     return vector
 

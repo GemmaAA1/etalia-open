@@ -1,0 +1,22 @@
+{% extends 'list_base.html' %}
+
+{% block content %}
+{% spaceless %}
+
+<div id="list" class="document">
+    <div class="wrapper">
+        <div data-tabs-placeholder></div>
+        <div class="inner" id="feed-container">
+            <div data-list-placeholder></div>
+        </div>
+    </div>
+</div>
+
+<div data-detail-placeholder></div>
+
+{% endspaceless %}
+{% endblock content %}
+
+{% block javascript %}
+<script>requirejs(['app/feed/list']);</script>
+{% endblock javascript %}
