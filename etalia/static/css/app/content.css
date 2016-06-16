@@ -1,0 +1,36 @@
+body {
+    padding: 6px 12px;
+    font-family: 'Lato', Helvetica, Arial, sans-serif;
+    color: #313233;
+}
+
+*:focus {
+    outline: none !important;
+}
+
+a {
+    color: #00695c;
+}
+
+a:hover,
+a:visited,
+a:active {
+    color: #004f46;
+}
+
+a:focus {
+    text-decoration: none;
+}
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+    color: #1e232f;
+}
+
+.element-content p {
+    margin-bottom: 8px;
+}
+
+.element-content strong,
+.element-content em {
+    color: #7a7d80;
+}

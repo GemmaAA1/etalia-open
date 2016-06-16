@@ -1,0 +1,61 @@
+{{!--
+{% for message in messages %}
+{% if 'stream' in message.extra_tags %}
+<div class="alert alert-info">
+    {# close-href is used because href is used by bootstrap to closing other divs #}
+    <a class="close" data-dismiss="alert"{% if message.pk %} close-href="{% url 'message_extends:message_mark_read' message.pk %}"{% endif %}>×</a>
+    {{ message|safe }}
+</div>
+{% endif %}
+{% endfor %}
+--}}
+
+<div class="list-header">
+
+    <div class="list-controls left">
+        {{! only in threads tab }}
+        {{#if newButton}}
+        <button id="thread-create-modal" type="button" class="btn btn-primary" title="Start a new thread">
+            New thread
+        </button>
+        {{/if}}
+
+        {{! only in threads tab }}
+        {{#if invitesButton}}
+        <button id="thread-invites-modal" type="button" class="btn btn-default" title="2 pending invites"
+                data-count="0">
+            <span class="eai eai-invites"></span>
+            <span class="count">2</span>
+        </button>
+        {{/if}}
+    </div>
+
+    <div class="list-controls right">
+        <button id="thread-toggle-not-published" type="button" class="btn btn-default"
+                title="Filter : not published threads">
+            <span class="eai eai-exclamation"></span>
+        </button>
+
+        {{! only in threads tab }}
+        <div id="thread-toggle-type" class="btn-group" role="group">
+            <button id="thread-toggle-type-paper" type="button" class="btn btn-default" title="Filter : paper threads">
+                <span class="eai eai-paper"></span>
+            </button>
+            <button id="thread-toggle-type-question" type="button" class="btn btn-default"
+                    title="Filter : question threads">
+                <span class="eai eai-question"></span>
+            </button>
+        </div>
+
+        <button id="thread-toggle-private" type="button" class="btn btn-default" title="Filter : private threads">
+            <span class="eai eai-locked"></span>
+        </button>
+    </div>
+
+</div>
+
+<div data-list-placeholder></div>
+
+<a href="javascript: void(0)" id="thread-next-page">
+    {{loadingSprite}}
+</a>

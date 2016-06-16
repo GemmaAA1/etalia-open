@@ -114,7 +114,7 @@ def init_messages(social, user, *args, **kwargs):
 @partial
 def init_user(social, user, *args, **kwargs):
     if user.lib.state == 'NON':  # user non-initialized yet
-        async_init_user(user.pk, social.provider)
+        async_init_user(user.pk)
     return {}
 
 

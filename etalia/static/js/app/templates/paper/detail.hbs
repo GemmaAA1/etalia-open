@@ -1,0 +1,105 @@
+<div id="detail-actions" class="actions">
+    <div class="card">
+        <div class="actions-group">
+            {{#if pin_button}}
+            <a href="javascript: void(0)"
+               class="detail-pin{{thread_pin_class}} loading-button"
+               title="Pin/Unpin">
+                <span class="eai eai-pin"></span>
+            </a>
+            {{/if}}
+            {{#if ban_button}}
+            <a href="javascript: void(0)"
+               class="detail-ban{{thread_ban_class}} loading-button"
+               title="Remove from my stream">
+                <span class="eai eai-remove"></span>
+            </a>
+            {{/if}}
+            {{#if add_button}}
+            <a href="javascript: void(0)"
+               class="detail-add{{thread_add_class}} loading-button"
+               title="Add to library">
+                <span class="eai eai-library-add"></span>
+            </a>
+            {{/if}}
+            {{#if trash_button}}
+            <a href="javascript: void(0)"
+               class="detail-trash{{thread_trash_class}} loading-button"
+               title="Remove from library">
+                <span class="eai eai-library-trash"></span>
+            </a>
+            {{/if}}
+        </div>
+        <div class="actions-group">
+            <a href="#paper-related-threads"
+               class="detail-related-threads" title="Related threads">
+                <span class="eai eai-comments"></span>
+            </a>
+            <a href="#paper-neighbors"
+               class="detail-neighbors" title="Related papers">
+                <span class="eai eai-suggestions"></span>
+            </a>
+            <a href="{{url}}"
+               class="detail-external" title="External link / PDF" target="_blank">
+                <span class="eai eai-pdf"></span>
+            </a>
+        </div>
+        <div class="actions-group">
+            <a href="javascript: void(0)"
+               class="detail-mail" title="Email">
+                <span class="eai eai-mail"></span>
+            </a>
+            <a href="javascript: void(0)"
+               class="detail-twitter" title="Share on twitter">
+                <span class="eai eai-twitter"></span>
+            </a>
+            <a href="javascript: void(0)"
+               class="detail-google-plus" title="Share on Google+">
+                <span class="eai eai-google-plus"></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="card">
+        {{! TODO altmetric ids }}
+        <p class="title">
+            <a href="{{url}}" target="_blank">
+                {{paper_new_icon}}
+                {{title}}
+            </a>
+        </p>
+        <p class="authors">
+            {{paper_authors}}
+        </p>
+        <div class="infos">
+            <p class="truncate">
+                {{paper_journal}}
+                <em>{{formatDate date}}</em>
+            </p>
+            <p class="icons">
+                {{! cluster icon }}
+
+                {{paper_altmetric_icon}}
+
+                <span class="comment" title="{{linked_threads_count}} thread(s)">
+                    <span class="count">{{linked_threads_count}}</span>
+                    <span class="eai eai-comment"></span>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    {{#if abstract }}
+    <h2>Abstract</h2>
+    <div>
+        {{{abstract}}}
+    </div>
+    {{/if}}
+
+    <div data-related-threads-placeholder></div>
+
+    <div data-neighbors-placeholder></div>
+
+</div>

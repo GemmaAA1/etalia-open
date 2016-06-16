@@ -1,12 +1,24 @@
+/*!
+ * jQuery UI Mouse 1.11.4
+ * http://jqueryui.com
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/mouse/
+ */
 (function( factory ) {
 	if ( typeof define === "function" && define.amd ) {
 
+		// AMD. Register as an anonymous module.
 		define([
 			"jquery",
 			"./widget"
 		], factory );
 	} else {
 
+		// Browser globals
 		factory( jQuery );
 	}
 }(function( $ ) {
@@ -41,6 +53,8 @@ return $.widget("ui.mouse", {
 		this.started = false;
 	},
 
+	// TODO: make sure destroying one instance of mouse doesn't mess with
+	// other instances of mouse
 	_mouseDestroy: function() {
 		this.element.unbind("." + this.widgetName);
 		if ( this._mouseMoveDelegate ) {
@@ -51,18 +65,22 @@ return $.widget("ui.mouse", {
 	},
 
 	_mouseDown: function(event) {
+		// don't let more than one widget handle mouseStart
 		if ( mouseHandled ) {
 			return;
 		}
 
 		this._mouseMoved = false;
 
+		// we may have missed mouseup (out of window)
 		(this._mouseStarted && this._mouseUp(event));
 
 		this._mouseDownEvent = event;
 
 		var that = this,
 			btnIsLeft = (event.which === 1),
+			// event.target.nodeName works around a bug in IE 8 with
+			// disabled inputs (#7620)
 			elIsCancel = (typeof this.options.cancel === "string" && event.target.nodeName ? $(event.target).closest(this.options.cancel).length : false);
 		if (!btnIsLeft || elIsCancel || !this._mouseCapture(event)) {
 			return true;
@@ -83,10 +101,12 @@ return $.widget("ui.mouse", {
 			}
 		}
 
+		// Click event may never have fired (Gecko & Opera)
 		if (true === $.data(event.target, this.widgetName + ".preventClickEvent")) {
 			$.removeData(event.target, this.widgetName + ".preventClickEvent");
 		}
 
+		// these delegates are required to keep context
 		this._mouseMoveDelegate = function(event) {
 			return that._mouseMove(event);
 		};
@@ -105,10 +125,16 @@ return $.widget("ui.mouse", {
 	},
 
 	_mouseMove: function(event) {
+		// Only check for mouseups outside the document if you've moved inside the document
+		// at least once. This prevents the firing of mouseup in the case of IE<9, which will
+		// fire a mousemove event if content is placed under the cursor. See #7778
+		// Support: IE <9
 		if ( this._mouseMoved ) {
+			// IE mouseup check - mouseup happened when mouse was out of window
 			if ($.ui.ie && ( !document.documentMode || document.documentMode < 9 ) && !event.button) {
 				return this._mouseUp(event);
 
+			// Iframe mouseup check - mouseup occurred in another document
 			} else if ( !event.which ) {
 				return this._mouseUp( event );
 			}
@@ -159,14 +185,15 @@ return $.widget("ui.mouse", {
 		);
 	},
 
-	_mouseDelayMet: function() {
+	_mouseDelayMet: function(/* event */) {
 		return this.mouseDelayMet;
 	},
 
-	_mouseStart: function() {},
-	_mouseDrag: function() {},
-	_mouseStop: function() {},
-	_mouseCapture: function() { return true; }
+	// These are placeholder methods, to be overriden by extending plugin
+	_mouseStart: function(/* event */) {},
+	_mouseDrag: function(/* event */) {},
+	_mouseStop: function(/* event */) {},
+	_mouseCapture: function(/* event */) { return true; }
 });
 
 }));

@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'etalia';
-    src:    url('../fonts/etalia.eot?wbvy4m');
-    src:    url('../fonts/etalia.eot?wbvy4m#iefix') format('embedded-opentype'),
-        url('../fonts/etalia.ttf?wbvy4m') format('truetype'),
-        url('../fonts/etalia.woff?wbvy4m') format('woff'),
-        url('../fonts/etalia.svg?wbvy4m#etalia') format('svg');
+    src:    url('../fonts/etalia.eot?m4cgp1');
+    src:    url('../fonts/etalia.eot?m4cgp1#iefix') format('embedded-opentype'),
+        url('../fonts/etalia.ttf?m4cgp1') format('truetype'),
+        url('../fonts/etalia.woff?m4cgp1') format('woff'),
+        url('../fonts/etalia.svg?m4cgp1#etalia') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -24,6 +24,36 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+.eai-exclamation:before {
+    content: "\e91d";
+}
+.eai-invites:before {
+    content: "\e91e";
+}
+.eai-join:before {
+    content: "\e91f";
+}
+.eai-leave:before {
+    content: "\e920";
+}
+.eai-plus:before {
+    content: "\e91b";
+}
+.eai-plus-thin:before {
+    content: "\e91c";
+}
+.eai-locked:before {
+    content: "\e917";
+}
+.eai-paper:before {
+    content: "\e918";
+}
+.eai-question:before {
+    content: "\e919";
+}
+.eai-user:before {
+    content: "\e91a";
+}
 .eai-library-trash:before {
     content: "\e916";
 }

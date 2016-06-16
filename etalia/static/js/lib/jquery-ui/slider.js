@@ -1,6 +1,17 @@
+/*!
+ * jQuery UI Slider 1.11.4
+ * http://jqueryui.com
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/slider/
+ */
 (function( factory ) {
 	if ( typeof define === "function" && define.amd ) {
 
+		// AMD. Register as an anonymous module.
 		define([
 			"jquery",
 			"./core",
@@ -9,6 +20,7 @@
 		], factory );
 	} else {
 
+		// Browser globals
 		factory( jQuery );
 	}
 }(function( $ ) {
@@ -28,12 +40,15 @@ return $.widget( "ui.slider", $.ui.mouse, {
 		value: 0,
 		values: null,
 
+		// callbacks
 		change: null,
 		slide: null,
 		start: null,
 		stop: null
 	},
 
+	// number of pages in a slider
+	// (how many times can you page up/down to go through the whole range)
 	numPages: 5,
 
 	_create: function() {
@@ -112,9 +127,12 @@ return $.widget( "ui.slider", $.ui.mouse, {
 					.appendTo( this.element );
 
 				classes = "ui-slider-range" +
+				// note: this isn't the most fittingly semantic framework class for this element,
+				// but worked best visually with a variety of themes
 				" ui-widget-header ui-corner-all";
 			} else {
 				this.range.removeClass( "ui-slider-range-min ui-slider-range-max" )
+					// Handle range switching from true to min/max
 					.css({
 						"left": "",
 						"bottom": ""
@@ -306,6 +324,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 			if ( newVal !== this.values( index ) ) {
 				newValues = this.values();
 				newValues[ index ] = newVal;
+				// A slide can be canceled by returning false from the slide callback
 				allowed = this._trigger( "slide", event, {
 					handle: this.handles[ index ],
 					value: newVal,
@@ -318,6 +337,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 			}
 		} else {
 			if ( newVal !== this.value() ) {
+				// A slide can be canceled by returning false from the slide callback
 				allowed = this._trigger( "slide", event, {
 					handle: this.handles[ index ],
 					value: newVal
@@ -353,6 +373,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 				uiHash.values = this.values();
 			}
 
+			//store the last changed value index for reference when handles overlap
 			this._lastChangedValue = index;
 
 			this._trigger( "change", event, uiHash );
@@ -435,6 +456,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 					.addClass( "ui-slider-" + this.orientation );
 				this._refreshValue();
 
+				// Reset positioning from previous orientation
 				this.handles.css( value === "horizontal" ? "bottom" : "left", "" );
 				break;
 			case "value":
@@ -467,6 +489,8 @@ return $.widget( "ui.slider", $.ui.mouse, {
 		}
 	},
 
+	//internal value getter
+	// _value() returns value trimmed by min and max, aligned by step
 	_value: function() {
 		var val = this.options.value;
 		val = this._trimAlignValue( val );
@@ -474,6 +498,9 @@ return $.widget( "ui.slider", $.ui.mouse, {
 		return val;
 	},
 
+	//internal values getter
+	// _values() returns array of values trimmed by min and max, aligned by step
+	// _values( index ) returns single value trimmed by min and max, aligned by step
 	_values: function( index ) {
 		var val,
 			vals,
@@ -485,6 +512,8 @@ return $.widget( "ui.slider", $.ui.mouse, {
 
 			return val;
 		} else if ( this.options.values && this.options.values.length ) {
+			// .slice() creates a copy of the array
+			// this copy gets trimmed by min and max and then returned
 			vals = this.options.values.slice();
 			for ( i = 0; i < vals.length; i += 1) {
 				vals[ i ] = this._trimAlignValue( vals[ i ] );
@@ -496,6 +525,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 		}
 	},
 
+	// returns the step-aligned value that val is closest to, between (inclusive) min and max
 	_trimAlignValue: function( val ) {
 		if ( val <= this._valueMin() ) {
 			return this._valueMin();
@@ -511,6 +541,8 @@ return $.widget( "ui.slider", $.ui.mouse, {
 			alignValue += ( valModStep > 0 ) ? step : ( -step );
 		}
 
+		// Since JavaScript has problems with large floats, round
+		// the final value to 5 digits after the decimal point (see #4124)
 		return parseFloat( alignValue.toFixed(5) );
 	},
 

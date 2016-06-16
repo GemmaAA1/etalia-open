@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django.utils.timezone
 import model_utils.fields
+import django.utils.timezone
 
 
 class Migration(migrations.Migration):
@@ -16,13 +16,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Consumer',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('type', models.CharField(choices=[('PUB', 'PubMed'), ('ELS', 'Elsevier'), ('ARX', 'Arxiv'), ('IEE', 'IEEE')], max_length=3)),
-                ('name', models.CharField(max_length=200, unique=True)),
+                ('name', models.CharField(unique=True, max_length=200)),
                 ('ret_max', models.IntegerField(default=25)),
-                ('day0', models.IntegerField(default=365)),
+                ('day0', models.IntegerField(default=30)),
             ],
             options={
                 'abstract': False,
@@ -31,10 +31,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerJournal',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('last_date_cons', models.DateTimeField(default=None, blank=True, null=True)),
+                ('last_date_cons', models.DateTimeField(blank=True, default=None, null=True)),
                 ('last_number_papers_recorded', models.IntegerField(default=0)),
                 ('last_number_papers_fetched', models.IntegerField(default=0)),
                 ('base_coundown_period', models.IntegerField(default=1)),
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerJournalStat',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('datetime', models.DateTimeField(auto_now_add=True)),
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                 ('number_papers_fetched', models.IntegerField(default=0)),
                 ('number_papers_recorded', models.IntegerField(default=0)),
                 ('message', models.CharField(default='', max_length=512)),
-                ('consumer_journal', models.ForeignKey(related_name='stats', to='consumers.ConsumerJournal')),
+                ('consumer_journal', models.ForeignKey(to='consumers.ConsumerJournal', related_name='stats')),
             ],
             options={
                 'ordering': ['datetime'],
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerArxiv',
             fields=[
-                ('consumer_ptr', models.OneToOneField(primary_key=True, to='consumers.Consumer', serialize=False, parent_link=True, auto_created=True)),
+                ('consumer_ptr', models.OneToOneField(to='consumers.Consumer', primary_key=True, parent_link=True, serialize=False, auto_created=True)),
             ],
             options={
                 'abstract': False,
@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerElsevier',
             fields=[
-                ('consumer_ptr', models.OneToOneField(primary_key=True, to='consumers.Consumer', serialize=False, parent_link=True, auto_created=True)),
+                ('consumer_ptr', models.OneToOneField(to='consumers.Consumer', primary_key=True, parent_link=True, serialize=False, auto_created=True)),
             ],
             options={
                 'abstract': False,
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ConsumerPubmed',
             fields=[
-                ('consumer_ptr', models.OneToOneField(primary_key=True, to='consumers.Consumer', serialize=False, parent_link=True, auto_created=True)),
+                ('consumer_ptr', models.OneToOneField(to='consumers.Consumer', primary_key=True, parent_link=True, serialize=False, auto_created=True)),
             ],
             options={
                 'abstract': False,
@@ -106,7 +106,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='consumer',
             name='journals',
-            field=models.ManyToManyField(through='consumers.ConsumerJournal', to='library.Journal'),
+            field=models.ManyToManyField(to='library.Journal', through='consumers.ConsumerJournal'),
         ),
         migrations.AlterUniqueTogether(
             name='consumerjournal',

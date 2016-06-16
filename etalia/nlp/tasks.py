@@ -3,32 +3,47 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-from .models import Model, MostSimilar
-from .tasks_class import EmbedPaperTask, MostSimilarTask
+from .models import Model, PaperEngine, ThreadEngine
+from .models import UserFingerprint
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
 
-# PLEASE NOTE:
-# tasks related to embeding of paper and mostsimilar model are registered
-# in celery.py because they are host dependant
+# NOTE:
+# tasks related to Model or Engines are registered in celery.py because they
+# are host dependant
+
 
 @app.task()
-def mostsimilar_update_all():
-    models = Model.objects.filter(is_active=True)
-    for model in models:
-        ms = MostSimilar.objects.load(model=model,
-                                      is_active=True)
-        ms.update()
+def paperengine_update_all():
+    pe_ids = PaperEngine.objects.filter(is_active=True).values_list('id', flat=True)
+    for peid in pe_ids:
+        pe = PaperEngine.objects.load(id=peid, is_active=True)
+        pe.update()
+
 
 @app.task()
-def mostsimilar_full_update_all():
-    models = Model.objects.filter(is_active=True)
-    for model in models:
-        ms = MostSimilar.objects.load(model=model,
-                                      is_active=True)
-        ms.full_update()
-        ms.activate()
+def paperengine_full_update_all():
+    pe_ids = PaperEngine.objects.filter(is_active=True).values_list('id', flat=True)
+    for peid in pe_ids:
+        pe = PaperEngine.objects.load(id=peid, is_active=True)
+        pe.full_update()
+
+
+@app.task()
+def threadengine_update_all():
+    te_ids = ThreadEngine.objects.filter(is_active=True).values_list('id', flat=True)
+    for teid in te_ids:
+        te = ThreadEngine.objects.load(id=teid, is_active=True)
+        te.update()
+
+
+@app.task()
+def userfingerprints_update_all():
+    ufps = UserFingerprint.objects.all()
+    for ufp in ufps:
+        ufp.update()
+
 
 @app.task()
 def add_nlp(x, y):
@@ -37,19 +52,3 @@ def add_nlp(x, y):
     return x + y
 
 
-def embed_papers(pks, model_name, batch_size=1000):
-    try:
-        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
-            model_name=model_name)]
-    except KeyError:
-        logger.error('Embeding task for {model_name} not defined'.format(
-            model_name=model_name))
-        raise KeyError
-    pks = list(pks)
-    nb_papers = len(pks)
-    nb_batches = nb_papers // batch_size
-    pks_batched = [pks[i*batch_size:(1+i)*batch_size] for i in range(nb_batches)]
-    pks_batched.append(pks[nb_batches * batch_size:])
-
-    for batch in pks_batched:
-        model_task.delay('infer_papers', batch)

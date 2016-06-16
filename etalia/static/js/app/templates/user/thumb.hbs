@@ -1,0 +1,16 @@
+{{!--<img src="{{#if photo_url}}{{photo_url}}{{else}}/static/img/avatar.jpg{{/if}}" alt="{{first_name}} {{last_name}}" width="200" height="200">--}}
+{{user_avatar this}}
+<div class="user-card">
+    <p class="user-name">{{first_name}} {{last_name}}</p>
+    <p class="user-affiliation">SF Institute of technologies</p>
+    <p class="user-actions">
+        <a href="javascript: void(0)" class="user-profile">View profile</a>
+        {{#unless current}}
+            {{#if followed}}
+            <a href="javascript: void(0)" class="user-unfollow">- Followed</a>
+            {{else}}
+            <a href="javascript: void(0)" class="user-follow">+ Follow</a>
+            {{/if}}
+        {{/unless}}
+    </p>
+</div>

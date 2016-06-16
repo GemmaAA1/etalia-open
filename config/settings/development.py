@@ -3,6 +3,7 @@
 from .common import *
 
 CONFIG_FILE = __file__
+# CONFIG_FILE = 'production'
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -13,7 +14,7 @@ TEMPLATE_DEBUG = DEBUG
 # ------------------------------------------------------------------------------
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 # INSTALLED_APPS += ('debug_toolbar', )
-# MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware', ) + \
+# MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolabarMiddleware', ) + \
 #                      MIDDLEWARE_CLASSES
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -48,10 +49,21 @@ STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
 
+if 'production' in CONFIG_FILE:
+    ROOT_DIR_m1 = ROOT_DIR.path() - 1
+    STATIC_ROOT = str(ROOT_DIR_m1.path('static'))
+    STATIC_URL = '/static/'
+
+
+    STATICFILES_DIRS = (
+        str(APPS_DIR.path('static/compiled')),
+    )
+
 # AWS S3 Buckets
 NLP_DATA_BUCKET_NAME = 'etalia-development-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'etalia-development-nlp-models'
-NLP_MS_BUCKET_NAME = 'etalia-development-nlp-ms'
+NLP_PE_BUCKET_NAME = 'etalia-development-nlp-pe'
+NLP_TE_BUCKET_NAME = 'etalia-development-nlp-te'
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
 
@@ -84,7 +96,7 @@ CACHES = {
 
 # NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
 # NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
-# NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
+# NLP_MS_BUCKET_NAME = 'etalia-production-nlp-pe'
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',

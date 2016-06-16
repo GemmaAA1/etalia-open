@@ -35,7 +35,8 @@ DATABASES = {
 # S3 NLP buckets
 NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
 NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
-NLP_MS_BUCKET_NAME = 'etalia-production-nlp-ms'
+NLP_PE_BUCKET_NAME = 'etalia-production-nlp-pe'
+NLP_TE_BUCKET_NAME = 'etalia-production-nlp-pe'
 
 # Static asset configuration
 ROOT_DIR_m1 = ROOT_DIR.path() - 1

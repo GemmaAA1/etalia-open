@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from celery.canvas import chain
 
 from config.celery import celery_app as app
-from etalia.feeds.tasks import update_stream, update_trend
+from etalia.feeds.tasks import update_stream, update_trend, update_threadfeed
 
 logger = logging.getLogger(__name__)
 
@@ -18,42 +18,15 @@ User = get_user_model()
 def userlib_update_all():
     us = User.objects.all()
     for user in us:
-        provider_names = user.social_auth.all().values_list('provider', flat=True)
-        for provider_name in provider_names:
-            update_lib.delay(user.id, provider_name)
+        update_lib.delay(user.id)
 
 
 @app.task()
-def update_lib(user_pk, provider_name):
+def update_lib(user_id):
     """Async task for updating user library"""
-    # get user
-    user = User.objects.get(pk=user_pk)
-
-    # get social
-    social = user.social_auth.get(provider=provider_name)
-
-    # get backend
-    backend = social.get_backend_instance()
-
-    # build session
-    session = backend.get_session(social, user)
-
-    # update lib
-    backend.update_lib(user, session)
-
-    return user_pk
-
-
-@app.task()
-def update_settings(user_pk):
-    """Async task for updating user library"""
-    # get user
-    user = User.objects.get(pk=user_pk)
-
-    # init settings
-    user.settings.init()
-
-    return user_pk
+    user = User.objects.get(pk=user_id)
+    user.lib.update()
+    return user_id
 
 
 @app.task()
@@ -66,18 +39,18 @@ def init_step(user_pk, step):
     return user_pk
 
 
-def init_user(user_pk, provider_name):
+def init_user(user_pk):
     """Task init user / Chain user library update, and feed initialization
     """
     task = chain(
         init_step.s(user_pk, 'LIB'),
-        update_lib.s(provider_name),
-        init_step.s('SET'),
-        update_settings.s(),
+        update_lib.s(),
         init_step.s('STR'),
         update_stream.s(),
         init_step.s('TRE'),
         update_trend.s(),
+        init_step.s('THR'),
+        update_threadfeed.s(),
         init_step.s('IDL'),
     )
 

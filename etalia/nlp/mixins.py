@@ -17,7 +17,7 @@ class S3Mixin(object):
     AWS_SECRET_ACCESS_KEY = ''
     PATH = ''
 
-    def callback(self, complete, tot):
+    def s3callback(self, complete, tot):
         if not hasattr(self, 'pbar'):
             setattr(self, 'pbar', None)
 
@@ -30,7 +30,7 @@ class S3Mixin(object):
             self.pbar.finish()
             self.pbar = None
 
-    def push_to_s3(self, ext=''):
+    def push_to_s3(self):
         """Upload object to Amazon s3 bucket"""
         try:
             bucket_name = self.BUCKET_NAME
@@ -44,9 +44,8 @@ class S3Mixin(object):
             tar = tarfile.open(tar_name, 'w:gz')
             logging.info('{} Compressing...'.format(self.name))
             for filename in glob.glob(os.path.join(self.PATH,
-                                                   '{stem}.{ext}*'.format(
-                                                       stem=self.name,
-                                                       ext=ext))):
+                                                   '{stem}.*'.format(
+                                                       stem=self.name))):
                 tar.add(filename, arcname=os.path.split(filename)[1])
             tar.close()
             logging.info('Uploading {} on s3...'.format(self.name))
@@ -54,7 +53,7 @@ class S3Mixin(object):
             # create a key to keep track of our file in the storage
             k = Key(bucket)
             k.key = key
-            k.set_contents_from_filename(tar_name, cb=self.callback, num_cb=100)
+            k.set_contents_from_filename(tar_name, cb=self.s3callback, num_cb=100)
             # remove tar file
             os.remove(tar_name)
             logging.info('Upload {} DONE'.format(self.name))
@@ -75,7 +74,7 @@ class S3Mixin(object):
             logging.info('Downloading {0} from s3 to {1}...'.format(self.name,
                                                               self.PATH))
             item.get_contents_to_filename(tar_path,
-                                          cb=self.callback,
+                                          cb=self.s3callback,
                                           num_cb=100)
             logging.info('{} Decompressing...'.format(self.name))
             tar = tarfile.open(tar_path, 'r:gz')

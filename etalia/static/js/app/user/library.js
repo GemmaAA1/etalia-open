@@ -6,7 +6,7 @@ define([
     'app/ui/controls',
     'app/ui/list',
     'app/ui/detail',
-    'endless',
+    'app/util/endless',
     'bootstrap'
 ], function($, api, utils, layout, controls, List, Detail) {
 

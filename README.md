@@ -50,13 +50,21 @@ Once you get the requirements installed, follow these steps to get started:
 
 and visit 127.0.0.1:8000
 
-### Updating Etalia data:
+### Updating Etalia:
 
-This script updates the database and related object with new data.
+An update script is provided to update database and related objects.
+See help menu for usage:
+`
+./scripts/routines/update.py -h
+`
 
-`
-./scripts/routines/update.py
-`
+### Frontend dev ###
+
+During development, use ```gulp``` to copy librairies from *nodes_modules/* and *bower_components/* to *static/js/lib/*.
+
+For production, use ```gulp prod``` to build compiled assets. 
+
+New librairies must be configured in *static/js/*
 
 ### Etalia team ###
 

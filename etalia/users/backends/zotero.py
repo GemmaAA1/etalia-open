@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from dateutil.parser import parse
 from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
 from pyzotero.zotero_errors import ResourceNotFound
@@ -84,15 +85,16 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                             ids=paper.print_ids,
                             user=user.email,
                             backend=self.name))
-                    new = self.associate_paper(paper, user, entry['user_info'],
-                                               item['key'])
+                    new = self.associate_paper(user,
+                                               paper,
+                                               item['key'],
+                                               entry['user_info'])
+
                     if new:
                         count += 1
                         not_new_stack_count = 0
                     else:
                         not_new_stack_count += 1
-                    if journal:
-                        self.associate_journal(journal, user)
                 else:
                     logger.info(
                         '- Item: {type_} from {user} / {backend}'.format(
@@ -133,7 +135,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                                                         e_issn=paper.journal.id_eissn)
         elif paper.journal.id_issn:
             template['ISSN'] = paper.journal.id_issn
-        elif paper.journa.id_eissn:
+        elif paper.journal.id_eissn:
             template['ISSN'] = paper.journal.id_eissn
         else:
             template['ISSN'] = ''
@@ -149,20 +151,22 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         # push
         resp = session.create_items([template])
         if not resp['failed']:
-            return None, resp['success']['0']
+            return None, \
+                   resp['success']['0'], \
+                   {'created': parse(str(resp['successful']['0']['data']['dateAdded'])),
+                    'last_modified': parse(str(resp['successful']['0']['data']['dateModified']))
+                    }
         else:
             logger.warning(resp['failed'])
-            return 1
+            return None, None, None
 
     @staticmethod
-    def trash_paper(session, ulp):
+    def trash_paper(session, paper_provider_id):
         """Trash item from zotero library"""
         try:  # retrieve item by id
-            item = session.item(ulp.paper_provider_id)
+            item = session.item(paper_provider_id)
             if session.delete_item(item):
                 return 0
-            else:
-                logger.error('Trashing ulp {pk} failed'.format(ulp,pk))
         except ResourceNotFound:
             return 1
 
