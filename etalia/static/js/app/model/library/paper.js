@@ -147,7 +147,10 @@ define([
     });
     App.Handlebars.registerHelper('paper_journal', function() {
         var journal = this.hasOwnProperty('journal') ? this.journal : this.get('journal');
-        return new App.Handlebars.SafeString(journal.get('title'));
+        if (journal) {
+            return new App.Handlebars.SafeString(journal.get('title'));
+        }
+        return new App.Handlebars.SafeString('');
     });
     App.Handlebars.registerHelper('paper_url', function(paper) {
         if (!paper) {

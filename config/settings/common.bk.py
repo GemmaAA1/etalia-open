@@ -52,7 +52,6 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
-    'disqus',
     'endless_pagination',
     'avatar',
     'messages_extends',
@@ -267,14 +266,6 @@ SOCIAL_AUTH_ZOTERO_AUTH_EXTRA_ARGUMENTS = {'write_access': '1'}
 # ------------------------------------------------------------------------------
 LAST_SEEN_DEFAULT_MODULE = 'default'
 LAST_SEEN_INTERVAL = 2 * 60 * 60
-
-
-# DISQUS
-# ------------------------------------------------------------------------------
-DISQUS_WEBSITE_SHORTNAME = env('DISQUS_WEBSITE_SHORTNAME')
-DISQUS_PUBLIC_KEY = env('DISQUS_PUBLIC_KEY')
-DISQUS_SECRET_KEY = env('DISQUS_SECRET_KEY')
-
 
 # AWS S3
 # ------------------------------------------------------------------------------

@@ -7,15 +7,18 @@ from django.db import models
 
 from django.contrib.auth.models import BaseUserManager
 from django.db import transaction
+from django.conf import settings
+from django.utils import timezone
 
 from etalia.core.models import TimeStampedModel
 from etalia.last_seen.models import LastSeen
-from .constants import FEED_STATUS_CHOICES, STREAM_METHODS_MAP, TREND_METHODS_MAP
-from .scoring import *
+from .constants import FEED_STATUS_CHOICES
 from etalia.nlp.models import PaperEngine
 from etalia.nlp.models import ThreadEngine
 from etalia.threads.models import Thread
+from etalia.library.models import Paper
 
+from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
 

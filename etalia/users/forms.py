@@ -231,32 +231,3 @@ class UserEmailDigestSettingsForm(forms.ModelForm):
         widgets = {
             'email_digest_frequency': forms.Select(attrs={'class': 'form-control'}),
         }
-
-
-class PaperUserForm(forms.ModelForm):
-
-    class Meta:
-        model = PaperUser
-        fields = ('paper', 'watch')
-
-    def __init__(self, **kwargs):
-        # reformat ajax call to match PaperUser model (id -> paper)
-        data = kwargs.pop('data').copy()
-        data['paper'] = data.pop('id')[0]
-        super(PaperUserForm, self).__init__(data=data, **kwargs)
-
-
-class UserLibPaperForm(forms.ModelForm):
-
-    class Meta:
-        model = UserLibPaper
-        fields = ('paper', )
-
-    def __init__(self, **kwargs):
-        # reformat ajax call to match UserTaste model (id -> paper)
-        data = kwargs.pop('data').copy()
-        data['paper'] = data.pop('id')[0]
-        super(UserLibPaperForm, self).__init__(data=data, **kwargs)
-
-
-

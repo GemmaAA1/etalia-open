@@ -42,9 +42,6 @@ fi
 : "${AWS_SECRET_ACCESS_KEY?Error: Need to set env var AWS_SECRET_ACCESS_KEY}"
 : "${AWS_STORAGE_BUCKET_NAME?Error: Need to set env var AWS_STORAGE_BUCKET_NAME}"
 : "${DJANGO_SETTINGS_MODULE?Error: Need to set env var DJANGO_SETTINGS_MODULE}"
-: "${DISQUS_WEBSITE_SHORTNAME?Error: Need to set env var DISQUS_WEBSITE_SHORTNAME}"
-: "${DISQUS_PUBLIC_KEY?Error: Need to set env var DISQUS_PUBLIC_KEY}"
-: "${DISQUS_SECRET_KEY?Error: Need to set env var DISQUS_SECRET_KEY}"
 : "${ALTMETRIC_API_KEY?Error: Need to set env var ALTMETRIC_API_KEY}"
 
 # init database with papers, nlp models and altmetric data

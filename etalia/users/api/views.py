@@ -8,6 +8,7 @@ from django.db.models import Q
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, mixins
+from rest_framework import filters
 
 from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly
 
@@ -18,9 +19,10 @@ from etalia.library.constants import PAPER_ADDED
 
 from etalia.core.api.mixins import MultiSerializerMixin
 from .serializers import UserLibSerializer, UserSerializer, UserFullSerializer, \
-    UserLibNestedSerializer, UserLibPaperSerializer, RelationshipSerializer
+    UserLibNestedSerializer, UserLibPaperSerializer, RelationshipSerializer, \
+    AffiliationSerializer
 
-from ..models import UserLib, User, Relationship, UserLibPaper
+from ..models import UserLib, User, Relationship, UserLibPaper, Affiliation
 
 
 class UserViewSet(MultiSerializerMixin,
@@ -64,37 +66,12 @@ class UserViewSet(MultiSerializerMixin,
     exclude_action_serializers = {
         'list': 'full',
     }
-
-    def get_queryset(self):
-        queryset = self.queryset
-        query_args = []
-
-        # filter first_name
-        first_name = self.request.query_params.get('first-name', 'null')
-        if not first_name == 'null':
-            query_args.append(Q(first_name__icontains=first_name))
-        # filter first_name
-        last_name = self.request.query_params.get('last-name', 'null')
-        if not last_name == 'null':
-            query_args.append(Q(last_name__icontains=last_name))
-
-        # search
-        search = self.request.query_params.get('search', 'null')
-        if not search == 'null':
-            subset = []
-            for word in search.split():
-                subset.append(
-                    Q(first_name__icontains=word) |
-                    Q(last_name__icontains=word) |
-                    Q(affiliation__institution__icontains=word)
-                )
-            if subset:
-                query_args.append(reduce(operator.and_, subset))
-
-        if query_args:
-            queryset = queryset.filter(reduce(operator.and_, query_args))
-
-        return queryset.distinct()
+    filter_backends = (filters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       )
+    search_fields = ('first_name', 'last_name', 'affiliation__institution',
+                     'affiliation__city')
+    filter_fields = ('first_name', 'last_name')
 
     def render_list(self, queryset):
         page = self.paginate_queryset(queryset)
@@ -249,6 +226,8 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     serializer_class = RelationshipSerializer
     permissions_classes = (permissions.IsAuthenticated,
                            IsOwner)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('status', 'from_user', 'to_user')
 
     def get_queryset(self):
 
@@ -258,18 +237,35 @@ class RelationshipViewSet(viewsets.ModelViewSet):
                 filter(Q(from_user=self.request.user) |
                        Q(to_user=self.request.user))
 
-            status = self.request.query_params.get('status', 'null')
-            if not status == 'null':
-                queryset = queryset.filter(status=status)
-            from_user = self.request.query_params.get('from_user', 'null')
-            if not from_user == 'null':
-                queryset = queryset.filter(from_user=from_user)
-            to_user = self.request.query_params.get('to_user', 'null')
-            if not to_user == 'null':
-                queryset = queryset.filter(to_user=to_user)
-
             return queryset
         return Relationship.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(from_user=self.request.user)
+
+
+class AffiliationViewSet(viewsets.ModelViewSet):
+    """
+    Affiliation
+
+    ### Routes ###
+
+    * **[GET] /affiliations/**: List
+    * **[GET] /affiliations/<id\>/**: Detail
+
+    ### Optional Kwargs ###
+
+    ** List: **
+
+    * **search=(str)**: Fetch only corresponding status
+
+    """
+    queryset = Affiliation.objects.all()
+    serializer_class = AffiliationSerializer
+    permissions_classes = (permissions.IsAuthenticated,
+                           IsOwnerOrReadOnly)
+    filter_backends = (filters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       )
+    search_fields = ('institution', 'department', 'city')
+    filter_fields = ('institution', 'department', 'city', 'state', 'country')

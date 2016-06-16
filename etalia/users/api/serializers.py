@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.library.api.serializers import PaperNestedSerializer
-from ..models import UserLibPaper, UserLib, Relationship
+from ..models import UserLibPaper, UserLib, Relationship, Affiliation
 from avatar.models import Avatar
 
 User = get_user_model()
@@ -21,6 +21,19 @@ class AvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Avatar
+
+
+class AffiliationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Affiliation
+        fields = (
+            'department',
+            'institution',
+            'city',
+            'state',
+            'country',
+        )
 
 
 class UserSerializer(One2OneNestedLinkSwitchMixin,
@@ -34,6 +47,7 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
         extra_kwargs = {
             'link': {'view_name': 'api:user-detail'},
             'avatars': {'view_name': 'api:avatar-detail'},
+            'affiliation': {'view_name': 'api:affiliation-detail'},
         }
         fields = (
             'id',
@@ -41,10 +55,14 @@ class UserSerializer(One2OneNestedLinkSwitchMixin,
             'email',
             'first_name',
             'last_name',
-            'avatars')
+            'avatars',
+            'affiliation')
         read_only_fields = (
             '__all__'
         )
+        switch_kwargs = {
+            'affiliation': {'serializer': AffiliationSerializer}
+        }
 
 
 class UserFilterSerializer(serializers.ModelSerializer):

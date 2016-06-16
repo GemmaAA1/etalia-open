@@ -2,41 +2,22 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
-from django.conf import settings
-from django.views.generic import TemplateView, DetailView, ListView
 from django.template.response import TemplateResponse
-from braces.views import LoginRequiredMixin
-
-from etalia.core.mixins import AjaxableResponseMixin
-from .models import Thread
-from .api.serializers import ThreadNestedSerializer
 
 
-class ThreadView(LoginRequiredMixin, AjaxableResponseMixin, DetailView):
-
-    model = Thread
-    template_name = 'threads/detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(ThreadView, self).get_context_data(**kwargs)
-        context['thread'] = ThreadNestedSerializer(
-            instance=self.get_object(),
-            context={'request': self.request}).data
-        return context
-
-thread = ThreadView.as_view()
+def thread(request, pk):
+    return TemplateResponse(
+        request,
+        'threads/detail.html',
+        {'id': pk}
+    )
 
 
 def my_threads(request):
     return TemplateResponse(
         request,
         'threads/list.html',
-        {'control_states': json.dumps(
-            request.session.get('threads-control-states',
-                                {'time-span': None,
-                                 'search': None,
-                                 'pin': 0}
-                                )
-        )
-        }
+        {'control_states': json.dumps(request.session.get(
+            'threads-control-states',
+            {'time-span': None, 'search': None, 'pin': 0}))}
     )
