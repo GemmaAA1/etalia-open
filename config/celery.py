@@ -36,8 +36,8 @@ celery_app.user_options['worker'].add(
 
 
 class InitArgs(bootsteps.Step):
-    """BootStep to load data in  task dispatcher of type Model, PaperEngine or
-    ThreadEngine"""
+    """BootStep to warm up task dispatchers of type Model, PaperEngine or
+    ThreadEngine with data"""
     def __init__(self, worker, init, **options):
         for k, task in worker.app.tasks.items():
             if task.__name__.startswith('{0}_dispatcher'.format(init)):
