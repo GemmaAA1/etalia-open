@@ -5,16 +5,50 @@ import logging
 
 from .models import Model, PaperEngine, ThreadEngine
 from .models import UserFingerprint
+from .tasks_class import EmbedPaperTask, ThreadEngineTask, PaperEngineTask
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
 
-# NOTE:
-# tasks related to Model or Engines are registered in celery.py because they
-# are host dependant
+# Register Model based tasks
+#-------------------------------------------------------------------------------
+model_name = Model.objects.get(is_active=True)
+# specific task name
+task_name ='etalia.nlp.tasks.nlp_dispatcher_{0}'.format(model_name)
 
 
-@app.task()
+@app.task(base=EmbedPaperTask, bind=True, name=task_name, model_name=model_name)
+def nlp_dispatcher(self, *args, **kwargs):
+    return self.model.tasks(*args, **kwargs)
+
+# Register PaperEngine based tasks
+#-------------------------------------------------------------------------------
+pe = PaperEngine.objects.get(is_active=True)
+# specific task name
+task_name ='etalia.nlp.tasks.pe_dispatcher_{0}'.format(pe.name)
+
+
+@app.task(base=PaperEngineTask, bind=True, name=task_name,
+          engine_id=pe.id)
+def pe_dispatcher(self, *args, **kwargs):
+    return self.engine.tasks(*args, **kwargs)
+
+
+# Register ThreadEngine based tasks
+#-------------------------------------------------------------------------------
+te = ThreadEngine.objects.get(is_active=True)
+# specific task name
+task_name ='etalia.nlp.tasks.te_dipatcher_{0}'.format(te.name)
+
+
+@app.task(base=ThreadEngineTask, bind=True, name=task_name,
+          engine_id=te.id)
+def te_dispatcher(self, *args, **kwargs):
+    return self.engine.tasks(*args, **kwargs)
+
+
+# Update tasks
+# ------------
 def paperengine_update_all():
     pe_ids = PaperEngine.objects.filter(is_active=True).values_list('id', flat=True)
     for peid in pe_ids:
@@ -50,5 +84,3 @@ def add_nlp(x, y):
     """dummy task"""
     logger.info("--> Processing task add")
     return x + y
-
-

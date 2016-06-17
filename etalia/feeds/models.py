@@ -89,7 +89,7 @@ class Stream(TimeStampedModel):
 
         # Score
         pe = PaperEngine.objects.get(is_active=True)
-        pe_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
+        pe_tasks = app.tasks['etalia.nlp.tasks.pe_dispatcher_{name}'.format(name=pe.name)]
         task = pe_tasks.delay('score_stream', self.user.id)
         res = task.get()
         # reformat
@@ -202,7 +202,7 @@ class Trend(TimeStampedModel):
 
         # Score
         pe = PaperEngine.objects.get(is_active=True)
-        pe_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
+        pe_tasks = app.tasks['etalia.nlp.tasks.pe_dispatcher_{name}'.format(name=pe.name)]
         task = pe_tasks.delay('score_trend', self.user.id)
         res = task.get()
         # reformat
@@ -306,7 +306,7 @@ class ThreadFeed(TimeStampedModel):
 
         # Score
         te = ThreadEngine.objects.get(is_active=True)
-        te_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
+        te_tasks = app.tasks['etalia.nlp.tasks.te_dispatcher_{name}'.format(name=te.name)]
         task = te_tasks.delay('score_threadfeed', self.user.id)
         res = task.get()
         # reformat

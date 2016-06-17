@@ -8,7 +8,6 @@ import numpy as np
 from etalia.library.models import Journal, Paper
 from etalia.nlp.models import Model, PaperVectors, JournalVectors
 from etalia.users.models import User, UserLib, UserLibPaper, UserSettings
-from etalia.nlp.tasks import register_nlp_tasks
 
 
 class UserFeedTestCase(TestCase):

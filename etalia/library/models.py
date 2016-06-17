@@ -476,7 +476,7 @@ class Paper(TimeStampedModel):
         try:
             if len(threads) < settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS:  # add some knn neighbors
                 te = ThreadEngine.objects.filter(is_active=True)[0]
-                te_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
+                te_task = app.tasks['etalia.nlp.tasks.te_dispatcher_{name}'.format(name=te.name)]
                 res = te_task.apply_async(args=('get_knn_from_paper', self.id),
                                           kwargs={'time_lapse': time_span,
                                            'k': settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS},
@@ -494,6 +494,10 @@ class Paper(TimeStampedModel):
             return PaperUser.objects.get(user=user, paper=self)
         else:
             return None
+
+    def embed(self):
+        from .tasks import embed_paper
+        embed_paper(self.id)
 
     def __str__(self):
         return self.short_title

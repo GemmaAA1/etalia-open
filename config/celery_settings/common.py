@@ -20,7 +20,7 @@ ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
 BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp://'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
-CELERY_TASK_RESULT_EXPIRES = 5  # in seconds
+CELERY_TASK_RESULT_EXPIRES = 30  # in seconds
 
 CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
