@@ -462,9 +462,9 @@ class Paper(TimeStampedModel):
         return get_neighbors_papers(self.id, time_span)
 
     def get_related_threads(self, user_id, time_span=-1):
+        from etalia.nlp.tasks import te_dispatcher
         from etalia.nlp.models import ThreadEngine
         from etalia.threads.models import Thread
-        from config.celery import celery_app as app
 
         threads = list(self.thread_set
                        .filter(~(Q(published_at=None) & ~Q(user_id=user_id)),
@@ -475,9 +475,7 @@ class Paper(TimeStampedModel):
         # Search for knn threads based on paper vector
         try:
             if len(threads) < settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS:  # add some knn neighbors
-                te = ThreadEngine.objects.filter(is_active=True)[0]
-                te_task = app.tasks['etalia.nlp.tasks.te_dispatcher_{name}'.format(name=te.name)]
-                res = te_task.apply_async(args=('get_knn_from_paper', self.id),
+                res = te_dispatcher.apply_async(args=('get_knn_from_paper', self.id),
                                           kwargs={'time_lapse': time_span,
                                            'k': settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS},
                                           timeout=10,
