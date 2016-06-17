@@ -19,7 +19,7 @@ DEBUG_TOOLBAR_PATCH_SETTINGS = False
 INTERNAL_IPS = ['127.0.0.1']
 
 # APPS
-INSTALLED_APPS += ('django_extensions', )
+INSTALLED_APPS += ()
 
 
 GRAPH_MODELS = {

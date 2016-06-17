@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.utils import timezone
-from django.conf import settings
-
 from config.celery import celery_app as app
-from celery.exceptions import SoftTimeLimitExceeded
-
 from celery.exceptions import SoftTimeLimitExceeded
 
 from django.utils import timezone
@@ -35,7 +30,7 @@ def embed_paper(paper_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
+            model_task = app.tasks['etalia.nlp.tasks.nlp_dispatcher_{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Model task for {model_name} not defined'.format(
@@ -47,7 +42,7 @@ def embed_paper(paper_pk):
 
 def embed_papers(pks, model_name, batch_size=1000):
     try:
-        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
+        model_task = app.tasks['etalia.nlp.tasks.nlp_dispatcher_{model_name}'.format(
             model_name=model_name)]
     except KeyError:
         logger.error('Embeding task for {model_name} not defined'.format(
@@ -84,7 +79,7 @@ def get_neighbors_papers(paper_pk, time_span):
             raise PaperNeighbors.DoesNotExist
     except PaperNeighbors.DoesNotExist:   # refresh
         try:
-            pe_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
+            pe_task = app.tasks['etalia.nlp.tasks.pe_dispatcher_{name}'.format(name=pe.name)]
             res = pe_task.apply_async(args=('populate_neighbors',
                                             paper_pk,
                                             time_span),

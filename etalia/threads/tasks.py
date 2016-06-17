@@ -26,7 +26,7 @@ def embed_thread(thread_pk):
     for model_name in model_names:
         # Send task for embedding
         try:
-            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
+            model_task = app.tasks['etalia.nlp.tasks.nlp_dispatcher_{model_name}'.format(
                 model_name=model_name)]
         except KeyError:
             logger.error('Model task for {model_name} not defined'.format(
@@ -37,7 +37,7 @@ def embed_thread(thread_pk):
 
 def embed_threads(pks, model_name, batch_size=1000):
     try:
-        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
+        model_task = app.tasks['etalia.nlp.tasks.nlp_dispatcher_{model_name}'.format(
             model_name=model_name)]
     except KeyError:
         logger.error('Embeding task for {model_name} not defined'.format(
@@ -74,7 +74,7 @@ def get_neighbors_threads(thread_pk, time_span):
             raise ThreadNeighbors.DoesNotExist
     except ThreadNeighbors.DoesNotExist:  # refresh
         try:
-            te_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
+            te_task = app.tasks['etalia.nlp.tasks.te_dispatcher_{name}'.format(name=te.name)]
             res = te_task.apply_async(args=('populate_neighbors',
                                             thread_pk,
                                             time_span),
