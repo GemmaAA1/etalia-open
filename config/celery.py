@@ -44,8 +44,3 @@ class InitArgs(bootsteps.Step):
                 task.load()
 
 celery_app.steps['worker'].add(InitArgs)
-
-
-@celery_app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))

@@ -20,29 +20,12 @@ logger = logging.getLogger(__name__)
 def embed_thread(thread_pk):
     """Send task to embed thread
     """
-    model_names = Model.objects \
-        .filter(is_active=True) \
-        .values_list('name', flat=True)
-    for model_name in model_names:
-        # Send task for embedding
-        try:
-            model_task = app.tasks['etalia.nlp.tasks.nlp_dispatcher_{model_name}'.format(
-                model_name=model_name)]
-        except KeyError:
-            logger.error('Model task for {model_name} not defined'.format(
-                model_name=model_name))
-            continue
-        model_task.delay('infer_thread', thread_pk)
+    from etalia.nlp.tasks import nlp_dispatcher
+    nlp_dispatcher.delay('infer_thread', thread_pk)
 
 
-def embed_threads(pks, model_name, batch_size=1000):
-    try:
-        model_task = app.tasks['etalia.nlp.tasks.nlp_dispatcher_{model_name}'.format(
-            model_name=model_name)]
-    except KeyError:
-        logger.error('Embeding task for {model_name} not defined'.format(
-            model_name=model_name))
-        raise KeyError
+def embed_threads(pks, batch_size=1000):
+    from etalia.nlp.tasks import nlp_dispatcher
     pks = list(pks)
     nb_papers = len(pks)
     nb_batches = nb_papers // batch_size
@@ -51,10 +34,11 @@ def embed_threads(pks, model_name, batch_size=1000):
     pks_batched.append(pks[nb_batches * batch_size:])
 
     for batch in pks_batched:
-        model_task.delay('infer_threads', batch)
+        nlp_dispatcher.delay('infer_threads', batch)
 
 
 def get_neighbors_threads(thread_pk, time_span):
+    from etalia.nlp.tasks import te_dispatcher
     # Get active ThreadEngine
     te = ThreadEngine.objects.filter(is_active=True)[0]
 
@@ -74,8 +58,7 @@ def get_neighbors_threads(thread_pk, time_span):
             raise ThreadNeighbors.DoesNotExist
     except ThreadNeighbors.DoesNotExist:  # refresh
         try:
-            te_task = app.tasks['etalia.nlp.tasks.te_dispatcher_{name}'.format(name=te.name)]
-            res = te_task.apply_async(args=('populate_neighbors',
+            res = te_dispatcher.apply_async(args=('populate_neighbors',
                                             thread_pk,
                                             time_span),
                                       timeout=10,
