@@ -12,40 +12,47 @@ logger = logging.getLogger(__name__)
 
 # Register Model based tasks
 #-------------------------------------------------------------------------------
-model_name = Model.objects.get(is_active=True)
-# specific task name
-task_name ='etalia.nlp.tasks.nlp_dispatcher_{0}'.format(model_name)
+try:
+    model_name = Model.objects.get(is_active=True)
+    # specific task name
+    task_name ='etalia.nlp.tasks.nlp_dispatcher_{0}'.format(model_name)
 
 
-@app.task(base=EmbedPaperTask, bind=True, name=task_name, model_name=model_name)
-def nlp_dispatcher(self, *args, **kwargs):
-    return self.model.tasks(*args, **kwargs)
+    @app.task(base=EmbedPaperTask, bind=True, name=task_name, model_name=model_name)
+    def nlp_dispatcher(self, *args, **kwargs):
+        return self.model.tasks(*args, **kwargs)
+except Model.DoesNotExist:
+    pass
 
 # Register PaperEngine based tasks
 #-------------------------------------------------------------------------------
-pe = PaperEngine.objects.get(is_active=True)
-# specific task name
-task_name ='etalia.nlp.tasks.pe_dispatcher_{0}'.format(pe.name)
+try:
+    pe = PaperEngine.objects.get(is_active=True)
+    # specific task name
+    task_name ='etalia.nlp.tasks.pe_dispatcher_{0}'.format(pe.name)
 
 
-@app.task(base=PaperEngineTask, bind=True, name=task_name,
-          engine_id=pe.id)
-def pe_dispatcher(self, *args, **kwargs):
-    return self.engine.tasks(*args, **kwargs)
-
+    @app.task(base=PaperEngineTask, bind=True, name=task_name,
+              engine_id=pe.id)
+    def pe_dispatcher(self, *args, **kwargs):
+        return self.engine.tasks(*args, **kwargs)
+except PaperEngine.DoesNotExist:
+    pass
 
 # Register ThreadEngine based tasks
 #-------------------------------------------------------------------------------
-te = ThreadEngine.objects.get(is_active=True)
-# specific task name
-task_name ='etalia.nlp.tasks.te_dipatcher_{0}'.format(te.name)
+try:
+    te = ThreadEngine.objects.get(is_active=True)
+    # specific task name
+    task_name ='etalia.nlp.tasks.te_dipatcher_{0}'.format(te.name)
 
 
-@app.task(base=ThreadEngineTask, bind=True, name=task_name,
-          engine_id=te.id)
-def te_dispatcher(self, *args, **kwargs):
-    return self.engine.tasks(*args, **kwargs)
-
+    @app.task(base=ThreadEngineTask, bind=True, name=task_name,
+              engine_id=te.id)
+    def te_dispatcher(self, *args, **kwargs):
+        return self.engine.tasks(*args, **kwargs)
+except ThreadEngine.DoesNotExist:
+    pass
 
 # Update tasks
 # ------------
