@@ -35,8 +35,9 @@ ZOTERO_PT = (
 INIT_STEPS = (
     ('NON', 'uninitialized'),
     ('LIB', 'library'),
-    ('STR', 'personalized stream'),
-    ('TRE', 'trends'),
+    ('STR', 'paper feed'),
+    ('TRE', 'trend feed'),
+    ('THR', 'thread feed'),
     ('IDL', 'done'),
 )
 
