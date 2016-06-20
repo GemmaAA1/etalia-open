@@ -327,10 +327,13 @@ class PaperEngineScoringMixin(object):
     def convert_to_boost(self, count, cap, max_boost):
         boost = []
         for c in count:
-            if c >= cap:
-                boost.append(max_boost)
+            if c:
+                if c >= cap:
+                    boost.append(max_boost)
+                else:
+                    boost.append(c / cap * max_boost)
             else:
-                boost.append(c / cap * max_boost)
+                boost.append(0)
         return boost
 
 
