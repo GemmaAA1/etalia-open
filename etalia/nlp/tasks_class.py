@@ -16,10 +16,11 @@ class EmbedPaperTask(Task):
     Use to load model in __init__ so that it is cached for subsequent call
     to task
     """
+
+    abstract = True
     ignore_result = False
     model_name = None
     _model = None
-    init = False
 
     def __init__(self, *args, **kwargs):
         if 'model_name' in kwargs:
@@ -33,27 +34,22 @@ class EmbedPaperTask(Task):
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
 
-        # init task
-        self.init = kwargs.get('init', False)
-        if self.init:
-            self._model = Model.objects.load(name=self.model_name)
+    def load(self):
+        self._model = Model.objects.load(name=self.model_name)
+        return self._model
 
     @property
     def model(self):
         if self._model is None:
-            self._model = Model.objects.load(name=self.model_name)
-            return self._model
+            return self.load()
         # if Model has been modified and currently not uploading, reload
         model_now = Model.objects.get(name=self.model_name)
         last_modified = model_now.modified
         upload_state = model_now.upload_state
         if not self._model.modified == last_modified and upload_state == 'IDL':
-            self._model = Model.objects.load(name=self.model_name)
+            return self.load()
 
         return self._model
-
-    def run(self, *args, **kwargs):
-        return self.model.tasks(*args, **kwargs)
 
 
 class EngineTask(Task):
@@ -63,10 +59,11 @@ class EngineTask(Task):
     so that it is cached for subsequent call to task (avoid overhead of loading
     data for each task)
     """
+
+    abstract = True
     engine_class = None
     engine_id = None
     ignore_result = False
-    init = False
 
     _engine = None
 
@@ -81,25 +78,22 @@ class EngineTask(Task):
                 raise ValueError('<model_name> unknown, choices are: {0}'
                                  .format(choices))
 
-        # init task
-        self.init = kwargs.get('init', False)
-        if self.init:
-            self._engine = self.engine_class.objects.load(
-                id=self.engine_id,
-                is_active=True)
+    def load(self):
+        self._engine = self.engine_class.objects.load(
+            id=self.engine_id,
+            is_active=True)
+        return self._engine
+
+    def get(self):
+        return self.engine_class.objects.get(id=self.engine_id, is_active=True)
 
     @property
     def engine(self):
         if self._engine is None:
-            self._engine = self.engine_class.objects.load(
-                id=self.engine_id,
-                is_active=True)
-            return self._engine
+            return self.load()
         # if Engine has been modified and Engine not uploading/downloading, or
         # has been deactivated => reload
-        engine_now = self.engine_class.objects.get(
-            id=self.engine_id,
-            is_active=True)
+        engine_now = self.get()
         last_modified = engine_now.modified
         upload_state = engine_now.upload_state
         active_now = engine_now.is_active
@@ -111,19 +105,16 @@ class EngineTask(Task):
                              '{0}.*'.format(self._engine.name)))
             for file in rm_files:
                 os.remove(file)
+            return self.load()
 
-            self._engine = self.engine_class.objects.load(
-                id=self.engine_id,
-                is_active=True)
         return self._engine
-
-    def run(self, *args, **kwargs):
-        return self.engine.tasks(*args, **kwargs)
 
 
 class PaperEngineTask(EngineTask):
+    abstract = True
     engine_class = PaperEngine
 
 
 class ThreadEngineTask(EngineTask):
+    abstract = True
     engine_class = ThreadEngine

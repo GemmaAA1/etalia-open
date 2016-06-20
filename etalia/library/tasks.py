@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.utils import timezone
-from django.conf import settings
-
 from config.celery import celery_app as app
-from celery.exceptions import SoftTimeLimitExceeded
-
 from celery.exceptions import SoftTimeLimitExceeded
 
 from django.utils import timezone
@@ -29,30 +24,12 @@ def update_stats():
 def embed_paper(paper_pk):
     """Send task to embed paper
     """
-    model_names = Model.objects\
-        .filter(is_active=True)\
-        .values_list('name', flat=True)
-    for model_name in model_names:
-        # Send task for embedding
-        try:
-            model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
-                model_name=model_name)]
-        except KeyError:
-            logger.error('Model task for {model_name} not defined'.format(
-                model_name=model_name))
-            continue
-
-        model_task.delay('infer_paper', paper_pk)
+    from etalia.nlp.tasks import nlp_dispatcher
+    nlp_dispatcher.delay('infer_paper', paper_pk)
 
 
 def embed_papers(pks, model_name, batch_size=1000):
-    try:
-        model_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
-            model_name=model_name)]
-    except KeyError:
-        logger.error('Embeding task for {model_name} not defined'.format(
-            model_name=model_name))
-        raise KeyError
+    from etalia.nlp.tasks import nlp_dispatcher
     pks = list(pks)
     nb_papers = len(pks)
     nb_batches = nb_papers // batch_size
@@ -60,11 +37,11 @@ def embed_papers(pks, model_name, batch_size=1000):
     pks_batched.append(pks[nb_batches * batch_size:])
 
     for i, batch in enumerate(pks_batched):
-        model_task.delay('infer_papers', batch)
+        nlp_dispatcher.delay('infer_papers', batch)
 
 
 def get_neighbors_papers(paper_pk, time_span):
-
+    from etalia.nlp.tasks import pe_dispatcher
     # Get active MostSimilar
     pe = PaperEngine.objects.filter(is_active=True)[0]
 
@@ -84,8 +61,7 @@ def get_neighbors_papers(paper_pk, time_span):
             raise PaperNeighbors.DoesNotExist
     except PaperNeighbors.DoesNotExist:   # refresh
         try:
-            pe_task = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
-            res = pe_task.apply_async(args=('populate_neighbors',
+            res = pe_dispatcher.apply_async(args=('populate_neighbors',
                                             paper_pk,
                                             time_span),
                                       timeout=10,

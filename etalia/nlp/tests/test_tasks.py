@@ -63,15 +63,6 @@ class EmbedTaskTest(NLPDataExtendedTestCase):
         self.model2.build_vocab_and_train()
         register_nlp_tasks()
 
-    def test_can_run_embed_paper_task(self):
-        embed_task = app.tasks['etalia.nlp.tasks.{model_name}'.format(
-            model_name=self.model.name)]
-        self.assertIsNone(self.new_paper.vectors.first())
-        rst = embed_task.delay(self.new_paper.pk)
-        self.assertTrue(rst.successful())
-        self.assertEqual(self.new_paper.vectors.count(), 1)
-        self.assertIsNotNone(self.new_paper.vectors.first().get_vector())
-
     def test_can_run_all_embeddings_paper(self):
         embed_paper(self.new_paper.pk)
         print(Model.objects.all().values_list('name', flat=True))

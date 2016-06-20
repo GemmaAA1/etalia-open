@@ -18,8 +18,6 @@ from etalia.nlp.models import ThreadEngine
 from etalia.threads.models import Thread
 from etalia.library.models import Paper
 
-from config.celery import celery_app as app
-
 logger = logging.getLogger(__name__)
 
 
@@ -82,15 +80,15 @@ class Stream(TimeStampedModel):
             .delete()
 
     def update(self):
+        from etalia.nlp.tasks import pe_dispatcher
+
         """Update Stream"""
 
         logger.info('Updating stream {id}'.format(id=self.id))
         self.set_state('ING')
 
         # Score
-        pe = PaperEngine.objects.get(is_active=True)
-        pe_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
-        task = pe_tasks.delay('score_stream', self.user.id)
+        task = pe_dispatcher.delay('score_stream', self.user.id)
         res = task.get()
         # reformat
         res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
@@ -196,14 +194,13 @@ class Trend(TimeStampedModel):
             .delete()
 
     def update(self):
+        from etalia.nlp.tasks import pe_dispatcher
 
         logger.info('Updating trend {id}'.format(id=self.id))
         self.set_state('ING')
 
         # Score
-        pe = PaperEngine.objects.get(is_active=True)
-        pe_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=pe.name)]
-        task = pe_tasks.delay('score_trend', self.user.id)
+        task = pe_dispatcher.delay('score_trend', self.user.id)
         res = task.get()
         # reformat
         res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
@@ -300,14 +297,12 @@ class ThreadFeed(TimeStampedModel):
             .delete()
 
     def update(self):
-
+        from etalia.nlp.tasks import te_dispatcher
         logger.info('Updating thread feed {id}'.format(id=self.id))
         self.set_state('ING')
 
         # Score
-        te = ThreadEngine.objects.get(is_active=True)
-        te_tasks = app.tasks['etalia.nlp.tasks.{name}'.format(name=te.name)]
-        task = te_tasks.delay('score_threadfeed', self.user.id)
+        task = te_dispatcher.delay('score_threadfeed', self.user.id)
         res = task.get()
         # reformat
         res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
