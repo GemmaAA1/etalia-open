@@ -385,11 +385,14 @@ def user_init_check(request):
             messages = ['Syncing your library',
                         '({0} papers)'.format(request.user.lib.count_papers)]
         elif request.user.init_step == 'STR':
-            messages = ['Building your streams',
-                        '(1/2)']
+            messages = ['Building your paper feed',
+                        '']
         elif request.user.init_step == 'TRE':
-            messages = ['Building your streams',
-                        '2/2']
+            messages = ['Building your trend feed',
+                        '']
+        elif request.user.init_step == 'THR':
+            messages = ['Building your thread feed',
+                        '']
         elif request.user.init_step == 'IDL':
             done = True
             messages = ['Done', '']
