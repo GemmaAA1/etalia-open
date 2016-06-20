@@ -44,7 +44,7 @@ except PaperEngine.DoesNotExist:
 try:
     te = ThreadEngine.objects.get(is_active=True)
     # specific task name
-    task_name ='etalia.nlp.tasks.te_dipatcher_{0}'.format(te.name)
+    task_name ='etalia.nlp.tasks.te_dispatcher_{0}'.format(te.name)
 
 
     @app.task(base=ThreadEngineTask, bind=True, name=task_name,
