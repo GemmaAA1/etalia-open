@@ -397,7 +397,7 @@ def compiles_assets():
         run_as_root('npm install -g gulp')
         run('npm install gulp --save-dev')
         run_as_root('npm install -g bower')
-    run_as_root('cd {0} && gulp'.format(env.source_dir))
+    run_as_root('cd {0} && gulp prod'.format(env.source_dir))
 
 
 @task
