@@ -11,7 +11,7 @@ class MyRouter(object):
         if task.startswith('etalia.users'):
             return {'queue': 'default',
                     'routing_key': 'default.users'}
-        if task.startswith('etalia.nlp.tasks.pe_dipatcher'):
+        if task.startswith('etalia.nlp.tasks.pe_dispatcher'):
             return {'queue': 'pe',
                     'routing_key': 'pe'}
         if task.startswith('etalia.nlp.tasks.te_dispatcher'):
