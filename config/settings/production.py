@@ -9,6 +9,7 @@ ALLOWED_HOSTS = ['www.etalia.io', 'etalia.io', 'alpha.etalia.io']
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Admins received email of the full exception information when DEGUB=False
 ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
