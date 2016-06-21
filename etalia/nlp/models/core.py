@@ -918,9 +918,12 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
     def get_knn(self, paper_id, time_lapse=-1, k=1):
 
-        pv = PaperVectors.objects \
-                .filter(paper_id=paper_id, model=self.model) \
-                .values('vector', 'paper__journal_id')[0]
+        try:
+            pv = PaperVectors.objects \
+                    .filter(paper_id=paper_id, model=self.model) \
+                    .values('vector', 'paper__journal_id')[0]
+        except IndexError:
+            return []
 
         if paper_id in self.data['ids']:
             # increment k because knn_search will return input in the neighbors
@@ -1335,9 +1338,12 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
 
     def get_knn(self, thread_id, time_lapse=-1, k=1):
 
-        tv = ThreadVectors.objects \
-                .filter(thread_id=thread_id, model=self.model) \
-                .values('vector')[0]
+        try:
+            tv = ThreadVectors.objects \
+                    .filter(thread_id=thread_id, model=self.model) \
+                    .values('vector')[0]
+        except IndexError:
+            return []
 
         if thread_id in self.data['ids']:
             # increment k because knn_search will return input in the neighbors
