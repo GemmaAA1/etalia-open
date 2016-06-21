@@ -291,6 +291,7 @@ class ThreadViewSet(MultiSerializerMixin,
         instance = self.get_object()
         self.check_object_permissions(request, instance)
         instance.publish()
+        instance.embed()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
