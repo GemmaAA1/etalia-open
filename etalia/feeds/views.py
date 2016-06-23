@@ -28,10 +28,9 @@ def my_feeds(request):
 
 
 @login_required
-def reset_stream_view(request, stream_name):
+def reset_stream_view(request, name):
     if request.is_ajax() or settings.DEBUG:
-        reset_stream.delay(request.user.pk, stream_name=stream_name,
-                           restrict_journal=False)
+        reset_stream.delay(request.user.pk, name=name)
         data = {'display_update_modal': True,
                 'message': 'Stream reset launched.'}
         # reset stream session
@@ -42,9 +41,9 @@ def reset_stream_view(request, stream_name):
 
 
 @login_required
-def update_stream_view(request, stream_name):
+def update_stream_view(request, name):
     if request.is_ajax() or settings.DEBUG:
-        update_stream.delay(request.user.pk, stream_name=stream_name)
+        update_stream.delay(request.user.pk, name=name)
         data = {'display_update_modal': True,
                 'message': 'Stream update launched.'}
         # reset stream session
@@ -55,9 +54,9 @@ def update_stream_view(request, stream_name):
 
 
 @login_required
-def update_trend_view(request, trend_name):
+def update_trend_view(request, name):
     if request.is_ajax() or settings.DEBUG:
-        update_trend.delay(request.user.pk, trend_name=trend_name)
+        update_trend.delay(request.user.pk, name=name)
         data = {'display_update_modal': True,
                 'message': 'Trend update launched.'}
         # reset stream session
@@ -68,9 +67,9 @@ def update_trend_view(request, trend_name):
 
 
 @login_required
-def reset_trend_view(request, trend_name):
+def reset_trend_view(request, name):
     if request.is_ajax() or settings.DEBUG:
-        reset_trend.delay(request.user.pk, trend_name=trend_name)
+        reset_trend.delay(request.user.pk, name=name)
         data = {'display_update_modal': True,
                 'message': 'Trend update launched.'}
         # reset stream session
