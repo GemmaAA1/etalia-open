@@ -975,7 +975,8 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         best = matutils.argsort(dists, topn=top_n, reverse=True)
 
         # return [(paper_id, distances), ...]
-        result = [(self.data['ids'][ind], float(dists[ind])) for ind in best]
+        result = [(self.data['ids'][clip_start:][ind], float(dists[ind]))
+                  for ind in best]
 
         return result
 
@@ -1050,7 +1051,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         # get partition
         arg_part = np.argpartition(dists, top_n + 1, axis=0)[:top_n:, :]
 
-        result = [self.data['ids'][ind] for ind in arg_part.flatten()]
+        result = [self.data['ids'][clip_start:, :][ind] for ind in arg_part.flatten()]
         return list(set(result))
 
     def get_recent_pks(self, time_lapse=30):
@@ -1410,7 +1411,8 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
         best = matutils.argsort(dists, topn=top_n, reverse=True)
 
         # return [(thread_id, distances), ...]
-        result = [(self.data['ids'][ind], float(dists[ind])) for ind in best]
+        result = [(self.data['ids'][clip_start:, :][ind], float(dists[ind]))
+                  for ind in best]
 
         return result
 
@@ -1471,7 +1473,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
         # get partition
         arg_part = np.argpartition(dists, top_n + 1, axis=0)[:top_n:, :]
 
-        result = [self.data['ids'][ind] for ind in arg_part.flatten()]
+        result = [self.data['ids'][clip_start:, :][ind] for ind in arg_part.flatten()]
         return list(set(result))
 
     def get_recent_pks(self, time_lapse=30):
