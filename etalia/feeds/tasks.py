@@ -42,20 +42,20 @@ def update_all_main_trends():
 
 
 @app.task()
-def update_stream(user_pk, stream_name='main'):
+def update_stream(user_pk, name='main'):
     """Async task / Update user feed"""
     # create/update main feed
-    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
+    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=name)
     # update
     feed.update()
     return user_pk
 
 
 @app.task()
-def reset_stream(user_pk, stream_name='main'):
+def reset_stream(user_pk, name='main'):
     """Async task / Reset user feed"""
     # create/update main feed
-    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=stream_name)
+    feed, _ = Stream.objects.get_or_create(user_id=user_pk, name=name)
     # reset
     feed.clear_all()
     # update
@@ -64,15 +64,15 @@ def reset_stream(user_pk, stream_name='main'):
 
 
 @app.task()
-def update_trend(user_pk, trend_name='main'):
-    trend, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
+def update_trend(user_pk, name='main'):
+    trend, _ = Trend.objects.get_or_create(user_id=user_pk, name=name)
     trend.update()
     return user_pk
 
 
 @app.task()
-def reset_trend(user_pk, trend_name='main'):
-    trend, _ = Trend.objects.get_or_create(user_id=user_pk, name=trend_name)
+def reset_trend(user_pk, name='main'):
+    trend, _ = Trend.objects.get_or_create(user_id=user_pk, name=name)
     trend.update()
     return user_pk
 
