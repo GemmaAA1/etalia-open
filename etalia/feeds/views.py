@@ -37,7 +37,7 @@ def reset_stream_view(request, name):
         request.session.pop('control_stream', None)
         return JsonResponse(data)
     else:
-        return redirect('feeds:stream')
+        return redirect('feeds:my_feeds')
 
 
 @login_required
@@ -50,7 +50,7 @@ def update_stream_view(request, name):
         request.session.pop('control_stream', None)
         return JsonResponse(data)
     else:
-        return redirect('feeds:stream')
+        return redirect('feeds:my_feeds')
 
 
 @login_required
@@ -63,7 +63,7 @@ def update_trend_view(request, name):
         request.session.pop('control_trend', None)
         return JsonResponse(data)
     else:
-        return redirect('feeds:stream')
+        return redirect('feeds:my_feeds')
 
 
 @login_required
@@ -76,7 +76,7 @@ def reset_trend_view(request, name):
         request.session.pop('control_trend', None)
         return JsonResponse(data)
     else:
-        return redirect('feeds:stream')
+        return redirect('feeds:my_feeds')
 
 
 @login_required

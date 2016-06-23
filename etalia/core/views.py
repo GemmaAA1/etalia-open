@@ -55,7 +55,7 @@ def test(request):
 
 def test_failing_task(request):
     failing_task.delay()
-    return redirect('feeds:stream')
+    return redirect('feeds:my_feeds')
 
 
 
