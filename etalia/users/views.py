@@ -396,7 +396,7 @@ def user_init_check(request):
         elif request.user.init_step == 'IDL':
             done = True
             messages = ['Done', '']
-            redirect = reverse('feeds:stream')
+            redirect = reverse('feeds:my_feeds')
 
         data = {'done': done,
                 'step': request.user.init_step,
