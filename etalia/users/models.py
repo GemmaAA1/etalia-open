@@ -530,7 +530,7 @@ class UserSettings(TimeStampedModel):
             first_created = self.user.lib.userlib_paper.all()\
                 .aggregate(min_date=Min(F('date_created')))['min_date']
             delta_months = (timezone.now().date() - first_created).days // \
-                           (365 / 12)
+                           (365 / 12) + 1
             self.stream_roll_back_deltatime = delta_months
             self.save()
         return self.stream_roll_back_deltatime
