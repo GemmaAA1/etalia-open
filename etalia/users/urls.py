@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^update-position$', views.update_position, name='update-position'),
     url(r'^update-affiliation$', views.update_affiliation, name='update-affiliation'),
     url(r'^delete$', views.delete_user, name='delete-user'),
+    url(r'^update-fingerprint-settings$', views.update_fingerprint_settings, name='update-fingerprint-settings'),
     url(r'^update-stream-settings$', views.update_stream_settings, name='update-stream-settings'),
     url(r'^update-trend-settings$', views.update_trend_settings, name='update-trend-settings'),
     url(r'^update-email-digest-settings$', views.update_email_digest_settings, name='update-email-digest-settings'),

@@ -161,22 +161,26 @@ class ThreadEngineScoringMixin(object):
             'embedding': np.empty(0)
             }
 
+    def get_user_fingerprint(self, user_id, name='main'):
+
+        if UserFingerprint.objects.filter(user_id=user_id,
+                                          name=name,
+                                          model=self.model).exists():
+            f = UserFingerprint.objects.get(user_id=user_id, name=name,
+                                            model=self.model)
+        else:
+            f = UserFingerprint.objects.create(user_id=user_id, name=name,
+                                               model=self.model)
+            f.update()
+
+        return f
+
     def score_threadfeed(self, user_id, name='main'):
 
         results = []
         if self.data['ids']:
             # Gather user fingerprint
-            if UserFingerprint.objects.filter(user_id=user_id,
-                                              name=name,
-                                              model=self.model).exists():
-                f = UserFingerprint.objects.get(user_id=user_id,
-                                                name=name,
-                                                model=self.model)
-            else:
-                f = UserFingerprint.objects.create(user_id=user_id,
-                                                   name=name,
-                                                   model=self.model)
-                f.update()
+            f = self.get_user_fingerprint(user_id, name=name)
 
             # Get user settings
             us = UserSettings.objects.get(user_id=user_id)

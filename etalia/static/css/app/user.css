@@ -12,10 +12,10 @@
     padding-top: 20px;
 }
 
-.signup-forms *,
-.modal * {
-    border-radius: 0 !important;
-}
+/*.signup-forms *,*/
+/*.modal * {*/
+    /*border-radius: 0 !important;*/
+/*}*/
 
 .signup-forms .title {
     padding-bottom: 20px;
@@ -143,10 +143,10 @@
     padding-top: 20px;
 }
 
-.invite-form *,
-.modal * {
-    border-radius: 0 !important;
-}
+/*.invite-form *,*/
+/*.modal * {*/
+    /*border-radius: 0 !important;*/
+/*}*/
 
 .invite-form .title {
     padding-bottom: 20px;

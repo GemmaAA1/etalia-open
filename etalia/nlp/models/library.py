@@ -223,9 +223,8 @@ class PaperEngineScoringMixin(object):
             'embedding': np.empty(0)
             }
 
-    def score_stream(self, user_id, name='main'):
+    def get_user_fingerprint(self, user_id, name='main'):
 
-        # Gather user fingerprint
         if UserFingerprint.objects.filter(user_id=user_id,
                                           name=name,
                                           model=self.model).exists():
@@ -235,6 +234,13 @@ class PaperEngineScoringMixin(object):
             f = UserFingerprint.objects.create(user_id=user_id, name=name,
                                                model=self.model)
             f.update()
+
+        return f
+
+    def score_stream(self, user_id, name='main'):
+
+        # Gather user fingerprint
+        f = self.get_user_fingerprint(user_id, name=name)
 
         # Convert user data
         seed = np.array(f.embedding[:self.embedding_size])
@@ -271,15 +277,7 @@ class PaperEngineScoringMixin(object):
     def score_trend(self, user_id, name='main'):
 
         # Gather user fingerprint
-        if UserFingerprint.objects.filter(user_id=user_id,
-                                          name=name,
-                                          model=self.model).exists():
-            f = UserFingerprint.objects.get(user_id=user_id, name=name,
-                                            model=self.model)
-        else:
-            f = UserFingerprint.objects.create(user_id=user_id, name=name,
-                                               model=self.model)
-            f.update()
+        f = self.get_user_fingerprint(user_id, name=name)
 
         # Convert user data
         seed = np.array(f.embedding[:self.embedding_size])

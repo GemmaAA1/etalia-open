@@ -26,3 +26,9 @@ NLP_JOURNAL_RATIO_CHOICES = (
     ('0.25', '25 %'),
     ('0.30', '30 %'),
 )
+
+FINGERPRINT_STATUS_CHOICES = (
+    ('NON', 'Uninitialized'),
+    ('IDL', 'Idle'),
+    ('ING', 'Syncing'),
+)
