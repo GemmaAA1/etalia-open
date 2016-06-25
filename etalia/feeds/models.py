@@ -62,7 +62,7 @@ class Stream(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
-        self.save()
+        self.save(update_fields='state')
 
     def __str__(self):
         return '{stream}@{email}'.format(stream=self.name,
@@ -78,6 +78,14 @@ class Stream(TimeStampedModel):
             .filter(stream=self)\
             .exclude(paper_id__in=paper_ids)\
             .delete()
+
+    def update_async(self):
+        from .tasks import update_stream
+        update_stream.delay(self.user.id, name=self.name)
+
+    def reset_async(self):
+        from .tasks import reset_stream
+        reset_stream.delay(self.user.id, name=self.name)
 
     def update(self):
         from etalia.nlp.tasks import pe_dispatcher
@@ -180,7 +188,7 @@ class Trend(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
-        self.save()
+        self.save(update_fields='state')
 
     def clear_all(self):
         """Delete all matched matches"""
@@ -192,6 +200,14 @@ class Trend(TimeStampedModel):
             .filter(trend=self)\
             .exclude(paper_id__in=paper_ids)\
             .delete()
+
+    def update_async(self):
+        from .tasks import update_trend
+        update_trend.delay(self.user.id, name=self.name)
+
+    def reset_async(self):
+        from .tasks import reset_trend
+        reset_trend.delay(self.user.id, name=self.name)
 
     def update(self):
         from etalia.nlp.tasks import pe_dispatcher
@@ -295,6 +311,14 @@ class ThreadFeed(TimeStampedModel):
             .filter(threadfeed=self)\
             .exclude(thread_id__in=thread_ids)\
             .delete()
+
+    def update_async(self):
+        from .tasks import update_threadfeed
+        update_threadfeed.delay(self.user.id, name=self.name)
+
+    def reset_async(self):
+        from .tasks import reset_threadfeed
+        reset_threadfeed.delay(self.user.id, name=self.name)
 
     def update(self):
         from etalia.nlp.tasks import te_dispatcher

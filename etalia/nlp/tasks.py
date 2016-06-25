@@ -3,12 +3,15 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
+from django.contrib.auth import get_user_model
 from .models import Model, PaperEngine, ThreadEngine
 from .models import UserFingerprint
 from .tasks_class import EmbedPaperTask, ThreadEngineTask, PaperEngineTask
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 # Register Model based tasks
 #-------------------------------------------------------------------------------
@@ -81,9 +84,16 @@ def threadengine_update_all():
 
 @app.task()
 def userfingerprints_update_all():
-    ufps = UserFingerprint.objects.all()
-    for ufp in ufps:
-        ufp.update()
+    us_pk = User.objects.all().values_list('pk', flat=True)
+    for user_pk in us_pk:
+        update_userfingerprint.delay(user_pk)
+
+
+@app.task()
+def update_userfingerprint(user_pk, name='main'):
+    f, _ = UserFingerprint.objects.get_or_create(user_id=user_pk, name=name)
+    f.update()
+    return user_pk
 
 
 @app.task()

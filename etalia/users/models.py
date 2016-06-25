@@ -480,8 +480,16 @@ class UserSettings(TimeStampedModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=True,
                                 related_name='settings')
 
-    ##  Stream settings
+    # User fingerprint
 
+    # delta-time in MONTHS to roll back stream
+    fingerprint_roll_back_deltatime = models.IntegerField(
+        default=None,
+        verbose_name='Roll-back time (months)',
+        null=True,
+        blank=True)
+
+    # Stream settings
     # scoring method to use
     stream_method = models.IntegerField(verbose_name='Method', default=0,
                                         choices=STREAM_METHODS)
@@ -497,13 +505,6 @@ class UserSettings(TimeStampedModel):
     # vector weight
     stream_vector_weight = models.FloatField(default=1.0,
                                              verbose_name='Title/Abstract weight')
-
-    # delta-time in MONTHS to roll back stream
-    stream_roll_back_deltatime = models.IntegerField(
-        default=None,
-        verbose_name='Roll-back time (months)',
-        null=True,
-        blank=True)
 
     # Trend settings
 
@@ -525,15 +526,15 @@ class UserSettings(TimeStampedModel):
         choices=EMAIL_DIGEST_FREQUENCY_CHOICES,
         verbose_name='Email digest frequency')
 
-    def init_stream_roll_back_deltatime(self):
-        if not self.stream_roll_back_deltatime:
+    def init_fingerprint_roll_back_deltatime(self):
+        if not self.fingerprint_roll_back_deltatime:
             first_created = self.user.lib.userlib_paper.all()\
                 .aggregate(min_date=Min(F('date_created')))['min_date']
             delta_months = (timezone.now().date() - first_created).days // \
                            (365 / 12) + 1
-            self.stream_roll_back_deltatime = delta_months
+            self.fingerprint_roll_back_deltatime = delta_months
             self.save()
-        return self.stream_roll_back_deltatime
+        return self.fingerprint_roll_back_deltatime
 
     def __str__(self):
         return self.user.email

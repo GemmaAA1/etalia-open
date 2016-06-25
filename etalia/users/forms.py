@@ -132,6 +132,32 @@ class UserAffiliationForm(forms.ModelForm):
         }
 
 
+class UserFingerprintSettingsForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(UserFingerprintSettingsForm, self).__init__(*args, **kwargs)
+        if 'instance' in kwargs:
+            self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-value'] = \
+                '{0:.2f}'.format(kwargs['instance'].fingerprint_roll_back_deltatime)
+            delta_month = int((timezone.now().date() - kwargs['instance'].user.lib.d_oldest).days / 30)
+            self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-max'] = delta_month
+
+    class Meta:
+        model = UserSettings
+        fields = (
+                  'fingerprint_roll_back_deltatime',
+                  )
+        widgets = {
+            'fingerprint_roll_back_deltatime': forms.TextInput(attrs={
+                'data-slider-id': 'fingerprint_roll_back_deltatime_slider',
+                'type': 'text',
+                'data-slider-min': '1',
+                'data-slider-max': '1',
+                'data-slider-step': '1',
+                'data-slider-value': '1'}),
+        }
+
+
 class UserStreamSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -143,15 +169,10 @@ class UserStreamSettingsForm(forms.ModelForm):
                 '{0:.2f}'.format(kwargs['instance'].stream_author_weight)
             self.fields['stream_journal_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_journal_weight)
-            self.fields['stream_roll_back_deltatime'].widget.attrs['data-slider-value'] = \
-                '{0:.2f}'.format(kwargs['instance'].stream_roll_back_deltatime)
-            delta_month = int((timezone.now().date() - kwargs['instance'].user.lib.d_oldest).days / 30)
-            self.fields['stream_roll_back_deltatime'].widget.attrs['data-slider-max'] = delta_month
 
     class Meta:
         model = UserSettings
         fields = (
-                  'stream_roll_back_deltatime',
                   'stream_vector_weight',
                   'stream_author_weight',
                   'stream_journal_weight',
@@ -177,13 +198,6 @@ class UserStreamSettingsForm(forms.ModelForm):
                 'data-slider-min': '0',
                 'data-slider-max': '1',
                 'data-slider-step': '.01',
-                'data-slider-value': '1'}),
-            'stream_roll_back_deltatime': forms.TextInput(attrs={
-                'data-slider-id': 'stream_roll_back_deltatime_slider',
-                'type': 'text',
-                'data-slider-min': '1',
-                'data-slider-max': '1',
-                'data-slider-step': '1',
                 'data-slider-value': '1'}),
         }
 
