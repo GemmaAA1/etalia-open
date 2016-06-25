@@ -62,7 +62,7 @@ class Stream(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
-        self.save(update_fields='state')
+        self.save(update_fields=('state', ))
 
     def __str__(self):
         return '{stream}@{email}'.format(stream=self.name,
@@ -188,7 +188,7 @@ class Trend(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
-        self.save(update_fields='state')
+        self.save(update_fields=('state', ))
 
     def clear_all(self):
         """Delete all matched matches"""
