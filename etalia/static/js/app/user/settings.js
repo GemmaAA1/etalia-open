@@ -59,7 +59,7 @@ define([
         $('#id_stream_vector_weight, ' +
             '#id_stream_author_weight, ' +
             '#id_stream_journal_weight, ' +
-            '#id_stream_roll_back_deltatime, ' +
+            '#id_fingerprint_roll_back_deltatime, ' +
             '#id_trend_doc_weight, ' +
             '#id_trend_altmetric_weight')
             .hide()

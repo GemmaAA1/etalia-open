@@ -15,14 +15,17 @@ from django.http import JsonResponse
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
+from django.db import transaction
 
 from braces.views import LoginRequiredMixin
 
 from etalia.core.mixins import AjaxableResponseMixin, NavFlapMixin
+from etalia.nlp.tasks import update_userfingerprint
+from etalia.feeds.tasks import update_trend, update_stream
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
-    UserEmailDigestSettingsForm
+    UserEmailDigestSettingsForm, UserFingerprintSettingsForm
 from etalia.library.models import PaperUser
 from etalia.library.constants import PAPER_PINNED
 from .models import Affiliation, UserLibPaper, UserSettings
@@ -288,6 +291,32 @@ class UserDeleteView(LoginRequiredMixin, ProfileModalFormsMixin, DeleteView):
 delete_user = UserDeleteView.as_view()
 
 
+class UserFingerprintSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
+                                        FormView):
+    form_class = UserFingerprintSettingsForm
+
+    def get_object(self, queryset=None):
+        return self.request.user.settings
+
+    def get_success_url(self):
+        return reverse('core:home')
+
+    @transaction.non_atomic_requests
+    def form_valid(self, form):
+        self.request.user.settings.fingerprint_roll_back_deltatime = \
+            form.cleaned_data['fingerprint_roll_back_deltatime']
+        self.request.user.settings.save()
+        update_userfingerprint.delay(self.request.user.id)
+        return super(UserFingerprintSettingsUpdateView, self).form_valid(form)
+
+    def get_ajax_data(self, *args, **kwargs):
+        data = {'fingerprint_roll_back_deltatime': '{0:d}'.format(self.request.user.settings.fingerprint_roll_back_deltatime),
+                }
+        return data
+
+update_fingerprint_settings = UserFingerprintSettingsUpdateView.as_view()
+
+
 class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
                                    FormView):
     form_class = UserStreamSettingsForm
@@ -301,19 +330,19 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
     def form_invalid(self, form):
         return super(UserStreamSettingsUpdateView, self).form_invalid(form)
 
+    @transaction.non_atomic_requests
     def form_valid(self, form):
         self.request.user.settings.stream_vector_weight = form.cleaned_data['stream_vector_weight']
         self.request.user.settings.stream_author_weight = form.cleaned_data['stream_author_weight']
         self.request.user.settings.stream_journal_weight = form.cleaned_data['stream_journal_weight']
-        self.request.user.settings.stream_roll_back_deltatime = form.cleaned_data['stream_roll_back_deltatime']
         self.request.user.settings.save()
+        update_stream.delay(self.request.user.id)
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self, *args, **kwargs):
         data = {'stream_vector_weight': '{0:.2f}'.format(self.request.user.settings.stream_vector_weight),
                 'stream_author_weight': '{0:.2f}'.format(self.request.user.settings.stream_author_weight),
                 'stream_journal_weight': '{0:.2f}'.format(self.request.user.settings.stream_journal_weight),
-                'stream_roll_back_deltatime': '{0:d}'.format(self.request.user.settings.stream_roll_back_deltatime),
                 }
         return data
 
@@ -333,10 +362,12 @@ class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
     def form_invalid(self, form):
         return super(UserTrendSettingsUpdateView, self).form_invalid(form)
 
+    @transaction.non_atomic_requests
     def form_valid(self, form):
         self.request.user.settings.trend_doc_weight = form.cleaned_data['trend_doc_weight']
         self.request.user.settings.trend_altmetric_weight = form.cleaned_data['trend_altmetric_weight']
         self.request.user.settings.save()
+        update_trend.delay(self.request.user.id)
         return super(UserTrendSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self, *args, **kwargs):
@@ -407,6 +438,20 @@ def user_init_check(request):
 
 
 @login_required
+def user_update_fingerprint_check(request):
+    if request.method == 'GET':
+        if request.user.fingerprint.first().state == 'ING':
+            messages = ['Updating Your Fingerprint', '']
+            done = False
+        else:
+            messages = []
+            done = True
+        data = {'done': done,
+                'messages': messages}
+        return JsonResponse(data)
+
+
+@login_required
 def user_update_stream_check(request):
     if request.method == 'GET':
         if request.user.streams.first().state == 'ING':
@@ -434,18 +479,22 @@ def user_update_trend_check(request):
                 'messages': messages}
         return JsonResponse(data)
 
+
 @login_required
 def user_update_settings_check(request):
     if request.method == 'GET':
         if request.user.streams.first().state == 'ING':
             return user_update_stream_check(request)
-        elif request.user.streams.first().state == 'ING':
-            return user_update_stream_check(request)
+        elif request.user.trend.first().state == 'ING':
+            return user_update_trend_check(request)
         elif request.user.lib.state == 'ING':
             return user_update_library_check(request)
+        elif request.user.fingerprint.first().state == 'ING':
+            return user_update_fingerprint_check(request)
         else:
             data = {'done': True, 'messages': []}
             return JsonResponse(data)
+
 
 @login_required
 def user_update_library_check(request):

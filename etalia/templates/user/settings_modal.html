@@ -1,3 +1,30 @@
+<div class="modal" id="fingerprint-settings-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="gridSystemModalLabel">Change fingerprint settings</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" method="POST" id="fingerprint-settings-form" root-modal="#fingerprint-settings-modal" data-async data-target="#fingerprint-settings-section" action="{% url 'user:update-fingerprint-settings' %}">
+                {% csrf_token %}
+                <span id="id_errors"></span>
+                {% for field in form_fingerprint_settings %}
+                <div class="form-group form-rows">
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
+                    <button id="save-fingerprint-settings" type="submit" class="btn btn-primary btn-md">Update</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="stream-settings-modal" role="dialog" aria-labelledby="gridSystemModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -17,7 +44,7 @@
                 {% endfor %}
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
-                    <button id="save-stream-settings" type="submit" class="btn btn-primary btn-md">Save</button>
+                    <button id="save-stream-settings" type="submit" class="btn btn-primary btn-md">Update</button>
                 </div>
                 </form>
             </div>
@@ -44,7 +71,7 @@
                 {% endfor %}
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-default btn-md">Close</button>
-                    <button id="save-trend-settings" type="submit" class="btn btn-primary btn-md">Save</button>
+                    <button id="save-trend-settings" type="submit" class="btn btn-primary btn-md">Update</button>
                 </div>
                 </form>
             </div>

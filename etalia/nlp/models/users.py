@@ -17,14 +17,16 @@ from etalia.threads.constant import THREAD_JOINED
 from etalia.core.models import TimeStampedModel
 from etalia.core.utils import pad_or_trim_vector
 
+from ..constants import FINGERPRINT_STATUS_CHOICES
+
 
 class UserFingerprintManager(models.Manager):
 
     def create(self, **kwargs):
         obj = super(UserFingerprintManager, self).create(**kwargs)
 
-        if not obj.user.settings.stream_roll_back_deltatime:
-            obj.user.settings.init_stream_roll_back_deltatime()
+        if not obj.user.settings.fingerprint_roll_back_deltatime:
+            obj.user.settings.init_fingerprint_roll_back_deltatime()
         obj.update_added_after()
 
         return obj
@@ -73,6 +75,9 @@ class UserFingerprint(TimeStampedModel):
                                       size=settings.NLP_MAX_VECTOR_SIZE,
                                       null=True)
 
+    state = models.CharField(max_length=3, blank=True,
+                             choices=FINGERPRINT_STATUS_CHOICES)
+
     objects = UserFingerprintManager()
 
     class Meta:
@@ -85,15 +90,25 @@ class UserFingerprint(TimeStampedModel):
     def embedding_size(self):
         return self.model.size
 
+    def set_state(self, state):
+        self.state = state
+        self.save(update_fields='state')
+
     def update_added_after(self):
-        delta = self.user.settings.stream_roll_back_deltatime  # in months
+        delta = self.user.settings.fingerprint_roll_back_deltatime  # in months
         added_after = (timezone.now() - timezone.timedelta(days=delta*30.5)).date()
         if not self.added_after == added_after:
             self.added_after = added_after
             self.save(update_fields=('added_after', ))
         return self.added_after
 
+    def update_async(self):
+        from ..tasks import update_userfingerprint
+        update_userfingerprint.delay(self.user.id, name=self.name)
+
     def update(self):
+
+        self.set_state('ING')
 
         data = {'ids': [],
                 'journal-ids': [],
@@ -208,5 +223,6 @@ class UserFingerprint(TimeStampedModel):
         self.threads_users_counts = pad_or_trim_vector([i[1] for i in owner_count])
 
         self.save()
+        self.set_state('IDL')
 
 
