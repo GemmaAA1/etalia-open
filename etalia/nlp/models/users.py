@@ -92,7 +92,7 @@ class UserFingerprint(TimeStampedModel):
 
     def set_state(self, state):
         self.state = state
-        self.save(update_fields='state')
+        self.save(update_fields=('state', ))
 
     def update_added_after(self):
         delta = self.user.settings.fingerprint_roll_back_deltatime  # in months
