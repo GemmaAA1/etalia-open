@@ -5,7 +5,9 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Model, PaperEngine
+from .models import Model, PaperEngine, ThreadEngine, UserFingerprint
 
 admin.site.register(Model)
 admin.site.register(PaperEngine)
+admin.site.register(ThreadEngine)
+admin.site.register(UserFingerprint)
