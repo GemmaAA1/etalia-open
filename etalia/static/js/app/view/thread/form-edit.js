@@ -12,9 +12,9 @@ define(['app', 'app/model/thread/thread'], function (App) {
                         {label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
                         {label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
                     ],
-                    help: 'Interdum et malesuada fames ac ante ipsum primis in faucibus. ' +
-                          'Sed volutpat ante ut sodales pellentesque. Sed at est sed diam tempus molestie. ' +
-                          'Integer sit amet egestas tortor.',
+                    help: 'Select the privacy of your thread. Public thread, ' +
+                          'anyone can joined. Private thread, you send the invites' +
+                          'for people to join',
                     validators: ['required', App.Model.Thread.validators.privacy]
                 }
             };

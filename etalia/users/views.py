@@ -3,6 +3,8 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
+from celery.canvas import chain
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -21,7 +23,7 @@ from braces.views import LoginRequiredMixin
 
 from etalia.core.mixins import AjaxableResponseMixin, NavFlapMixin
 from etalia.nlp.tasks import update_userfingerprint
-from etalia.feeds.tasks import update_trend, update_stream
+from etalia.feeds.tasks import update_trend, update_stream, update_threadfeed
 from .forms import UserBasicForm, UserAffiliationForm, \
     UserAuthenticationForm, UserTrendSettingsForm, UserStreamSettingsForm, \
     UpdateUserNameForm, UpdateUserPositionForm, UpdateUserTitleForm, \
@@ -306,7 +308,14 @@ class UserFingerprintSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixi
         self.request.user.settings.fingerprint_roll_back_deltatime = \
             form.cleaned_data['fingerprint_roll_back_deltatime']
         self.request.user.settings.save()
-        update_userfingerprint.delay(self.request.user.id)
+        # Trigger update
+        task = chain(
+            update_userfingerprint.s(self.request.user.id),
+            update_stream.s(),
+            update_trend.s(),
+            update_threadfeed.s(),
+        )
+        task()
         return super(UserFingerprintSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self, *args, **kwargs):
