@@ -211,6 +211,12 @@ class PaperEngineScoringMixin(object):
 
     score_altmetric_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
+    score_n_papers = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_stream_threshold = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_trend_threshold = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
     model = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
     embedding_size = None
@@ -270,7 +276,7 @@ class PaperEngineScoringMixin(object):
                 us.stream_journal_weight * jboost + \
                 us.stream_author_weight * aboost
 
-        results = self.order_n(self.data['ids'], score, self.data['date'], self.SCORE_N_PAPERS)
+        results = self.order_n(self.data['ids'], score, self.data['date'], self.score_n_papers)
 
         return results
 
@@ -294,7 +300,7 @@ class PaperEngineScoringMixin(object):
         score = us.trend_doc_weight * np.dot(self.data['embedding'], seed.T) + \
                 us.trend_altmetric_weight * altmetric_boost
 
-        results = self.order_n(self.data['ids'], score, self.data['date'], self.SCORE_N_PAPERS)
+        results = self.order_n(self.data['ids'], score, self.data['date'], self.score_n_papers)
 
         return results
 
