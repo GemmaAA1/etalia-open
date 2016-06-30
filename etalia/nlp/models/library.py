@@ -200,7 +200,6 @@ class ModelLibraryMixin(object):
 
 class PaperEngineScoringMixin(object):
 
-    SCORE_N_PAPERS = 250
     SCORE_AUTHOR_CAP_COUNT = 10
     SCORE_JOURNAL_CAP_COUNT = 10
     SCORE_ALTMETRIC_CAP_SCORE = 200

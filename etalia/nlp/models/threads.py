@@ -140,7 +140,6 @@ class ModelThreadMixin(object):
 
 class ThreadEngineScoringMixin(object):
 
-    SCORE_N_THREADS = 250
     SCORE_USER_CAP_COUNT = 10
 
     model = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
@@ -152,6 +151,8 @@ class ThreadEngineScoringMixin(object):
     score_paper_boost = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
     score_thread_embedding_paper_weight = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
+
+    score_n_threads = None  # TO BE ADDED AS MODEL FIELD TO BASE CLASS
 
     # Matching ThreadEngine class
     data = {'ids': [],
@@ -214,7 +215,7 @@ class ThreadEngineScoringMixin(object):
             results = self.order_n(self.data['ids'],
                                    score,
                                    self.data['date'],
-                                   self.SCORE_N_THREADS)
+                                   self.score_n_threads)
 
         return results
 

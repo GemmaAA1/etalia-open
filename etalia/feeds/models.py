@@ -297,6 +297,8 @@ class ThreadFeed(TimeStampedModel):
 
     last_update = models.DateTimeField(default=None, blank=True, null=True)
 
+    score_threshold = models.FloatField(default=0.3)
+
     def __str__(self):
         return self.user.email
 
@@ -335,7 +337,8 @@ class ThreadFeed(TimeStampedModel):
         task = te_dispatcher.delay('score_threadfeed', self.user.id)
         res = task.get()
         # reformat
-        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']}) for r in res])
+        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
+                        for r in res if res['score'] > self.score_threshold])
         tids = list(res_dic.keys())
 
         # clean threadfeed
