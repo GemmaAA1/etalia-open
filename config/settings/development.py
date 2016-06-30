@@ -12,14 +12,15 @@ TEMPLATE_DEBUG = DEBUG
 
 # DEBUG TOOLBAR
 # ------------------------------------------------------------------------------
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-# INSTALLED_APPS += ('debug_toolbar', )
-# MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolabarMiddleware', ) + \
-#                      MIDDLEWARE_CLASSES
-INTERNAL_IPS = ['127.0.0.1']
+if DEBUG_TOOLBAR:
+    DEBUG_TOOLBAR_PATCH_SETTINGS = False
+    INSTALLED_APPS += ('debug_toolbar', )
+    MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware', ) + \
+                         MIDDLEWARE_CLASSES
+    INTERNAL_IPS = ['127.0.0.1']
 
 # APPS
-INSTALLED_APPS += ()
+# INSTALLED_APPS += ()
 
 
 GRAPH_MODELS = {

@@ -236,8 +236,8 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
         switch_kwargs = {
             # 'user': {'serializer': UserSerializer,
             #          'one2one_nested': False},
-            'paper': {'serializer': PaperSerializer,
-                      'one2one_nested': False},
+            # 'paper': {'serializer': PaperSerializer,
+            #           'one2one_nested': False},
         }
 
     def validate_user(self, value):
@@ -292,37 +292,5 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
                     raise serializers.ValidationError(err)
             else:
                 setattr(instance, attr, value)
-
-        return instance
-
-
-class PaperUserUpdateSerializer(PaperUserSerializer):
-
-    class Meta(PaperUserSerializer.Meta):
-
-        read_only_fields = (
-            'id',
-            'link',
-            'paper',
-            'user'
-        )
-
-    def update(self, instance, validated_data):
-        """Trigger add() and trash() method as needed"""
-        serializers.raise_errors_on_nested_writes('update', self, validated_data)
-        for attr, value in validated_data.items():
-            if attr == 'store':
-                if value == PAPER_ADDED:
-                    err = instance.add()
-                elif value == PAPER_TRASHED:
-                    err = instance.trash()
-                else:
-                    raise serializers.ValidationError(
-                        'store value outside of choices ({0})'.format(PAPER_STORE))
-                if err:
-                    raise serializers.ValidationError(err)
-            else:
-                setattr(instance, attr, value)
-        instance.save()
 
         return instance

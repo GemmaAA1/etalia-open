@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
+from django.db.models import F, Count
 from django.contrib.auth import get_user_model
 
 from config.celery import celery_app as app
@@ -15,28 +16,36 @@ User = get_user_model()
 
 @app.task()
 def reset_all_main_streams():
-    us_pk = User.objects.all().values_list('pk', flat=True)
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .values_list('id', flat=True)
     for user_pk in us_pk:
         reset_stream.delay(user_pk)
 
 
 @app.task()
 def update_all_main_streams():
-    us_pk = User.objects.all().values_list('pk', flat=True)
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .values_list('id', flat=True)
     for user_pk in us_pk:
         update_stream.delay(user_pk)
 
 
 @app.task()
 def reset_all_main_trends():
-    us_pk = User.objects.all().values_list('pk', flat=True)
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .values_list('id', flat=True)
     for user_pk in us_pk:
         reset_trend.delay(user_pk)
 
 
 @app.task()
 def update_all_main_trends():
-    us_pk = User.objects.all().values_list('pk', flat=True)
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .values_list('id', flat=True)
     for user_pk in us_pk:
         update_trend.delay(user_pk)
 
