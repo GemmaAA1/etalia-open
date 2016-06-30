@@ -22,8 +22,7 @@ from ..models import Paper, Author, Journal, PaperUser
 from ..constants import PAPER_BANNED, PAPER_PINNED, PAPER_ADDED, PAPER_TRASHED
 
 from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
-    PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer, \
-    PaperUserUpdateSerializer
+    PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer
 
 
 class PaperViewSet(MultiSerializerMixin,
@@ -381,8 +380,6 @@ class PaperStateViewSet(MultiSerializerMixin,
     queryset = PaperUser.objects.all()
     serializer_class = {
         'default': PaperUserSerializer,
-        # 'update': PaperUserUpdateSerializer,
-        # 'partial_update': PaperUserUpdateSerializer
     }
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,
