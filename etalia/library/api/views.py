@@ -245,7 +245,8 @@ class PaperViewSet(MultiSerializerMixin,
                 'pin': 1 if pin == '1' else 0
             }
 
-        return queryset
+        return self.get_serializer_class()\
+            .setup_eager_loading(queryset, self.request.user)
 
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):
