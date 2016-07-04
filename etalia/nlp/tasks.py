@@ -60,6 +60,7 @@ except ThreadEngine.DoesNotExist:
 
 # Update tasks
 # ------------
+@app.task()
 def paperengine_update_all():
     pe_ids = PaperEngine.objects.filter(is_active=True).values_list('id', flat=True)
     for peid in pe_ids:

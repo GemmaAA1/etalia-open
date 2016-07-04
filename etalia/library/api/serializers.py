@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
@@ -87,13 +87,22 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'journal': {'serializer': JournalSerializer},
         }
 
+    @staticmethod
+    def setup_eager_loading(queryset, user):
+        """ Perform necessary eager loading of data. """
+        queryset = queryset.select_related('journal')
+        queryset = queryset.prefetch_related(
+            Prefetch('paperuser_set',
+                     to_attr='paperuser',
+                     queryset=PaperUser.objects.filter(user=user)))
+        return queryset
+
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""
-        paperuser = obj.state(self.context['request'].user)
-        if paperuser:
+        if hasattr(obj, 'paperuser') and obj.paperuser:
             if self.one2one_nested:
                 return PaperUserSerializer(
-                    instance=paperuser,
+                    instance=obj.paperuser[0],
                     context={'request': self.context['request']},
                     one2one_nested=False
                 ).data
@@ -141,6 +150,17 @@ class PaperNestedSerializer(PaperSerializer):
         read_only_fields = (
             '__all__',
         )
+
+    @staticmethod
+    def setup_eager_loading(queryset, user):
+        """ Perform necessary eager loading of data. """
+        queryset = queryset.select_related('journal')
+        queryset = queryset.prefetch_related(
+            Prefetch('paperuser_set',
+                     to_attr='paperuser',
+                     queryset=PaperUser.objects.filter(user=user)))
+        queryset = queryset.prefetch_related('authors')
+        return queryset
 
 
 class JournalFilterSerializer(serializers.ModelSerializer):
