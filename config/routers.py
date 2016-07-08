@@ -2,31 +2,28 @@
 from __future__ import unicode_literals, absolute_import
 
 
+# List of tuples that defines task routing
+# Task name is compared to first argument of tuple with 'startswith'. First
+# occurrence that match is used for routing
+
+TASKS_MAPPING = [
+    ('etalia.consumers', {'queue': 'consumers', 'routing_key': 'consumers'}),
+    ('etalia.users', {'queue': 'default', 'routing_key': 'default.users'}),
+    ('etalia.nlp.tasks.pe_dispatcher', {'queue': 'pe', 'routing_key': 'pe'}),
+    ('etalia.nlp.tasks.te_dispatcher', {'queue': 'te', 'routing_key': 'te'}),
+    ('etalia.nlp.tasks.nlp_dispatcher', {'queue': 'nlp', 'routing_key': 'nlp'}),
+    ('etalia.nlp.tasks.paperengine', {'queue': 'pe', 'routing_key': 'pe'}),
+    ('etalia.nlp.tasks.threadengine', {'queue': 'te', 'routing_key': 'te'}),
+    ('etalia.nlp', {'queue': 'nlp', 'routing_key': 'nlp'}),
+    ('etalia.feeds', {'queue': 'feed', 'routing_key': 'feed'}),
+    ('etalia.altmetric', {'queue': 'altmetric', 'routing_key': 'altmetric'}),
+]
+
+
 class MyRouter(object):
 
     def route_for_task(self, task, args=None, kwargs=None):
-        if task.startswith('etalia.consumers'):
-            return {'queue': 'consumers',
-                    'routing_key': 'consumers'}
-        if task.startswith('etalia.users'):
-            return {'queue': 'default',
-                    'routing_key': 'default.users'}
-        if task.startswith('etalia.nlp.tasks.pe_dispatcher'):
-            return {'queue': 'pe',
-                    'routing_key': 'pe'}
-        if task.startswith('etalia.nlp.tasks.te_dispatcher'):
-            return {'queue': 'te',
-                    'routing_key': 'te'}
-        if task.startswith('etalia.nlp.tasks.nlp_dispatcher'):
-            return {'queue': 'nlp',
-                    'routing_key': 'nlp'}
-        if task.startswith('etalia.nlp'):
-            return {'queue': 'nlp',
-                    'routing_key': 'nlp'}
-        if task.startswith('etalia.feeds'):
-            return {'queue': 'feed',
-                    'routing_key': 'feed'}
-        if task.startswith('etalia.altmetric'):
-            return {'queue': 'altmetric',
-                    'routing_key': 'altmetric'}
+        for pattern, route in TASKS_MAPPING:
+            if task.startswith(pattern):
+                return route
         return None
