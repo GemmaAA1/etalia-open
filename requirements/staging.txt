@@ -2,7 +2,7 @@
 
 gevent==1.0.2
 gunicorn==19.3.0
-flower==0.8.3
+flower==0.9.1
 
 # Static and Media Storage
 # ------------------------------------------------
