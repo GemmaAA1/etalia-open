@@ -168,49 +168,55 @@ class UserFingerprint(TimeStampedModel):
                 else:
                     data['authors-ids'].append([])
 
-        # Compute date cutoff
-        start_ind = np.argmax(np.array(data['date']) > self.added_after)
+            # Compute date cutoff
+            start_ind = np.argmax(np.array(data['date']) > self.added_after)
 
-        # Count (order from higher count to lower count)
-        auth_count = Counter(
-            [auth for auths in data['authors-ids'][start_ind:]
-             for auth in auths]).most_common()
-        jour_count = Counter(data['journal-ids'][start_ind:]).most_common()
+            # Count (order from higher count to lower count)
+            auth_count = Counter(
+                [auth for auths in data['authors-ids'][start_ind:]
+                 for auth in auths]).most_common()
+            jour_count = Counter(data['journal-ids'][start_ind:]).most_common()
 
-        # Normalize averaged embedding
-        vec_paper = np.sum(data['embedding'][start_ind:, :], axis=0)
-        norm = np.linalg.norm(vec_paper)
-        if norm > 0:
-            vec_paper /= norm
+            # Normalize averaged embedding
+            vec_paper = np.sum(data['embedding'][start_ind:, :], axis=0)
+            norm = np.linalg.norm(vec_paper)
+            if norm > 0:
+                vec_paper /= norm
 
-        # Thread related fingerprint
-        q2 = Thread.objects.raw(
-            "SELECT t.id, "
-            "		t.user_id,"
-            "		tv.vector "
-            "FROM threads_thread t "
-            "LEFT JOIN nlp_threadvectors tv ON t.id = tv.thread_id "
-            "LEFT JOIN threads_threaduser tu ON t.id = tu.thread_id "
-            "WHERE tu.user_id = %s "
-            "    AND tu.participate = %s "
-            "    AND tv.vector IS NOT NULL", (self.user_id, THREAD_JOINED))
+            # Thread related fingerprint
+            q2 = Thread.objects.raw(
+                "SELECT t.id, "
+                "		t.user_id,"
+                "		tv.vector "
+                "FROM threads_thread t "
+                "LEFT JOIN nlp_threadvectors tv ON t.id = tv.thread_id "
+                "LEFT JOIN threads_threaduser tu ON t.id = tu.thread_id "
+                "WHERE tu.user_id = %s "
+                "    AND tu.participate = %s "
+                "    AND tv.vector IS NOT NULL", (self.user_id, THREAD_JOINED))
 
-        for d in q2:
-            if not d.user_id == self.user_id:
-                data['thread-users-ids'].append(d.user_id)
-            data['thread-embedding'].append(d.vector[:self.embedding_size])
-        if data['thread-embedding']:
-            data['thread-embedding'] = np.array(data['thread-embedding'])
+            for d in q2:
+                if not d.user_id == self.user_id:
+                    data['thread-users-ids'].append(d.user_id)
+                data['thread-embedding'].append(d.vector[:self.embedding_size])
+            if data['thread-embedding']:
+                data['thread-embedding'] = np.array(data['thread-embedding'])
+            else:
+                data['thread-embedding'] = np.zeros((1, self.embedding_size), )
+
+            owner_count = Counter(data['thread-users-ids']).most_common()
+
+            # Normalize averaged embedding
+            vec_thread = np.sum(data['thread-embedding'], axis=0)
+            norm = np.linalg.norm(vec_thread)
+            if norm > 0:
+                vec_thread /= norm
         else:
-            data['thread-embedding'] = np.zeros((1, self.embedding_size), )
-
-        owner_count = Counter(data['thread-users-ids']).most_common()
-
-        # Normalize averaged embedding
-        vec_thread = np.sum(data['thread-embedding'], axis=0)
-        norm = np.linalg.norm(vec_thread)
-        if norm > 0:
-            vec_thread /= norm
+            vec_paper = []
+            auth_count = []
+            jour_count = []
+            vec_thread = []
+            owner_count = []
 
         # Populate fingerprint
         self.embedding = pad_or_trim_vector(vec_paper)
