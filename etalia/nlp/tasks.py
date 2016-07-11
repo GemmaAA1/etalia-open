@@ -58,30 +58,22 @@ try:
 except ThreadEngine.DoesNotExist:
     pass
 
+
 # Update tasks
 # ------------
 @app.task()
 def paperengine_update_all():
-    pe_ids = PaperEngine.objects.filter(is_active=True).values_list('id', flat=True)
-    for peid in pe_ids:
-        pe = PaperEngine.objects.load(id=peid, is_active=True)
-        pe.update()
+    pe_dispatcher.delay('update')
 
 
 @app.task()
 def paperengine_full_update_all():
-    pe_ids = PaperEngine.objects.filter(is_active=True).values_list('id', flat=True)
-    for peid in pe_ids:
-        pe = PaperEngine.objects.load(id=peid, is_active=True)
-        pe.full_update()
+    pe_dispatcher.delay('full_update')
 
 
 @app.task()
 def threadengine_update_all():
-    te_ids = ThreadEngine.objects.filter(is_active=True).values_list('id', flat=True)
-    for teid in te_ids:
-        te = ThreadEngine.objects.load(id=teid, is_active=True)
-        te.update()
+    te_dispatcher.delay('update')
 
 
 @app.task()
