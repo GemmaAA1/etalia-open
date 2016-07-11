@@ -71,7 +71,8 @@ LOCAL_APPS = (
     'etalia.users',
     'etalia.feeds',
     'etalia.altmetric',
-    'etalia.last_seen'
+    'etalia.last_seen',
+    'etalia.popovers',
     # 'functional_tests',
 )
 
