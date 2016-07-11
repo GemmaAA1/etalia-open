@@ -455,6 +455,9 @@ if __name__ == '__main__':
               "install",
               "-r", os.path.join(root_path, "requirements/development.txt")])
 
+    # Apply migrations
+    call([os.path.join(root_path, "manage.py"), "migrate"])
+
     import django
     django.setup()
     from django.core.files import File
@@ -474,9 +477,6 @@ if __name__ == '__main__':
     from avatar.models import Avatar
     from utils.avatar import AvatarGenerator
     from autofixture import AutoFixture
-
-    # Apply migrations
-    call([os.path.join(root_path, "manage.py"), "migrate"])
 
     User = get_user_model()
 
