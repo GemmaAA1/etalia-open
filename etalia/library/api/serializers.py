@@ -108,7 +108,7 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
                 ).data
             else:
                 return reverse('api:paperuser-detail',
-                               kwargs={'pk': paperuser.id},
+                               kwargs={'pk': obj.paperuser.id},
                                request=self.context.get('request', None),
                                format=self.context.get('format', None))
         return None
