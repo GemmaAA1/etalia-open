@@ -4,7 +4,7 @@
         "priority": 1,
         "body": "<p>This is the pinned filter. </p>\r\n<p>Use this button to retrieve the papers or the threads you have pinned.</p>",
         "type": 1,
-        "anchor": "[id=\"toggle-pinned]",
+        "anchor": "#toggle-pinned",
         "created": "2016-07-11T14:41:57.144Z",
         "title": "Filter pinned items",
         "modified": "2016-07-12T09:22:26.080Z"
