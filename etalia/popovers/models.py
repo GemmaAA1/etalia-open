@@ -17,6 +17,9 @@ class PopOver(TimeStampedModel):
 
     priority = models.PositiveIntegerField(default=1)  # highest -> highest priority
 
+    def __str__(self):
+        return self.title
+
 
 class UserPopOver(TimeStampedModel):
 
@@ -27,3 +30,5 @@ class UserPopOver(TimeStampedModel):
     status = models.PositiveIntegerField(choices=POPOVER_STATUSES,
                                          default=1)
 
+    class Meta:
+        unique_together = ('popover', 'user')
