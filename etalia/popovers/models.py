@@ -11,9 +11,11 @@ class PopOver(TimeStampedModel):
 
     body = models.TextField()
 
-    anchor = models.CharField(max_length=128)
+    anchor = models.CharField(max_length=128, null=True, blank=True)
 
     type = models.PositiveIntegerField(choices=POPOVER_TYPES, default=1)
+
+    priority = models.PositiveIntegerField(default=1)  # highest -> highest priority
 
 
 class UserPopOver(TimeStampedModel):
