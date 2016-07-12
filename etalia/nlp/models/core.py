@@ -851,13 +851,15 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 )
 
         new_ids = []
+        new_embedding = []
         for d in q1:
             new_ids.append(d.id)
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
             self.data['date'].append(d.date_)
             self.data['altmetric'].append(d.score)
-            np.vstack((self.data['embedding'], np.array(d.vector[:self.embedding_size])))
+            new_embedding.append(d.vector[:self.embedding_size])
+        self.data['embedding'] = np.vstack((self.data['embedding'], np.array(new_embedding)))
 
         # query on authors
         if new_ids:

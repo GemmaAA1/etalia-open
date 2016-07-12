@@ -317,10 +317,10 @@ def flush():
     call([os.path.join(root_path, "manage.py"), "flush"])
 
 
-def load():
-    print("Loading data from {file}...".format(file=INIT_DEFAULT_FIXTURE_FILE))
+def load(file):
+    print("Loading data from {file}...".format(file=file))
     call([os.path.join(root_path, "manage.py"), "loaddata",
-          os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
+          os.path.join(root_path, "scripts", "routines", file)])
 
 
 def fetch_new_papers():
@@ -455,6 +455,9 @@ if __name__ == '__main__':
               "install",
               "-r", os.path.join(root_path, "requirements/development.txt")])
 
+    # Apply migrations
+    call([os.path.join(root_path, "manage.py"), "migrate"])
+
     import django
     django.setup()
     from django.core.files import File
@@ -475,9 +478,6 @@ if __name__ == '__main__':
     from utils.avatar import AvatarGenerator
     from autofixture import AutoFixture
 
-    # Apply migrations
-    call([os.path.join(root_path, "manage.py"), "migrate"])
-
     User = get_user_model()
 
     # SINGLE UPDATE
@@ -496,7 +496,7 @@ if __name__ == '__main__':
 
     # Load init_data.json
     if args.load:
-        load()
+        load(args.load)
         sys.exit()
 
     # Dump to init_data.json

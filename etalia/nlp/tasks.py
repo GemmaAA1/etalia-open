@@ -63,17 +63,23 @@ except ThreadEngine.DoesNotExist:
 # ------------
 @app.task()
 def paperengine_update_all():
-    pe_dispatcher.delay('update')
+    pe = PaperEngine.objects.load(is_active=True)
+    pe.update()
+    # pe_dispatcher.delay('update')
 
 
 @app.task()
 def paperengine_full_update_all():
-    pe_dispatcher.delay('full_update')
+    pe = PaperEngine.objects.load(is_active=True)
+    pe.full_update()
+    # pe_dispatcher.delay('full_update')
 
 
 @app.task()
 def threadengine_update_all():
-    te_dispatcher.delay('update')
+    te = ThreadEngine.objects.load(is_active=True)
+    te.update()
+    # te_dispatcher.delay('update')
 
 
 @app.task()
