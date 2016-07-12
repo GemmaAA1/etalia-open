@@ -830,7 +830,8 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                          timezone.timedelta(days=self.DWELL_TIME)).date()
 
         # query on paper / vector
-        values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
+        # values = ', '.join(['({0})'.format(i) for i in self.data['ids']])
+        max_id = max(self.data['ids'])
         q1 = Paper.objects.raw(
                 "SELECT lp.id, "
                 "		lp.journal_id, "
@@ -840,13 +841,13 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 "FROM library_paper lp "
                 "LEFT JOIN nlp_papervectors pv ON lp.id = pv.paper_id "
                 "LEFT JOIN altmetric_altmetricmodel aa ON lp.id = aa.paper_id "
-                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+                "WHERE lp.id > %s"
                 "    AND pv.model_id=%s"
                 "    AND lp.is_trusted=TRUE "
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
-                "    AND lp.id NOT IN (VALUES {0}) "
-                "ORDER BY date_ ASC".format(values), (some_time_ago, self.model.id,)
+                "    AND LEAST(date_ep, date_pp, date_fs) >= %s"
+                " ORDER BY date_ ASC", (max_id, self.model.id, some_time_ago, )
                 )
 
         new_ids = []
