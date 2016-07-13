@@ -508,5 +508,102 @@ define([
         }
     }, Backbone.Events);
 
+    App.loadPopovers = function() {
+        // Close all on click out
+        $(document).on('click', function(e) {
+            if ($(e.target).closest('.ui-user-popover').size() == 0 && $(e.target).closest('.popover').size() == 0) {
+                $('.ui-user-popover').popover('hide');
+            }
+        });
+
+        require(['app/view/ui/user-popover', 'app/view/ui/modal'], function() {
+
+            console.log('test');
+
+            var userPopovers = new App.Model.UserPopovers();
+            userPopovers.on('change', _loadPopovers);
+            _loadPopovers();
+
+            function _loadPopovers() {
+                userPopovers.fetch().then(function() {
+                    var modalUserPopover = userPopovers.find(function (userPopover) {
+                        return userPopover.get('popover').get('type') === App.Model.Popover.TYPE_MODAL;
+                    });
+                    if (modalUserPopover) {
+                        var data = modalUserPopover.get('popover');
+                        var modal = new App.View.Ui.Modal({
+                            title: data.get('title'),
+                            content: data.get('body'),
+                            footer: {
+                                buttons: [{
+                                    label: 'Got it !',
+                                    attr: {
+                                        'type': 'button',
+                                        'class': 'btn btn-primary popover-got-it'
+                                    }
+                                }]
+                            }
+                        });
+                        modal
+                            .render()
+                            .on('button_click', function (e) {
+                                var $button = $(e.target).closest('button');
+                                if ($button.hasClass('popover-got-it')) {
+                                    modalUserPopover.markDone().then(function() {
+                                        modal.close();
+                                    });
+                                }
+                            });
+                    } else {
+                        userPopovers.each(function (userPopover) {
+                            if (userPopover.get('popover').get('type') === App.Model.Popover.TYPE_ANCHORED) {
+                                var $target = $(userPopover.get('popover').get('anchor')).first();
+                                if (1 == $target.size()) {
+                                    var userPopoverView = App.View.Ui.UserPopover.create({
+                                        model: userPopover,
+                                        $target: $target
+                                    });
+                                }
+                            } else {
+                                throw 'Unexpected popover type';
+                            }
+                        });
+                    }
+                });
+            }
+
+            /*userPopovers.add(new App.Model.UserPopover({
+                user: App.getCurrentUser(),
+                popover: new App.Model.Popover({
+                    title: 'Super modal',
+                    content: '<p>Wow ! Incredible !</p><p>WTF</p>',
+                    type: App.Model.Popover.TYPE_MODAL
+                })
+            }));
+
+            userPopovers.add(new App.Model.UserPopover({
+                user: App.getCurrentUser(),
+                popover: new App.Model.Popover({
+                    title: 'Super popover',
+                    content: '<p>Wow ! Incredible !</p>',
+                    anchor: '#toggle-profile',
+                    type: App.Model.Popover.TYPE_ANCHORED
+                })
+            }));
+
+            userPopovers.add(new App.Model.UserPopover({
+                user: App.getCurrentUser(),
+                popover: new App.Model.Popover({
+                    title: 'Super popover',
+                    content: '<p>Wow ! Incredible !</p>',
+                    anchor: '.list-tabs',
+                    type: App.Model.Popover.TYPE_ANCHORED
+                })
+            }));*/
+
+
+        });
+    };
+
     return App;
 });

@@ -127,6 +127,7 @@ body {
     z-index: 8;
     right: -244px;
     transition: right .25s;
+    padding-bottom: 50px;
 }
 
 body.flap-opened #backdrop {
@@ -662,6 +663,132 @@ form {
 
 .modal-backdrop.in {
     opacity: .9;
+}
+
+/* POPOVERS */
+
+.ui-user-popover {
+    position: absolute;
+    display: block;
+    width: 50px;
+    height: 50px;
+    top: 50px;
+    left: 50px;
+    margin-top: -25px;
+    margin-left: -25px;
+    z-index: 9000;
+    border-radius: 50%;
+
+    background: rgba(255,255,255,1);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0) 100%);
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(255,255,255,1)), color-stop(70%, rgba(255,255,255,0)), color-stop(100%, rgba(255,255,255,0)));
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0) 100%);
+    background: -o-radial-gradient(center, ellipse cover, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0) 100%);
+    background: -ms-radial-gradient(center, ellipse cover, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0) 100%);
+    background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff', GradientType=1 );
+}
+
+.ui-user-popover .eai {
+    position: absolute;
+    color: #ff6600;
+    width: 18px;
+    height: 18px;
+    top: 50%;
+    left: 50%;
+    font-size: 18px;
+    margin-top: -9px;
+    margin-left: -9px;
+}
+
+.ui-user-popover .circle {
+    position: absolute;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #ff6600;
+    -webkit-animation: ui-userPopoverScaleDelay 1.6s infinite linear;
+    animation: ui-userPopoverScaleDelay 1.6s infinite linear;
+    transform: scale(0, 0);
+    opacity: 0;
+}
+
+.ui-user-popover .circle + .circle {
+    -webkit-animation-delay: 0.4s;
+    animation-delay: 0.4s;
+}
+
+.ui-user-popover .circle + .circle + .circle {
+    -webkit-animation-delay: 0.8s;
+    animation-delay: 0.8s;
+}
+
+.popover {
+    min-width: 200px;
+    padding: 0;
+}
+
+.popover.top > .arrow:after {
+    border-top-color: #86b5b0;
+}
+.popover.bottom > .arrow:after {
+    border-bottom-color: #86b5b0;
+}
+.popover.right > .arrow:after {
+    border-right-color: #86b5b0;
+}
+.popover.left > .arrow:after {
+    border-left-color: #86b5b0;
+}
+
+.popover-title {
+    background-color: #86b5b0;
+    color: #ffffff;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(0, 105, 92, .5);
+    padding: 12px 14px;
+}
+
+.popover-footer {
+    padding: 15px;
+    text-align: right;
+}
+
+@-webkit-keyframes ui-userPopoverScaleDelay {
+    0% {
+        -webkit-transform: scale(0, 0);
+        transform: scale(0, 0);
+        opacity: 0;
+    }
+    25% {
+        -webkit-transform: scale(.5, .5);
+        transform: scale(.5, .5);
+        opacity: 1;
+    }
+    50%, 100% {
+        -webkit-transform: scale(1, 1);
+        transform: scale(1, 1);
+        opacity: 0;
+    }
+}
+
+@keyframes ui-userPopoverScaleDelay {
+    0% {
+        -webkit-transform: scale(0, 0);
+        transform: scale(0, 0);
+        opacity: 0;
+    }
+    25% {
+        -webkit-transform: scale(.5, .5);
+        transform: scale(.5, .5);
+        opacity: 1;
+    }
+    50%, 100% {
+        -webkit-transform: scale(1, 1);
+        transform: scale(1, 1);
+        opacity: 0;
+    }
 }
 
 /* ------------------------------------ ANIMATIONS ------------------------------------ */

@@ -49,7 +49,8 @@ define([
             "shown.bs.modal": "_onShown",
             "show.bs.modal": "_onShow",
             "hidden.bs.modal": "_onHidden",
-            "hide.bs.modal": "_onHide"
+            "hide.bs.modal": "_onHide",
+            "click .modal-footer button": "_onFooterButtonClick"
         },
 
         initialize: function (options) {
@@ -73,6 +74,8 @@ define([
                 keyboard: false,
                 backdrop: this.backdrop
             });
+
+            return this;
         },
 
         updateTitle: function(title) {
@@ -146,6 +149,10 @@ define([
 
         _onHide: function () {
             this.trigger('hide');
+        },
+
+        _onFooterButtonClick: function(e) {
+            this.trigger('button_click', e);
         },
 
         close: function () {

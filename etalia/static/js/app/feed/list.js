@@ -81,4 +81,6 @@ define([
     App.Layout.initRightFlap();
 
     view.onTabsContextChange();
+
+    App.loadPopovers();
 });
