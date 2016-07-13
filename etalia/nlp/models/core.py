@@ -859,10 +859,12 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             self.data['date'].append(d.date_)
             self.data['altmetric'].append(d.score)
             new_embedding.append(d.vector[:self.embedding_size])
-        self.data['embedding'] = np.vstack((self.data['embedding'], np.array(new_embedding)))
 
-        # query on authors
         if new_ids:
+            # concatenate embedding array
+            self.data['embedding'] = np.vstack((self.data['embedding'], np.array(new_embedding)))
+
+            # query on authors
             values = ', '.join(['({0})'.format(i) for i in new_ids])
             q2 = AuthorPaper.objects.raw(
                     "SELECT ap.id, "
