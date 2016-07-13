@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from django.contrib.auth import get_user_model
+from django.db.models import Count, F
 from celery.canvas import chain
 
 from config.celery import celery_app as app
@@ -16,9 +17,11 @@ User = get_user_model()
 
 @app.task()
 def userlib_update_all():
-    us = User.objects.all()
-    for user in us:
-        update_lib.delay(user.id)
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .values_list('id', flat=True)
+    for user_pk in us_pk:
+        update_lib.delay(user_pk)
 
 
 @app.task()
