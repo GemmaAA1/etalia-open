@@ -17,3 +17,4 @@ POPOVER_STATUSES = (
     (NEW, 'New'),
     (GOT_IT, 'Got It')
 )
+

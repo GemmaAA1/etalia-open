@@ -5,13 +5,7 @@ Restfull (Hateoas) API.
 
 based on [django-rest-framework](http://www.django-rest-framework.org/)
 
-The API is browsable. [Api root](/api/v1/)
-
-## Apis
-
-- [Threads](threads.md)
-- [Users](users.md)
-- [Library](library.md)
+The API is browsable. Endpoints list here: [Api root](/api/v1/)
 
 ## Resources
 

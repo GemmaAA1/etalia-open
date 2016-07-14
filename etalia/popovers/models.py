@@ -9,7 +9,7 @@ class PopOver(TimeStampedModel):
 
     title = models.CharField(max_length=256)
 
-    body = models.TextField()
+    template_path = models.CharField(max_length=128)
 
     anchor = models.CharField(max_length=128, null=True, blank=True)
 

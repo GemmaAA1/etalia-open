@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from rest_framework import serializers
+from django.shortcuts import render
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 
 from ..models import PopOver, UserPopOver
@@ -9,6 +10,8 @@ from ..constants import POPOVER_TYPES, ANCHORED, MODAL
 
 
 class PopOverSerializer(serializers.HyperlinkedModelSerializer):
+
+    body = serializers.SerializerMethodField()
 
     class Meta:
 
@@ -29,8 +32,14 @@ class PopOverSerializer(serializers.HyperlinkedModelSerializer):
         #     '__all__',
         # )
 
+    def get_body(self, obj):
+        """Render template file"""
+        context = {}
+        # TODO: use light method for template rendering
+        return render(self.context['request'], obj.template_path, context=context).content.decode()
+
     def validate(self, data):
-        # Check that anchored is defined is type is Anchored and is empty if type is Modal
+        """Check that anchored is defined is type is Anchored and is empty if type is Modal"""
         if 'type' in data:
             type = data.get('type', None)
             anchor = data.get('anchor', None)

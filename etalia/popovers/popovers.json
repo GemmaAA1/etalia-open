@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Your Feeds page",
+    "template_path": "popovers/modal_feeds_page_tuto.html",
+    "anchor": "",
+    "type": 2,
+    "priority": 1
+  },
+  {
+    "title": "Welcome to Etalia",
+    "template_path": "popovers/modal_welcome_to_etalia.html",
+    "anchor": "",
+    "type": 2,
+    "priority": 9
+  },
+  {
+    "title": "Filter pinned items",
+    "template": "popovers/anchor_pin_filter.html",
+    "anchor": "#toggle-pinned",
+    "type": 1,
+    "priority": 1
+  }
+]

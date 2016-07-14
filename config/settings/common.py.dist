@@ -365,6 +365,11 @@ AVATAR_DEFAULT_MENDELEY = 'http://s3.amazonaws.com/mendeley-photos/awaiting.png'
 
 MAX_MEMBERS_NOT_JOINED = 3
 
+# POPOVERS
+# ------------------------------------------------------------------------------
+
+POPOVERS_SIZE_GROUP = 3
+
 # REST FRAMEWORK
 # ------------------------------------------------------------------------------
 REST_FRAMEWORK = {

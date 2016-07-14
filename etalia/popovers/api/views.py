@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from rest_framework import viewsets, permissions, mixins
 from rest_framework import filters
@@ -47,6 +48,12 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
                 .filter(user=self.request.user)\
                 .order_by('-popover__type', '-popover__priority')
         return UserPopOver.objects.all()
+
+    def filter_queryset(self, queryset):
+        qs = super(PopOverStateViewSet, self).filter_queryset(queryset)
+        if int(self.request.query_params.get('status', NEW + 1)) == NEW:
+            return qs[:settings.POPOVERS_SIZE_GROUP]
+        return qs
 
 
 class PopOverViewSet(viewsets.ModelViewSet):

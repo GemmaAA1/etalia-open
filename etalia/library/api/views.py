@@ -285,8 +285,8 @@ class PaperViewSet(MultiSerializerMixin,
             f = request.user.fingerprint\
                 .values('authors_ids', 'authors_counts', 'journals_ids', 'journals_counts')[0]
             # Get journal_id and author_id that are bumping up the list
-            sac = sum(f['authors_counts'])
-            sjc = sum(f['journals_counts'])
+            sac = sum(f['authors_counts']) or 1
+            sjc = sum(f['journals_counts']) or 1
             aids_bumping = [aid for i, aid in enumerate(f['authors_ids'])
                             if f['authors_counts'][i]/sac > self.AUTHOR_COUNT_BUMPER/100.]
             jids_bumping = [jid for i, jid in enumerate(f['journals_ids'])
