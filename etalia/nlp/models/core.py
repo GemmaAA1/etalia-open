@@ -80,7 +80,7 @@ class ModelManager(models.Manager):
             if not os.path.isfile(os.path.join(settings.NLP_MODELS_PATH,
                                                '{}.mod'.format(obj.name))):
                 if getattr(settings, 'NLP_MODELS_BUCKET_NAME', ''):
-                    obj.pull_from_s3()
+                    obj.pull_from_s3(compress=False)
             obj._doc2vec = Doc2Vec.load(os.path.join(
                 settings.NLP_MODELS_PATH, '{0}.mod'.format(obj.name)))
         except EnvironmentError:  # OSError or IOError...
@@ -265,7 +265,7 @@ class Model(ModelThreadMixin,
         if self.BUCKET_NAME:
             self.upload_state = 'ING'
             self.save_db_only()
-            self.push_to_s3()
+            self.push_to_s3(compress=False)
             self.upload_state = 'IDL'
         # save to db
         self.save_db_only(*args, **kwargs)
