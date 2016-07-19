@@ -814,7 +814,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 else:
                     self.data['authors-ids'].append([])
 
-        # Store
+        self.order_data()
         self.save()
 
     def update(self):
@@ -887,8 +887,20 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 else:
                     self.data['authors-ids'].append([])
 
-        # save
+        self.order_data()
         self.save()
+
+    def order_data(self):
+
+        # Order by date
+        date = self.data['date']
+        ix = sorted(range(len(date)), key=date.__getitem__)
+
+        # Reorder list
+        for key in ['ids', 'date', 'journal-ids', 'altmetric', 'authors-ids']:
+            self.data[key] = [x for (y, x) in sorted(zip(ix, self.data[key]))]
+        # Reorder embedding
+        self.data['embedding'] = self.data['embedding'][ix, :]
 
     def populate_neighbors(self, paper_id, time_lapse=-1):
         """Populate neighbors of paper"""
