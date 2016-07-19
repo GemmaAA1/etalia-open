@@ -33,6 +33,7 @@ from etalia.library.constants import PAPER_PINNED
 from .models import Affiliation, UserLibPaper, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
+from .constants import INIT_STEPS
 
 
 logger = logging.getLogger(__name__)
@@ -420,23 +421,20 @@ def user_init_check(request):
     if request.method == 'GET':
         messages = []
         done = False
+        steps = dict(INIT_STEPS)
         redirect = ''
-        if request.user.init_step == 'LIB':
-            messages = ['Syncing your library',
-                        '({0} papers)'.format(request.user.lib.count_papers)]
-        elif request.user.init_step == 'STR':
-            messages = ['Building your paper feed',
-                        '']
-        elif request.user.init_step == 'TRE':
-            messages = ['Building your trend feed',
-                        '']
-        elif request.user.init_step == 'THR':
-            messages = ['Building your thread feed',
-                        '']
-        elif request.user.init_step == 'IDL':
-            done = True
-            messages = ['Done', '']
-            redirect = reverse('feeds:my_feeds')
+        for k, v in steps.items():
+            if request.user.init_step == k:
+                messages = [v, '']
+
+            # special case
+            if request.user.init_step == 'LIB':
+                messages[1] = '({0} papers)'.format(request.user.lib.count_papers)
+
+            if request.user.init_step == 'IDL':
+                done = True
+                messages = ['Done', '']
+                redirect = reverse('feeds:my_feeds')
 
         data = {'done': done,
                 'step': request.user.init_step,

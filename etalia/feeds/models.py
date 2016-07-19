@@ -338,7 +338,7 @@ class ThreadFeed(TimeStampedModel):
         res = task.get()
         # reformat
         res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                        for r in res if res['score'] > self.score_threshold])
+                        for r in res if r['score'] > self.score_threshold])
         tids = list(res_dic.keys())
 
         # clean threadfeed

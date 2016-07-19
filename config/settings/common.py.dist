@@ -367,8 +367,14 @@ MAX_MEMBERS_NOT_JOINED = 3
 
 # POPOVERS
 # ------------------------------------------------------------------------------
+# Display All highest priority if POPOVERS_DISPLAY_HIGHEST_PRIORITY is True
+# plus POPOVERS_DISPLAY_NEW_ANCHORED NEW modal type
+# plus POPOVERS_DISPLAY_NEW_ANCHORED NEW anchored type
 
-POPOVERS_SIZE_GROUP = 3
+POPOVERS_DISPLAY_HIGHEST_PRIORITY = True
+POPOVERS_DISPLAY_NEW_ANCHORED = 1
+POPOVERS_DISPLAY_NEW_MODAL = 1
+POPOVERS_DISPLAY_REFRESH_PERIOD = 3600  # in seconds
 
 # REST FRAMEWORK
 # ------------------------------------------------------------------------------

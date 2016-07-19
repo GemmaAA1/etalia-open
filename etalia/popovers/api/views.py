@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.db.models import Q
 
 from rest_framework import viewsets, permissions, mixins
 from rest_framework import filters
@@ -11,7 +12,7 @@ from etalia.core.api.permissions import IsOwner
 
 from .serializers import UserPopOverSerializer, PopOverSerializer
 from ..models import UserPopOver, PopOver
-from ..constants import NEW
+from ..constants import NEW, MODAL, ANCHORED
 
 
 User = get_user_model()
@@ -39,21 +40,15 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
                           )
 
     filter_backends = (filters.DjangoFilterBackend, )
-    filter_fields = ('status',)
+    filter_fields = ('status', 'display')
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
             return UserPopOver.objects\
                 .filter(user=self.request.user)\
-                .order_by('-popover__type', '-popover__priority')
+                .order_by('-popover__type', 'popover__priority')
         return UserPopOver.objects.all()
-
-    def filter_queryset(self, queryset):
-        qs = super(PopOverStateViewSet, self).filter_queryset(queryset)
-        if int(self.request.query_params.get('status', NEW + 1)) == NEW:
-            return qs[:settings.POPOVERS_SIZE_GROUP]
-        return qs
 
 
 class PopOverViewSet(viewsets.ModelViewSet):
@@ -76,7 +71,4 @@ class PopOverViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         instance = serializer.save()
-        # Bulk create userpopover
-        us = User.objects.all()
-        for user in us:
-            UserPopOver.objects.create(popover=instance, user=user)
+        instance.init()

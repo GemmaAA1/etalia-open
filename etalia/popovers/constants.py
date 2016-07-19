@@ -18,3 +18,10 @@ POPOVER_STATUSES = (
     (GOT_IT, 'Got It')
 )
 
+# DISPLAY CHOICES
+HIDE = 1
+DISPLAY = 2
+POPOVER_DISPLAY_CHOICES = (
+    (DISPLAY, 'Display'),
+    (HIDE, 'Hide'),
+)

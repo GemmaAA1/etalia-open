@@ -19,7 +19,8 @@ define(['app'], function (App) {
         urlRoot: App.config.api_root + userPopoverPath,
 
         defaults: {
-            status: null
+            status: null,
+            display: null
         },
 
         relations: [
@@ -59,6 +60,8 @@ define(['app'], function (App) {
 
     App.Model.UserPopover.STATUS_NEW = 1;
     App.Model.UserPopover.STATUS_DONE = 2;
+    App.Model.UserPopover.DISPLAY_HIDE = 1;
+    App.Model.UserPopover.DISPLAY_SHOW = 2;
 
     App.Model.UserPopovers = App.Backbone.Collection.extend({
         url: App.config.api_root + userPopoverPath,
@@ -70,7 +73,8 @@ define(['app'], function (App) {
 
         setQuery: function(query) {
             this.queryParams = App._.extend({
-                status: 1
+                status: App.Model.UserPopover.STATUS_NEW,
+                display: App.Model.UserPopover.DISPLAY_SHOW
             }, query);
 
             return this;

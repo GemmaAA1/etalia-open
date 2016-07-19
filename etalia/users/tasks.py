@@ -9,6 +9,7 @@ from celery.canvas import chain
 
 from config.celery import celery_app as app
 from etalia.feeds.tasks import update_stream, update_trend, update_threadfeed
+from etalia.popovers.tasks import init_popovers
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,8 @@ def init_user(user_pk):
         update_trend.s(),
         init_step.s('THR'),
         update_threadfeed.s(),
+        init_step.s('POP'),
+        init_popovers.s(),
         init_step.s('IDL'),
     )
 
