@@ -75,13 +75,15 @@ class UserPopOverSerializer(One2OneNestedLinkSwitchMixin,
             'link',
             'user',
             'popover',
-            'status'
+            'status',
+            'display',
         )
         read_only_fields = (
             'id',
             'link',
             'user',
             'popover',
+            'display',
         )
         switch_kwargs = {
             'popover': {'serializer': PopOverSerializer},
