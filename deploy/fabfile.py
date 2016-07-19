@@ -23,6 +23,11 @@ Current understood roles are:
 
 
 Examples:
+    Turn on maintenance mode
+    > fab set_hosts:production,apps,*,* go_on_maintenance
+
+    Register AMI on AWS
+    > fab create_amis:production
 
 """
 from __future__ import absolute_import, unicode_literals, print_function
