@@ -119,6 +119,7 @@ gulp.task('libraries', ['clean-libraries'], function() {
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/collapse.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/modal.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/tooltip.js',
+                'bower_components/bootstrap-sass/assets/javascripts/bootstrap/popover.js',
                 'bower_components/bootstrap-sass/assets/javascripts/bootstrap/transition.js'
             ],
             base: 'bower_components/bootstrap-sass/assets/javascripts/bootstrap',

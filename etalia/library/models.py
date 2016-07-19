@@ -40,8 +40,6 @@ class Publisher(TimeStampedModel):
 class Journal(TimeStampedModel):
     """Periodicals
     """
-
-    # TODO: Test if db_index=True improve performance
     # NullableCharField is used to enforced uniqueness at the database level,
     # by default django save None charfield as '' which is considered as a string
     # in query and conflict with uniqueness

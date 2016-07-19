@@ -139,7 +139,7 @@ class UserFingerprintSettingsForm(forms.ModelForm):
         if 'instance' in kwargs:
             self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].fingerprint_roll_back_deltatime)
-            delta_month = int((timezone.now().date() - kwargs['instance'].user.lib.d_oldest).days / 30)
+            delta_month = int((timezone.now().date() - kwargs['instance'].user.lib.d_oldest).days / 30) + 1
             self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-max'] = delta_month
 
     class Meta:

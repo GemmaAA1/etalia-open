@@ -2,13 +2,16 @@
 from __future__ import unicode_literals, absolute_import
 
 from rest_framework import serializers
+from django.template.loader import render_to_string, TemplateDoesNotExist
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 
-from ..models import PopOver, UserPopOver
-from ..constants import POPOVER_TYPES, ANCHORED, MODAL
+from ..models import PopOver, UserPopOver, UserPopOverUpdateDisplay
+from ..constants import POPOVER_TYPES, ANCHORED, MODAL, GOT_IT
 
 
 class PopOverSerializer(serializers.HyperlinkedModelSerializer):
+
+    body = serializers.SerializerMethodField()
 
     class Meta:
 
@@ -24,13 +27,25 @@ class PopOverSerializer(serializers.HyperlinkedModelSerializer):
             'anchor',
             'type',
             'priority',
+            'template_path',
         )
-        # read_only_fields = (
-        #     '__all__',
-        # )
+        read_only_fields = (
+            'body',
+        )
+
+    def get_body(self, obj):
+        """Render template file"""
+        # template = get_template(obj.template_path)
+        context = {}
+        try:
+            return render_to_string(obj.template_path, context,
+                                request=self.context['request'])
+        except TemplateDoesNotExist:
+            return 'No template file match'
+
 
     def validate(self, data):
-        # Check that anchored is defined is type is Anchored and is empty if type is Modal
+        """Check that anchored is defined is type is Anchored and is empty if type is Modal"""
         if 'type' in data:
             type = data.get('type', None)
             anchor = data.get('anchor', None)
@@ -71,3 +86,13 @@ class UserPopOverSerializer(One2OneNestedLinkSwitchMixin,
         switch_kwargs = {
             'popover': {'serializer': PopOverSerializer},
         }
+
+    def save(self, **kwargs):
+        super(UserPopOverSerializer, self).save(**kwargs)
+        # If user GOT_IT, triggered deferred update of display popovers
+        if self.validated_data.get('status') == GOT_IT:
+            upoud, _ = UserPopOverUpdateDisplay.objects\
+                .get_or_create(user=self.instance.user)
+            upoud.deferred_display_update()
+
+        return self.instance

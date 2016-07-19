@@ -193,7 +193,6 @@ class ParserZotero(ParserBackend):
         paper = self.paper_template.copy()
 
         # Type
-        # TODO UPDATE THIS
         type_ = entry.get('itemType')
         paper['type'] = dict(ZOTERO_PT).get(type_, '')
 

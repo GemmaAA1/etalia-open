@@ -77,4 +77,6 @@ define([
     });
 
     App.Layout.initRightFlap();
+
+    App.loadPopovers();
 });

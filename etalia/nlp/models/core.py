@@ -814,7 +814,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 else:
                     self.data['authors-ids'].append([])
 
-        # Store
+        self.order_data()
         self.save()
 
     def update(self):
@@ -859,10 +859,12 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             self.data['date'].append(d.date_)
             self.data['altmetric'].append(d.score)
             new_embedding.append(d.vector[:self.embedding_size])
-        self.data['embedding'] = np.vstack((self.data['embedding'], np.array(new_embedding)))
 
-        # query on authors
         if new_ids:
+            # concatenate embedding array
+            self.data['embedding'] = np.vstack((self.data['embedding'], np.array(new_embedding)))
+
+            # query on authors
             values = ', '.join(['({0})'.format(i) for i in new_ids])
             q2 = AuthorPaper.objects.raw(
                     "SELECT ap.id, "
@@ -885,8 +887,20 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 else:
                     self.data['authors-ids'].append([])
 
-        # save
+        self.order_data()
         self.save()
+
+    def order_data(self):
+
+        # Order by date
+        date = self.data['date']
+        ix = sorted(range(len(date)), key=date.__getitem__)
+
+        # Reorder list
+        for key in ['ids', 'date', 'journal-ids', 'altmetric', 'authors-ids']:
+            self.data[key] = [x for (y, x) in sorted(zip(ix, self.data[key]))]
+        # Reorder embedding
+        self.data['embedding'] = self.data['embedding'][ix, :]
 
     def populate_neighbors(self, paper_id, time_lapse=-1):
         """Populate neighbors of paper"""
