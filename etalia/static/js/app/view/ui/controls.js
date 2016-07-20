@@ -354,23 +354,29 @@ define([
         getContext: function() {
             var data = {};
 
-            if (true === this.pin.model.get('value')) {
+            if (this.pin.model.get('active') && true === this.pin.model.get('value')) {
                 data.pinned = 1;
             }
 
-            var timespan = parseInt(this.timespan.model.get('value'));
-            if (0 < timespan) {
-                data['time-span'] = timespan;
+            if (this.timespan.model.get('active')) {
+                var timespan = parseInt(this.timespan.model.get('value'));
+                if (0 < timespan) {
+                    data['time-span'] = timespan;
+                }
             }
 
-            /* TODO var cluster = parseInt(this.cluster.model.get('value'));
-            if (0 < cluster) {
-                data['cluster'] = cluster;
+            /* TODO if (this.cluster.model.get('active')) {
+                var cluster = parseInt(this.cluster.model.get('value'));
+                if (0 < cluster) {
+                    data['cluster'] = cluster;
+                }
             }*/
 
-            var search = this.search.model.get('value');
-            if (search && 0 < String(search).length) {
-                data.search = search;
+            if (this.search.model.get('active')) {
+                var search = this.search.model.get('value');
+                if (search && 0 < String(search).length) {
+                    data.search = search;
+                }
             }
 
             return data;
