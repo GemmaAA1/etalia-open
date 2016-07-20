@@ -70,7 +70,7 @@ AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'TIMEOUT': 60 * 60 * 24,    # 24 h
+        'TIMEOUT': 60 * 10,    # in seconds
     },
     'files': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
