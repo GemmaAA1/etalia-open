@@ -21,6 +21,7 @@ define([
             {
                 name: 'thread:threads',
                 title: 'Threads',
+                icon: 'eai-comments',
                 count: 0,
                 data: {
                     view: 'nested',
@@ -35,6 +36,7 @@ define([
             {
                 name: 'thread:pins',
                 title: 'Pins',
+                icon: 'eai-pin',
                 count: 0,
                 data: {
                     view: 'nested',
@@ -48,6 +50,7 @@ define([
             {
                 name: 'thread:left',
                 title: 'Left',
+                icon: 'eai-leave',
                 count: 0,
                 data: {
                     view: 'nested',

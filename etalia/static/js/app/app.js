@@ -558,7 +558,7 @@ define([
                         userPopovers.each(function (userPopover) {
                             if (userPopover.get('popover').get('type') === App.Model.Popover.TYPE_ANCHORED) {
                                 var $target = $(userPopover.get('popover').get('anchor')).first();
-                                if (1 == $target.size()) {
+                                if (1 == $target.size() && $target.is(':visible')) {
                                     var userPopoverView = App.View.Ui.UserPopover.create({
                                         model: userPopover,
                                         $target: $target
