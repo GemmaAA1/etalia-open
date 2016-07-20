@@ -302,7 +302,7 @@ class PaperViewSet(MultiSerializerMixin,
                     journals.insert(0, journals.pop(i))
 
             # Authors
-            da = [auth for d in data for auth in d.authors.all()]
+            da = [auth for d in data for auth in d.authors.all() if not auth.first_name == '' or not auth.first_name == '']
             as_count = Counter(da).most_common()
 
             for a, c in as_count[:self.SIZE_MAX_AUTHOR_FILTER]:
