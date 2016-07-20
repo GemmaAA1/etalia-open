@@ -67,16 +67,6 @@ NLP_PE_BUCKET_NAME = 'etalia-development-nlp-pe'
 NLP_TE_BUCKET_NAME = 'etalia-development-nlp-te'
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
-
-INVITE_MODE = False
-if INVITE_MODE:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': str((ROOT_DIR - 1).path('db').path('invite.sqlite3')),
-        }
-    }
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
