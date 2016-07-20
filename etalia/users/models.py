@@ -506,6 +506,11 @@ class UserSettings(TimeStampedModel):
     stream_vector_weight = models.FloatField(default=1.0,
                                              verbose_name='Title/Abstract weight')
 
+    # vector weight
+    stream_score_threshold = models.FloatField(default=0.2,
+                                               verbose_name='Specificity')
+
+
     # Trend settings
 
     # scoring method to use
@@ -519,6 +524,10 @@ class UserSettings(TimeStampedModel):
     # altmetric vector weight
     trend_altmetric_weight = models.FloatField(default=0.5,
                                                verbose_name='Altmetric weight')
+
+    # vector weight
+    trend_score_threshold = models.FloatField(default=0.2,
+                                              verbose_name='Specificity')
 
     # Email digest
     email_digest_frequency = models.IntegerField(
