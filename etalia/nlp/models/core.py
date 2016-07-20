@@ -672,7 +672,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
     score_altmetric_boost = models.FloatField(default=0.4)
 
-    score_n_papers = models.PositiveIntegerField(default=365*10)
+    score_n_papers = models.PositiveIntegerField(default=365*30)
 
     objects = PaperEngineManager()
 

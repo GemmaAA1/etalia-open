@@ -65,7 +65,7 @@ CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': '{host}:6379'.format(host=env.str('REDIS_SCORING_CACHE_HOSTNAME')),
-        'TIMEOUT': 60 * 60 * 24,     # 24 h
+        'TIMEOUT': 60,     # 24 h
     },
     'files': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -74,12 +74,5 @@ CACHES = {
     }
 }
 
-INVITE_MODE = False
-if INVITE_MODE:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': str((ROOT_DIR - 1).path('db').path('invite.sqlite3')),
-        }
-    }
-
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 60

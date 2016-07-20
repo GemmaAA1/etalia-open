@@ -53,7 +53,7 @@ class Stream(TimeStampedModel):
     state = models.CharField(max_length=3, blank=True, default='NON',
                              choices=FEED_STATUS_CHOICES)
 
-    score_threshold = models.FloatField(default=0.6)
+    score_threshold = models.FloatField(default=0.5)
 
     last_update = models.DateTimeField(default=None, blank=True, null=True)
 
