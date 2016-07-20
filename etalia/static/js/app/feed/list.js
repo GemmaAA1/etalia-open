@@ -35,7 +35,7 @@ define([
             {
                 name: 'feed:trend',
                 title: 'Trend',
-                icon: '',
+                icon: 'eai-stats',
                 count: 0,
                 data: {
                     view: 'nested',

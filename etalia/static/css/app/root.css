@@ -423,6 +423,10 @@ a.btn-provider:hover {
     color: #d9d9d9;
 }
 
+#main-nav .eai {
+    padding: 5px;
+}
+
 #sub-nav {
     position: absolute;
     width: 100%;
@@ -676,7 +680,7 @@ form {
     left: 50px;
     margin-top: -25px;
     margin-left: -25px;
-    z-index: 9000;
+    z-index: 10;
     border-radius: 50%;
 
     background: rgba(255,255,255,1);

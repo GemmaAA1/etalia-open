@@ -123,4 +123,17 @@
 .eai-zotero:before {
     content: "\e915";
 }
+.eai-wrench:before {
+    content: "\e921";
+}
+.eai-settings:before {
+    content: "\e922";
+}
+.eai-stats:before {
+    content: "\e923";
+}
+.eai-feed:before {
+    content: "\e924";
+}
+
 
