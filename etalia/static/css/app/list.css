@@ -455,6 +455,10 @@
     display: none;
 }
 
+.list-tabs .eai {
+    padding: 5px;
+}
+
 .list-header {
     overflow: hidden;
     border-bottom: 1px solid #dfe2e6;

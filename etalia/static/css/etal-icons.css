@@ -62,6 +62,18 @@
 }
 .eai-close:before {
     content: "\e901";
+    font-size: 80%;
+    vertical-align: top;
+}
+.eai-left:before {
+    content: "\e907";
+    font-size: 80%;
+    vertical-align: top;
+}
+.eai-right:before {
+    content: "\e90f";
+    font-size: 80%;
+    vertical-align: top;
 }
 .eai-comment:before {
     content: "\e902";
@@ -77,9 +89,6 @@
 }
 .eai-google-plus:before {
     content: "\e906";
-}
-.eai-left:before {
-    content: "\e907";
 }
 .eai-library-add:before {
     content: "\e908";
@@ -102,9 +111,6 @@
 .eai-remove:before {
     content: "\e90e";
 }
-.eai-right:before {
-    content: "\e90f";
-}
 .eai-search:before {
     content: "\e910";
 }
@@ -123,4 +129,17 @@
 .eai-zotero:before {
     content: "\e915";
 }
+.eai-wrench:before {
+    content: "\e921";
+}
+.eai-settings:before {
+    content: "\e922";
+}
+.eai-stats:before {
+    content: "\e923";
+}
+.eai-feed:before {
+    content: "\e924";
+}
+
 

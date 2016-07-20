@@ -12,14 +12,15 @@ define([
         $target: App.$('div[data-controls-placeholder]')
     });
     controlsView.cluster.disable();
-    //controlsView.timespan.disable();
-    //controlsView.pin.disable();
+    controlsView.timespan.disable();
+    controlsView.pin.disable();
 
     tabsView = new App.View.Ui.Tabs.create({
         tabs: [
             {
                 name: 'paper:papers',
                 title: 'Papers',
+                icon: 'eai-paper',
                 count: 0,
                 data: {
                     view: 'nested',
@@ -33,6 +34,7 @@ define([
             {
                 name: 'paper:pins',
                 title: 'Pins',
+                icon: 'eai-pin',
                 count: 0,
                 data: {
                     view: 'nested',
@@ -47,6 +49,7 @@ define([
             {
                 name: 'paper:trash',
                 title: 'Trash',
+                icon: 'eai-library-trash',
                 count: 0,
                 data: {
                     view: 'nested',

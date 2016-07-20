@@ -41,7 +41,7 @@ define(['app', 'app/model/thread/invite', 'select2'], function (App) {
         postRender: function() {
 
             function formatResult(state) {
-                console.log(state);
+                //console.log(state);
                 if (!state.id) {
                     return $('<span>' + state.text + '</span>');
                 }

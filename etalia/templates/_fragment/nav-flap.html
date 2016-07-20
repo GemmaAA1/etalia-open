@@ -8,23 +8,38 @@
         <div class="flap-inner">
             <ul id="main-nav">
                 <li class="{% active request 'feeds.+' %}">
-                    <a href="{% url 'feeds:my_feeds' %}">My Feeds</a>
+                    <a href="{% url 'feeds:my_feeds' %}">
+                        <span class="eai eai-feed"></span>
+                        My Feeds
+                    </a>
                 </li>
                 <li class="{% active request 'papers.+' %}">
-                    <a href="{% url 'papers:my_papers' %}">My Papers</a>
+                    <a href="{% url 'papers:my_papers' %}">
+                        <span class="eai eai-paper"></span>
+                        My Papers
+                    </a>
                 </li>
                 <li class="{% active request 'threads.+' %}">
                     {# TODO change route name 'my_threads' #}
-                    <a href="{% url 'threads:my_threads' %}">My Threads</a>
+                    <a href="{% url 'threads:my_threads' %}">
+                        <span class="eai eai-comments"></span>
+                        My Threads
+                    </a>
                 </li>
 
                 <li class="separator"></li>
 
                 <li class="{% active request 'user/settings.+' %}">
-                    <a href="{% url 'user:settings' %}">Settings</a>
+                    <a href="{% url 'user:settings' %}">
+                       <span class="eai eai-settings"></span>
+                        Settings
+                    </a>
                 </li>
                 <li class="{% active request 'help.+' %}">
-                    <a href="{% url 'core:help' %}">Help</a>
+                    <a href="{% url 'core:help' %}">
+                        <span class="eai eai-question"></span>
+                        Help
+                    </a>
                 </li>
             </ul>
             <div id="sub-nav">

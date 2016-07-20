@@ -518,8 +518,6 @@ define([
 
         require(['app/view/ui/user-popover', 'app/view/ui/modal'], function() {
 
-            console.log('test');
-
             var userPopovers = new App.Model.UserPopovers();
             userPopovers.on('change', _loadPopovers);
             _loadPopovers();
@@ -558,7 +556,7 @@ define([
                         userPopovers.each(function (userPopover) {
                             if (userPopover.get('popover').get('type') === App.Model.Popover.TYPE_ANCHORED) {
                                 var $target = $(userPopover.get('popover').get('anchor')).first();
-                                if (1 == $target.size()) {
+                                if (1 == $target.size() && $target.is(':visible')) {
                                     var userPopoverView = App.View.Ui.UserPopover.create({
                                         model: userPopover,
                                         $target: $target

@@ -215,7 +215,6 @@ class ThreadViewSet(MultiSerializerMixin,
             ~(Q(privacy=THREAD_PRIVATE) &
               ~(Q(threaduser__user=self.request.user) & Q(threaduser__participate=THREAD_JOINED)))
         ]
-        order_by = None
 
         # boolean filters
         for key, props in bool_filters_def.items():
@@ -278,9 +277,9 @@ class ThreadViewSet(MultiSerializerMixin,
             }
         else:
             self.request.session['threads-control-states'] = {
-                'time-span': time_span,
+                'time-span': None,
                 'search': search,
-                'pin': 1 if pin == '1' else 0
+                'pin': 0
             }
 
         return queryset.distinct()
