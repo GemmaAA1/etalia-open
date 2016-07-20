@@ -79,7 +79,8 @@ define([
 
         render: function () {
             this.$el.html(
-                '<span class="eai eai-exclamation"></span>' +
+                //'<span class="eai eai-exclamation"></span>' +
+                '<span class="exclamation">?</span>' +
                 '<span class="circle"></span>' +
                 '<span class="circle"></span>' +
                 '<span class="circle"></span>'
