@@ -272,14 +272,11 @@ class PaperViewSet(MultiSerializerMixin,
 
     @list_route(methods=['get'])
     def filters(self, request):
-        queryset = self.get_queryset()
-
-        data = queryset.select_related('journal')
-        pids = [d.id for d in data]
+        data = self.get_queryset()
 
         authors = []
         journals = []
-        if pids:
+        if data:
 
             # Get user fingerprint
             f = request.user.fingerprint\
@@ -290,7 +287,7 @@ class PaperViewSet(MultiSerializerMixin,
             aids_bumping = [aid for i, aid in enumerate(f['authors_ids'])
                             if f['authors_counts'][i]/sac > self.AUTHOR_COUNT_BUMPER/100.]
             jids_bumping = [jid for i, jid in enumerate(f['journals_ids'])
-                            if f['journals_counts'][i]/sjc > self.AUTHOR_COUNT_BUMPER/100.]
+                            if f['journals_counts'][i]/sjc > self.JOURNAL_COUNT_BUMPER/100.]
 
             # Journals
             js = [d.journal for d in data if d.journal and d.journal.title]
@@ -305,14 +302,7 @@ class PaperViewSet(MultiSerializerMixin,
                     journals.insert(0, journals.pop(i))
 
             # Authors
-            values = ', '.join(['({0})'.format(i) for i in pids])
-            qa = Author.objects.raw(
-                        "SELECT * "
-                        "FROM library_author a "
-                        "LEFT JOIN library_authorpaper ap ON a.id = ap.author_id "
-                        "WHERE ap.paper_id IN (VALUES {0}) "
-                        "   AND (a.first_name <> '' OR a.last_name <> '')".format(values))
-            da = list(qa)
+            da = [auth for d in data for auth in d.authors.all()]
             as_count = Counter(da).most_common()
 
             for a, c in as_count[:self.SIZE_MAX_AUTHOR_FILTER]:
