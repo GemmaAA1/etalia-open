@@ -78,6 +78,23 @@ CACHES = {
     }
 }
 
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': 'unique-snowflake',
+#         'TIMEOUT': 60 * 60 * 24,    # 24 h
+#     },
+#     'default': {
+#         'BACKEND': 'redis_cache.RedisCache',
+#         'LOCATION': '{host}:6379'.format(host='localhost'),
+#         'TIMEOUT': 300,     # 24 h
+#     },
+#     'files': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         'TIMEOUT': 60 * 60,         # 1 h
+#     }
+# }
+
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #
 #      SWITCH TO PRODUCTION DATABASE   #
