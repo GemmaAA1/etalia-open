@@ -73,6 +73,3 @@ CACHES = {
         'TIMEOUT': 60 * 60,     # 1 h
     }
 }
-
-CACHE_MIDDLEWARE_ALIAS = 'default'
-CACHE_MIDDLEWARE_SECONDS = 60
