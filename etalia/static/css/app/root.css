@@ -118,13 +118,13 @@ body {
 }
 
 .flap.left {
-    z-index: 7;
+    z-index: 11;
     left: -244px;
     transition: left .25s;
 }
 
 .flap.right {
-    z-index: 8;
+    z-index: 12;
     right: -244px;
     transition: right .25s;
     padding-bottom: 32px;

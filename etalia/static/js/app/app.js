@@ -518,8 +518,6 @@ define([
 
         require(['app/view/ui/user-popover', 'app/view/ui/modal'], function() {
 
-            console.log('test');
-
             var userPopovers = new App.Model.UserPopovers();
             userPopovers.on('change', _loadPopovers);
             _loadPopovers();

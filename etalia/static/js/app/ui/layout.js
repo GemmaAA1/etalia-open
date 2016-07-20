@@ -57,10 +57,9 @@ define([
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 992
             });
-            $leftFlapButton.show();
             this.leftFlap.init();
         } else {
-            $leftFlapButton.hide();
+            $leftFlapButton.show();
         }
     };
 
