@@ -92,6 +92,10 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
         """ Perform necessary eager loading of data. """
         queryset = queryset.select_related('journal')
         queryset = queryset.prefetch_related(
+            'authors',
+            'authors__first_name',
+            'authors__last_name')
+        queryset = queryset.prefetch_related(
             Prefetch('paperuser_set',
                      to_attr='paperuser',
                      queryset=PaperUser.objects.filter(user=user)))
