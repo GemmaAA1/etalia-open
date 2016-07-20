@@ -11,8 +11,6 @@
             <div class="row">
 
                 <div id="fingerprint-settings-section" class="col-md-8 col-md-offset-2">
-                    <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
-                    <h4><div id="errors" class="text-center" style="padding-bottom: 20px;"></div></h4>
                     <div class="col-md-4 text-right">
                         <div class="title">
                             Fingerprint
@@ -34,7 +32,6 @@
             <hr class="divider">
             <div class="row">
                 <div id="stream-settings-section" class="col-md-8 col-md-offset-2">
-                    <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
                     <div class="col-md-4 text-right">
                         <div class="title">
                             Papers Feed
@@ -45,6 +42,9 @@
                     <div class="col-md-8">
                         <div class="row">
                             <div class="col-md-9">
+                                <h5>Specificity: <span id="stream_score_threshold">{{ user.settings.stream_score_threshold|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Higher specificity produces fewer matches in your feed"></span></h5>
+                                </h5>
                                 <h5>Title/Abstract weight: <span id="stream_vector_weight">{{ user.settings.stream_vector_weight|floatformat:2 }}</span>
                                     <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to abstract and title of the publications"></span></h5>
                                 </h5>
@@ -65,7 +65,6 @@
             <hr class="divider">
             <div class="row">
                 <div id="trend-settings-section" class="col-md-8 col-md-offset-2">
-                    <h4><div id="message" class="text-center" style="padding-bottom: 20px;"></div></h4>
                     <div class="col-md-4 text-right">
                         <div class="title">
                             Trend Feed
@@ -77,6 +76,9 @@
                         <div class="row">
                             <div class="col-md-9">
 {#                                <h5>Method: <span id="trend_method">{{ user.settings.get_trend_method_display }}</span></h5>#}
+                                <h5>Specificity: <span id="trend_score_threshold">{{ user.settings.trend_score_threshold|floatformat:2 }}</span>
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Higher specificity produces fewer matches in your feed"></span></h5>
+                                </h5>
                                 <h5>Title/Abstract weight: <span id="trend_doc_weight">{{ user.settings.trend_doc_weight|floatformat:2 }}</span>
                                     <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Weight given to abstract and title of the publications"></span></h5>
                                 </h5>

@@ -70,13 +70,30 @@ AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'TIMEOUT': 60 * 60 * 24,    # 24 h
+        'TIMEOUT': 60 * 10,    # in seconds
     },
     'files': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         'TIMEOUT': 60 * 60,         # 1 h
     }
 }
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': 'unique-snowflake',
+#         'TIMEOUT': 60 * 60 * 24,    # 24 h
+#     },
+#     'default': {
+#         'BACKEND': 'redis_cache.RedisCache',
+#         'LOCATION': '{host}:6379'.format(host='localhost'),
+#         'TIMEOUT': 300,     # 24 h
+#     },
+#     'files': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         'TIMEOUT': 60 * 60,         # 1 h
+#     }
+# }
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #

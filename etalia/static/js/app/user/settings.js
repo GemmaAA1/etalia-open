@@ -57,9 +57,11 @@ define([
 
     function initSliders() {
         $('#id_stream_vector_weight, ' +
+            '#id_stream_score_threshold, ' +
             '#id_stream_author_weight, ' +
             '#id_stream_journal_weight, ' +
             '#id_fingerprint_roll_back_deltatime, ' +
+            '#id_trend_score_threshold, ' +
             '#id_trend_doc_weight, ' +
             '#id_trend_altmetric_weight')
             .hide()

@@ -345,6 +345,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         self.request.user.settings.stream_vector_weight = form.cleaned_data['stream_vector_weight']
         self.request.user.settings.stream_author_weight = form.cleaned_data['stream_author_weight']
         self.request.user.settings.stream_journal_weight = form.cleaned_data['stream_journal_weight']
+        self.request.user.settings.stream_score_threshold = form.cleaned_data['stream_score_threshold']
         self.request.user.settings.save()
         update_stream.delay(self.request.user.id)
         return super(UserStreamSettingsUpdateView, self).form_valid(form)
@@ -353,6 +354,7 @@ class UserStreamSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
         data = {'stream_vector_weight': '{0:.2f}'.format(self.request.user.settings.stream_vector_weight),
                 'stream_author_weight': '{0:.2f}'.format(self.request.user.settings.stream_author_weight),
                 'stream_journal_weight': '{0:.2f}'.format(self.request.user.settings.stream_journal_weight),
+                'stream_score_threshold': '{0:.2f}'.format(self.request.user.settings.stream_score_threshold),
                 }
         return data
 
@@ -376,12 +378,14 @@ class UserTrendSettingsUpdateView(LoginRequiredMixin, AjaxableResponseMixin,
     def form_valid(self, form):
         self.request.user.settings.trend_doc_weight = form.cleaned_data['trend_doc_weight']
         self.request.user.settings.trend_altmetric_weight = form.cleaned_data['trend_altmetric_weight']
+        self.request.user.settings.trend_score_threshold = form.cleaned_data['trend_score_threshold']
         self.request.user.settings.save()
         update_trend.delay(self.request.user.id)
         return super(UserTrendSettingsUpdateView, self).form_valid(form)
 
     def get_ajax_data(self, *args, **kwargs):
-        data = {'trend_doc_weight': '{0:.2f}'.format(self.request.user.settings.trend_doc_weight),
+        data = {'trend_score_threshold': '{0:.2f}'.format(self.request.user.settings.trend_score_threshold),
+                'trend_doc_weight': '{0:.2f}'.format(self.request.user.settings.trend_doc_weight),
                 'trend_altmetric_weight': '{0:.2f}'.format(self.request.user.settings.trend_altmetric_weight),
                 }
         return data

@@ -53,7 +53,7 @@ class Stream(TimeStampedModel):
     state = models.CharField(max_length=3, blank=True, default='NON',
                              choices=FEED_STATUS_CHOICES)
 
-    score_threshold = models.FloatField(default=0.5)
+    score_threshold = models.FloatField(default=0.3)
 
     last_update = models.DateTimeField(default=None, blank=True, null=True)
 
@@ -183,7 +183,7 @@ class Trend(TimeStampedModel):
 
     last_update = models.DateTimeField(default=None, blank=True, null=True)
 
-    score_threshold = models.FloatField(default=0.6)
+    score_threshold = models.FloatField(default=0.1)
 
     def __str__(self):
         return self.user.email
@@ -219,6 +219,9 @@ class Trend(TimeStampedModel):
 
         logger.info('Updating trend {id}'.format(id=self.id))
         self.set_state('ING')
+
+        # update score threshold
+        self.score_threshold = self.user.settings.stream_score_threshold
 
         # Score
         task = pe_dispatcher.delay('score_trend', self.user.id)
@@ -332,6 +335,9 @@ class ThreadFeed(TimeStampedModel):
         from etalia.nlp.tasks import te_dispatcher
         logger.info('Updating thread feed {id}'.format(id=self.id))
         self.set_state('ING')
+
+        # update score threshold
+        self.score_threshold = self.user.settings.trend_score_threshold
 
         # Score
         task = te_dispatcher.delay('score_threadfeed', self.user.id)

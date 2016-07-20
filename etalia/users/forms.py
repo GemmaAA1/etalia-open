@@ -169,15 +169,25 @@ class UserStreamSettingsForm(forms.ModelForm):
                 '{0:.2f}'.format(kwargs['instance'].stream_author_weight)
             self.fields['stream_journal_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_journal_weight)
+            self.fields['stream_score_threshold'].widget.attrs['data-slider-value'] = \
+                '{0:.2f}'.format(kwargs['instance'].stream_score_threshold)
 
     class Meta:
         model = UserSettings
         fields = (
+                  'stream_score_threshold',
                   'stream_vector_weight',
                   'stream_author_weight',
                   'stream_journal_weight',
                   )
         widgets = {
+            'stream_score_threshold': forms.TextInput(attrs={
+                'data-slider-id': 'stream_score_threshold_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '0.6',
+                'data-slider-step': '.01',
+                'data-slider-value': '1'}),
             'stream_vector_weight': forms.TextInput(attrs={
                 'data-slider-id': 'stream_vector_weight_slider',
                 'type': 'text',
@@ -211,14 +221,24 @@ class UserTrendSettingsForm(forms.ModelForm):
                 '{0:.2f}'.format(kwargs['instance'].trend_doc_weight)
             self.fields['trend_altmetric_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].trend_altmetric_weight)
+            self.fields['trend_score_threshold'].widget.attrs['data-slider-value'] = \
+                '{0:.2f}'.format(kwargs['instance'].trend_score_threshold)
 
     class Meta:
         model = UserSettings
         fields = (
+            'trend_score_threshold',
             'trend_doc_weight',
             'trend_altmetric_weight',
         )
         widgets = {
+            'trend_score_threshold': forms.TextInput(attrs={
+                'data-slider-id': 'trend_score_threshold_slider',
+                'type': 'text',
+                'data-slider-min': '0',
+                'data-slider-max': '0.6',
+                'data-slider-step': '.01',
+                'data-slider-value': '1'}),
             'trend_doc_weight': forms.TextInput(attrs={
                 'data-slider-id': 'trend_doc_weight_slider',
                 'type': 'text',

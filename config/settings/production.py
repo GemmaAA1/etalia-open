@@ -65,7 +65,7 @@ CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': '{host}:6379'.format(host=env.str('REDIS_SCORING_CACHE_HOSTNAME')),
-        'TIMEOUT': 60,     # 24 h
+        'TIMEOUT': 600,     # in seconds
     },
     'files': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
