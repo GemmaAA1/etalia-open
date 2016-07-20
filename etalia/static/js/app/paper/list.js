@@ -12,8 +12,8 @@ define([
         $target: App.$('div[data-controls-placeholder]')
     });
     controlsView.cluster.disable();
-    //controlsView.timespan.disable();
-    //controlsView.pin.disable();
+    controlsView.timespan.disable();
+    controlsView.pin.disable();
 
     tabsView = new App.View.Ui.Tabs.create({
         tabs: [
