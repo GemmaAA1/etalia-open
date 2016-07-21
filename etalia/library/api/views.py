@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from etalia.core.api.permissions import IsReadOnlyRequest
 from etalia.core.api.mixins import MultiSerializerMixin
-from etalia.core.api.permissions import IsOwner
+from etalia.core.api.permissions import IsOwner, IsSessionAuthenticatedOrReadOnly
 from etalia.threads.api.serializers import ThreadSerializer
 
 from ..models import Paper, Author, Journal, PaperUser
@@ -76,7 +76,7 @@ class PaperViewSet(MultiSerializerMixin,
     exclude_action_serializers = {
         # 'list': ['nested'],
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           )
 
     query_params_props = {
@@ -372,7 +372,7 @@ class PaperStateViewSet(MultiSerializerMixin,
     serializer_class = {
         'default': PaperUserSerializer,
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwner,
                           )
 

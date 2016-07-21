@@ -35,13 +35,20 @@ def terms_use(request):
     context = {}
     return render(request, 'pages/terms-use.html', context=context)
 
+
 def terms_privacy(request):
     context = {}
     return render(request, 'pages/terms-privacy.html', context=context)
 
+
 def support(request):
     context = {}
     return render(request, 'pages/support.html', context=context)
+
+
+def contact(request):
+    context = {}
+    return render(request, 'pages/contact.html', context=context)
 
 
 def help(request):

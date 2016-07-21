@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = (
     'rest_condition',
     'autofixture',
     'django_extensions',
+    'rest_framework.authtoken',
 )
 
 LOCAL_APPS = (
@@ -387,7 +388,12 @@ REST_FRAMEWORK = {
     'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
     'PAGE_SIZE': 10,
     'URL_FIELD_NAME': 'link',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
 }
+
 
 
 # DJANGO TOOLBAR

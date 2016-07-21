@@ -225,7 +225,8 @@ class PaperEngineScoringMixin(object):
             'journal-ids': [],
             'authors-ids': [],
             'date': [],
-            'embedding': np.empty(0)
+            'embedding': np.empty(0),
+            'altmetric': [],
             }
 
     def get_user_fingerprint(self, user_id, name='main'):

@@ -5,7 +5,7 @@
 {% block page_content %}
 {% with brand='<strong>Etalia</strong>' %}
 
-    <h1>{{ brand }} Support</h1>
+    <h1>Support</h1>
     <p>
         You’ve got a question, problem or just want some more information?<br>
         Have a peek below at our knowledge base.<br>
@@ -15,20 +15,8 @@
     <h1>Frequently Asked Questions</h1>
 
     <div id="faq">
-        <h2><a href="#faq1">How does it work?</a></h2>
-        <div id="faq1" class="collapse">
-            <p>
-                {{ brand }} checks what you are reading in your Reference Library.
-                {{ brand }} leverages the content of your library using recent advances
-                in natural language processing, machine learning, and statistics
-                to understand your interests. {{ brand }} builds news streams that
-                match your personal interests based on your library text content.
-                Reading a new paper or extending your research interests?
-                {{ brand }} will automatically adapt.
-            </p>
-        </div>
 
-        <h2><a href="#faq2">How can I sign in?</a></h2>
+        <h2><a href="#faq2">How do I sign in?</a></h2>
         <div id="faq2" class="collapse">
             <p>
                 To use {{ brand }} you need access to the internet and the {{ brand }} homepage, that you
@@ -51,6 +39,7 @@
                 support for OAuth is implemented.
             </p>
         </div>
+
         <h2><a href="#faq4">What  personal information does  {{ brand }} ask me to provide and why?</a></h2>
         <div id="faq4" class="collapse">
             <p>
@@ -60,28 +49,92 @@
                 your library. {{ brand }} does not share any of this information with third parties.
             </p>
         </div>
-        <h2><a href="#faq5">Is my data secure?</a></h2>
-        <div id="faq5" class="collapse">
+
+        <h2><a href="#faq1">How does it work?</a></h2>
+        <div id="faq1" class="collapse">
             <p>
-                Yes. We are committed to ensure data security for all users.
-                We understand how important security is, and how crucial is the integrity of your reservation information.
-                To that end, all communication with the {{ brand }} system is encrypted.
-            </p>
-        </div>
-        <h2><a href="#faq6">What about my privacy?</a></h2>
-        <div id="faq6" class="collapse">
-            <p>
-                We will never sell, rent or trade your personal information to others without your prior consent.
-            </p>
-        </div>
-        <h2><a href="#faq7">How  can I delete my account with  {{ brand }}?</a></h2>
-        <div id="faq7" class="collapse">
-            <p>
-                Under Settings, you find the option to delete your account.
+                {{ brand }} checks what you are reading in your Reference Library.
+                {{ brand }} leverages the content of your library using recent advances
+                in natural language processing, machine learning, and statistics
+                to understand your interests. {{ brand }} builds news streams that
+                match your personal interests based on your library text content.
+                Reading a new paper or extending your research interests?
+                {{ brand }} will automatically adapt.
             </p>
         </div>
 
-        <h2><a href="#faq8">What if {{ brand }} does not work ?</a></h2>
+        <h2><a href="#faq10a">What is a "Thread"?</a></h2>
+        <div id="faq10a" class="collapse">
+            <p>
+                A Thread is a new text-driven way to create a group of experts on specific topics,
+                questions or to get them comment on a pre-print you may have uploaded.
+                A Thread is like an online study group that you join based on your interests.
+                To be part of a thread and access its content you must join it. A Thread
+                can be public as anyone can join. or private as you must receive an invitation from
+                the thread's owner to join.
+            </p>
+        </div>
+
+        <h2><a href="#faq11">What is "My Feeds"?</a></h2>
+        <div id="faq11" class="collapse">
+            <p>
+                Select “My Feeds” to access the publications and threads that match your interests.
+                My Feeds is composed of three different feed tabs: <em>Papers, Trends, Threads</em>:
+                <ul>
+                    <li><em>Papers</em> lists the recent and relevant publications
+                        we found for you based on you library</li>
+                    <li><em>Trend</em> lists the publications that have reached high general attention
+                        according to the <a href="http://www.altmetric.com">Altmetric</a> score
+                        in your extended fields of interest.</li>
+                    <li><em>Thread</em> lists the threads you may be interested in such as
+                        questions, discussions and comments on publication.
+                    </li>
+                </ul>
+                From these feeds, you can directly link to individual publications, upload them to your
+                reference library, joined threads, share them with collaborators, and much more.
+            </p>
+        </div>
+
+        <h2><a href="#faq14">What if "My Feeds" are not relevant?</a></h2>
+        <div id="faq14" class="collapse">
+            <p>
+                We are trying our best to improve our recommendation engine so that it
+                provides you with accurate and relevant suggestions. This is not an easy
+                task and we may be off sometimes but we are improving based on your feedback.
+                You can do 3 things to help us:
+                <ol>
+                    <li>Under <a href="{% url 'user:settings' %}">Settings</a>, you can tune {{ brand }}'s
+                        recommendation engine to your needs.
+                    </li>
+                    <li>You can provide feedback from your feeds using the
+                        ban icon (<span class="eai eai-remove"></span>).
+                    </li>
+                    <li>You can make sure that the references that you store in
+                        reference manager are relevant to your interests.
+                    </li>
+                </ol>
+            </p>
+        </div>
+
+        <h2><a href="#faq12">What is "My Papers"?</a></h2>
+        <div id="faq12" class="collapse">
+            <p>
+                Select “My Papers” to access your library.
+                Easily retrieve and organize your papers and find the papers you have pinned.
+                Any action that you take in your library get synced to your reference
+                manager provider.
+            </p>
+        </div>
+
+        <h2><a href="#faq13">What is "My Threads"?</a></h2>
+        <div id="faq13" class="collapse">
+            <p>
+                Select "My Threads" to access the Threads your have joined, started
+                or pinned.
+            </p>
+        </div>
+
+        <h2><a href="#faq8">What if you cannot sign in ?</a></h2>
         <div id="faq8" class="collapse">
             <p>
                 {{ brand }} might be on maintenance and we apologize for any inconvenience. If {{ brand }}
@@ -109,52 +162,26 @@
             </p>
         </div>
 
-        <h2><a href="#faq11">What is "My Stream"?</a></h2>
-        <div id="faq11" class="collapse">
+        <h2><a href="#faq5">Is my data secure?</a></h2>
+        <div id="faq5" class="collapse">
             <p>
-                Select “My Stream” for a listing of new publications that match your interests profile.
-                From the listing, you can directly link to individual publications, upload them to your
-                reference library, share them with collaborators, and much more.
+                Yes. We are committed to ensure data security for all users.
+                We understand how important security is, and how crucial is the integrity of your reservation information.
+                To that end, all communication with the {{ brand }} system is encrypted.
             </p>
         </div>
 
-        <h2><a href="#faq12">What is "Trends"?</a></h2>
-        <div id="faq12" class="collapse">
+        <h2><a href="#faq6">What about my privacy?</a></h2>
+        <div id="faq6" class="collapse">
             <p>
-                Select “Trend” for a listing of new publications that have reached high general attention
-                according to the <a href="http://www.altmetric.com">Altmetric</a> score and may be of interest
-                to you based on your profile.
+                We will never sell, rent or trade your personal information to others without your prior consent.
             </p>
         </div>
 
-        <h2><a href="#faq13">What is "My Threads"?</a></h2>
-        <div id="faq13" class="collapse">
+        <h2><a href="#faq7">How  can I delete my account with  {{ brand }}?</a></h2>
+        <div id="faq7" class="collapse">
             <p>
-                “My Threads” is a new text-driven way to communicate with experts on specific topics,
-                such as comments on a pre-print you may have uploaded.  Select “My Threads” to monitor
-                your communications with a circle of experts who started with you discussion.
-                <b>This service is not yet released and we will roll it out soon. stay tuned.</b>
-            </p>
-        </div>
-
-        <h2><a href="#faq14">Why the suggested papers are not matching my interest?</a></h2>
-        <div id="faq14" class="collapse">
-            <p>
-                We are trying our best to improve our recommendation engine so that it
-                provides you with accurate and relevant suggestions. This is not an easy
-                task, we may be off sometimes but we are improving based on your feedback.
-                You can do 3 things to help us:
-                <ol>
-                    <li>You can provide feedback directly under using the
-                        ban (<span class="eai eai-remove"></span>) icon.
-                    </li>
-                    <li>Under settings, you can tuned {{ brand }}'s
-                        recommendation engine to your need.
-                    </li>
-                    <li>You can make sure that the references that your store in
-                        reference manager are relevant to your interest.
-                    </li>
-                </ol>
+                Under <a href="{% url 'user:settings' %}">Settings</a>, you find the option to delete your account.
             </p>
         </div>
 

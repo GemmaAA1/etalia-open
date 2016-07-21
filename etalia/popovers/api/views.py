@@ -8,7 +8,7 @@ from django.db.models import Q
 from rest_framework import viewsets, permissions, mixins
 from rest_framework import filters
 
-from etalia.core.api.permissions import IsOwner
+from etalia.core.api.permissions import IsOwner, IsAdminOrReadOnly, IsSessionAuthenticatedOrReadOnly
 
 from .serializers import UserPopOverSerializer, PopOverSerializer
 from ..models import UserPopOver, PopOver
@@ -35,7 +35,7 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
 
     queryset = UserPopOver.objects.all()
     serializer_class = UserPopOverSerializer
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwner,
                           )
 
@@ -64,7 +64,7 @@ class PopOverViewSet(viewsets.ModelViewSet):
 
     queryset = PopOver.objects.all().order_by('-type', '-priority')
     serializer_class = PopOverSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (IsAdminOrReadOnly, )
 
     filter_backends = (filters.DjangoFilterBackend, )
     filter_fields = ('type', )
