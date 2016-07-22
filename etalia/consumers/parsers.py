@@ -227,15 +227,17 @@ class ParserElsevier(Parser):
     def parse_authors(self, entry):
         authors = []
 
-        full_authors = entry.get('authors', {'': ''}).get('author', [''])
-        for auth in full_authors:
-            author = self.author_template.copy()
-            try:
-                author['first_name'] = auth.get('given-name', '')
-                author['last_name'] = auth.get('surname', '')
-                authors.append(author)
-            except AttributeError:
-                pass
+        auths = entry.get('authors')
+        if auths:
+            full_authors = auths.get('author')
+            for auth in full_authors:
+                author = self.author_template.copy()
+                try:
+                    author['first_name'] = auth.get('given-name', '')
+                    author['last_name'] = auth.get('surname', '')
+                    authors.append(author)
+                except AttributeError:
+                    pass
 
         return authors
 
