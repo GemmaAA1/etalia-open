@@ -55,7 +55,7 @@ class Stream(TimeStampedModel):
 
     score_threshold = models.FloatField(default=0.3)
 
-    last_update = models.DateTimeField(default=None, blank=True, null=True)
+    updated_at = models.DateTimeField(default=None, blank=True, null=True)
 
     objects = StreamManager()
 
@@ -137,8 +137,8 @@ class Stream(TimeStampedModel):
         except LastSeen.DoesNotExist:
             pass
 
-        self.last_update = timezone.now()
-        self.save(update_fields=('last_update', ))
+        self.updated_at = timezone.now()
+        self.save(update_fields=('updated_at', ))
 
         self.set_state('IDL')
 
@@ -181,7 +181,7 @@ class Trend(TimeStampedModel):
 
     state = models.CharField(max_length=3, blank=True, choices=FEED_STATUS_CHOICES)
 
-    last_update = models.DateTimeField(default=None, blank=True, null=True)
+    updated_at = models.DateTimeField(default=None, blank=True, null=True)
 
     score_threshold = models.FloatField(default=0.1)
 
@@ -263,8 +263,8 @@ class Trend(TimeStampedModel):
         except LastSeen.DoesNotExist:
             pass
 
-        self.last_update = timezone.now()
-        self.save(update_fields=('last_update', ))
+        self.updated_at = timezone.now()
+        self.save(update_fields=('updated_at', ))
 
         self.set_state('IDL')
         logger.info('Updating trend {id} done'.format(id=self.id))
@@ -298,7 +298,7 @@ class ThreadFeed(TimeStampedModel):
 
     state = models.CharField(max_length=3, blank=True, choices=FEED_STATUS_CHOICES)
 
-    last_update = models.DateTimeField(default=None, blank=True, null=True)
+    updated_at = models.DateTimeField(default=None, blank=True, null=True)
 
     score_threshold = models.FloatField(default=0.3)
 
@@ -379,8 +379,8 @@ class ThreadFeed(TimeStampedModel):
         except LastSeen.DoesNotExist:
             pass
 
-        self.last_update = timezone.now()
-        self.save(update_fields=('last_update', ))
+        self.updated_at = timezone.now()
+        self.save(update_fields=('updated_at', ))
 
         self.set_state('IDL')
         logger.info('Updating thread feed {id} done'.format(id=self.id))

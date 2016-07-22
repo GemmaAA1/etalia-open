@@ -12,7 +12,7 @@ from rest_framework import filters
 
 from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly
 
-from etalia.core.api.permissions import IsOwner, IsOwnerIfViewFull
+from etalia.core.api.permissions import IsOwner, IsOwnerIfViewFull, IsSessionAuthenticatedOrReadOnly
 from etalia.library.api.serializers import PaperSerializer, \
     PaperNestedSerializer
 from etalia.library.constants import PAPER_ADDED
@@ -56,7 +56,7 @@ class UserViewSet(MultiSerializerMixin,
     """
 
     queryset = User.objects.all().exclude(is_superuser=True)
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,
                           IsOwnerIfViewFull)
     serializer_class = {
@@ -124,7 +124,7 @@ class UserLibViewSet(MultiSerializerMixin,
         'default': UserLibSerializer,
         'nested': UserLibNestedSerializer
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsReadOnlyRequest,
                           IsOwner)
 
@@ -181,7 +181,7 @@ class UserLibPaperViewSet(MultiSerializerMixin,
         'default': UserLibPaperSerializer,
         'nested': UserLibNestedSerializer
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsReadOnlyRequest,
                           IsOwner)
 
@@ -224,7 +224,7 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     """
     queryset = Relationship.objects.all()
     serializer_class = RelationshipSerializer
-    permissions_classes = (permissions.IsAuthenticated,
+    permissions_classes = (IsSessionAuthenticatedOrReadOnly,
                            IsOwner)
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('status', 'from_user', 'to_user')
@@ -262,7 +262,7 @@ class AffiliationViewSet(viewsets.ModelViewSet):
     """
     queryset = Affiliation.objects.all()
     serializer_class = AffiliationSerializer
-    permissions_classes = (permissions.IsAuthenticated,
+    permissions_classes = (IsSessionAuthenticatedOrReadOnly,
                            IsOwnerOrReadOnly)
     filter_backends = (filters.DjangoFilterBackend,
                        filters.SearchFilter,

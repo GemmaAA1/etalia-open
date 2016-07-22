@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^terms-of-use/$', views.terms_use, name='terms_use'),
     url(r'^terms-of-privacy/$', views.terms_privacy, name='terms_privacy'),
     url(r'^support/$', views.support, name='support'),
+    url(r'^contact/$', views.contact, name='contact'),
     url(r'^help/$', views.help, name='help'),
     url(r'^test-failing-task$', views.test_failing_task)
 ]

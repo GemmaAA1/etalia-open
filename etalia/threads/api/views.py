@@ -17,7 +17,7 @@ from django.utils import timezone
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
     ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod, \
-    IsToUserOrOwnersReadOnly
+    IsToUserOrOwnersReadOnly, IsSessionAuthenticatedOrReadOnly
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -88,7 +88,7 @@ class ThreadViewSet(MultiSerializerMixin,
     exclude_action_serializers = {
         'list': ['nested'],
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,
                           ThreadIsNotYetPublishedIsOwnerIfDeleteMethod)
 
@@ -356,7 +356,7 @@ class ThreadPostViewSet(MultiSerializerMixin,
         'default': ThreadPostSerializer,
         'nested': ThreadPostNestedSerializer
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,
                           IsThreadMember
                           )
@@ -402,7 +402,7 @@ class ThreadCommentViewSet(MultiSerializerMixin,
     serializer_class = {
         'default': ThreadCommentSerializer,
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,
                           IsThreadMember
                           )
@@ -453,7 +453,7 @@ class ThreadUserViewSet(MultiSerializerMixin,
         'update': ThreadUserUpdateSerializer,
         'partial_update': ThreadUserUpdateSerializer
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwner,
                           )
 
@@ -498,7 +498,7 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
         'update': ThreadUserInviteUpdateSerializer,
         'partial_update': ThreadUserInviteUpdateSerializer,
     }
-    permission_classes = (permissions.IsAuthenticated,
+    permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsToUserOrOwnersReadOnly,
                           )
 

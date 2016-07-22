@@ -11,11 +11,11 @@ define([
         urlRoot: App.config.api_root + path,
 
         defaults: {
-            di_doi: null,
-            di_pmi: null,
-            di_arx: null,
-            di_pii: null,
-            di_oth: null,
+            id_doi: null,
+            id_pmi: null,
+            id_arx: null,
+            id_pii: null,
+            id_oth: null,
             title: null,
             url: null,
             new: false,
