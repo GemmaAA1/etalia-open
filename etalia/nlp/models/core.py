@@ -903,7 +903,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         for key in ['ids', 'date', 'journal-ids', 'altmetric', 'authors-ids']:
             self.data[key] = [x for (y, x) in sorted(zip(ix, self.data[key]))]
         # Reorder embedding
-        self.data['embedding'][:, ix] = self.data['embedding'].copy()
+        self.data['embedding'][ix, :] = self.data['embedding'].copy()
 
     def populate_neighbors(self, paper_id, time_lapse=-1):
         """Populate neighbors of paper"""
