@@ -510,7 +510,7 @@ class ConsumerElsevier(Consumer):
                                  reverse=True)
 
                 if entries:
-                    current_start_date = entries[-1]['prism:coverDisplayDate']
+                    current_start_date = entries[-1]['prism:coverDate'][0].get('$')
                     # strip 'Available online' tag if in coverDisplayDate
                     current_start_date = re.sub(r'Available online', '',
                                                 current_start_date).strip()
