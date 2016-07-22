@@ -22,7 +22,7 @@
    sodipodi:docname="logo_beta.svg"><metadata
      id="metadata23"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
      id="defs21" /><sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -84,5 +84,5 @@
        id="tspan4172"
        x="376.85489"
        y="129.35196"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Shadows Into Light';-inkscape-font-specification:'Shadows Into Light, ';fill:#ff6b07;fill-opacity:0.94509804">beta</tspan></text>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Shadows Into Light';-inkscape-font-specification:'Shadows Into Light, ';fill:#ff6b07;fill-opacity:1;opacity:0.6">beta</tspan></text>
 </svg>
