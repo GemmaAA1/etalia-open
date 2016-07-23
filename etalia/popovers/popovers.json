@@ -2,7 +2,7 @@
   "popovers": [
     {
       "id": 1,
-      "title": "Welcome to Etalia",
+      "title": "Welcome",
       "template_path": "popovers/popover_welcome_to_etalia.html",
       "anchor": "",
       "type": 2,
@@ -10,51 +10,51 @@
     },
     {
       "id": 2,
-      "title": "Your Feeds Page",
+      "title": "Your Feeds Page, Your Home Page",
       "template_path": "popovers/popover_feed_tabs.html",
       "anchor": "",
       "type": 2,
-      "priority": 5
+      "priority": 10
     },
     {
       "id": 3,
-      "title": "Paper Thumbnail",
+      "title": "Did you figure that out?",
       "template_path": "popovers/popover_quicklook_paper_thumbnail.html",
       "anchor": "",
       "type": 2,
-      "priority": 9
+      "priority": 20
     },
     {
       "id": 4,
-      "title": "Thread Thumbnail",
+      "title": "Did you know this?",
       "template_path": "popovers/popover_quicklook_thread_thumbnail.html",
       "anchor": "",
       "type": 2,
-      "priority": 9
+      "priority": 30
     },
     {
       "id": 5,
-      "title": "Thread Detail",
+      "title": "Did you know this?",
       "template_path": "popovers/popover_quicklook_thread_detail.html",
       "anchor": "",
       "type": 2,
-      "priority": 9
+      "priority": 40
     },
     {
       "id": 7,
-      "title": "Filter by time",
+      "title": "The Time Filter",
       "template_path": "popovers/anchor_time_filter.html",
       "anchor": "#toggle-timespan",
       "type": 1,
-      "priority": 8
+      "priority": 110
     },
     {
       "id": 6,
-      "title": "Filter pinned items",
+      "title": "The Pin Filter",
       "template_path": "popovers/anchor_pin_filter.html",
       "anchor": "#toggle-pinned",
       "type": 1,
-      "priority": 9
+      "priority": 120
     }
   ]
 }
