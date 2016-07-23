@@ -431,14 +431,14 @@ def user_init_check(request):
             if request.user.init_step == k:
                 messages = [v, '']
 
-            # special case
-            if request.user.init_step == 'LIB':
-                messages[1] = '({0} papers)'.format(request.user.lib.count_papers)
+                # special case
+                if request.user.init_step == 'LIB':
+                    messages[1] = '({0} papers)'.format(request.user.lib.count_papers)
 
-            if request.user.init_step == 'IDL':
-                done = True
-                messages = ['Done', '']
-                redirect = reverse('feeds:my_feeds')
+                if request.user.init_step == 'IDL':
+                    done = True
+                    messages = ['Done', '']
+                    redirect = reverse('feeds:my_feeds')
 
         data = {'done': done,
                 'step': request.user.init_step,
