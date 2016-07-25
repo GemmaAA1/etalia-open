@@ -2,8 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.contrib.auth import get_user_model
-from django.conf import settings
-from django.db.models import Q
+from django.views.decorators.cache import never_cache
 
 from rest_framework import viewsets, permissions, mixins
 from rest_framework import filters
@@ -12,7 +11,6 @@ from etalia.core.api.permissions import IsOwner, IsAdminOrReadOnly, IsSessionAut
 
 from .serializers import UserPopOverSerializer, PopOverSerializer
 from ..models import UserPopOver, PopOver
-from ..constants import NEW, MODAL, ANCHORED
 
 
 User = get_user_model()
@@ -41,6 +39,14 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
 
     filter_backends = (filters.DjangoFilterBackend, )
     filter_fields = ('status', 'display')
+
+    @never_cache
+    def list(self, request, *args, **kwargs):
+        return super(PopOverStateViewSet, self).list(request, *args, **kwargs)
+
+    @never_cache
+    def retrieve(self, request, *args, **kwargs):
+        return super(PopOverStateViewSet, self).list(request, *args, **kwargs)
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access

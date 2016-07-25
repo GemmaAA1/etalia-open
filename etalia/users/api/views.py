@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import operator
-from functools import reduce
 from django.db.models import Q
 
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, mixins
 from rest_framework import filters
+
+from django.views.decorators.cache import never_cache
 
 from etalia.core.api.permissions import IsReadOnlyRequest, IsOwnerOrReadOnly
 
@@ -82,6 +82,10 @@ class UserViewSet(MultiSerializerMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @never_cache
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserViewSet, self).dispatch(request, *args, **kwargs)
+
     @detail_route(permission_classes=(IsOwner, ))
     def following(self, request, pk=None):
         return self.render_list(self.request.user.following)
@@ -127,6 +131,10 @@ class UserLibViewSet(MultiSerializerMixin,
     permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsReadOnlyRequest,
                           IsOwner)
+
+    @never_cache
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserLibViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
@@ -185,6 +193,10 @@ class UserLibPaperViewSet(MultiSerializerMixin,
                           IsReadOnlyRequest,
                           IsOwner)
 
+    @never_cache
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserLibPaperViewSet, self).dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
@@ -228,6 +240,10 @@ class RelationshipViewSet(viewsets.ModelViewSet):
                            IsOwner)
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('status', 'from_user', 'to_user')
+
+    @never_cache
+    def dispatch(self, request, *args, **kwargs):
+        return super(RelationshipViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
 

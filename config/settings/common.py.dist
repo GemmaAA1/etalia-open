@@ -124,7 +124,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
-    # Your stuff: custom template context processors go here
     'social.apps.django_app.context_processors.backends',
     'django.core.context_processors.request',
     'etalia.core.context_processors.admin_context',
@@ -394,6 +393,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+# CACHE
+# ------------------------------------------------------------------------------
+CACHE_MIDDLEWARE_SECONDS = 60 * 5
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_KEY_PREFIX = ''
 
 
 # DJANGO TOOLBAR
