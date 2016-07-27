@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Fabfile for etalia deployment on AWS.
+Fabfile for deployment on AWS.
 
 Current stack is composed of:
 - webwerver
@@ -12,12 +12,12 @@ Instance roles are defined by tags and layer
 Current understood roles are:
 - jobs      # job layer
 - apps      # front-end layer
-- web       # webserver
-- master    # master job (e.g rabbitmq, any unitary task, celery-beat, flower)
+- web       # web server
+- master    # master (e.g rabbitmq, unitary tasks (e.g celery-beat, flower))
 - base      # default job queue, consumers
 - nlp       # doc2vec tagging
-- pe        # paperengine request
-- te        # threadengine request
+- pe        # Paper Engine
+- te        # Thread Engine
 - feed      # feed computation
 - redis     # MUST BE DEFINED ON ONE SINGLE SPOT INSTANCE
 
@@ -38,8 +38,8 @@ import random
 import itertools
 from time import sleep
 
-from boto import utils
-from boto.ec2 import connect_to_region, instance
+from aws.utils import connect_ec2, get_image_name, dict2tags, tags2dict, \
+    tag_instance
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
     put, sudo, get, reboot
@@ -48,15 +48,17 @@ from fabtools.utils import run_as_root
 import fabtools
 from fabric_slack_tools import *
 
-STACK = 'production'
+
+STACKS = ['production']
+LAYERS = ['apps', 'jobs']
+ROLES = ['web', 'master', 'base', 'nlp', 'pe', 'te', 'feed', 'redis']
+
 STACK_SITE_MAPPING = \
-    {'staging': '',
-     'production': 'alpha.etalia.io'}
-REGION = os.environ.get("AWS_REGION")
+    {'production': 'alpha.etalia.io'}
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
-USER = 'ubuntu'
+
 ROLE_INSTANCE_TYPE_MAP = {
     'web': 't2.micro',
     'base': 't2.small',
@@ -77,15 +79,19 @@ INSTANCE_TYPES_RANK = {
     'm4.2xlarge': 5,
     'm4.10xlarge': 6}
 
-
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # ROOT_DIR is two levels up
 SUPERVISOR_CONF_DIR = 'supervisor'
 SSL_PATH = '/etc/nginx/ssl'
 SLACK_WEB_HOOK = \
     "https://hooks.slack.com/services/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"
 
+# Default
+STACK = 'production'
+USER = 'ubuntu'
+REGION = os.environ.get("AWS_REGION")
+
 # AMIS
-NO_REBOOT = True
+CREATE_AMI_REBOOT = True
 
 env.key_filename = ['~/.ssh/npannetier-key-pair-oregon.pem']
 env.user = USER
@@ -122,26 +128,21 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     source_dir = '{0}/source'.format(stack_dir)
     setattr(env, 'source_dir', source_dir)
 
-    context = {
-        'tag:stack': stack,
-        'tag:layer': layer,
-        'tag:role': role,
-        'tag:Name': name,
-    }
-    tags = _get_public_dns(region, context)
+    context = build_context(stack, layer, role, name)
+    props = _get_public_dns(context)
 
     # merge aws layer and aws role into roles
-    env.hosts = tags.keys()
-    roles_layer = list(set([tag.get('layer', '') for tag in tags.values()]))
-    roles_role = list(itertools.chain.from_iterable([tag.get('role', '').split('-') for tag in tags.values()]))
-    roles = list(set(roles_layer + roles_role))
+    env.hosts = props.keys()
+    layer = list(set([tag.get('layer', '') for tag in props.values()]))
+    role = list(itertools.chain.from_iterable([tag.get('role', '').split('-') for tag in props.values()]))
+    roles = list(set(layer + role))
     env.roles = list(set(roles))
 
     # define roledefs (http://docs.fabfile.org/en/1.10/usage/execution.html#Roles)
     roledefs = {}
     for role in env.roles:
         for host in env.hosts:
-            if role in [tags[host]['layer']] + tags[host]['role'].split('-'):
+            if role in [props[host]['layer']] + props[host]['role'].split('-'):
                 if roledefs.get(role):
                     roledefs[role] += [host]
                 else:
@@ -151,7 +152,7 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
     # store stack
     setattr(env, 'stack_string', stack)
     # store tags
-    setattr(env, 'tags', tags)
+    setattr(env, 'tags', props)
 
     # Check minimum requirement between instance type and role
     check_integrity()
@@ -159,6 +160,19 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
 # ------------------------------------------------------------------------------
 # COMMON
 # ------------------------------------------------------------------------------
+
+
+def build_context(stack, layer, role, name):
+    context = {}
+    if stack and not stack == '*':
+        context['stack'] = stack
+    if layer and not layer == '*':
+        context['layer'] = layer
+    if role and not role == '*':
+        context['role'] = role
+    if name and not name == '*':
+        context['Name'] = name
+    return context
 
 
 @task
@@ -321,6 +335,7 @@ def update_remote_origin():
 def pip_install():
     """Pip install requirements"""
     run_as_root('pip install boto')
+    run_as_root('pip install boto3')
     with settings(cd(env.source_dir), _workon()):
         run('pip install -r requirements/{stack}.txt'.format(stack=env.stack))
 
@@ -347,7 +362,7 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
-        files.upload_template('supervisord.template.conf', supervisor_file,
+        files.upload_template('templaste/supervisord.template.conf', supervisor_file,
                               context={'SITENAME': env.stack_site,
                                        'USER': env.user,
                                        'STACK': env.stack,
@@ -444,7 +459,7 @@ def update_nginx_conf():
     if files.exists(available_file):
         run_as_root('rm ' + available_file)
     # upload template
-    files.upload_template('nginx.template.conf', available_file,
+    files.upload_template('templates/nginx.template.conf', available_file,
                           context={'SITENAME': env.stack_site,
                                    'USER': env.user,
                                    'STACK': env.stack}, use_sudo=True,
@@ -468,7 +483,8 @@ def update_gunicorn_conf():
     if files.exists(gunicorn_conf_path):
         run_as_root('rm ' + gunicorn_conf_path)
     # upload template
-    files.upload_template('gunicorn.template.conf.py', gunicorn_conf_path,
+    files.upload_template('templates/gunicorn.template.conf.py',
+                          gunicorn_conf_path,
                           context={'SITENAME': env.stack_site,
                                    'USER': env.user}, use_sudo=True,
                           use_jinja=True)
@@ -525,7 +541,7 @@ def update_redis_cache():
         run('mkdir -p {0}'.format(redis_dir))
 
         # upload redis.conf to conf_dir
-        files.upload_template('redis.conf',
+        files.upload_template('templates/redis.conf',
                               '{redis_dir}/redis.conf'.format(redis_dir=redis_dir),
                               context={
                                   'LOG_DIR': env.stack_dir + '/log',
@@ -535,10 +551,9 @@ def update_redis_cache():
         # flush cache
         run("redis-cli flushall")
 
-# SPOT
+
+# COMMON
 # ----------
-
-
 @task
 def clean_and_update_hosts_file(stack=STACK):
     hosts_ip6 = '# The following lines are desirable for IPv6 capable hosts ' \
@@ -614,59 +629,29 @@ def update_hosts_file(stack=STACK):
     return reb
 
 
-@task
-def update_rc_local():
-    rc_local_path = '/etc/rc.local'
-    insert =\
-        '# Run script for auto-tagging instance from ami in spot requests\n' \
-        'chmod o+x /home/ubuntu/production/source/scripts/startup/spot_at_launch.py\n'\
-        '/home/ubuntu/production/source/scripts/startup/spot_at_launch.py\n'\
-        'touch /home/ubuntu/production/source/scripts/startup/spot_at_launch_has_run\n'\
-        'exit 0'
-
-    if not files.contains(rc_local_path, 'spot_at_launch.py'):
-        run_as_root("sed -i 's/exit 0//' {file}".format(file=rc_local_path))
-        files.append(rc_local_path, insert, use_sudo=True)
-
-
 # ------------------------------------------------------------------------------
 # UTILITIES
 # ------------------------------------------------------------------------------
 
-def _get_public_dns(region, context):
+def _get_public_dns(context):
     """Private method to get public DNS name for instance with given tag key
      and value pair"""
-    public_dns = []
-    tags = {}
-    connection = _create_connection(region)
-    reservations = connection.get_all_instances(filters=context)
-    for reservation in reservations:
-        for instance in reservation.instances:
-            if instance.public_dns_name:
-                key = str(instance.public_dns_name)
-                print("Instance {}".format(key))
-                public_dns.append(key)
-                tags[key] = instance.tags
-                tags[key]['type'] = instance.instance_type
-                # check if instance is from spot request or not
-                if instance.spot_instance_request_id:
-                    tags[key]['spot'] = True
-                else:
-                    tags[key]['spot'] = False
+    props = {}
 
-    return tags
+    # Connect
+    ec2 = connect_ec2()
 
+    instances = list(ec2.instances.filter(Filters=dict2tags(context)))
+    for instance in instances:
+        if instance.public_dns_name:
+            key = str(instance.public_dns_name)
+            print("Instance {}".format(key))
+            props[key] = tags2dict(instance.tags)
+            props[key]['id'] = instance.id
+            props[key]['type'] = instance.instance_type
+            props[key]['spot'] = True if instance.spot_instance_request_id else False
 
-def _create_connection(region):
-    """Private method for getting AWS connection"""
-    print("Connecting to {}".format(region))
-    conn = connect_to_region(
-        region_name=region,
-        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY")
-    )
-    print("Connection with AWS established")
-    return conn
+    return props
 
 
 def _generate_new_secret_key(key_length=32):
@@ -893,10 +878,6 @@ def deploy():
         reload_nginx()
         update_static_files()
 
-    # spot related
-    if 'spot' in roles:
-        update_rc_local()
-
     # master
     if 'master' in roles:
         update_rabbit_user()
@@ -919,51 +900,59 @@ def deploy():
 
 
 @task
-def create_amis(stack=STACK, layer='*', role='*', name='*', region=REGION):
+def create_amis(stack=STACK, layer='*', role='*', name='*'):
     """Create AMIs on AWS from current instances"""
+
     # Get current version of etalia
     version = get_etalia_version()
 
-    # general context
-    context = {
-        'tag:stack': stack,
-        'tag:layer': layer,
-        'tag:role': role,
-        'tag:Name': name,
-    }
+    # Build context
+    context = build_context(stack, layer, role, name)
 
-    # connect
-    connection = _create_connection(region)
+    # Connect
+    ec2 = connect_ec2()
 
-    # get instances
-    reservations = connection.get_all_instances(filters=context)
+    # Get instances
+    instances = list(ec2.instances.filter(Filters=dict2tags(context)))
 
     # get set of unique instances based on tags
-    instances_set = []
-    tags_set = []
-    for res in reservations:
-        instance = res.instances[0]
-        tags = instance.tags
-        tags.pop('Name')
-        if tags not in tags_set:
-            tags_set.append(tags)
-            instances_set.append(instance.id)
-    instance_tags_set = zip(instances_set, tags_set)
+    seen = []
+    unique_instances = []
+    for i in instances:
+        d = tags2dict(i.tags)
+        d.pop('Name')
+        d['version'] = version
+        if d not in seen:
+            unique_instances.append((i.id, d))
+            seen.append(d)
 
-    # create AMIs
-    for instance_id, tags in instance_tags_set:
-        ami_name = '{version}-{stack}-{layer}-{role}' \
-            .format(version=version,
-                    stack=tags.get('stack'),
-                    layer=tags.get('layer'),
-                    role=tags.get('role').replace('-', '/'))
-        ami_id = connection.create_image(instance_id, ami_name,
-                                         no_reboot=NO_REBOOT)
-        print(ami_name)
-        im = connection.get_image(ami_id)
-        # replace instance name by its role
-        tags['Name'] = '{layer}/{role}'.format(
-            layer=tags.get('layer'),
-            role=tags.get('role'))
-        tags['version'] = version
-        im.add_tags(tags)
+    # Create AMIs
+    for iid, d in unique_instances:
+
+        # Register ami
+        image_name = get_image_name(dict2tags(d))
+        print('Registering {}'.format(image_name))
+        image_id = ec2.meta.client.create_image(
+            InstanceId=iid,
+            Name=image_name,
+            NoReboot=CREATE_AMI_REBOOT)['ImageId']
+
+        # Tag image
+        image = list(ec2.images.filter(ImageIds=[image_id]))[0]
+        tags = dict2tags(d)
+        tags.append({'Key': 'Name', 'Value': image_name})
+        image.add_tags(tags)
+
+
+@task
+def tag_instances():
+
+    ec2 = connect_ec2()
+
+    # Get instances
+    instances = list(ec2.instances.all())
+
+    # Tag
+    for instance in instances:
+        print('Tagging instance {}'.format(instance.id))
+        tag_instance(ec2, instance.id)
