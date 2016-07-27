@@ -5,6 +5,8 @@ import operator
 from collections import Counter
 from functools import reduce
 
+from django.views.decorators.cache import cache_page, never_cache
+
 from rest_framework import viewsets, permissions, status, mixins
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import detail_route, list_route
@@ -99,6 +101,14 @@ class PaperViewSet(MultiSerializerMixin,
     AUTHOR_COUNT_BUMPER = 1.  # in percent of all journals in user fingerprint
     JOURNAL_COUNT_BUMPER = 5.  # in percent of all journals in user fingerprint
 
+    @never_cache
+    def list(self, request, *args, **kwargs):
+        return super(PaperViewSet, self).list(request, *args, **kwargs)
+
+    @never_cache
+    def retrieve(self, request, *args, **kwargs):
+        return super(PaperViewSet, self).retrieve(request, *args, **kwargs)
+
     def get_paper_id(self):
         return self.kwargs['pk']
 
@@ -126,7 +136,6 @@ class PaperViewSet(MultiSerializerMixin,
                     raise ParseError('{key}: {err}'.format(key=key, err=err))
 
     def get_queryset(self):
-
         # validate query_params
         self.validate_query_params()
 
@@ -272,6 +281,7 @@ class PaperViewSet(MultiSerializerMixin,
 
     @list_route(methods=['get'])
     def filters(self, request):
+
         data = self.get_queryset()
 
         authors = []
@@ -375,6 +385,14 @@ class PaperStateViewSet(MultiSerializerMixin,
     permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwner,
                           )
+
+    @never_cache
+    def list(self, request, *args, **kwargs):
+        return super(PaperStateViewSet, self).list(request, *args, **kwargs)
+
+    @never_cache
+    def retrieve(self, request, *args, **kwargs):
+        return super(PaperStateViewSet, self).retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
