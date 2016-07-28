@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .common import *
+from config import get_dns_name_based_on_role
 
 CONFIG_FILE = __file__
 
@@ -62,20 +63,10 @@ if not os.path.exists(CACHE_FILE_DIR):
     os.mkdir(CACHE_FILE_DIR)
 
 
-def get_redis_dns_name():
-    import boto3
-    ec2 = boto3.resource('ec2')
-    instances = list(ec2.instances.all())
-    props = [(i.private_dns_name, i.tags) for i in instances]
-    for prop in props:
-        for tag in prop[1]:
-            if tag['Key'] == 'role' and 'redis' in tag['Value']:
-                return prop[0]
-
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
-        'LOCATION': '{host}:6379'.format(host=get_redis_dns_name()),
+        'LOCATION': '{host}:6379'.format(host=get_dns_name_based_on_role('redis')),
         'TIMEOUT': 600,     # in seconds
     },
     'files': {
