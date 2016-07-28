@@ -90,7 +90,7 @@ def get_instance_name(ec2, tags):
         for tag in tags:
             if tag.get('Key') == a:
                 name_list.append(tag.get('Value'))
-    base = '_'.join(name_list)
+    base = '-'.join(name_list)
     base = base.replace('.', '-')
     base = base.replace('/', '-')
 
@@ -100,10 +100,10 @@ def get_instance_name(ec2, tags):
 
     # Compare names and increment
     count = 0
-    inst_name = '{base}_#{id:03d}'.format(base=base, id=count)
+    inst_name = '{base}--{id:03d}'.format(base=base, id=count)
     while inst_name in inst_names:
         count += 1
-        inst_name = '{base}_#{id:03d}'.format(base=base, id=count)
+        inst_name = '{base}--{id:03d}'.format(base=base, id=count)
 
     return inst_name
 
