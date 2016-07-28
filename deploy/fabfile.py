@@ -362,7 +362,7 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
-        files.upload_template('templaste/supervisord.template.conf', supervisor_file,
+        files.upload_template('template/supervisord.template.conf', supervisor_file,
                               context={'SITENAME': env.stack_site,
                                        'USER': env.user,
                                        'STACK': env.stack,
