@@ -9,8 +9,6 @@ import requests
 from distutils.version import LooseVersion
 
 env = environ.Env()
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
 INSTANCE_TAGS_KEY = ['Name', 'stack', 'layer', 'role', 'version']
 INSTANCE_NAME_PATTERN = ['stack', 'layer', 'role', 'version']
 URL_INSTANCE_ID_CHECK = 'http://169.254.169.254/latest/meta-data/instance-id'
@@ -22,10 +20,7 @@ ROOT_DIR = os.path.dirname(
 
 def connect_ec2():
     """Return ec2 resource"""
-    return boto3.resource(
-        'ec2',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    return boto3.resource('ec2')
 
 
 def get_local_instance_id():
