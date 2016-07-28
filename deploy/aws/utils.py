@@ -9,8 +9,6 @@ import requests
 from distutils.version import LooseVersion
 
 env = environ.Env()
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
 INSTANCE_TAGS_KEY = ['Name', 'stack', 'layer', 'role', 'version']
 INSTANCE_NAME_PATTERN = ['stack', 'layer', 'role', 'version']
 URL_INSTANCE_ID_CHECK = 'http://169.254.169.254/latest/meta-data/instance-id'
@@ -22,10 +20,7 @@ ROOT_DIR = os.path.dirname(
 
 def connect_ec2():
     """Return ec2 resource"""
-    return boto3.resource(
-        'ec2',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    return boto3.resource('ec2')
 
 
 def get_local_instance_id():
@@ -95,7 +90,7 @@ def get_instance_name(ec2, tags):
         for tag in tags:
             if tag.get('Key') == a:
                 name_list.append(tag.get('Value'))
-    base = '_'.join(name_list)
+    base = '-'.join(name_list)
     base = base.replace('.', '-')
     base = base.replace('/', '-')
 
@@ -105,10 +100,10 @@ def get_instance_name(ec2, tags):
 
     # Compare names and increment
     count = 0
-    inst_name = '{base}_#{id:03d}'.format(base=base, id=count)
+    inst_name = '{base}--{id:03d}'.format(base=base, id=count)
     while inst_name in inst_names:
         count += 1
-        inst_name = '{base}_#{id:03d}'.format(base=base, id=count)
+        inst_name = '{base}--{id:03d}'.format(base=base, id=count)
 
     return inst_name
 
@@ -165,5 +160,5 @@ def tags2dict(tags):
 
 
 def get_etalia_version():
-    init_py = open(os.path.join(ROOT_DIR, '../../../__init__.py')).read()
+    init_py = open(os.path.join(ROOT_DIR, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)

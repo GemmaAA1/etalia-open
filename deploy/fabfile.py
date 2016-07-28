@@ -88,7 +88,6 @@ SLACK_WEB_HOOK = \
 # Default
 STACK = 'production'
 USER = 'ubuntu'
-REGION = os.environ.get("AWS_REGION")
 
 # AMIS
 CREATE_AMI_REBOOT = True
@@ -114,7 +113,7 @@ init_slack(SLACK_WEB_HOOK)
 
 
 @task
-def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
+def set_hosts(stack=STACK, layer='*', role='*', name='*'):
     """Fabric task to set env.hosts based on tag key-value pair"""
     # setup env
     setattr(env, 'stack', stack)
@@ -293,6 +292,13 @@ def copy_common_py():
 
 
 @task
+def copy_aws_config():
+    if not files.exists('~/.aws/config'):
+        run('mkdir -p ~/.aws/')
+        put('.aws/config', '~/.aws/')
+
+
+@task
 def pull_latest_source():
     """Pull source from bitbucket"""
     # Test if private key has been uploaded
@@ -362,7 +368,7 @@ def update_supervisor_conf():
     # upload template
     with settings(_workon()):  # to get env var
         flower_users_passwords = run('echo $USERS_PASSWORDS_FLOWER')
-        files.upload_template('templaste/supervisord.template.conf', supervisor_file,
+        files.upload_template('templates/supervisord.template.conf', supervisor_file,
                               context={'SITENAME': env.stack_site,
                                        'USER': env.user,
                                        'STACK': env.stack,
@@ -570,18 +576,19 @@ def clean_and_update_hosts_file(stack=STACK):
 
 @task
 def update_hosts_file(stack=STACK):
-    conn = _create_connection(REGION)
-    reservations = conn.get_all_instances(filters={'tag:stack': stack})
+    ec2 = connect_ec2()
+
+    instances = list(ec2.instances.filter(
+        Filters=[{'Name': 'tag:stack', 'Values': [stack]}]))
 
     context = {}
-    for reservation in reservations:
-        for instance in reservation.instances:
-            if instance.public_dns_name:
-                context[instance.public_dns_name] = {
-                    'ip': instance.ip_address,
-                    'private_ip': instance.private_ip_address,
-                    'name': instance.tags.get('Name', ''),
-                }
+    for instance in instances:
+        if instance.public_dns_name:
+            context[instance.public_dns_name] = {
+                'ip': instance.public_ip_address,
+                'private_ip': instance.private_ip_address,
+                'name': tags2dict(instance.tags).get('Name', '')
+            }
     # overwrite host_string ip to localhost
     context[env.host_string] = {
         'ip': '127.0.0.1',
@@ -866,6 +873,7 @@ def deploy():
     pull_latest_source()
     pip_install()
     copy_common_py()
+    copy_aws_config()
 
     # only once (WARNING: only effective when not in parallel)
     update_database()

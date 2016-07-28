@@ -6,7 +6,7 @@ data (i.e. after a new deploy for instance)"""
 
 from __future__ import unicode_literals, absolute_import
 from aws import connect_ec2, get_local_instance_id, tag_instance
-
+from time import sleep
 
 if __name__ == '__main__':
 
@@ -18,6 +18,9 @@ if __name__ == '__main__':
 
     # Build tags
     tag_instance(ec2, instance_id)
+
+    # Go to sleep for 10 sec
+    sleep(10)
 
 
 
