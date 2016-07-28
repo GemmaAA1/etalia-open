@@ -544,7 +544,7 @@ def send_invite(request):
         to = [email_to]
         from_email = request.user.email
         ctx = {'bucket_url': settings.EMAIL_STATIC_BUCKET,
-               'root_url': request.META.get('HTTP_ORIGIN')}
+               'root_url': request.get_host()}
         text_content = ''
         html_content = get_template(settings.INVITE_EMAIL_TEMPLATE)\
             .render(Context(ctx))
