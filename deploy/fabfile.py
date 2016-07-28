@@ -54,8 +54,8 @@ LAYERS = ['apps', 'jobs']
 ROLES = ['web', 'master', 'base', 'nlp', 'pe', 'te', 'feed', 'redis']
 
 STACK_SITE_MAPPING = {
-    'production': 'alpha.etalia.io',
-    # 'production': 'etalia.io'
+    # 'production': 'alpha.etalia.io',
+    'production': 'etalia.io'
 }
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
