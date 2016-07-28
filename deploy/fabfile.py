@@ -570,18 +570,19 @@ def clean_and_update_hosts_file(stack=STACK):
 
 @task
 def update_hosts_file(stack=STACK):
-    conn = _create_connection(REGION)
-    reservations = conn.get_all_instances(filters={'tag:stack': stack})
+    ec2 = connect_ec2()
+
+    instances = list(ec2.instances.filter(
+        Filters=[{'Name': 'tag:stack', 'Values': [stack]}]))
 
     context = {}
-    for reservation in reservations:
-        for instance in reservation.instances:
-            if instance.public_dns_name:
-                context[instance.public_dns_name] = {
-                    'ip': instance.ip_address,
-                    'private_ip': instance.private_ip_address,
-                    'name': instance.tags.get('Name', ''),
-                }
+    for instance in instances:
+        if instance.public_dns_name:
+            context[instance.public_dns_name] = {
+                'ip': instance.public_ip_address,
+                'private_ip': instance.private_ip_address,
+                'name': tags2dict(instance.tags).get('Name', '')
+            }
     # overwrite host_string ip to localhost
     context[env.host_string] = {
         'ip': '127.0.0.1',
