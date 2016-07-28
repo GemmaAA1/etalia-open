@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .common import *
-from config import get_dns_name_based_on_role
+from config.utils import get_dns_name_based_on_role
 
 CONFIG_FILE = __file__
 

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from config.celery_settings.common import *
-from config import get_dns_name_based_on_role
+from config.utils import get_dns_name_based_on_role
 
 
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
