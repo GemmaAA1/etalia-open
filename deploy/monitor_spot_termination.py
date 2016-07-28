@@ -14,10 +14,27 @@ from __future__ import unicode_literals, absolute_import
 import time
 import requests
 from aws import connect_ec2, get_local_instance_id, get_latest_ami, \
-    URL_SPOT_TERMINATION_CHECK
+    URL_SPOT_TERMINATION_CHECK, tags2dict, dict2tags
 
 DRY_RUN = False
 SLEEP_TIME = 5  # in s
+
+
+SPOT_TEMPLATE = {
+    'DryRun': False,
+    'SpotPrice': '0.1',
+    'InstanceCount': 1,
+    'Type': 'one-time',
+    'AvailabilityZoneGroup': 'us-west-2b',
+    'LaunchSpecification': {
+        'KeyName': 'npannetier-key-pair',
+        'SecurityGroups': ['paperstream_sg'],
+        'InstanceType': 'm4.xlarge',
+        'Placement': {
+            'AvailabilityZone': 'us-west-2b'
+        }
+    }
+}
 
 
 def going_to_termination():
@@ -54,9 +71,15 @@ if __name__ == '__main__':
                 SpotInstanceRequestIds=[spot_id])
 
             # start a spot request with updated ami
-            ami = get_latest_ami(ec2, instance.tags)[0]
-            props = spot['SpotInstanceRequests'][0]
+            d = tags2dict(instance.tags)
+            d.pop('Name')
+            ami = get_latest_ami(ec2, dict2tags(d, filters=True))[0]
+            props = SPOT_TEMPLATE
+            last_spot = spot['SpotInstanceRequests'][0]
             props['LaunchSpecification']['ImageId'] = ami.id
+            props['SpotPrice'] = last_spot['SpotPrice']
+            props['LaunchSpecification']['InstanceType'] = \
+                last_spot['LaunchSpecification']['InstanceType']
             ec2.meta.client.request_spot_instances(**props)
 
             # terminate instance

@@ -53,8 +53,10 @@ STACKS = ['production']
 LAYERS = ['apps', 'jobs']
 ROLES = ['web', 'master', 'base', 'nlp', 'pe', 'te', 'feed', 'redis']
 
-STACK_SITE_MAPPING = \
-    {'production': 'alpha.etalia.io'}
+STACK_SITE_MAPPING = {
+    # 'production': 'alpha.etalia.io',
+    'production': 'etalia.io'
+}
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
@@ -435,7 +437,7 @@ def create_ssl_certificates():
     csr_path = '{0}/{1}.csr'.format(env.ssl_path, env.stack_site)
     crt_path = '{0}/{1}-unified.crt'.format(env.ssl_path, env.stack_site)
     if not files.exists(env.ssl_path):
-        run_as_root('mkdir -p {0}'.format(ssl_path))
+        run_as_root('mkdir -p {0}'.format(env.ssl_path))
     if not files.exists(key_path):
         run_as_root('openssl genrsa -out {key} 2048'.format(key=key_path))
     if not files.exists(csr_path):
@@ -648,7 +650,7 @@ def _get_public_dns(context):
     # Connect
     ec2 = connect_ec2()
 
-    instances = list(ec2.instances.filter(Filters=dict2tags(context)))
+    instances = list(ec2.instances.filter(Filters=dict2tags(context, filters=True)))
     for instance in instances:
         if instance.public_dns_name:
             key = str(instance.public_dns_name)
@@ -911,9 +913,6 @@ def deploy():
 def create_amis(stack=STACK, layer='*', role='*', name='*'):
     """Create AMIs on AWS from current instances"""
 
-    # Get current version of etalia
-    version = get_etalia_version()
-
     # Build context
     context = build_context(stack, layer, role, name)
 
@@ -921,7 +920,7 @@ def create_amis(stack=STACK, layer='*', role='*', name='*'):
     ec2 = connect_ec2()
 
     # Get instances
-    instances = list(ec2.instances.filter(Filters=dict2tags(context)))
+    instances = list(ec2.instances.filter(Filters=dict2tags(context, filters=True)))
 
     # get set of unique instances based on tags
     seen = []
@@ -929,16 +928,15 @@ def create_amis(stack=STACK, layer='*', role='*', name='*'):
     for i in instances:
         d = tags2dict(i.tags)
         d.pop('Name')
-        d['version'] = version
         if d not in seen:
-            unique_instances.append((i.id, d))
+            unique_instances.append((i.id, i.tags))
             seen.append(d)
 
     # Create AMIs
-    for iid, d in unique_instances:
+    for iid, tags in unique_instances:
 
         # Register ami
-        image_name = get_image_name(dict2tags(d))
+        image_name = get_image_name(tags)
         print('Registering {}'.format(image_name))
         image_id = ec2.meta.client.create_image(
             InstanceId=iid,
@@ -947,9 +945,8 @@ def create_amis(stack=STACK, layer='*', role='*', name='*'):
 
         # Tag image
         image = list(ec2.images.filter(ImageIds=[image_id]))[0]
-        tags = dict2tags(d)
         tags.append({'Key': 'Name', 'Value': image_name})
-        image.add_tags(tags)
+        image.create_tags(Tags=tags)
 
 
 @task
