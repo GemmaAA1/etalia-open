@@ -88,7 +88,6 @@ SLACK_WEB_HOOK = \
 # Default
 STACK = 'production'
 USER = 'ubuntu'
-REGION = os.environ.get("AWS_REGION")
 
 # AMIS
 CREATE_AMI_REBOOT = True
@@ -114,7 +113,7 @@ init_slack(SLACK_WEB_HOOK)
 
 
 @task
-def set_hosts(stack=STACK, layer='*', role='*', name='*', region=REGION):
+def set_hosts(stack=STACK, layer='*', role='*', name='*'):
     """Fabric task to set env.hosts based on tag key-value pair"""
     # setup env
     setattr(env, 'stack', stack)
@@ -290,6 +289,13 @@ def create_directory_structure_if_necessary():
 def copy_common_py():
     run('cp {0}/source/config/settings/common.py.dist '
         '{0}/source/config/settings/common.py'.format(env.stack_dir))
+
+
+@task
+def copy_aws_config():
+    if not files.exists('~/.aws/config'):
+        run('mkdir -p ~/.aws/')
+        put('.aws/config', '~/.aws/')
 
 
 @task
@@ -867,6 +873,7 @@ def deploy():
     pull_latest_source()
     pip_install()
     copy_common_py()
+    copy_aws_config()
 
     # only once (WARNING: only effective when not in parallel)
     update_database()
