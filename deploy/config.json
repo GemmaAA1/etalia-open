@@ -1,82 +1,86 @@
-[
-  {
-	"Instance": {
-      "DryRun": false,
-      "MinCount": 1,
-      "MaxCount": 1,
-      "KeyName": "npannetier-key-pair",
-      "SecurityGroups": ["paperstream_sg"],
-      "InstanceType": "t2.micro",
-      "Placement": {
-          "AvailabilityZone": "us-west-2b"
-      }
-	},
-	"Tags": [
-      {"Key": "stack", "Value": "production"},
-      {"Key": "layer", "Value": "apps"},
-      {"Key": "role", "Value": "web"}
-    ]
-  },
-  {
-	"Instance": {
-      "DryRun": false,
-      "MinCount": 1,
-      "MaxCount": 1,
-      "KeyName": "npannetier-key-pair",
-      "SecurityGroups": ["paperstream_sg"],
-      "InstanceType": "t2.small",
-      "Placement": {
-          "AvailabilityZone": "us-west-2b"
-      }
-	},
-	"Tags": [
-      {"Key": "stack", "Value": "production"},
-      {"Key": "layer", "Value": "jobs"},
-      {"Key": "role", "Value": "master-base"}
-    ]
-  },
-  {
-	"Spot": {
-      "DryRun": false,
-      "SpotPrice": "0.1",
-      "InstanceCount": 1,
-      "Type": "one-time",
-      "AvailabilityZoneGroup": "us-west-2b",
-      "LaunchSpecification": {
+{
+  "web":
+    {
+      "Instance": {
+        "DryRun": false,
+        "MinCount": 1,
+        "MaxCount": 1,
         "KeyName": "npannetier-key-pair",
         "SecurityGroups": ["paperstream_sg"],
-        "InstanceType": "m4.xlarge",
+        "InstanceType": "t2.micro",
         "Placement": {
-          "AvailabilityZone": "us-west-2b"
+            "AvailabilityZone": "us-west-2b"
         }
-      }
-	},
-	"Tags": [
-      {"Key": "stack", "Value": "production"},
-      {"Key": "layer", "Value": "jobs"},
-      {"Key": "role", "Value": "nlp"}
-    ]
-  },
-  {
-	"Spot": {
-      "DryRun": false,
-      "SpotPrice": "0.1",
-      "InstanceCount": 1,
-      "Type": "one-time",
-      "AvailabilityZoneGroup": "us-west-2b",
-      "LaunchSpecification": {
+      },
+      "Tags": [
+        {"Key": "stack", "Value": "production"},
+        {"Key": "layer", "Value": "apps"},
+        {"Key": "role", "Value": "web"}
+      ]
+    },
+  "master":
+    {
+      "Instance": {
+        "DryRun": false,
+        "MinCount": 1,
+        "MaxCount": 1,
         "KeyName": "npannetier-key-pair",
         "SecurityGroups": ["paperstream_sg"],
-        "InstanceType": "m4.xlarge",
+        "InstanceType": "t2.small",
         "Placement": {
-          "AvailabilityZone": "us-west-2b"
+            "AvailabilityZone": "us-west-2b"
         }
-      }
-	},
-	"Tags": [
-      {"Key": "stack", "Value": "production"},
-      {"Key": "layer", "Value": "jobs"},
-      {"Key": "role", "Value": "pe-te-feed-redis"}
-    ]
-  }
-]
+      },
+      "Tags": [
+        {"Key": "stack", "Value": "production"},
+        {"Key": "layer", "Value": "jobs"},
+        {"Key": "role", "Value": "master-base"}
+      ]
+    },
+  "nlp":
+    {
+      "Spot": {
+        "DryRun": false,
+        "SpotPrice": "0.1",
+        "InstanceCount": 1,
+        "Type": "one-time",
+        "AvailabilityZoneGroup": "us-west-2b",
+        "LaunchSpecification": {
+          "KeyName": "npannetier-key-pair",
+          "SecurityGroups": ["paperstream_sg"],
+          "InstanceType": "m4.xlarge",
+          "Placement": {
+            "AvailabilityZone": "us-west-2b"
+          }
+        }
+      },
+      "Tags": [
+        {"Key": "stack", "Value": "production"},
+        {"Key": "layer", "Value": "jobs"},
+        {"Key": "role", "Value": "nlp"}
+      ]
+    },
+  "engines":
+    {
+      "Spot": {
+        "DryRun": false,
+        "SpotPrice": "0.1",
+        "InstanceCount": 1,
+        "Type": "one-time",
+        "AvailabilityZoneGroup": "us-west-2b",
+        "LaunchSpecification": {
+          "KeyName": "npannetier-key-pair",
+          "SecurityGroups": ["paperstream_sg"],
+          "InstanceType": "m4.xlarge",
+          "Placement": {
+            "AvailabilityZone": "us-west-2b"
+          }
+        }
+      },
+      "Tags": [
+        {"Key": "stack", "Value": "production"},
+        {"Key": "layer", "Value": "jobs"},
+        {"Key": "role", "Value": "pe-te-feed-redis"}
+      ]
+    }
+}

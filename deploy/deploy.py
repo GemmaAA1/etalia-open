@@ -18,6 +18,7 @@ import os
 import environ
 import argparse
 from subprocess import call
+from time import sleep
 from fabric_slack_tools import *
 
 SLACK_WEB_HOOK = "https://hooks.slack.com/services/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"
@@ -89,6 +90,7 @@ if __name__ == '__main__':
 
     # Create AMIs
     if args.amis:
+        sleep(5)    # for instance tag to be updated
         ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
         version = get_version(str(ROOT_DIR.path()))
         if args.slack:

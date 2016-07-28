@@ -11,6 +11,7 @@ from distutils.version import LooseVersion
 env = environ.Env()
 INSTANCE_TAGS_KEY = ['Name', 'stack', 'layer', 'role', 'version']
 INSTANCE_NAME_PATTERN = ['stack', 'layer', 'role', 'version']
+IMAGE_NAME_PATTERN = ['version', 'stack', 'layer', 'role']
 URL_INSTANCE_ID_CHECK = 'http://169.254.169.254/latest/meta-data/instance-id'
 URL_SPOT_TERMINATION_CHECK = \
     'http://169.254.169.254/latest/meta-data/spot/termination-time'
@@ -28,13 +29,8 @@ def get_local_instance_id():
     return response.text
 
 
-def get_latest_ami(ec2, tags):
+def get_latest_ami(ec2, filters):
     """Return latest version of AMIs matching tags"""
-    # Build filters
-    filters = []
-    for tag in tags:
-        filters.append({'Name': 'tag:' + tag['Key'],
-                        'Values': [tag['Value']]})
 
     # Retrieve AMIs
     amis = list(ec2.images.filter(Filters=filters, Owners=['self']))
@@ -62,8 +58,8 @@ def get_latest_ami(ec2, tags):
             return latest_amis
         else:
             return [amis[0]]
-    except IndexError as err:
-        raise err('No AMI found with tags {0}'.format(tags))
+    except IndexError:
+        raise 'No AMI found with tags {0}'.format(filters)
 
 
 def get_tag_val(obj, key):
@@ -113,7 +109,7 @@ def get_image_name(tags):
 
     # Build base name
     name_list = []
-    for a in INSTANCE_NAME_PATTERN:
+    for a in IMAGE_NAME_PATTERN:
         for tag in tags:
             if tag.get('Key') == a:
                 name_list.append(tag.get('Value'))
@@ -151,8 +147,11 @@ def tag_instance(ec2, instance_id):
     return tags
 
 
-def dict2tags(dic):
-    return map(lambda x: {'Name': 'tag:' + x[0], 'Values': [x[1]]}, list(dic.items()))
+def dict2tags(dic, filters=False):
+    if filters:
+            return map(lambda x: {'Name': 'tag:' + x[0], 'Values': [x[1]]}, list(dic.items()))
+    else:
+        return map(lambda x: {'Key': x[0], 'Value': x[1]}, list(dic.items()))
 
 
 def tags2dict(tags):
