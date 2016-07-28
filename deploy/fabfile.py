@@ -53,8 +53,10 @@ STACKS = ['production']
 LAYERS = ['apps', 'jobs']
 ROLES = ['web', 'master', 'base', 'nlp', 'pe', 'te', 'feed', 'redis']
 
-STACK_SITE_MAPPING = \
-    {'production': 'alpha.etalia.io'}
+STACK_SITE_MAPPING = {
+    'production': 'alpha.etalia.io',
+    # 'production': 'etalia.io'
+}
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
@@ -435,7 +437,7 @@ def create_ssl_certificates():
     csr_path = '{0}/{1}.csr'.format(env.ssl_path, env.stack_site)
     crt_path = '{0}/{1}-unified.crt'.format(env.ssl_path, env.stack_site)
     if not files.exists(env.ssl_path):
-        run_as_root('mkdir -p {0}'.format(ssl_path))
+        run_as_root('mkdir -p {0}'.format(env.ssl_path))
     if not files.exists(key_path):
         run_as_root('openssl genrsa -out {key} 2048'.format(key=key_path))
     if not files.exists(csr_path):
