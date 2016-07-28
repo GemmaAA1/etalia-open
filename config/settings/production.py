@@ -61,10 +61,21 @@ CACHE_FILE_DIR = str((ROOT_DIR-1).path('cache_files'))
 if not os.path.exists(CACHE_FILE_DIR):
     os.mkdir(CACHE_FILE_DIR)
 
+
+def get_redis_dns_name():
+    import boto3
+    ec2 = boto3.resource('ec2')
+    instances = list(ec2.instances.all())
+    props = [(i.private_dns_name, i.tags) for i in instances]
+    for prop in props:
+        for tag in prop[1]:
+            if tag['Key'] == 'role' and 'redis' in tag['Value']:
+                return prop[0]
+
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
-        'LOCATION': '{host}:6379'.format(host=env.str('REDIS_SCORING_CACHE_HOSTNAME')),
+        'LOCATION': '{host}:6379'.format(host=get_redis_dns_name()),
         'TIMEOUT': 600,     # in seconds
     },
     'files': {
@@ -73,3 +84,5 @@ CACHES = {
         'TIMEOUT': 60 * 60,     # 1 h
     }
 }
+
+
