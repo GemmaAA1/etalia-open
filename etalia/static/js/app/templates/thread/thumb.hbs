@@ -40,7 +40,7 @@
     <div class="infos">
         <p class="truncate">
             {{#if paper}}{{paper_title_authors paper}}{{/if}}
-            <em>{{formatDate published_at}}</em>
+            {{#if published_at}}<em>{{formatDate published_at}}</em>{{/if}}
         </p>
         <p class="icons">
             <span class="type" title="{{thread_type_title}}">
