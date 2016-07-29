@@ -518,15 +518,15 @@ class UserSettings(TimeStampedModel):
                                        choices=TREND_METHODS)
 
     # doc vector weight
-    trend_doc_weight = models.FloatField(default=1.0,
+    trend_doc_weight = models.FloatField(default=0.2,
                                          verbose_name='Title/Abstract weight')
 
     # altmetric vector weight
-    trend_altmetric_weight = models.FloatField(default=0.5,
+    trend_altmetric_weight = models.FloatField(default=1,
                                                verbose_name='Altmetric weight')
 
     # vector weight
-    trend_score_threshold = models.FloatField(default=0.2,
+    trend_score_threshold = models.FloatField(default=0.1,
                                               verbose_name='Specificity')
 
     # Email digest
