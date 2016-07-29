@@ -375,6 +375,13 @@
     height: auto;
 }
 
+
+/* ---- THREAD CREATE FORM ---- */
+
+.thread-create-form p.help-block {
+    font-style: italic;
+}
+
 /* ---- RESPONSIVE ---- */
 
 /* Small devices */

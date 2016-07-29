@@ -117,7 +117,7 @@ define(['app', 'app/model/thread/thread'], function (App) {
         _onPrivacyChange: function(form, privacyEditor) {
             if (privacyEditor.getValue() == App.Model.Thread.PRIVACY_PRIVATE) {
                 this.$('.field-privacy .help-block:last-child')
-                    .text('Only you and the people you invite can join the thread.');
+                    .text('Only you and people you invite can join the thread.');
             } else {
                 this.$('.field-privacy .help-block:last-child')
                     .text('Anyone can joined the thread.');
