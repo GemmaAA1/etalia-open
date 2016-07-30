@@ -140,6 +140,11 @@ define([
                 this._toggleIconVisibility(value);
                 this.close();
                 this.controlsView.dispatchChange();
+
+                App.trigger('etalia.control.cluster.change', {
+                    label: this.values[value].label,
+                    value: value
+                });
             }
         },
 
@@ -181,7 +186,13 @@ define([
             if (App._.has(this.values, value)) {
                 this.$('#timespan-selection').html(this.values[value].icon);
                 this.close();
+
                 this.controlsView.dispatchChange();
+
+                App.trigger('etalia.control.timespan.change', {
+                    label: this.values[value].label,
+                    value: value
+                });
             }
         },
 
@@ -248,6 +259,16 @@ define([
             this.close();
         },
 
+        onChange: function() {
+            this._handleVisibility();
+
+            this.controlsView.dispatchChange();
+
+            App.trigger('etalia.control.search.change', {
+                expression: this.model.get('value')
+            });
+        },
+
         render: function () {
             this.$el.html(this.template({}));
 
@@ -285,6 +306,10 @@ define([
         onChange: function() {
             this._handleVisibility();
             this._updateActiveClass();
+
+            App.trigger('etalia.control.pinned.change', {
+                active: !!this.model.get('value')
+            });
 
             this.controlsView.dispatchChange();
         },

@@ -31,6 +31,13 @@ define([
             this.model.set('active', !this.model.get('active'));
 
             this.groupView.filtersView.trigger('context-change');
+
+            App.trigger('etalia.control.filters.change', {
+                group: this.groupView.model.get('name'),
+                active: this.model.get('active'),
+                label: this.model.get('label'),
+                value: this.model.get('id')
+            });
         },
 
         render: function () {
@@ -74,6 +81,10 @@ define([
             this.shownCount += 10;
 
             this.applyFiltersVisibility();
+
+            App.trigger('etalia.control.filters.more', {
+                group: this.model.get('name')
+            });
         },
 
         expand: function() {
