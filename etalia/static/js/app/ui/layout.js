@@ -79,6 +79,7 @@ define([
                 backdrop: this.config.backdrop,
                 mobileMaxWidth: 1200
             });
+            $rightFlapButton.show();
             this.rightFlap.init();
         } else {
             $rightFlapButton.hide();
