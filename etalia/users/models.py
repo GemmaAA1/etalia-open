@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import collections
-
-from dateutil.parser import parse
 from nameparser import HumanName
+from mendeley.exception import MendeleyApiException
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
     PermissionsMixin, BaseUserManager
@@ -20,10 +19,11 @@ from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
 from etalia.threads.models import Thread
+from etalia.usersession.models import UserSession
 
 from .validators import validate_first_name, validate_last_name
 from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
-    RELATIONSHIP_STATUSES
+    RELATIONSHIP_STATUSES, USERLIB_STATE_CHOICES, USERLIB_UNINITIALIZED, USERLIB_NEED_REAUTH
 
 
 class Affiliation(TimeStampedModel):
@@ -64,10 +64,10 @@ class Affiliation(TimeStampedModel):
     @property
     def is_empty(self):
         if not (self.department or
-                    self.institution or
-                    self.city or
-                    self.state or
-                    self.country):
+                self.institution or
+                self.city or
+                self.state or
+                self.country):
             return True
         else:
             return False
@@ -269,10 +269,8 @@ class UserLib(TimeStampedModel):
 
     papers = models.ManyToManyField(Paper, through='UserLibPaper')
 
-    state = models.CharField(max_length=3, blank=True, default='NON',
-        choices=(('NON', 'Uninitialized'),
-                 ('IDL', 'Idle'),
-                 ('ING', 'Syncing')))
+    state = models.IntegerField(default=USERLIB_UNINITIALIZED,
+                                choices=USERLIB_STATE_CHOICES)
 
     # date of first paper added in user library
     d_oldest = models.DateField(null=True, blank=True)
@@ -290,7 +288,8 @@ class UserLib(TimeStampedModel):
         return self.papers.values('authors').count()
 
     def set_state(self, state):
-        if state in ['NON', 'IDL', 'ING']:
+        valid_choices = [c[0] for c in USERLIB_STATE_CHOICES]
+        if state in valid_choices:
             self.state = state
             self.save()
             return self
@@ -343,9 +342,14 @@ class UserLib(TimeStampedModel):
         return err
 
     def update(self):
-        session, backend = self.get_session_backend()
-        # update lib
-        backend.update_lib(self.user, session)
+        try:
+            session, backend = self.get_session_backend()
+            # update lib
+            backend.update_lib(self.user, session)
+        except MendeleyApiException:
+            # Put user on renew auth state
+            self.set_state(USERLIB_NEED_REAUTH)
+            UserSession.delete_user_sessions(self.user_id)
 
 
 class UserLibPaper(TimeStampedModel):
@@ -404,7 +408,7 @@ class UserLibPaper(TimeStampedModel):
 
     @property
     def is_trashed(self):
-        #Deprecated with API
+        # Deprecated with API
         if self.paper.paperuser_set.filter(user_id=self.id).exists():
             if self.paper.paperuser_set.filter(user_id=self.id).store == 2:
                 return True
@@ -568,6 +572,3 @@ class Relationship(TimeStampedModel):
 
     class Meta:
         unique_together = ('from_user', 'to_user')
-
-
-

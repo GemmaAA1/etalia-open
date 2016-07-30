@@ -11,14 +11,14 @@ from social.pipeline.partial import partial
 from avatar.models import Avatar
 
 from etalia.core.utils import get_celery_worker_status
-from messages_extends.models import Message
-from messages_extends import constants as constants_messages
+from etalia.usersession.models import UserSession
 from .models import Affiliation
+from .constants import USERLIB_UNINITIALIZED
 
 from .forms import UserAffiliationForm
 from .tasks import update_lib as async_update_lib
 from .tasks import init_user as async_init_user
-from .constants import PERSISTANT_USER_MESSAGES
+
 
 @partial
 def require_primary(strategy, details, *args, user=None, **kwargs):
@@ -34,6 +34,7 @@ def require_primary(strategy, details, *args, user=None, **kwargs):
             details['email'] = basic_info.get('email')
             return
         return redirect('user:require-basic-info')
+
 
 @partial
 def create_details(strategy, details, *args, user=None, **kwargs):
@@ -68,6 +69,7 @@ def create_details(strategy, details, *args, user=None, **kwargs):
 
     return {}
 
+
 @partial
 def require_affiliation(strategy, details, *args, user=None, **kwargs):
     if getattr(user, 'affiliation'):
@@ -87,33 +89,17 @@ def require_affiliation(strategy, details, *args, user=None, **kwargs):
 
 
 @partial
-def update_user_lib(backend, social, user, *args, **kwargs):
-    session = backend.get_session(social, user)
-    if settings.DEBUG and get_celery_worker_status().get('ERROR'):
-        backend.update_lib(user, session)
-    else:  # celery is running -> go async
-        async_update_lib.apply_async(args=[user.pk, social.provider],
-                                     serializer='json')
+def update_usersession(strategy, details, *args, **kwargs):
+    user = kwargs.get('user')
+    UserSession.objects.get_or_create(
+        user=user,
+        session_id=strategy.request.session.session_key)
     return {}
 
-
-@partial
-def init_messages(social, user, *args, **kwargs):
-
-    for id, extra_tags, message in PERSISTANT_USER_MESSAGES:
-        mess, new = Message.objects.get_or_create(
-            user=user,
-            level=constants_messages.INFO_PERSISTENT,
-            extra_tags='id{id},{tags}'.format(id=id, tags=extra_tags))
-        if new:
-            mess.message = message
-            mess.save()
-
-    return {}
 
 @partial
 def init_user(social, user, *args, **kwargs):
-    if user.lib.state == 'NON':  # user non-initialized yet
+    if user.lib.state == USERLIB_UNINITIALIZED:  # user non-initialized yet
         async_init_user(user.pk)
     return {}
 

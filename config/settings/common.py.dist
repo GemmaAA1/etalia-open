@@ -54,7 +54,6 @@ THIRD_PARTY_APPS = (
     'social.apps.django_app.default',
     'endless_pagination',
     'avatar',
-    'messages_extends',
     'rest_framework',
     'rest_condition',
     'autofixture',
@@ -74,6 +73,7 @@ LOCAL_APPS = (
     'etalia.altmetric',
     'etalia.last_seen',
     'etalia.popovers',
+    'etalia.usersession.apps.UserSessionConfig',
     # 'functional_tests',
 )
 
@@ -250,7 +250,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details',
     'social.pipeline.debug.debug',
     'etalia.users.pipeline.create_details',
-    'etalia.users.pipeline.init_messages',
     'etalia.users.pipeline.init_user',
 
     # 'etalia.users.pipeline.require_affiliation',
@@ -532,6 +531,3 @@ LOGGING = {
         },
     }
 }
-
-# MESSAGES
-MESSAGE_STORAGE = 'messages_extends.storages.FallbackStorage'

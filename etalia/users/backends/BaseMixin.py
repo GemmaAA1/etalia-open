@@ -8,9 +8,9 @@ from etalia.library.models import Paper, Journal, Author, AuthorPaper, CorpAutho
 from etalia.library.forms import PaperFormFillBlanks
 from etalia.library.tasks import embed_paper
 
-from ..models import UserLibPaper
+from ..constants import USERLIB_SYNCING, USERLIB_IDLE
 from etalia.library.models import PaperUser
-from etalia.library.constants import PAPER_PINNED, PAPER_ADDED
+
 
 class BackendLibMixin(object):
     """Mixin for provider backend"""
@@ -128,7 +128,7 @@ class BackendLibMixin(object):
 
     def update_lib(self, user, session):
         # update db state
-        user.lib.set_state('ING')
+        user.lib.set_state(USERLIB_SYNCING)
         user.stats.log_lib_starts_sync(user)
         # really update
         count = self._update_lib(user, session)
@@ -136,7 +136,7 @@ class BackendLibMixin(object):
         user.lib.set_d_oldest()
         # update UserLib and Stats
         user.stats.log_lib_ends_sync(user, count)
-        user.lib.set_state('IDL')
+        user.lib.set_state(USERLIB_IDLE)
         return count
 
     def _update_lib(self, session, user):

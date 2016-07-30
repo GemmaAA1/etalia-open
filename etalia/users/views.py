@@ -33,7 +33,7 @@ from etalia.library.constants import PAPER_PINNED
 from .models import Affiliation, UserLibPaper, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
-from .constants import INIT_STEPS
+from .constants import INIT_STEPS, USERLIB_IDLE, USERLIB_SYNCING
 
 
 logger = logging.getLogger(__name__)
@@ -498,7 +498,7 @@ def user_update_settings_check(request):
             return user_update_stream_check(request)
         elif request.user.trend.first().state == 'ING':
             return user_update_trend_check(request)
-        elif request.user.lib.state == 'ING':
+        elif request.user.lib.state == USERLIB_SYNCING:
             return user_update_library_check(request)
         elif request.user.fingerprint.first().state == 'ING':
             return user_update_fingerprint_check(request)
@@ -510,7 +510,7 @@ def user_update_settings_check(request):
 @login_required
 def user_update_library_check(request):
     if request.method == 'GET':
-        if request.user.lib.state == 'ING':
+        if request.user.lib.state == USERLIB_SYNCING:
             messages = ['Updating You Library', '']
             done = False
         else:
@@ -525,7 +525,7 @@ def user_update_library_check(request):
 @login_required
 def update_library(request):
     if request.is_ajax():
-        if request.user.lib.state == 'IDL':
+        if request.user.lib.state == USERLIB_IDLE:
             provider_name = request.user.social_auth.first().provider
             update_lib.delay(request.user.pk, provider_name)
             data = {}

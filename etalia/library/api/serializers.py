@@ -2,11 +2,13 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.db.models import Q, Prefetch
+from mendeley.exception import MendeleyApiException
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
+from etalia.core.api.exceptions import MendeleyRedirectLoginErrorSerializer
 from etalia.feeds.models import StreamPapers, TrendPapers
 from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
 
@@ -280,39 +282,43 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
 
     def update(self, instance, validated_data):
         """Subclassing for triggering add() and trash() methods as needed"""
-        serializers.raise_errors_on_nested_writes('update', self, validated_data)
-        for attr, value in validated_data.items():
-            if attr == 'store' and value is not None:
-                if value == PAPER_ADDED and not instance.store == PAPER_ADDED:
-                    err = instance.add()
-                elif value == PAPER_TRASHED and not instance.store == PAPER_TRASHED:
-                    err = instance.trash()
+        try:
+            serializers.raise_errors_on_nested_writes('update', self, validated_data)
+            for attr, value in validated_data.items():
+                if attr == 'store' and value is not None:
+                    if value == PAPER_ADDED and not instance.store == PAPER_ADDED:
+                        err = instance.add()
+                    elif value == PAPER_TRASHED and not instance.store == PAPER_TRASHED:
+                            err = instance.trash()
+                    else:
+                        raise serializers.ValidationError(
+                            'store value outside of choices ({0})'.format(PAPER_STORE))
+                    if err:
+                        raise serializers.ValidationError(err)
                 else:
-                    raise serializers.ValidationError(
-                        'store value outside of choices ({0})'.format(PAPER_STORE))
-                if err:
-                    raise serializers.ValidationError(err)
-            else:
-                setattr(instance, attr, value)
-        instance.save()
-
-        return instance
+                    setattr(instance, attr, value)
+            instance.save()
+            return instance
+        except MendeleyApiException:
+            raise MendeleyRedirectLoginErrorSerializer()
 
     def create(self, validated_data):
         """Subclassing for triggering add() and trash() methods as needed"""
-        instance = super(PaperUserSerializer, self).create(validated_data)
-        for attr, value in validated_data.items():
-            if attr == 'store' and value is not None:
-                if value == PAPER_ADDED:
-                    err = instance.add()
-                elif value == PAPER_TRASHED:
-                    err = instance.trash()
+        try:
+            instance = super(PaperUserSerializer, self).create(validated_data)
+            for attr, value in validated_data.items():
+                if attr == 'store' and value is not None:
+                    if value == PAPER_ADDED:
+                        err = instance.add()
+                    elif value == PAPER_TRASHED:
+                        err = instance.trash()
+                    else:
+                        raise serializers.ValidationError(
+                            'store value outside of choices ({0})'.format(PAPER_STORE))
+                    if err:
+                        raise serializers.ValidationError(err)
                 else:
-                    raise serializers.ValidationError(
-                        'store value outside of choices ({0})'.format(PAPER_STORE))
-                if err:
-                    raise serializers.ValidationError(err)
-            else:
-                setattr(instance, attr, value)
-
-        return instance
+                    setattr(instance, attr, value)
+            return instance
+        except MendeleyApiException:
+            raise MendeleyRedirectLoginErrorSerializer()

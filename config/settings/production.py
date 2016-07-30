@@ -57,6 +57,9 @@ MAILGUN_SERVER_NAME = 'mg.etalia.io'
 
 
 # CACHE
+# ------------------------------------------------------------------------------
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 CACHE_FILE_DIR = str((ROOT_DIR-1).path('cache_files'))
 # Create directory to store cache files if does not exists
 if not os.path.exists(CACHE_FILE_DIR):
