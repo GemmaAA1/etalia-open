@@ -85,5 +85,5 @@ define([
 
     view.onTabsContextChange();
 
-    App.loadPopovers();
+    App.init();
 });

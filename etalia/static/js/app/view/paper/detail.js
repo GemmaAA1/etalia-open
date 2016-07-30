@@ -79,6 +79,8 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            App.trigger('etalia.paper.share', this.model, 'mail');
         },
 
         onTwitterClick: function(e) {
@@ -86,6 +88,8 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            App.trigger('etalia.paper.share', this.model, 'twitter');
         },
 
         onGooglePlusClick: function(e) {
@@ -93,6 +97,8 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            App.trigger('etalia.paper.share', this.model, 'google-plus');
         },
 
         render: function() {
