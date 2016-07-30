@@ -6,8 +6,7 @@ define([
     'app/view/list',
     'app/view/ui/modal',
     'app/view/paper/detail',
-    'app/view/paper/thumb',
-    //'altmetric'
+    'app/view/paper/thumb'
 ], function (App, template, Detail) {
 
     var $window = $(window),
@@ -87,7 +86,7 @@ define([
         },
 
         render: function () {
-            App.log('PaperListView::render');
+            //App.log('PaperListView::render');
 
             this.$el.html(this.template({}));
 

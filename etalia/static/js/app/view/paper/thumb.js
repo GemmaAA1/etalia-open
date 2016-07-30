@@ -79,7 +79,7 @@ define([
         },
 
         render: function() {
-            App.log('PaperThumbView::render');
+            //App.log('PaperThumbView::render');
 
             var attributes = App._.extend({}, this.model.attributes, {
                 list_mode: this.mode == App.View.Paper.Thumb.MODE_LIST,

@@ -569,38 +569,18 @@ define([
                     }
                 });
             }
-
-            /*userPopovers.add(new App.Model.UserPopover({
-                user: App.getCurrentUser(),
-                popover: new App.Model.Popover({
-                    title: 'Super modal',
-                    content: '<p>Wow ! Incredible !</p><p>WTF</p>',
-                    type: App.Model.Popover.TYPE_MODAL
-                })
-            }));
-
-            userPopovers.add(new App.Model.UserPopover({
-                user: App.getCurrentUser(),
-                popover: new App.Model.Popover({
-                    title: 'Super popover',
-                    content: '<p>Wow ! Incredible !</p>',
-                    anchor: '#toggle-profile',
-                    type: App.Model.Popover.TYPE_ANCHORED
-                })
-            }));
-
-            userPopovers.add(new App.Model.UserPopover({
-                user: App.getCurrentUser(),
-                popover: new App.Model.Popover({
-                    title: 'Super popover',
-                    content: '<p>Wow ! Incredible !</p>',
-                    anchor: '.list-tabs',
-                    type: App.Model.Popover.TYPE_ANCHORED
-                })
-            }));*/
-
-
         });
+    };
+
+    App.loadTracking = function() {
+        require(['app/util/tracking'], function(Tracking) {
+            Tracking.init();
+        });
+    };
+
+    App.init = function() {
+        App.loadPopovers();
+        App.loadTracking();
     };
 
     return App;
