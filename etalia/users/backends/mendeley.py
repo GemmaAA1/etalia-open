@@ -10,6 +10,8 @@ from mendeley.models.common import Person
 from mendeley.auth import MendeleySession, \
     MendeleyAuthorizationCodeTokenRefresher
 from mendeley.exception import MendeleyApiException
+from requests.exceptions import HTTPError
+from django.shortcuts import redirect
 
 from ..constants import MENDELEY_PT
 from .BaseMixin import BackendLibMixin
@@ -78,29 +80,22 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                   'refresh_token': social.extra_data['refresh_token']}
 
         # start authorization flow
-        mendeley = Mendeley(key, client_secret=secret,
+        mendeley = Mendeley(key,
+                            client_secret=secret,
                             redirect_uri=self.redirect_uri)
 
         auth = mendeley.start_authorization_code_flow()
 
-        # start mendeley session
-        mendeley_session = MendeleySession(
-            mendeley, tokens, client=auth.client,
-            refresher=MendeleyAuthorizationCodeTokenRefresher(auth))
-
-        # try session
         try:
-            name = mendeley_session.profiles.me.display_name
-        except MendeleyApiException:
-            # renew token
-            new_token = self.refresh_token(social.extra_data['refresh_token'])
-            social.extra_data['access_token'] = new_token['access_token']
-            social.save()
-            tokens['access_token'] = social.extra_data['access_token']
             # start mendeley session
             mendeley_session = MendeleySession(
                 mendeley, tokens, client=auth.client,
                 refresher=MendeleyAuthorizationCodeTokenRefresher(auth))
+
+            # try session
+            _ = mendeley_session.profiles.me.display_name
+        except MendeleyApiException:
+            raise
 
         return mendeley_session
 

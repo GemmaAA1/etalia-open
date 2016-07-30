@@ -5,15 +5,18 @@ define(['app', 'app/model/thread/thread'], function (App) {
     App.View.Thread.CreateForm = App.Backbone.Form.extend({
 
         schema: {
+            title: {
+                type: 'Text',
+                validators: ['required', App.Model.Thread.validators.title]
+            },
+
             privacy: {
                 type: "Radio",
                 options: [
                     {label: "Public", val: App.Model.Thread.PRIVACY_PUBLIC},
                     {label: "Private", val: App.Model.Thread.PRIVACY_PRIVATE}
                 ],
-                help: 'Select the privacy of your thread. Public thread, ' +
-                          'anyone can joined. Private thread, you send the invites' +
-                          'for people to join',
+                help: 'Anyone can joined the thread.',
                 validators: ['required', App.Model.Thread.validators.privacy]
             },
 
@@ -23,8 +26,15 @@ define(['app', 'app/model/thread/thread'], function (App) {
                     { label: "Question", val: App.Model.Thread.TYPE_QUESTION},
                     { label: "Paper", val: App.Model.Thread.TYPE_PAPER}
                 ],
+                help: 'A question that is not related to a paper.',
                 validators: ['required', App.Model.Thread.validators.type]
             },
+
+            /*attach: {
+                type: "Checkbox",
+                title: '',
+                help: 'Attach a paper'
+            },*/
 
             paper: {
                 type: 'Select',
@@ -47,11 +57,6 @@ define(['app', 'app/model/thread/thread'], function (App) {
 
                 },
                 validators: [App.Model.Thread.validators.paper]
-            },
-
-            title: {
-                type: 'Text',
-                validators: ['required', App.Model.Thread.validators.title]
             }
         },
 
@@ -82,6 +87,7 @@ define(['app', 'app/model/thread/thread'], function (App) {
             this.listenTo(this, "submit", this._onSubmit);
 
             this.listenTo(this, "type:change", this._onTypeChange);
+            this.listenTo(this, "privacy:change", this._onPrivacyChange);
         },
 
         render: function () {
@@ -98,9 +104,23 @@ define(['app', 'app/model/thread/thread'], function (App) {
 
         _onTypeChange: function(form, typeEditor) {
             if (typeEditor.getValue() == App.Model.Thread.TYPE_PAPER) {
+                this.$('.field-type .help-block:last-child')
+                    .text('A discussion about a paper.');
                 this.$('.field-paper').show();
             } else {
+                this.$('.field-type .help-block:last-child')
+                    .text('A question that is not related to a paper.');
                 this.$('.field-paper').hide();
+            }
+        },
+
+        _onPrivacyChange: function(form, privacyEditor) {
+            if (privacyEditor.getValue() == App.Model.Thread.PRIVACY_PRIVATE) {
+                this.$('.field-privacy .help-block:last-child')
+                    .text('Only you and people you invite can join the thread.');
+            } else {
+                this.$('.field-privacy .help-block:last-child')
+                    .text('Anyone can joined the thread.');
             }
         },
 

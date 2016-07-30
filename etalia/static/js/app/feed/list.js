@@ -19,7 +19,7 @@ define([
                 name: 'feed:papers',
                 title: 'Papers',
                 icon: 'eai-paper',
-                count: 0,
+                count: false,
                 data: {
                     view: 'nested',
                     scored: 1,
@@ -36,7 +36,7 @@ define([
                 name: 'feed:trend',
                 title: 'Trend',
                 icon: 'eai-stats',
-                count: 0,
+                count: false,
                 data: {
                     view: 'nested',
                     scored: 1,
@@ -53,7 +53,7 @@ define([
                 name: 'feed:threads',
                 title: 'Threads',
                 icon: 'eai-comments',
-                count: 0,
+                count: false,
                 data: {
                     view: 'nested',
                     scored: 1,

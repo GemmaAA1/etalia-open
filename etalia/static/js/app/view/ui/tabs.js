@@ -34,9 +34,11 @@ define([
                 tab = this.getActiveTab();
             }
             if (tab) {
-                tab.count = add ? tab.count + count : count;
-                if (0 > tab.count) {
-                    tab.count = 0;
+                if (tab.count !== false) {
+                    tab.count = add ? tab.count + count : count;
+                    if (0 > tab.count) {
+                        tab.count = 0;
+                    }
                 }
             }
             this.render();

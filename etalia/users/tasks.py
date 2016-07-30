@@ -10,6 +10,8 @@ from celery.canvas import chain
 from config.celery import celery_app as app
 from etalia.feeds.tasks import update_stream, update_trend, update_threadfeed
 from etalia.popovers.tasks import init_popovers
+from .models import UserLib
+from .constants import USERLIB_IDLE
 
 logger = logging.getLogger(__name__)
 
@@ -20,17 +22,18 @@ User = get_user_model()
 def userlib_update_all():
     us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
         .exclude(social_count__lt=1)\
+        .filter(lib__state=USERLIB_IDLE)\
         .values_list('id', flat=True)
     for user_pk in us_pk:
         update_lib.delay(user_pk)
 
 
 @app.task()
-def update_lib(user_id):
+def update_lib(user_pk):
     """Async task for updating user library"""
-    user = User.objects.get(pk=user_id)
-    user.lib.update()
-    return user_id
+    userlib = UserLib.objects.get(user_id=user_pk)
+    userlib.update()
+    return user_pk
 
 
 @app.task()

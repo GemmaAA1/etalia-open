@@ -94,8 +94,6 @@
     /feeds/trend/<name>/reset	etalia.feeds.views.reset_trend_view	feeds:reset-trend	login_required
     /feeds/trend/<name>/update	etalia.feeds.views.update_trend_view	feeds:update-trend	login_required
     /help/	etalia.core.views.help	core:help	
-    /messages/mark_read/<message_id>/	messages_extends.views.message_mark_read	message_extends:message_mark_read	
-    /messages/mark_read/all/	messages_extends.views.message_mark_all_read	message_extends:message_mark_all_read	
     /papers/	etalia.library.views.my_papers	papers:my_papers	
     /support/	etalia.core.views.support	core:support	
     /terms-of-privacy/	etalia.core.views.terms_privacy	core:terms_privacy	

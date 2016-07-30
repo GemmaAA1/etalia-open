@@ -86,7 +86,9 @@ class ParserMendeley(ParserBackend):
                     paper['publish_status'] = 'preprint'
                 else:
                     if not key == 'issn':
-                        paper['id_oth'] = '{0}_{1}'.format(key, val)
+                        paper['id_oth'] = '{0}_{1}'.format(
+                            key,
+                            val[len(val) + len(key)-63:])
 
         if not any([paper[key] for key in ['id_doi', 'id_pmi', 'id_pii',
                                            'id_arx', 'id_oth']]):
@@ -141,8 +143,8 @@ class ParserMendeley(ParserBackend):
         if full_authors:
             for auth in full_authors:
                 author = self.author_template.copy()
-                author['last_name'] = auth.last_name
-                author['first_name'] = auth.first_name
+                author['last_name'] = auth.last_name or ''
+                author['first_name'] = auth.first_name or ''
                 authors.append(author)
         return authors
 
