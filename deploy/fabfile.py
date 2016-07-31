@@ -301,6 +301,11 @@ def copy_aws_config():
 
 
 @task
+def put_file(path_in, path_out):
+    put(path_in, path_out, use_sudo=True)
+
+
+@task
 def pull_latest_source():
     """Pull source from bitbucket"""
     # Test if private key has been uploaded

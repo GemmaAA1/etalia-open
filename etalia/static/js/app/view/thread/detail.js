@@ -157,6 +157,8 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            App.trigger('etalia.thread.share', this.model, 'mail');
         },
 
         onTwitterClick: function(e) {
@@ -164,6 +166,8 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            App.trigger('etalia.thread.share', this.model, 'twitter');
         },
 
         onGooglePlusClick: function(e) {
@@ -171,6 +175,8 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            App.trigger('etalia.thread.share', this.model, 'google-plus');
         },
 
         onPublishClick: function(e) {

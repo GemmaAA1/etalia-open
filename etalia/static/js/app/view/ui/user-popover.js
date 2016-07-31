@@ -67,8 +67,6 @@ define([
 
             this.$el.popover('show');
 
-            console.log(this.popover);
-
             this.popover.$tip.find('.popover-footer .btn').on('click', function() {
                 that.model.markDone().then(function() {
                     that.$el.popover('destroy');
