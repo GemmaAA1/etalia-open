@@ -18,7 +18,7 @@ def get_private_ip_based_on_role(role):
 
     ec2 = boto3.resource('ec2')
     instances = list(ec2.instances.all())
-    props = [(i.private_ip, i.tags) for i in instances]
+    props = [(i.private_ip_address, i.tags) for i in instances]
     for prop in props:
         for tag in prop[1]:
             if tag['Key'] == 'role' and role in tag['Value']:
