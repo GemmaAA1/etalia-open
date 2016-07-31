@@ -91,7 +91,7 @@ ga('send', {
 
 ## Publication
 
-On ```etalia.publication.pin```
+On ```etalia.thread.pin```
 
 ```javascript
 ga('send', {
@@ -103,7 +103,7 @@ ga('send', {
 });                       
 ```
 
-On ```etalia.publication.ban```
+On ```etalia.thread.ban```
 
 ```javascript
 ga('send', {
@@ -115,7 +115,7 @@ ga('send', {
 });                       
 ```
 
-On ```etalia.publication.add```
+On ```etalia.thread.add```
 
 ```javascript
 ga('send', {
@@ -127,7 +127,7 @@ ga('send', {
 });                       
 ```
 
-On ```etalia.publication.trash```
+On ```etalia.thread.trash```
 
 ```javascript
 ga('send', {
@@ -139,7 +139,7 @@ ga('send', {
 });                       
 ```
 
-On ```etalia.publication.restore```
+On ```etalia.thread.restore```
 
 ```javascript
 ga('send', {
@@ -151,7 +151,7 @@ ga('send', {
 });                       
 ```
 
-On ```etalia.publication.share```
+On ```etalia.thread.share```
 
 ```javascript
 ga('send', {
@@ -163,7 +163,7 @@ ga('send', {
 });                       
 ```
 
-On ```etalia.publication.trash-clear```
+On ```etalia.thread.trash-clear```
 
 ```javascript
 ga('send', {
