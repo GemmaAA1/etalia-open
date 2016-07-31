@@ -181,14 +181,14 @@
 
     .card .infos p.truncate {
         position: relative;
-        padding-right: 100px;
+        padding-right: 115px;
     }
 
     .card .infos p.truncate em {
         position: absolute;
         top: 0;
         right: 0;
-        width: 80px;
-        text-align: right;
+        width: 95px;
+        text-align: left;
     }
 }
