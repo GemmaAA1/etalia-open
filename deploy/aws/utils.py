@@ -162,7 +162,7 @@ def get_etalia_version():
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
 
-def associate_elastic_ip(ec2, insta nce_id):
+def associate_elastic_ip(ec2, instance_id):
     """Associate elastic based on instance tag"""
 
     from .elastic_ip import ELASTIC_IP_MAPPING
