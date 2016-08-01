@@ -41,7 +41,7 @@ class UserViewSet(MultiSerializerMixin,
     * **[GET] /users/<id\>/following/**: List of following users
     * **[GET] /users/<id\>/blocked/**: List of blocked users
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** List: **
 
@@ -111,7 +111,7 @@ class UserLibViewSet(MultiSerializerMixin,
     * **[GET] /user-libs/<id\>/**: User Library instance
     * **[GET] /user-libs/<id\>/papers**: List of papers in user library
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** Detail: **
 
@@ -169,7 +169,7 @@ class UserLibPaperViewSet(MultiSerializerMixin,
     * **[GET] /user-lib-papers/**: List of User Lib Paper
     * **[GET] /user-lib-papers/<id\>/**: User Lib Paper instance
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** Detail: **
 
@@ -225,7 +225,7 @@ class RelationshipViewSet(viewsets.ModelViewSet):
     * **[GET] /relationships/**: List of relationship for user
     * **[GET] /relationships/<id\>/**: Relationship instance for user
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** List: **
 
@@ -269,7 +269,7 @@ class AffiliationViewSet(viewsets.ModelViewSet):
     * **[GET] /affiliations/**: List
     * **[GET] /affiliations/<id\>/**: Detail
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** List: **
 

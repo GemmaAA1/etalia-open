@@ -7,7 +7,7 @@ from collections import Counter
 from django.contrib.auth import get_user_model
 from django.views.decorators.cache import never_cache
 
-from rest_framework import viewsets, permissions, mixins, status
+from rest_framework import viewsets, permissions, mixins, status, filters
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
@@ -47,7 +47,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **[PUT, PATCH] /threads/<id\>/publish**: Publish Thread
     * **[GET] /threads/<id\>/neighbors**: Thread neighbors
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** Detail: **
 
@@ -73,6 +73,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **user_id[]=(int)**: Filter threads by user_id
     * **type[]=(int)**: Filter threads by type
     * **search=(str)**: Filter threads on title, owner first and last names
+    * **doi=(str)**: Filter threads based on paper DOI
 
     ** Sub-routes: **
 
@@ -257,6 +258,11 @@ class ThreadViewSet(MultiSerializerMixin,
                 days=int(time_span))
             query_args.append(Q(published_at__gt=cutoff_datetime))
 
+        # Paper doi
+        doi = self.request.query_params.get('doi', None)
+        if doi:
+            query_args.append(Q(paper__id_doi=doi))
+
         # search
         search = self.request.query_params.get('search', None)
         if search:
@@ -348,7 +354,7 @@ class ThreadPostViewSet(MultiSerializerMixin,
     * **[GET, POST] /posts/**: List of posts
     * **[GET, PUT, PATCH] /posts/<id\>/**: Post instance
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** Detail:**
 
@@ -403,7 +409,7 @@ class ThreadCommentViewSet(MultiSerializerMixin,
     * **[GET, POST] /comments/**: List of comments
     * **[GET, PUT, PATCH] /comments/<id\>/**: Comment instance
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** List: **
 
@@ -503,7 +509,7 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
     * **[GET, POST] /invites/**: List of Invite
     * **[GET, PUT, PATCH] /invites/<id\>/**: Invite
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** List: **
 
