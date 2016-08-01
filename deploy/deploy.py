@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     # Create AMIs
     if args.amis:
-        sleep(5)    # for instance tag to be updated
+        sleep(20)    # for instance tag to be updated
         ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
         version = get_version(str(ROOT_DIR.path()))
         if args.slack:
