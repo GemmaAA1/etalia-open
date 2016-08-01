@@ -17,7 +17,16 @@ URL_SPOT_TERMINATION_CHECK = \
     'http://169.254.169.254/latest/meta-data/spot/termination-time'
 ROOT_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+ELASTIC_IP_MAPPING = {
+    'redis': {
+        'ip': env.str('REDIS_ELASTIC_IP'),
+        'allocation_id': env.str('REDIS_ELASTIC_ALLOCATION_ID')
+    },
+    'master': {
+        'ip': env.str('RABBITMQ_ELASTIC_IP'),
+        'allocation_id': env.str('RABBITMQ_ELASTIC_ALLOCATION_ID')
+    }
+}
 
 def connect_ec2():
     """Return ec2 resource"""
@@ -161,3 +170,20 @@ def tags2dict(tags):
 def get_etalia_version():
     init_py = open(os.path.join(ROOT_DIR, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
+
+
+def associate_elastic_ip(ec2, instance_id):
+    """Associate elastic based on instance tag"""
+
+    instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
+    tags = tags2dict(instance.tags)
+    roles = tags.get('role')
+
+    for k, props in ELASTIC_IP_MAPPING.items():
+        if k in roles.items():
+            rsp = ec2.meta.client.associate_address(
+                DryRun=False,
+                InstanceId=instance_id,
+                AllocationId=props.get('allocation_id'),
+                AllowReassociation=True
+            )

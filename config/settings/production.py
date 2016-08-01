@@ -68,8 +68,12 @@ if not os.path.exists(CACHE_FILE_DIR):
 
 CACHES = {
     'default': {
-        'BACKEND': 'redis_cache.RedisCache',
-        'LOCATION': '{host}:6379'.format(host=get_dns_name_based_on_role('redis')),
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://{host}:6379/1'.format(host=env.str("REDIS_ELASTIC_IP")),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'IGNORE_EXCEPTIONS': True,
+        },
         'TIMEOUT': 600,     # in seconds
     },
     'files': {

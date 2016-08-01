@@ -87,7 +87,7 @@ define([
      * Backbone Relational
      */
     function isApiUrl(url) {
-        return _.isString(url) && /http:\/\/[0-9a-z-:\.]+\/[a-z0-9-\/]+\/[0-9]+\//.test(url);
+        return _.isString(url) && /https?:\/\/[0-9a-z-:\.]+\/[a-z0-9-\/]+\/[0-9]+\//.test(url);
     }
 
     function extractIdFromApiUrl(url) {

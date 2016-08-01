@@ -2,8 +2,8 @@
 
 from .common import *
 
-CONFIG_FILE = __file__
-# CONFIG_FILE = 'production'
+# CONFIG_FILE = __file__
+CONFIG_FILE = 'production'
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -44,8 +44,6 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
 # Static asset configuration
 STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
 STATIC_URL = '/static/'
-# STATIC_URL = str(ROOT_DIR.path('staticfiles'))
-
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
@@ -78,12 +76,19 @@ CACHES = {
     }
 }
 
+
+# Local redis cache for debug (redis-server must be on)
 # CACHES = {
 #     'default': {
-#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#         'LOCATION': 'unique-snowflake',
-#         'TIMEOUT': 60 * 60 * 24,    # 24 h
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://{host}:6379/1'.format(host='127.0.0.1'),
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             'IGNORE_EXCEPTIONS': True,
+#         },
+#         'TIMEOUT': 600,     # in seconds
 #     },
+# }
 #     'default': {
 #         'BACKEND': 'redis_cache.RedisCache',
 #         'LOCATION': '{host}:6379'.format(host='localhost'),
@@ -93,7 +98,7 @@ CACHES = {
 #         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
 #         'TIMEOUT': 60 * 60,         # 1 h
 #     }
-# }
+
 
 #!!!!! WARNING, USE WITH CARE !!!!!!####
 #                                      #
