@@ -568,7 +568,7 @@ def update_redis_cache():
 # COMMON
 # ----------
 @task
-def clean_and_update_hosts_file(stack=STACK):
+def clean_hosts_file(stack=STACK):
     hosts_ip6 = '# The following lines are desirable for IPv6 capable hosts ' \
                 '::1 ip6-localhost ip6-loopback\n' \
                 'fe00::0 ip6-localnet\n' \
@@ -578,70 +578,6 @@ def clean_and_update_hosts_file(stack=STACK):
                 'ff02::3 ip6-allhosts\n'
     run_as_root('> /etc/hosts')
     files.append('/etc/hosts', hosts_ip6, use_sudo=True)
-    update_hosts_file(stack=stack)
-
-
-@task
-def update_hosts_file(stack=STACK):
-    ec2 = connect_ec2()
-
-    instances = list(ec2.instances.filter(
-        Filters=[{'Name': 'tag:stack', 'Values': [stack]}]))
-
-    context = {}
-    for instance in instances:
-        if instance.public_dns_name:
-            context[instance.public_dns_name] = {
-                'ip': instance.public_ip_address,
-                'private_ip': instance.private_ip_address,
-                'name': tags2dict(instance.tags).get('Name', '')
-            }
-    # overwrite host_string ip to localhost
-    context[env.host_string] = {
-        'ip': '127.0.0.1',
-        'private_ip': '127.0.0.1',
-        'name': context[env.host_string]['name'],
-    }
-
-    # update host file if necessary
-    reb = False
-    for cont in context.values():
-        if not cont['private_ip'] == '127.0.0.1':
-            line_str = '{private_ip} {name} {name}.localdomain'.format(
-                private_ip=cont['private_ip'],
-                name=cont['name'],
-            )
-        else:
-            line_str = '{private_ip} {name} {name}.localdomain localhost localhost.localdomain'.format(
-                private_ip=cont['private_ip'],
-                name=cont['name'],
-            )
-
-        if not files.contains('/etc/hosts', line_str):
-            if files.contains('/etc/hosts', cont['private_ip']):  # update line if ip already in
-                run_as_root(
-                    "sed -i 's/.*{private_ip}.*/{new_line}/' /etc/hosts".format(
-                        private_ip=cont['private_ip'],
-                        new_line=line_str))
-            elif files.contains('/etc/hosts',
-                                cont['name']):  # update line if name already in
-                run_as_root(
-                    "sed -i 's/.*{name}.*/{new_line}/' /etc/hosts".format(
-                        name=cont['name'],
-                        new_line=line_str))
-            else:  # add line to top row
-                run_as_root("sed -i -e '1i{new_line}\' /etc/hosts".format(
-                    new_line=line_str))
-
-    # update host_name
-    if not files.contains('/etc/hostname', context[env.host_string]['name']):
-        run_as_root('echo "{name}.localdomain" > /etc/hostname'.format(
-            name=context[env.host_string]['name']))
-        run_as_root(
-            'hostname {name}'.format(name=context[env.host_string]['name']))
-        reb = True
-    return reb
-
 
 # ------------------------------------------------------------------------------
 # UTILITIES
@@ -900,9 +836,6 @@ def deploy():
     # redis
     if 'redis' in roles:
         update_redis_cache()
-
-    # hosts
-    # reb = update_hosts_file(env.stack_string)
 
     # supervisor
     update_supervisor_conf()
