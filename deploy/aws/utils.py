@@ -8,7 +8,6 @@ import environ
 import requests
 from distutils.version import LooseVersion
 
-env = environ.Env()
 INSTANCE_TAGS_KEY = ['Name', 'stack', 'layer', 'role', 'version']
 INSTANCE_NAME_PATTERN = ['stack', 'layer', 'role', 'version']
 IMAGE_NAME_PATTERN = ['version', 'stack', 'layer', 'role']
@@ -17,16 +16,7 @@ URL_SPOT_TERMINATION_CHECK = \
     'http://169.254.169.254/latest/meta-data/spot/termination-time'
 ROOT_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ELASTIC_IP_MAPPING = {
-    'redis': {
-        'ip': env.str('REDIS_ELASTIC_IP'),
-        'allocation_id': env.str('REDIS_ELASTIC_ALLOCATION_ID')
-    },
-    'master': {
-        'ip': env.str('RABBITMQ_ELASTIC_IP'),
-        'allocation_id': env.str('RABBITMQ_ELASTIC_ALLOCATION_ID')
-    }
-}
+
 
 def connect_ec2():
     """Return ec2 resource"""
@@ -175,12 +165,14 @@ def get_etalia_version():
 def associate_elastic_ip(ec2, instance_id):
     """Associate elastic based on instance tag"""
 
+    from .elastic_ip import ELASTIC_IP_MAPPING
+
     instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
     tags = tags2dict(instance.tags)
     roles = tags.get('role')
 
     for k, props in ELASTIC_IP_MAPPING.items():
-        if k in roles.items():
+        if k in roles:
             rsp = ec2.meta.client.associate_address(
                 DryRun=False,
                 InstanceId=instance_id,
