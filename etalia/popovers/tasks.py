@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @app.task()
 def update_popovers_display(user_pk):
-    upoud = UserPopOverUpdateDisplay.objects.get_or_create(user_id=user_pk)
+    upoud, _ = UserPopOverUpdateDisplay.objects.get_or_create(user_id=user_pk)
     upoud.update_display()
 
 
