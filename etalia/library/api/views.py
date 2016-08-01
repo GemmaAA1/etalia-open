@@ -42,7 +42,7 @@ class PaperViewSet(MultiSerializerMixin,
     * **[GET] /papers/<id\>/neighbors**: Paper neighbors
     * **[GET] /papers/<id\>/related-threads**: Related threads
 
-    ### Optional Kwargs ###
+    ### Additional Kwargs ###
 
     ** Detail: **
 

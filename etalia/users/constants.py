@@ -2,6 +2,13 @@
 from __future__ import unicode_literals, absolute_import
 
 # Define constants used in etalia
+USER_INDIVIDUAL = 1
+USER_THIRD_PARTY = 2
+USER_TYPES = (
+    (USER_INDIVIDUAL, 'Individual'),
+    (USER_THIRD_PARTY, 'Third-Party')
+)
+
 
 # Type of providers (defined in users app)
 PROVIDER_TYPE = (

@@ -23,7 +23,8 @@ from etalia.usersession.models import UserSession
 
 from .validators import validate_first_name, validate_last_name
 from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
-    RELATIONSHIP_STATUSES, USERLIB_STATE_CHOICES, USERLIB_UNINITIALIZED, USERLIB_NEED_REAUTH
+    RELATIONSHIP_STATUSES, USERLIB_STATE_CHOICES, USERLIB_UNINITIALIZED, \
+    USERLIB_NEED_REAUTH, USER_TYPES, USER_INDIVIDUAL
 
 
 class Affiliation(TimeStampedModel):
@@ -128,10 +129,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
 
-    is_alpha = models.BooleanField(_('alpha'), default=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'an early adopter user.'))
-
     init_step = models.CharField(max_length=3, default='NON', choices=INIT_STEPS,
         help_text=_('Tag where init user stands'))
 
@@ -142,6 +139,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     relationships = models.ManyToManyField('self', through='Relationship',
                                           symmetrical=False,
                                           related_name='related_to')
+
+    # Define the type of user (individual, third-party, etc.)
+    type = models.IntegerField(choices=USER_TYPES, default=USER_INDIVIDUAL,
+                               null=False, blank=False, verbose_name='Type')
 
     objects = UserManager()
 
