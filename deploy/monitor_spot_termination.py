@@ -15,6 +15,7 @@ import time
 import requests
 from aws import connect_ec2, get_local_instance_id, get_latest_ami, \
     URL_SPOT_TERMINATION_CHECK, tags2dict, dict2tags
+import sys
 
 DRY_RUN = False
 SLEEP_TIME = 5  # in s
@@ -84,3 +85,5 @@ if __name__ == '__main__':
 
             # terminate instance
             ec2.meta.client.terminate_instances(InstanceIds=[instance_id, ])
+
+            break
