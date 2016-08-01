@@ -13,10 +13,10 @@ MAILGUN_SERVER_NAME = 'mg.etalia.io'
 BROKER_URL = 'amqp://{username}:{password}@{host}:5672//'.format(
     username=env.str('RABBITMQ_USERNAME'),
     password=env.str('RABBITMQ_PASSWORD'),
-    host=env.str('RABBITMQ_STATIC_IP'),
+    host=env.str('RABBITMQ_ELASTIC_IP'),
 )
 CELERY_RESULT_BACKEND = 'amqp://{username}:{password}@{host}:5672//'.format(
     username=env.str('RABBITMQ_USERNAME'),
     password=env.str('RABBITMQ_PASSWORD'),
-    host=env.str('RABBITMQ_STATIC_IP'),
+    host=env.str('RABBITMQ_ELASTIC_IP'),
 )

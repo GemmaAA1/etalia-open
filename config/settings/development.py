@@ -2,8 +2,8 @@
 
 from .common import *
 
-CONFIG_FILE = __file__
-# CONFIG_FILE = 'production'
+# CONFIG_FILE = __file__
+CONFIG_FILE = 'production'
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -44,8 +44,6 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
 # Static asset configuration
 STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
 STATIC_URL = '/static/'
-# STATIC_URL = str(ROOT_DIR.path('staticfiles'))
-
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )

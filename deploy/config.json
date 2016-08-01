@@ -41,7 +41,7 @@
     {
       "Spot": {
         "DryRun": false,
-        "SpotPrice": "0.1",
+        "SpotPrice": "0.15",
         "InstanceCount": 1,
         "Type": "one-time",
         "AvailabilityZoneGroup": "us-west-2b",
@@ -64,7 +64,7 @@
     {
       "Spot": {
         "DryRun": false,
-        "SpotPrice": "0.1",
+        "SpotPrice": "0.15",
         "InstanceCount": 1,
         "Type": "one-time",
         "AvailabilityZoneGroup": "us-west-2b",
