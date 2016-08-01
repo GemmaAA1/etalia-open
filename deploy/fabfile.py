@@ -902,16 +902,16 @@ def deploy():
         update_redis_cache()
 
     # hosts
-    reb = update_hosts_file(env.stack_string)
+    # reb = update_hosts_file(env.stack_string)
 
     # supervisor
     update_supervisor_conf()
     restart_supervisor()
 
-    if reb:
-        reboot_instance()
-    else:
-        sleep(5)
+    # if reb:
+    #     reboot_instance()
+    # else:
+    #     sleep(5)
 
 
 @task
