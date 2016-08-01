@@ -148,7 +148,7 @@ def tag_instance(ec2, instance_id):
 
 def dict2tags(dic, filters=False):
     if filters:
-            return map(lambda x: {'Name': 'tag:' + x[0], 'Values': [x[1]]}, list(dic.items()))
+        return list(map(lambda x: {'Name': 'tag:' + x[0], 'Values': [x[1]]}, list(dic.items())))
     else:
         return map(lambda x: {'Key': x[0], 'Value': x[1]}, list(dic.items()))
 
