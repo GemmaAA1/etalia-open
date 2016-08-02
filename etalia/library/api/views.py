@@ -4,10 +4,9 @@ from __future__ import unicode_literals, absolute_import
 import operator
 from collections import Counter
 from functools import reduce
-
 from django.views.decorators.cache import cache_page, never_cache
 
-from rest_framework import viewsets, permissions, status, mixins
+from rest_framework import viewsets, permissions, status, mixins, filters
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
@@ -25,22 +24,62 @@ from ..constants import PAPER_BANNED, PAPER_PINNED, PAPER_ADDED, PAPER_TRASHED
 
 from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
     PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer
+from .filters import PaperFilter
+
+
+class PaperViewSet(MultiSerializerMixin,
+                   viewsets.ReadOnlyModelViewSet):
+    """Papers
+
+    ### Routes ###
+
+    * **[GET] /papers/**: List of papers
+    * **[GET] /papers/<id>**: Detail of paper
+
+    ### Additional Kwargs ###
+
+    ** Detail: **
+
+    * **view=(str)**: Reformat output. choices: 'nested',
+
+    ** List: **
+
+    * **doi=(str)**: Filter DOI
+    * **title=(str)**: Filter paper title
+    * **journal=(str)**: Filter journal title
+    * **search=(str)**: Filter papers on title, journal, authors first and last names
+
+    """
+
+    queryset = Paper.objects.all()
+    serializer_class = {
+        'default': PaperSerializer,
+        'nested': PaperNestedSerializer,
+    }
+    permission_classes = (permissions.AllowAny,
+                          )
+    filter_backends = (filters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       )
+    filter_class = PaperFilter
+    search_fields = ('title',
+                     'journal__title',
+                     'authors__first_name',
+                     'authors__last_name')
 
 
 class MyPaperViewSet(MultiSerializerMixin,
                      viewsets.ReadOnlyModelViewSet):
     """
-    Paper
-
-    Papers
+    My Papers
 
     ### Routes ###
 
-    * **[GET, POST] /papers/**: List of papers
-    * **[GET] /papers/filters**: Filter list for request papers list
-    * **[GET, PUT, PATCH] /papers/<id\>/**: Paper instance
-    * **[GET] /papers/<id\>/neighbors**: Paper neighbors
-    * **[GET] /papers/<id\>/related-threads**: Related threads
+    * **[GET, POST] /my-papers/**: List of papers
+    * **[GET] /my-papers/filters**: Filter list for request papers list
+    * **[GET, PUT, PATCH] /my-papers/<id\>/**: Paper instance
+    * **[GET] /my-papers/<id\>/neighbors**: Paper neighbors
+    * **[GET] /my-papers/<id\>/related-threads**: Related threads
 
     ### Additional Kwargs ###
 

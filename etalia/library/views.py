@@ -3,6 +3,8 @@ from __future__ import unicode_literals, absolute_import
 
 import json
 from django.template.response import TemplateResponse
+from django.views.generic import ListView
+from .models import Paper
 
 
 def my_papers(request):
@@ -26,3 +28,9 @@ def papers(request):
         'papers/list.html',
         {}
     )
+
+
+class PaperView(ListView):
+
+    model = Paper
+

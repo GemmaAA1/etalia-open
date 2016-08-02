@@ -5,7 +5,8 @@ import operator
 from functools import reduce
 from collections import Counter
 from django.contrib.auth import get_user_model
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache, cache_control, cache_page
+from django.utils.decorators import method_decorator
 
 from rest_framework import viewsets, permissions, mixins, status, filters
 from rest_framework.exceptions import ParseError
@@ -19,6 +20,8 @@ from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
     ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod, \
     IsToUserOrOwnersReadOnly, IsSessionAuthenticatedOrReadOnly
+from etalia.core.api.mixins import MultiSerializerMixin
+
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -28,16 +31,62 @@ from .serializers import \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
     ThreadFilterSerializer, ThreadUserInviteSerializer, \
     ThreadUserInviteUpdateSerializer, ThreadUserUpdateSerializer
-from etalia.core.api.mixins import MultiSerializerMixin
+from .filters import ThreadFilter
+
 
 User = get_user_model()
 
 
-class MyThreadViewSet(MultiSerializerMixin,
-                    viewsets.ModelViewSet):
+class ThreadViewSet(MultiSerializerMixin,
+                    viewsets.ReadOnlyModelViewSet):
+
+    """Threads
+
+    ### Routes ###
+
+    * **[GET] /threads/**: List of threads
+    * **[GET] /threads/<id>**: Detail of thread
+
+    ### Additional Kwargs ###
+
+    ** Detail: **
+
+    * **view=(str)**: Reformat output. choices: 'nested',
+
+    ** List: **
+
+    * **title=(str)**: Filter thread on title
+    * **min_date=(str)**: Filter thread published after min_date (mm/dd/yyyy)
+    * **max_date=(str)**: Filter thread published before max_date (mm/dd/yyyy)
+    * **doi=(str)**: Filter thread associated with DOI
+    * **type[]=(int)**: Filter thread type (1: Question, 2: Paper)
+    * **search=(str)**: Filter thread on title, content, author first and last names
 
     """
-    Threads
+
+    queryset = Thread.objects.all()
+    serializer_class = {
+        'default': ThreadSerializer,
+        'nested': ThreadNestedSerializer,
+    }
+    permission_classes = (permissions.AllowAny,
+                          )
+    filter_backends = (filters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       )
+    filter_class = ThreadFilter
+    search_fields = ('title',
+                     'content',
+                     'paper__id_doi',
+                     'user__first_name',
+                     'user__last_name')
+
+
+class MyThreadViewSet(MultiSerializerMixin,
+                      viewsets.ModelViewSet):
+
+    """
+    My Threads
 
     ### Routes ###
 
