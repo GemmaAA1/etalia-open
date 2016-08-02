@@ -61,26 +61,6 @@ SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
 VIRTUALENV_DIR = '.virtualenvs'
 
-ROLE_INSTANCE_TYPE_MAP = {
-    'web': 't2.micro',
-    'base': 't2.small',
-    'master': 't2.small',
-    'pe': 't2.medium',
-    'te': 't2.medium',
-    'feed': 't2.medium',
-    'nlp': 't2.large',
-    'spot': 'm4.large',
-    'redis': 'm4.large'}
-INSTANCE_TYPES_RANK = {
-    't2.micro': 0,
-    't2.small': 1,
-    't2.medium': 2,
-    't2.large': 3,
-    'm4.large': 3,
-    'm4.xlarge': 4,
-    'm4.2xlarge': 5,
-    'm4.10xlarge': 6}
-
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # ROOT_DIR is two levels up
 SUPERVISOR_CONF_DIR = 'supervisor'
 SSL_PATH = '/etc/nginx/ssl'
@@ -154,9 +134,6 @@ def set_hosts(stack=STACK, layer='*', role='*', name='*'):
     setattr(env, 'stack_string', stack)
     # store tags
     setattr(env, 'tags', props)
-
-    # Check minimum requirement between instance type and role
-    check_integrity()
 
 # ------------------------------------------------------------------------------
 # COMMON

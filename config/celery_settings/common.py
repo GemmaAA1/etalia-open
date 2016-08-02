@@ -32,6 +32,7 @@ CELERY_QUEUES = (
     Queue('feed', routing_key='feed.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
+    Queue('test', routing_key='test.#'),
 )
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
