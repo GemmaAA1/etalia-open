@@ -5,9 +5,7 @@ import os
 import glob
 from celery import Task
 
-from django.db.models.query import QuerySet
-from django.conf import settings
-
+import numpy as np
 from .models import Model, PaperEngine, ThreadEngine
 
 
@@ -118,3 +116,23 @@ class PaperEngineTask(EngineTask):
 class ThreadEngineTask(EngineTask):
     abstract = True
     engine_class = ThreadEngine
+
+
+class TestTask(Task):
+
+    abstract = True
+    ignore_result = False
+
+    _engine = None
+
+    def load(self):
+        self._engine = np.random.randn(10000, 1000)
+        return self._engine
+
+    @property
+    def engine(self):
+        if self._engine is None:
+            return self.load()
+        return self._engine
+
+

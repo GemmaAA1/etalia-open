@@ -35,12 +35,22 @@ celery_app.user_options['worker'].add(
 )
 
 
-class InitArgs(bootsteps.Step):
+class InitArgs(bootsteps.StartStopStep):
     """BootStep to warm up task dispatchers of type Model, PaperEngine or
     ThreadEngine with data"""
+
     def __init__(self, worker, init, **options):
+        self.init_tag = init
+        # for k, task in worker.app.tasks.items():
+        #     if task.__name__.startswith('{0}_dispatcher'.format(init)):
+        #         task.load()
+        #     if task.__name__.startswith('{}'.format(init)):
+        #         task.load()
+
+    def start(self, worker):
         for k, task in worker.app.tasks.items():
-            if task.__name__.startswith('{0}_dispatcher'.format(init)):
+            if task.__name__.startswith('{}'.format(self.init_tag)):
                 task.load()
 
 celery_app.steps['worker'].add(InitArgs)
+

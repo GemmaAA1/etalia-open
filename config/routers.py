@@ -3,8 +3,8 @@ from __future__ import unicode_literals, absolute_import
 
 
 # List of tuples that defines task routing
-# Task name is compared to first argument of tuple with 'startswith'. First
-# occurrence that match is used for routing
+# Task name is compared to first argument of tuple with 'startswith' and
+# first occurrence that matches is used for routing
 
 
 class MyRouter(object):

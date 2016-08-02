@@ -7,7 +7,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, F
 from .models import Model, PaperEngine, ThreadEngine
 from .models import UserFingerprint
-from .tasks_class import EmbedPaperTask, ThreadEngineTask, PaperEngineTask
+from .tasks_class import EmbedPaperTask, ThreadEngineTask, PaperEngineTask, \
+    TestTask
 from config.celery import celery_app as app
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,11 @@ try:
         return self.engine.tasks(*args, **kwargs)
 except ThreadEngine.DoesNotExist:
     pass
+
+
+@app.task(base=TestTask, bind=True)
+def return_shape(self, *args, **kwargs):
+    return self.engine.shape
 
 
 # Update tasks
