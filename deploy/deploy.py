@@ -88,6 +88,10 @@ if __name__ == '__main__':
     if args.slack:
         send_deploy_version_message(args.stack, done=True)
 
+    # Warm-up dispatchers
+    sleep(10)
+    call(['fab', 'set_hosts:{stack},jobs,*'.format(stack=args.stack), 'warm_up_dispatchers'])
+
     # Create AMIs
     if args.amis:
         sleep(20)    # for instance tag to be updated
@@ -99,3 +103,4 @@ if __name__ == '__main__':
                        username="deployment-bot",
                        web_hook_url=SLACK_WEB_HOOK)
         call(['fab', 'create_amis:{stack}'.format(stack=args.stack)])
+
