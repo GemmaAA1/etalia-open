@@ -1,7 +1,7 @@
 {
   "web":
     {
-      "Instance": {
+      "instance": {
         "DryRun": false,
         "MinCount": 1,
         "MaxCount": 1,
@@ -20,7 +20,7 @@
     },
   "master":
     {
-      "Instance": {
+      "instance": {
         "DryRun": false,
         "MinCount": 1,
         "MaxCount": 1,
@@ -39,7 +39,7 @@
     },
   "nlp":
     {
-      "Spot": {
+      "fleet": {
         "DryRun": false,
         "SpotPrice": "0.15",
         "InstanceCount": 1,
@@ -48,7 +48,10 @@
         "LaunchSpecification": {
           "KeyName": "npannetier-key-pair",
           "SecurityGroups": ["paperstream_sg"],
-          "InstanceType": "m4.xlarge",
+          "InstanceType": [
+            "m4.xlarge",
+
+
           "Placement": {
             "AvailabilityZone": "us-west-2b"
           }
@@ -62,7 +65,7 @@
     },
   "engines":
     {
-      "Spot": {
+      "fleet": {
         "DryRun": false,
         "SpotPrice": "0.15",
         "InstanceCount": 1,
@@ -70,8 +73,18 @@
         "AvailabilityZoneGroup": "us-west-2b",
         "LaunchSpecification": {
           "KeyName": "npannetier-key-pair",
-          "SecurityGroups": ["paperstream_sg"],
-          "InstanceType": "m4.xlarge",
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-0ce75868"
+            }
+          ],
+          "InstanceType": [
+            "c3.xlarge",
+            "c4.xlarge",
+            "c4.2xlarge",
+            "m4.xlarge",
+            "c3.2xlarge",
+
           "Placement": {
             "AvailabilityZone": "us-west-2b"
           }
@@ -83,4 +96,138 @@
         {"Key": "role", "Value": "pe-te-feed-redis"}
       ]
     }
+}
+
+
+
+{
+  "AllocationStrategy": "lowestPrice",
+  "TargetCapacity": 1,
+  "SpotPrice": "0.1",
+  "ValidUntil": "2020-08-02T18:07:20Z",
+  "TerminateInstancesWithExpiration": true,
+  "LaunchSpecifications": [
+    {
+      "InstanceType": "c3.xlarge",
+      "KeyName": "npannetier-key-pair",
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "InstanceType": "c3.2xlarge",
+      "KeyName": "npannetier-key-pair",
+      ],
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "InstanceType": "c4.xlarge",
+      "KeyName": "npannetier-key-pair",
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "InstanceType": "c4.2xlarge",
+      "KeyName": "npannetier-key-pair",
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "ImageId": "ami-26985146",
+      "InstanceType": "m4.large",
+      "KeyName": "npannetier-key-pair",
+      "BlockDeviceMappings": [
+        {
+          "DeviceName": "/dev/sda1",
+          "Ebs": {
+            "DeleteOnTermination": true,
+            "VolumeType": "gp2",
+            "VolumeSize": 64,
+            "SnapshotId": "snap-2b5622d6"
+          }
+        }
+      ],
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "ImageId": "ami-26985146",
+      "InstanceType": "m4.xlarge",
+      "KeyName": "npannetier-key-pair",
+      "BlockDeviceMappings": [
+        {
+          "DeviceName": "/dev/sda1",
+          "Ebs": {
+            "DeleteOnTermination": true,
+            "VolumeType": "gp2",
+            "VolumeSize": 64,
+            "SnapshotId": "snap-2b5622d6"
+          }
+        }
+      ],
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "ImageId": "ami-26985146",
+      "InstanceType": "r3.large",
+      "KeyName": "npannetier-key-pair",
+      "BlockDeviceMappings": [
+        {
+          "DeviceName": "/dev/sda1",
+          "Ebs": {
+            "DeleteOnTermination": true,
+            "VolumeType": "gp2",
+            "VolumeSize": 64,
+            "SnapshotId": "snap-2b5622d6"
+          }
+        }
+      ],
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    },
+    {
+      "ImageId": "ami-26985146",
+      "InstanceType": "r3.xlarge",
+      "KeyName": "npannetier-key-pair",
+      "BlockDeviceMappings": [
+        {
+          "DeviceName": "/dev/sda1",
+          "Ebs": {
+            "DeleteOnTermination": true,
+            "VolumeType": "gp2",
+            "VolumeSize": 64,
+            "SnapshotId": "snap-2b5622d6"
+          }
+        }
+      ],
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0ce75868"
+        }
+      ]
+    }
+  ],
+  "Type": "request"
 }
