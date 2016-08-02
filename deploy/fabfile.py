@@ -773,6 +773,13 @@ def go_off_maintenance():
         raise IOError('maintenance_on.html does not exist')
 
 
+@task
+@roles('master')
+def warm_up_dispatchers():
+    run_as_root('chmod +x {0}/deploy/warm_up.py'.format(env.source_dir))
+    with settings(cd(env.source_dir), _workon()):
+        run('cd {0} && ./manage.py shell < deploy/warm_up.py > /dev/null'.format(env.source_dir))
+
 # ------------------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------------------

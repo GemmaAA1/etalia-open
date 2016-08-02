@@ -559,6 +559,9 @@ class Model(ModelThreadMixin,
 
         return dist
 
+    def dummy(self):
+        pass
+
     def tasks(self, task_name, *args, **kwargs):
         """Dispatcher for Model tasks
 
@@ -1081,6 +1084,9 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         clip_start = self.get_clip_start(time_lapse)
         return self.data['ids'][clip_start:], self.data['ids'][clip_start:]
 
+    def dummy(self):
+        pass
+
     def tasks(self, task_name, *args, **kwargs):
         """Dispatcher for PaperEngine tasks
 
@@ -1504,6 +1510,9 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
         """Return last found/published paper pk"""
         clip_start = self.get_clip_start(time_lapse)
         return self.data['ids'][clip_start:], self.data['ids'][clip_start:]
+
+    def dummny(self):
+        pass
 
     def tasks(self, task_name, *args, **kwargs):
         """Dispatcher for PaperEngine tasks
