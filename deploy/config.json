@@ -44,13 +44,13 @@
         "SpotPrice": "0.15",
         "InstanceCount": 1,
         "Type": "one-time",
-        "AvailabilityZoneGroup": "us-west-2b",
+        "AvailabilityZoneGroup": "us-west-2c",
         "LaunchSpecification": {
           "KeyName": "npannetier-key-pair",
           "SecurityGroups": ["paperstream_sg"],
-          "InstanceType": "m4.xlarge",
+          "InstanceType": "r3.large",
           "Placement": {
-            "AvailabilityZone": "us-west-2b"
+          "AvailabilityZone": "us-west-2c"
           }
         }
       },

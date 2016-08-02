@@ -22,7 +22,6 @@ try:
     # specific task name
     task_name ='etalia.nlp.tasks.nlp_dispatcher_{0}'.format(model_name)
 
-
     @app.task(base=EmbedPaperTask, bind=True, name=task_name, model_name=model_name)
     def nlp_dispatcher(self, *args, **kwargs):
         return self.model.tasks(*args, **kwargs)
@@ -36,9 +35,7 @@ try:
     # specific task name
     task_name ='etalia.nlp.tasks.pe_dispatcher_{0}'.format(pe.name)
 
-
-    @app.task(base=PaperEngineTask, bind=True, name=task_name,
-              engine_id=pe.id)
+    @app.task(base=PaperEngineTask, bind=True, name=task_name, engine_id=pe.id)
     def pe_dispatcher(self, *args, **kwargs):
         return self.engine.tasks(*args, **kwargs)
 except PaperEngine.DoesNotExist:
@@ -51,17 +48,15 @@ try:
     # specific task name
     task_name ='etalia.nlp.tasks.te_dispatcher_{0}'.format(te.name)
 
-
-    @app.task(base=ThreadEngineTask, bind=True, name=task_name,
-              engine_id=te.id)
+    @app.task(base=ThreadEngineTask, bind=True, name=task_name, engine_id=te.id)
     def te_dispatcher(self, *args, **kwargs):
         return self.engine.tasks(*args, **kwargs)
 except ThreadEngine.DoesNotExist:
     pass
 
 
-@app.task(base=TestTask, bind=True)
-def return_shape(self, *args, **kwargs):
+@app.task(base=TestTask, bind=True, queue='test', routing_key='test.return_shape')
+def test_shape(self, *args, **kwargs):
     return self.engine.shape
 
 

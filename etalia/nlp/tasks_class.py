@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import os
 import glob
 from celery import Task
+from celery.utils import cached_property
 
 import numpy as np
 from .models import Model, PaperEngine, ThreadEngine
@@ -120,13 +121,11 @@ class ThreadEngineTask(EngineTask):
 
 class TestTask(Task):
 
-    abstract = True
     ignore_result = False
-
     _engine = None
 
     def load(self):
-        self._engine = np.random.randn(10000, 1000)
+        self._engine = np.random.randn(100000, 1000)
         return self._engine
 
     @property
