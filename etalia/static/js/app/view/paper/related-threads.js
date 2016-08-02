@@ -43,7 +43,7 @@ define([
             }
 
             this.collection = new App.Model.Threads();
-            this.collection.url = App.config.api_root + '/library/papers/' + this.paperId + '/related-threads';
+            this.collection.url = App.config.api_root + '/library/my-papers/' + this.paperId + '/related-threads';
 
             this.collection.on("add", this.onCollectionAdd, this);
             this.collection.on("remove", this.onCollectionRemove, this);

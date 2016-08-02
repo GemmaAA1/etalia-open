@@ -27,8 +27,8 @@ from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
     PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer
 
 
-class PaperViewSet(MultiSerializerMixin,
-                   viewsets.ReadOnlyModelViewSet):
+class MyPaperViewSet(MultiSerializerMixin,
+                     viewsets.ReadOnlyModelViewSet):
     """
     Paper
 
@@ -103,11 +103,11 @@ class PaperViewSet(MultiSerializerMixin,
 
     @never_cache
     def list(self, request, *args, **kwargs):
-        return super(PaperViewSet, self).list(request, *args, **kwargs)
+        return super(MyPaperViewSet, self).list(request, *args, **kwargs)
 
     @never_cache
     def retrieve(self, request, *args, **kwargs):
-        return super(PaperViewSet, self).retrieve(request, *args, **kwargs)
+        return super(MyPaperViewSet, self).retrieve(request, *args, **kwargs)
 
     def get_paper_id(self):
         return self.kwargs['pk']

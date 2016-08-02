@@ -8,7 +8,7 @@ from django.template.response import TemplateResponse
 def my_papers(request):
     return TemplateResponse(
         request,
-        'papers/list.html',
+        'papers/my_list.html',
         {'control_states': json.dumps(
             request.session.get('library-control-states',
                                 {'time-span': None,
@@ -17,4 +17,12 @@ def my_papers(request):
                                 )
         )
         }
+    )
+
+
+def papers(request):
+    return TemplateResponse(
+        request,
+        'papers/list.html',
+        {}
     )

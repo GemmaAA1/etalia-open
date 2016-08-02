@@ -41,7 +41,7 @@ define([
             }
 
             this.collection = new App.Model.Threads();
-            this.collection.url = App.config.api_root + '/thread/threads/' + this.threadId + '/neighbors';
+            this.collection.url = App.config.api_root + '/thread/my-threads/' + this.threadId + '/neighbors';
 
             this.collection.on("add", this.onCollectionAdd, this);
             this.collection.on("remove", this.onCollectionRemove, this);

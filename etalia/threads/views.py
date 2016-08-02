@@ -16,8 +16,16 @@ def thread(request, pk):
 def my_threads(request):
     return TemplateResponse(
         request,
-        'threads/list.html',
+        'threads/my_list.html',
         {'control_states': json.dumps(request.session.get(
             'threads-control-states',
             {'time-span': None, 'search': None, 'pin': 0}))}
+    )
+
+
+def threads(request):
+    return TemplateResponse(
+        request,
+        'threads/list.html',
+        {}
     )

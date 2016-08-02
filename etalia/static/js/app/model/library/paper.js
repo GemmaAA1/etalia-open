@@ -5,7 +5,7 @@ define([
     'app/model/library/state'
 ], function (App) {
 
-    var path = '/library/papers';
+    var path = '/library/my-papers';
 
     App.Model.Paper = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + path,

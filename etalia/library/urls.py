@@ -5,5 +5,6 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.my_papers, name='my_papers'),
+    url(r'^my-papers$', views.my_papers, name='my_papers'),
+    url(r'^papers$', views.papers, name='papers'),
 ]

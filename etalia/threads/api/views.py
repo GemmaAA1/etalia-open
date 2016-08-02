@@ -33,7 +33,7 @@ from etalia.core.api.mixins import MultiSerializerMixin
 User = get_user_model()
 
 
-class ThreadViewSet(MultiSerializerMixin,
+class MyThreadViewSet(MultiSerializerMixin,
                     viewsets.ModelViewSet):
 
     """
@@ -119,11 +119,11 @@ class ThreadViewSet(MultiSerializerMixin,
 
     @never_cache
     def list(self, request, *args, **kwargs):
-        return super(ThreadViewSet, self).list(request, *args, **kwargs)
+        return super(MyThreadViewSet, self).list(request, *args, **kwargs)
 
     @never_cache
     def retrieve(self, request, *args, **kwargs):
-        return super(ThreadViewSet, self).retrieve(request, *args, **kwargs)
+        return super(MyThreadViewSet, self).retrieve(request, *args, **kwargs)
 
     def get_thread_id(self):
         return self.kwargs['pk']

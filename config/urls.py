@@ -9,9 +9,9 @@ from etalia.core.api.router import api_urls
 
 urlpatterns = [
     url(r'^', include('etalia.core.urls', namespace='core')),
-    url(r'^papers/', include('etalia.library.urls', namespace='papers')),
-    url(r'^feeds/', include('etalia.feeds.urls', namespace='feeds')),
-    url(r'^threads/', include('etalia.threads.urls', namespace='threads')),
+    url(r'^', include('etalia.library.urls', namespace='papers')),
+    url(r'^', include('etalia.feeds.urls', namespace='feeds')),
+    url(r'^', include('etalia.threads.urls', namespace='threads')),
     url(r'^user/', include('etalia.users.urls', namespace='user')),
     url(r'^user/', include('social.apps.django_app.urls', namespace='social')),
     url(r'^admin/', include(admin.site.urls)),
