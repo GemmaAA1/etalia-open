@@ -179,3 +179,13 @@ def associate_elastic_ip(ec2, instance_id):
                 AllocationId=props.get('allocation_id'),
                 AllowReassociation=True
             )
+
+
+def get_fleet_request_id_from_instance_id(instance_id):
+
+    ec2 = connect_ec2()
+
+    # Get all active fleet requests
+    resp = ec2.meta.client.describe_spot_fleet_requests()
+    fleet_configs = resp['SpotFleetRequestConfigs']
+        
