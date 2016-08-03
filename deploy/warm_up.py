@@ -1,7 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
-
-from etalia.nlp.tasks import pe_dispatcher, te_dispatcher, nlp_dispatcher
 
 
 def warm_up():
@@ -11,4 +10,9 @@ def warm_up():
 
 
 if __name__ == '__main__':
+
+    # import django
+    # django.setup()
+    from etalia.nlp.tasks import pe_dispatcher, te_dispatcher, nlp_dispatcher
+
     warm_up()

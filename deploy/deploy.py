@@ -72,8 +72,6 @@ if __name__ == '__main__':
             call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy_verbose'])
         else:
             call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), '-P', 'deploy'])
-        # Go off maintenance
-        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_off_maintenance'])
     else:
         # Go on maintenance
         call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_on_maintenance'])
@@ -82,18 +80,10 @@ if __name__ == '__main__':
             call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy_verbose'])
         else:
             call(['fab', 'set_hosts:{stack},*,*'.format(stack=args.stack), 'deploy'])
-        # Go off maintenance
-        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
-
-    if args.slack:
-        send_deploy_version_message(args.stack, done=True)
-
-    # Warm-up dispatchers
-    sleep(10)
-    call(['fab', 'set_hosts:{stack},jobs,*'.format(stack=args.stack), 'warm_up_dispatchers'])
 
     # Create AMIs
     if args.amis:
+        print('Let'' wait before AMI registration {}')
         sleep(20)    # for instance tag to be updated
         ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
         version = get_version(str(ROOT_DIR.path()))
@@ -104,3 +94,17 @@ if __name__ == '__main__':
                        web_hook_url=SLACK_WEB_HOOK)
         call(['fab', 'create_amis:{stack}'.format(stack=args.stack)])
 
+    # Warm-up dispatchers
+    print('Let'' wait before warming up dispatcher {}')
+    sleep(15)
+    call(['fab', 'set_hosts:{stack},jobs,*'.format(stack=args.stack), 'warm_up_dispatchers'])
+
+    if args.parallel:
+        # Go off maintenance
+        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), '-P', 'go_off_maintenance'])
+    else:
+        # Go off maintenance
+        call(['fab', 'set_hosts:{stack},apps,*'.format(stack=args.stack), 'go_off_maintenance'])
+
+    if args.slack:
+        send_deploy_version_message(args.stack, done=True)

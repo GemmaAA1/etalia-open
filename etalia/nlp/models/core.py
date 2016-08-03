@@ -1511,7 +1511,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
         clip_start = self.get_clip_start(time_lapse)
         return self.data['ids'][clip_start:], self.data['ids'][clip_start:]
 
-    def dummny(self):
+    def dummy(self):
         pass
 
     def tasks(self, task_name, *args, **kwargs):
