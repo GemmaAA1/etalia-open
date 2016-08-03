@@ -13,12 +13,15 @@ If the termination signal is found, script triggers:
 from __future__ import unicode_literals, absolute_import
 import time
 import requests
+import subprocess
 from aws import connect_ec2, get_local_instance_id, get_latest_ami, \
     URL_SPOT_TERMINATION_CHECK, tags2dict, dict2tags
 import sys
+import datetime
 
 DRY_RUN = False
 SLEEP_TIME = 5  # in s
+VALID_UNTIL = datetime.datetime(2020, 1, 1)
 
 
 SPOT_TEMPLATE = {
@@ -47,6 +50,29 @@ def going_to_termination():
         return True
 
 
+def get_fleet_id_from_instance_id(instance_id):
+
+    # Get fleet request
+    sfrcs = ec2.meta.client.describe_spot_fleet_requests()["SpotFleetRequestConfigs"]
+
+    # Filter active fleet request:
+    active_ids = []
+    for sfrc in sfrcs:
+        if sfrc['SpotFleetRequestState'] == 'active':
+            active_ids.append(sfrc['SpotFleetRequestId'])
+
+    # Loop through active fleet to spot instance_id
+    for sfid in active_ids:
+        res = ec2.meta.client.describe_spot_fleet_instances(
+            SpotFleetRequestId=sfid
+        )['ActiveInstances']
+        for r in res:
+            if instance_id in r['InstanceId']:
+                return sfid
+
+    raise None
+
+
 if __name__ == '__main__':
 
     while True:
@@ -61,29 +87,65 @@ if __name__ == '__main__':
             # Get local instance
             instance_id = get_local_instance_id()
             instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
+
+            # Get relate spot and fleet ids
             spot_id = instance.spot_instance_request_id
+            fleet_id = get_fleet_id_from_instance_id(instance_id)
 
-            # Describe spot instance
-            spot = ec2.meta.client.describe_spot_instance_requests(
-                SpotInstanceRequestIds=[spot_id])
-
-            # Cancel related spot instance
-            ec2.meta.client.cancel_spot_instance_requests(
-                SpotInstanceRequestIds=[spot_id])
-
-            # start a spot request with updated ami
+            # Get latest AMI for instance
             d = tags2dict(instance.tags)
             d.pop('Name')
             ami = get_latest_ami(ec2, dict2tags(d, filters=True))[0]
-            props = SPOT_TEMPLATE
-            last_spot = spot['SpotInstanceRequests'][0]
-            props['LaunchSpecification']['ImageId'] = ami.id
-            props['SpotPrice'] = last_spot['SpotPrice']
-            props['LaunchSpecification']['InstanceType'] = \
-                last_spot['LaunchSpecification']['InstanceType']
-            ec2.meta.client.request_spot_instances(**props)
 
-            # terminate instance
-            ec2.meta.client.terminate_instances(InstanceIds=[instance_id, ])
+            if fleet_id:  # spot instance from fleet
+
+                # Get fleet config
+                fleet = ec2.meta.client.describe_spot_fleet_requests(
+                    SpotFleetRequestIds=[fleet_id]
+                )
+
+                # Cancel related fleet request
+                ec2.meta.client.cancel_spot_fleet_requests(
+                    SpotFleetRequestIds=[fleet_id],
+                    TerminateInstances=False
+                )
+
+                # Update config with new amis
+                props = fleet['SpotFleetRequestConfigs'][0]['SpotFleetRequestConfig']
+                for ins in props['LaunchSpecifications']:
+                    ins['ImageId'] = ami.id
+                    ins.pop('BlockDeviceMappings')
+
+                props.pop('ValidFrom')
+                props.pop('ClientToken')
+                props['ValidUntil'] = VALID_UNTIL
+
+                # Start a new fleet with latest ami
+                ec2.meta.client.request_spot_fleet(DryRun=DRY_RUN,
+                                                   SpotFleetRequestConfig=props)
+
+            elif spot_id:  # spot instance not from fleet
+                # Describe spot instance
+                spot = ec2.meta.client.describe_spot_instance_requests(
+                    SpotInstanceRequestIds=[spot_id])
+
+                # Cancel spot request instance
+                ec2.meta.client.cancel_spot_instance_requests(
+                    SpotInstanceRequestIds=[spot_id])
+
+                # start a spot request with latest ami
+                props = SPOT_TEMPLATE
+                last_spot = spot['SpotInstanceRequests'][0]
+                props['LaunchSpecification']['ImageId'] = ami.id
+                props['SpotPrice'] = last_spot['SpotPrice']
+                props['LaunchSpecification']['InstanceType'] = \
+                    last_spot['LaunchSpecification']['InstanceType']
+                props['DryRun'] = DRY_RUN
+                ec2.meta.client.request_spot_instances(**props)
+            else:
+                raise EnvironmentError('Not a spot instance')
+
+            # Try a clean service shutdown
+            subprocess.call(["supervisorctl", "stop", "all"])
 
             break
