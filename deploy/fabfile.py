@@ -842,7 +842,9 @@ def create_amis(stack=STACK, layer='*', role='*', name='*'):
     ec2 = connect_ec2()
 
     # Get instances
-    instances = list(ec2.instances.filter(Filters=dict2tags(context, filters=True)))
+    filters = dict2tags(context, filters=True)
+    filters.append({'Name': 'instance-state-name', 'Values': ['running']})
+    instances = list(ec2.instances.filter(Filters=filters))
 
     # get set of unique instances based on tags
     seen = []
