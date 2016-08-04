@@ -42,22 +42,31 @@
     ]
   },
   "nlp": {
-    "type": "spot",
+    "type": "fleet",
     "props": {
       "DryRun": false,
-      "SpotPrice": "0.1",
-      "InstanceCount": 1,
-      "Type": "one-time",
-      "AvailabilityZoneGroup": "us-west-2c",
-      "LaunchSpecification": {
-        "KeyName": "npannetier-key-pair",
+      "SpotFleetRequestConfig": {
+        "IamFleetRole": "arn:aws:iam::697032009405:role/aws-ec2-spot-fleet-role",
+        "AllocationStrategy": "lowestPrice",
+        "TargetCapacity": 1,
+        "SpotPrice": "0.1",
+        "ValidUntil": "2020-08-02T18:07:20Z",
+        "TerminateInstancesWithExpiration": true,
         "SecurityGroups": [
-          "paperstream_sg"
+          {
+            "GroupId": "sg-0ce75868"
+          }
         ],
-        "InstanceType": "r3.large",
-        "Placement": {
-          "AvailabilityZone": "us-west-2c"
-        }
+        "InstanceTypes": [
+          "r3.large",
+          "m3.large",
+          "c4.xlarge",
+          "c3.xlarge",
+          "m4.large",
+          "m4.xlarge"
+        ],
+        "KeyName": "npannetier-key-pair",
+        "Type": "request"
       }
     },
     "ami-tags": [
@@ -67,22 +76,31 @@
     ]
   },
   "engines": {
-    "type": "spot",
+    "type": "fleet",
     "props": {
       "DryRun": false,
-      "SpotPrice": "0.1",
-      "InstanceCount": 1,
-      "Type": "one-time",
-      "AvailabilityZoneGroup": "us-west-2b",
-      "LaunchSpecification": {
-        "KeyName": "npannetier-key-pair",
+      "SpotFleetRequestConfig": {
+        "IamFleetRole": "arn:aws:iam::697032009405:role/aws-ec2-spot-fleet-role",
+        "AllocationStrategy": "lowestPrice",
+        "TargetCapacity": 1,
+        "SpotPrice": "0.1",
+        "ValidUntil": "2020-08-02T18:07:20Z",
+        "TerminateInstancesWithExpiration": true,
         "SecurityGroups": [
-          "paperstream_sg"
+          {
+            "GroupId": "sg-0ce75868"
+          }
         ],
-        "InstanceType": "r3.large",
-        "Placement": {
-          "AvailabilityZone": "us-west-2b"
-        }
+        "InstanceTypes": [
+          "r3.large",
+          "m3.large",
+          "c4.xlarge",
+          "c3.xlarge",
+          "m4.large",
+          "m4.xlarge"
+        ],
+        "KeyName": "npannetier-key-pair",
+        "Type": "request"
       }
     },
     "ami-tags": [
@@ -92,4 +110,3 @@
     ]
   }
 }
-
