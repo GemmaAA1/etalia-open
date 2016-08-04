@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     # Create AMIs
     if args.amis:
-        print('Let'' wait before AMI registration {}')
+        print('Let'' wait few seconds before AMI registration...')
         sleep(20)    # for instance tag to be updated
         ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
         version = get_version(str(ROOT_DIR.path()))
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         call(['fab', 'create_amis:{stack}'.format(stack=args.stack)])
 
     # Warm-up dispatchers
-    print('Let'' wait before warming up dispatcher {}')
+    print('Let'' wait few seconds before warming up dispatcher...')
     sleep(15)
     call(['fab', 'set_hosts:{stack},jobs,*'.format(stack=args.stack), 'warm_up_dispatchers'])
 
