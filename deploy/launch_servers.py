@@ -11,7 +11,7 @@ from aws import connect_ec2, get_latest_ami, get_tag_val, get_instance_name, \
 env = environ.Env()
 # CONFIG_FILE = 'config.json'
 CONFIG_FILE = 'config_fleet.json'
-DRY_RUN = True
+DRY_RUN = False
 SPOT_MAX_ACTIVE_TIME_WAIT = 30  # sec
 
 

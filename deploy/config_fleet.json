@@ -58,13 +58,11 @@
           }
         ],
         "InstanceTypes": [
-          "c3.xlarge",
           "r3.large",
           "m3.large",
-          "m4.large",
           "c4.xlarge",
-          "r3.xlarge",
           "c3.xlarge",
+          "m4.large",
           "m4.xlarge"
         ],
         "KeyName": "npannetier-key-pair",
@@ -94,13 +92,11 @@
           }
         ],
         "InstanceTypes": [
-          "c3.xlarge",
           "r3.large",
           "m3.large",
-          "m4.large",
           "c4.xlarge",
-          "r3.xlarge",
           "c3.xlarge",
+          "m4.large",
           "m4.xlarge"
         ],
         "KeyName": "npannetier-key-pair",
