@@ -169,7 +169,7 @@ def associate_elastic_ip(ec2, instance_id):
 
     instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
     tags = tags2dict(instance.tags)
-    roles = tags.get('role')
+    roles = tags.get('role', [])
 
     for k, props in ELASTIC_IP_MAPPING.items():
         if k in roles:
