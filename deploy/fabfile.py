@@ -39,7 +39,7 @@ import itertools
 from time import sleep
 
 from aws.utils import connect_ec2, get_image_name, dict2tags, tags2dict, \
-    tag_instance
+    tag_instance, clean_tags
 from fabric.decorators import roles, runs_once, task, parallel
 from fabric.api import env, run, cd, settings, prefix, task, local, prompt, \
     put, sudo, get, reboot
@@ -870,6 +870,7 @@ def create_amis(stack=STACK, layer='*', role='*', name='*'):
         # Tag image
         image = list(ec2.images.filter(ImageIds=[image_id]))[0]
         tags.append({'Key': 'Name', 'Value': image_name})
+        tags = clean_tags(tags)
         image.create_tags(Tags=tags)
 
 

@@ -24,7 +24,7 @@ if __name__ == '__main__':
     associate_elastic_ip(ec2, instance_id)
 
     # Go to sleep for 10 sec
-    sleep(10)
+    sleep(20)
 
 
 
