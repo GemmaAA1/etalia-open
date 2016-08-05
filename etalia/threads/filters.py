@@ -9,7 +9,7 @@ from rest_framework import filters
 from .models import Thread
 from .constant import THREAD_TYPES, THREAD_PRIVACIES, THREAD_BANNED, \
     THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_INVITE_PENDING, \
-    THREAD_INVITE_ACCEPTED
+    THREAD_INVITE_ACCEPTED, THREAD_PRIVATE
 
 User = get_user_model()
 
@@ -20,10 +20,13 @@ class ThreadFilter(filters.FilterSet):
     pmi = CharFilter(name='paper__id_pmi')
     arx = CharFilter(name='paper__id_arx')
     pii = CharFilter(name='paper__id_pii')
-    type = ChoiceFilter(THREAD_TYPES)
-    privacy = ChoiceFilter(THREAD_PRIVACIES)
+    # type = MethodFilter()
+    type = ChoiceFilter(choices=THREAD_TYPES)
+    privacy = ChoiceFilter(choices=THREAD_PRIVACIES)
+    private = MethodFilter()
     title = CharFilter(name='title', lookup_expr='icontains')
-    author = ModelMultipleChoiceFilter(
+    author = MethodFilter()
+    user_id = ModelMultipleChoiceFilter(
         name='user',
         queryset=User.objects.all(),
     )
@@ -52,6 +55,19 @@ class ThreadFilter(filters.FilterSet):
         self.request = kwargs.pop('request', None)
         super(ThreadFilter, self).__init__(*args, **kwargs)
 
+    def filter_private(self, queryset, value):
+        query = Q(privacy=THREAD_PRIVATE)
+        if value in ['1',  'true']:
+            return queryset.filter(query)
+        elif value in ['0',  'false']:
+            return queryset.filter(~query)
+
+    # def filter_type(self, queryset, value):
+    #     if value == THREAD_TYP:
+    #         return queryset.filter(query)
+    #     elif value in ['0',  'false']:
+    #         return queryset.filter(~query)
+
     def filter_author(self, queryset, value):
         return queryset.filter(Q(user__first_name__icontains=value) |
                                Q(user__last_name__icontains=value))
@@ -65,6 +81,15 @@ class ThreadFilter(filters.FilterSet):
 class MyThreadFilter(ThreadFilter):
 
     owned = MethodFilter()
+    scored = MethodFilter()
+    pinned = MethodFilter()
+    banned = MethodFilter()
+    joined = MethodFilter()
+    left = MethodFilter()
+    published = MethodFilter()
+    invited = MethodFilter()
+    invited_pending = MethodFilter()
+    invited_accepted = MethodFilter()
 
     class Meta:
         model = Thread
@@ -81,6 +106,15 @@ class MyThreadFilter(ThreadFilter):
             'max_date',
             'time_span',
             'owned',
+            'scored',
+            'pinned',
+            'banned',
+            'joined',
+            'left',
+            'published',
+            'invited',
+            'invited_pending',
+            'invited_accepted',
         ]
         
     @property    

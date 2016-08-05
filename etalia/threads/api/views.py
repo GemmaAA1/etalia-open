@@ -8,6 +8,7 @@ from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from rest_framework import viewsets, permissions, mixins, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
@@ -143,8 +144,19 @@ class MyThreadViewSet(MultiSerializerMixin,
                           IsOwnerOrReadOnly,
                           ThreadIsNotYetPublishedIsOwnerIfDeleteMethod)
 
+    filter_backends = (DisabledHTMLContextualFilterBackend,
+                       DisabledHTMLSearchFilterBackend,
+                       )
+    filter_class = MyThreadFilter
+    search_fields = ('title',
+                     'content',
+                     'paper__id_doi',
+                     'user__first_name',
+                     'user__last_name')
+
     SIZE_MAX_USER_FILTER = 40
     NEIGHBORS_TIME_SPAN = 60
+    TIME_SPAN_DEFAULT = 30
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -204,8 +216,9 @@ class MyThreadViewSet(MultiSerializerMixin,
     @detail_route(methods=['get'],
                   permission_classes=(ThreadIsPublished, ))
     def neighbors(self, request, pk=None):
-        time_span = int(self.request.query_params.get('time_span',
-                                                      self.NEIGHBORS_TIME_SPAN))
+        time_span = int(self.request.query_params.get(
+            'time_span',
+            settings.THREADS_DEFAULT_NEIGHBORS_TIMESPAN))
         instance = get_object_or_404(self.queryset, pk=pk)
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)
