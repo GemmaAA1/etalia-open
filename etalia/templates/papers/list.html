@@ -6,5 +6,26 @@
 </head>
 <body>
 
+{% for paper in object_list %}
+<div>
+    <p>
+        {{ paper.title }}
+    </p>
+    <p>
+        {{ paper.print_full_authors }}
+    </p>
+    <p>
+        {{ paper.journal.title }}
+    </p>
+    <p>
+        {{ paper.date }}
+    </p>
+    <p>
+        <a href={% url 'library:paper' paper.pk%}>detail</a>
+    </p>
+    <br>
+</div>
+{% endfor %}
+
 </body>
 </html>

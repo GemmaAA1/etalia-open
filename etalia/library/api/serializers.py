@@ -14,6 +14,7 @@ from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
 
 from ..models import Paper, Journal, Author, PaperUser
 from ..constants import PAPER_ADDED, PAPER_TRASHED, PAPER_STORE
+from ..mixins import PaperMixin
 
 
 class JournalSerializer(serializers.HyperlinkedModelSerializer):
@@ -49,7 +50,8 @@ class AuthorSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class PaperSerializer(One2OneNestedLinkSwitchMixin,
+class PaperSerializer(PaperMixin,
+                      One2OneNestedLinkSwitchMixin,
                       serializers.HyperlinkedModelSerializer):
     """Paper serializer"""
 
@@ -80,6 +82,8 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'date',
             'state',
             'new',
+            'date_ep',
+            'date_pp',
             'linked_threads_count',
         )
         read_only_fields = (
@@ -89,30 +93,18 @@ class PaperSerializer(One2OneNestedLinkSwitchMixin,
             'journal': {'serializer': JournalSerializer},
         }
 
-    @staticmethod
-    def setup_eager_loading(queryset, user):
-        """ Perform necessary eager loading of data. """
-        queryset = queryset.select_related('journal')
-        queryset = queryset.prefetch_related(
-            'authors')
-        queryset = queryset.prefetch_related(
-            Prefetch('paperuser_set',
-                     to_attr='paperuser',
-                     queryset=PaperUser.objects.filter(user=user)))
-        return queryset
-
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""
-        if hasattr(obj, 'paperuser') and obj.paperuser:
+        if hasattr(obj, 'pu') and obj.pu:
             if self.one2one_nested:
                 return PaperUserSerializer(
-                    instance=obj.paperuser[0],
+                    instance=obj.pu[0],
                     context={'request': self.context['request']},
                     one2one_nested=False
                 ).data
             else:
                 return reverse('api:paperuser-detail',
-                               kwargs={'pk': obj.paperuser.id},
+                               kwargs={'pk': obj.pu.id},
                                request=self.context.get('request', None),
                                format=self.context.get('format', None))
         return None
@@ -154,17 +146,6 @@ class PaperNestedSerializer(PaperSerializer):
         read_only_fields = (
             '__all__',
         )
-
-    @staticmethod
-    def setup_eager_loading(queryset, user):
-        """ Perform necessary eager loading of data. """
-        queryset = queryset.select_related('journal')
-        queryset = queryset.prefetch_related(
-            Prefetch('paperuser_set',
-                     to_attr='paperuser',
-                     queryset=PaperUser.objects.filter(user=user)))
-        queryset = queryset.prefetch_related('authors')
-        return queryset
 
 
 class JournalFilterSerializer(serializers.ModelSerializer):

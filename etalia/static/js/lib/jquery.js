@@ -8873,6 +8873,7 @@ jQuery.extend({
 		processData: true,
 		async: true,
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+		traditional: true,
 		/*
 		timeout: 0,
 		data: null,

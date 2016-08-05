@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = (
     'autofixture',
     'django_extensions',
     'rest_framework.authtoken',
+    'crispy_forms',
 )
 
 LOCAL_APPS = (

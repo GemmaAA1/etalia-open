@@ -98,7 +98,7 @@ define([
             this.clearList();
 
             this.collection.setQuery({
-                'time-span': this.activeTimespan
+                'time_span': this.activeTimespan
             });
 
             this.collection.fetch();

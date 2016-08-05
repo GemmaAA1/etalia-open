@@ -19,7 +19,7 @@ def my_threads(request):
         'threads/my_list.html',
         {'control_states': json.dumps(request.session.get(
             'threads-control-states',
-            {'time-span': None, 'search': None, 'pin': 0}))}
+            {'time_span': None, 'search': None, 'pin': 0}))}
     )
 
 
