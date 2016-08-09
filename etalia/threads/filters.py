@@ -20,7 +20,6 @@ class ThreadFilter(filters.FilterSet):
     pmi = CharFilter(name='paper__id_pmi')
     arx = CharFilter(name='paper__id_arx')
     pii = CharFilter(name='paper__id_pii')
-    # type = MethodFilter()
     type = ChoiceFilter(choices=THREAD_TYPES)
     privacy = ChoiceFilter(choices=THREAD_PRIVACIES)
     private = MethodFilter()
@@ -32,7 +31,7 @@ class ThreadFilter(filters.FilterSet):
     )
     min_date = DateFilter(name='published_at', lookup_expr='gte')
     max_date = DateFilter(name='published_at', lookup_expr='lte')
-    time_span = MethodFilter()
+    time_span = MethodFilter(distinct=True)
 
     class Meta:
         model = Thread
