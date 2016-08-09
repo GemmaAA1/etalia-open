@@ -20,7 +20,6 @@ django-endless-pagination==2.0
 django-extensions==1.6.1
 django-environ==0.3.0
 django-filter==0.13.0
-django-messages-extends==0.5
 django-model-utils==2.2
 django-redis==4.4.4
 django-storages-redux==1.3
