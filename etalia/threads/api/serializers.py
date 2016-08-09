@@ -12,6 +12,7 @@ from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from etalia.feeds.models import ThreadFeedThreads
+from ..mixins import ThreadMixin
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
     THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING, THREAD_INVITE_ACCEPTED, \
@@ -60,7 +61,8 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
         }
 
 
-class ThreadSerializer(One2OneNestedLinkSwitchMixin,
+class ThreadSerializer(ThreadMixin,
+                       One2OneNestedLinkSwitchMixin,
                        serializers.HyperlinkedModelSerializer):
     """Thread serializer"""
 
@@ -117,23 +119,23 @@ class ThreadSerializer(One2OneNestedLinkSwitchMixin,
 
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""
-        threaduser = obj.state(self.context['request'].user)
-        if threaduser:
+        if hasattr(obj, 'tu') and obj.tu:
             if self.one2one_nested:
                 return ThreadUserSerializer(
-                    instance=threaduser,
+                    instance=obj.tu[0],
                     context={'request': self.context['request']},
                     one2one_nested=False
                 ).data
             else:
                 return reverse('api:threaduser-detail',
-                               kwargs={'pk': threaduser.id},
+                               kwargs={'pk': obj.tu.id},
                                request=self.context.get('request', None),
                                format=self.context.get('format', None))
         return None
 
     def get_members(self, obj):
-        """Get thread members based on if request.user is himself a Thread member"""
+        """Get thread members based on if request.user is himself a
+        Thread member"""
         members = obj.members
         members_urls = []
         if self.context['request'].user in members:

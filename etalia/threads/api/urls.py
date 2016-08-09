@@ -7,6 +7,7 @@ from etalia.core.api.router import SharedAPIRootRouter
 from . import views
 
 router = SharedAPIRootRouter()
+router.register(r'thread/my-threads', views.MyThreadViewSet)
 router.register(r'thread/threads', views.ThreadViewSet)
 router.register(r'thread/posts', views.ThreadPostViewSet)
 router.register(r'thread/comments', views.ThreadCommentViewSet)

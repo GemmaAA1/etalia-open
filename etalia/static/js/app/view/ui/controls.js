@@ -343,7 +343,7 @@ define([
 
         initialize: function() {
             var states = {
-                'time-span': 30,
+                'time_span': 30,
                 cluster: 0,
                 search: null,
                 pin: 0
@@ -364,7 +364,7 @@ define([
             });
             this.timespan = new TimespanView({
                 controlsView: this,
-                initialValue: states['time-span'] || 30
+                initialValue: states['time_span'] || 30
             });
             this.pin = new PinView({
                 controlsView: this,
@@ -386,7 +386,7 @@ define([
             if (this.timespan.model.get('active')) {
                 var timespan = parseInt(this.timespan.model.get('value'));
                 if (0 < timespan) {
-                    data['time-span'] = timespan;
+                    data['time_span'] = timespan;
                 }
             }
 

@@ -1,22 +1,31 @@
-{% extends 'list_base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
 
-{% block content %}
-{% spaceless %}
-
-<div id="list" class="document">
-    <div class="wrapper">
-        <div data-tabs-placeholder></div>
-        <div class="inner">
-            <div data-list-placeholder></div>
-        </div>
-    </div>
+{% for paper in object_list %}
+<div>
+    <p>
+        {{ paper.title }}
+    </p>
+    <p>
+        {{ paper.print_full_authors }}
+    </p>
+    <p>
+        {{ paper.journal.title }}
+    </p>
+    <p>
+        {{ paper.date }}
+    </p>
+    <p>
+        <a href={% url 'library:paper' paper.pk%}>detail</a>
+    </p>
+    <br>
 </div>
+{% endfor %}
 
-<div data-detail-placeholder></div>
-
-{% endspaceless %}
-{% endblock content %}
-
-{% block javascript %}
-<script>requirejs(['app/paper/list']);</script>
-{% endblock javascript %}
+</body>
+</html>

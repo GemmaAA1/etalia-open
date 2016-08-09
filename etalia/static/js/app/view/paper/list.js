@@ -193,7 +193,7 @@ define([
             this.listView.clear();
             this.$('#paper-next-page').show();
             this.filtersView.load(
-                App.config.api_root + '/library/papers/filters/',
+                App.config.api_root + '/library/my-papers/filters/',
                 App._.extend({},
                     this.controlsView.getContext(),
                     this.tabsView.getContext()

@@ -18,10 +18,10 @@ from .tasks import update_stream, update_trend, reset_stream, reset_trend
 def my_feeds(request):
     return TemplateResponse(
         request,
-        'feeds/list.html',
+        'feeds/my_list.html',
         {'control_states': json.dumps(
             request.session.get('feeds-control-states',
-                                {'time-span': settings.FEEDS_DEFAULT_TIME_SPAN,
+                                {'time_span': settings.FEEDS_DEFAULT_TIME_SPAN,
                                  'search': None,
                                  'pin': 0}))}
     )

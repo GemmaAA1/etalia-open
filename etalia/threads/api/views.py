@@ -1,43 +1,93 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import operator
-from functools import reduce
 from collections import Counter
+
 from django.contrib.auth import get_user_model
 from django.views.decorators.cache import never_cache
-
+from django.utils.decorators import method_decorator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.conf import settings
 from rest_framework import viewsets, permissions, mixins, status, filters
-from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 
-from django.db.models import Q
-from django.utils import timezone
-
+from etalia.core.api.filters import DisabledHTMLContextualFilterBackend, \
+    DisabledHTMLSearchFilterBackend
 from etalia.core.api.permissions import IsThreadMember, IsOwner, \
-    IsOwnerOrReadOnly, IsNOTThreadMember, ThreadIsNotYetPublished, \
+    IsOwnerOrReadOnly, ThreadIsNotYetPublished, \
     ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod, \
     IsToUserOrOwnersReadOnly, IsSessionAuthenticatedOrReadOnly
+from etalia.core.api.mixins import MultiSerializerMixin
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
-    THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
-    THREAD_INVITE_DECLINED, THREAD_INVITE_ACCEPTED
+    THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
+    THREAD_INVITE_ACCEPTED
 from .serializers import \
     ThreadPostSerializer, ThreadCommentSerializer, ThreadSerializer, \
     ThreadUserSerializer, ThreadNestedSerializer, ThreadPostNestedSerializer, \
     ThreadFilterSerializer, ThreadUserInviteSerializer, \
     ThreadUserInviteUpdateSerializer, ThreadUserUpdateSerializer
-from etalia.core.api.mixins import MultiSerializerMixin
+from ..filters import ThreadFilter, MyThreadFilter
 
 User = get_user_model()
 
 
 class ThreadViewSet(MultiSerializerMixin,
-                    viewsets.ModelViewSet):
+                    viewsets.ReadOnlyModelViewSet):
+
+    """Threads
+
+    ### Routes ###
+
+    * **[GET] /threads/**: List of threads
+    * **[GET] /threads/<id>**: Detail of thread
+
+    ### Additional Kwargs ###
+
+    ** Detail: **
+
+    * **view=(str)**: Reformat output. choices: 'nested',
+
+    ** List: **
+
+    * **doi=(str)**: Fetch thread associated with DOI
+    * **pmi=(str)**: Fetch thread associated with PubMed id
+    * **arx=(str)**: Fetch thread associated with Arxiv
+    * **pii=(str)**: Fetch thread associated with PII Elsevier id
+    * **type=(int)**: Fetch thread associated with type of thread
+    * **title=(str)**: Fetch thread on title
+    * **min_date=(str)**: Fetch thread published after min_date
+    * **max_date=(str)**: Fetch thread published before max_date
+    * **time_span=(str)**: Fetch thread published during last time_span days
+    * **search=(str)**: Fetch thread on title, content, author first and last names
 
     """
-    Threads
+
+    queryset = Thread.objects.filter(privacy=THREAD_PUBLIC)
+    serializer_class = {
+        'default': ThreadSerializer,
+        'nested': ThreadNestedSerializer,
+    }
+    permission_classes = (permissions.AllowAny,
+                          )
+    filter_backends = (DisabledHTMLContextualFilterBackend,
+                       DisabledHTMLSearchFilterBackend,
+                       )
+    filter_class = ThreadFilter
+    search_fields = ('title',
+                     'content',
+                     'paper__id_doi',
+                     'user__first_name',
+                     'user__last_name')
+
+
+class MyThreadViewSet(MultiSerializerMixin,
+                      viewsets.ModelViewSet):
+
+    """
+    My Threads
 
     ### Routes ###
 
@@ -68,8 +118,8 @@ class ThreadViewSet(MultiSerializerMixin,
     * **invited=(int)**: Fetch only **invited** (if 1) or **non invited** (if 0) threads for current user (default = Null)
     * **invited-pending=(int)**: Fetch only **pending invites** (if 1) or **non invites** (if 0) threads for current user (default = Null)
     * **invited-accepted=(int)**: Fetch only **accepted invite** (if 1) or **declined** (if 0) threads for current user (default = Null)
-    * **time-span=(int)**: Fetch only threads published in the past time-span days
-    * **sort-by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
+    * **time_span=(int)**: Fetch only threads published in the past time_span days
+    * **sort_by=(str)**: Sort threads by: 'date', 'score', 'published-date' (default = published-date)
     * **user_id[]=(int)**: Filter threads by user_id
     * **type[]=(int)**: Filter threads by type
     * **search=(str)**: Filter threads on title, owner first and last names
@@ -79,7 +129,7 @@ class ThreadViewSet(MultiSerializerMixin,
 
     * **[GET] /threads/<id\>/neighbors**: Thread neighbors:
 
-        * **time-span=(int)**: Fetch neighbors threads published in the past time-span days (default=60)
+        * **time_span=(int)**: Fetch neighbors threads published in the past time_span days (default=60)
     """
 
     queryset = Thread.objects.all()
@@ -94,36 +144,23 @@ class ThreadViewSet(MultiSerializerMixin,
                           IsOwnerOrReadOnly,
                           ThreadIsNotYetPublishedIsOwnerIfDeleteMethod)
 
-    query_params_props = {
-        'owned': {'type': int, 'min': 0, 'max': 1},
-        'joined': {'type': int, 'min': 0, 'max': 1},
-        'pinned': {'type': int, 'min': 0, 'max': 1},
-        'left': {'type': int, 'min': 0, 'max': 1},
-        'banned': {'type': int, 'min': 0, 'max': 1},
-        'published': {'type': int, 'min': 0, 'max': 1},
-        'scored': {'type': int, 'min': 0, 'max': 1},
-        'private': {'type': int, 'min': 0, 'max': 1},
-        'public': {'type': int, 'min': 0, 'max': 1},
-        'invited': {'type': int, 'min': 0, 'max': 1},
-        'invited-pending': {'type': int, 'min': 0, 'max': 1},
-        'invited-accepted': {'type': int, 'min': 0, 'max': 1},
-        'time-span': {'type': int, 'min': -1, 'max': 1e6},
-        'view': {'type': str},
-        'sort-by': {'type': str},
-        'type[]': {'type': list},
-        'user_id[]': {'type': list},
-    }
+    filter_backends = (DisabledHTMLContextualFilterBackend,
+                       DisabledHTMLSearchFilterBackend,
+                       )
+    filter_class = MyThreadFilter
+    search_fields = ('title',
+                     'content',
+                     'paper__id_doi',
+                     'user__first_name',
+                     'user__last_name')
 
-    size_max_user_filter = 40
-    neighbors_time_span = 60
+    SIZE_MAX_USER_FILTER = 40
+    NEIGHBORS_TIME_SPAN = 60
+    TIME_SPAN_DEFAULT = 30
 
-    @never_cache
-    def list(self, request, *args, **kwargs):
-        return super(ThreadViewSet, self).list(request, *args, **kwargs)
-
-    @never_cache
-    def retrieve(self, request, *args, **kwargs):
-        return super(ThreadViewSet, self).retrieve(request, *args, **kwargs)
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(MyThreadViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_thread_id(self):
         return self.kwargs['pk']
@@ -131,178 +168,45 @@ class ThreadViewSet(MultiSerializerMixin,
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    def validate_query_params(self):
-        for key, props in self.query_params_props.items():
-            if props['type'] == list:
-                param = self.request.query_params.getlist(key, None)
-            else:
-                param = self.request.query_params.get(key, None)
-            if param:
-                try:
-                    val = props['type'](param)
-                    if 'min' in props:
-                        assert val >= props['min'], \
-                            'is inferior to allowed min ({min})'.format(
-                                min=props['min'])
-                    if 'max' in props:
-                        assert val <= props['max'], \
-                            'is superior to allowed max ({max})'.format(
-                                max=props['max'])
-                except (ValueError, AssertionError) as err:
-                    raise ParseError('{key}: {err}'.format(key=key, err=err))
-
-    def get_queryset(self):
-
-        # validate query_params
-        self.validate_query_params()
-
-        # Bool filters definition
-        feed_name = self.request.query_params.get('feed', 'main')
-        bool_filters_def = {
-            'owned': {
-                'toggle': Q(user=self.request.user)
-            },
-            'joined': {
-                'base': None,
-                'toggle': Q(threaduser__user=self.request.user) &
-                          Q(threaduser__participate=THREAD_JOINED)
-            },
-            'left': {
-                'base': None,
-                'toggle': Q(threaduser__user=self.request.user) &
-                          Q(threaduser__participate=THREAD_LEFT)
-            },
-            'pinned': {
-                'base': None,
-                'toggle': Q(threaduser__user=self.request.user) &
-                          Q(threaduser__watch=THREAD_PINNED)
-            },
-            'banned': {
-                'base': None,
-                'toggle': Q(threaduser__user=self.request.user) &
-                          Q(threaduser__watch=THREAD_BANNED)
-            },
-            'published': {
-                'base': Q(user=self.request.user),
-                'toggle': ~Q(published_at=None)
-            },
-            'scored': {
-                'toggle': Q(threadfeedthreads__threadfeed__name=feed_name) &
-                          Q(threadfeedthreads__threadfeed__user=self.request.user)
-            },
-            'private': {
-                'toggle': Q(privacy=THREAD_PRIVATE)
-            },
-            'public': {
-                'toggle': Q(privacy=THREAD_PUBLIC)
-            },
-            'invited': {
-                'toggle': Q(threaduserinvite__to_user=self.request.user)
-            },
-            'invited-pending': {
-                'base': None,
-                'toggle': Q(threaduserinvite__to_user=self.request.user) &
-                          Q(threaduserinvite__status=THREAD_INVITE_PENDING)
-            },
-            'invited-accepted': {
-                'base': None,
-                'toggle': Q(threaduserinvite__to_user=self.request.user) &
-                          Q(threaduserinvite__status=THREAD_INVITE_ACCEPTED)
-            },
-        }
-
-        # ordering mapping
-        order_by_map = {
-            'published-date': '-published_at',
-            'date': '-threaduser__modified',
-            'score': '-threadscore__score',
-        }
-
-        # Baseline query
-        queryset = self.queryset
-        query_args = [
-            ~(Q(published_at=None) & ~Q(user=self.request.user)),
-            ~(Q(privacy=THREAD_PRIVATE) &
-              ~(Q(threaduser__user=self.request.user) & Q(threaduser__participate=THREAD_JOINED)))
-        ]
-
-        # boolean filters
-        for key, props in bool_filters_def.items():
-            param = self.request.query_params.get(key, None)
-            if param:
-                if props.get('base', None):
-                    query_args.append(props['base'])
-                if props.get('toggle', None):
-                    # toggle = reduce(operator.and_, props['toggle'])
-                    if param == '1':
-                        query_args.append(props['toggle'])
-                    elif param == '0':
-                        query_args.append(~props['toggle'])
-
-        # Thread Types
-        thread_types = [int(id_) for id_ in self.request.query_params.getlist('type[]', None)]
-        if thread_types:
-            query_args.append(Q(type__in=thread_types))
-
-        # Owner of thread
-        uids = [int(id_) for id_ in self.request.query_params.getlist('user_id[]', None)]
-        if uids:
-            query_args.append(
-                Q(user_id__in=uids)
-            )
-
-        # time-span filter
-        time_span = self.request.query_params.get('time-span', None)
-        if time_span:
-            cutoff_datetime = timezone.now() - timezone.timedelta(
-                days=int(time_span))
-            query_args.append(Q(published_at__gt=cutoff_datetime))
-
-        # Paper doi
-        doi = self.request.query_params.get('doi', None)
-        if doi:
-            query_args.append(Q(paper__id_doi=doi))
-
-        # search
-        search = self.request.query_params.get('search', None)
-        if search:
-            subset = []
-            for word in search.split():
-                subset.append(Q(title__icontains=word) |
-                              Q(user__first_name__icontains=word) |
-                              Q(user__last_name__icontains=word))
-            if subset:
-                query_args.append(reduce(operator.and_, subset))
-
-        if query_args:
-            queryset = queryset.filter(reduce(operator.and_, query_args))
-
-        order_by = self.request.query_params.get('sort-by', None)
-        if order_by:
-            queryset = queryset.order_by(order_by_map.get(order_by))
-
+    def store_controls(self, request):
         # Store persistent user control states
-        scored = self.request.query_params.get('scored', None)
-        pin = self.request.query_params.get('pinned', None)
+        search = request.query_params.get('search', None)
+        scored = request.query_params.get('scored', None)
+        time_span = int(request.query_params.get(
+            'time_span',
+            self.TIME_SPAN_DEFAULT)
+        )
+        pin = request.query_params.get('pinned', None)
         if scored == '1':
             self.request.session['feeds-control-states'] = {
-                'time-span': time_span,
+                'time_span': time_span,
                 'search': search,
                 'pin': 1 if pin == '1' else 0
             }
         else:
             self.request.session['threads-control-states'] = {
-                'time-span': None,
+                'time_span': None,
                 'search': search,
                 'pin': 0
             }
 
-        return queryset.distinct()
+    def get_queryset(self):
+        # Store session control
+        self.store_controls(self.request)
+        queryset = Thread.objects.filter(
+            ~(Q(published_at=None) & ~Q(user=self.request.user)),
+            ~(Q(privacy=THREAD_PRIVATE) &
+              ~(Q(threaduser__user=self.request.user) &
+                Q(threaduser__participate=THREAD_JOINED))
+              )
+        )
+        return self.get_serializer_class()\
+            .setup_eager_loading(queryset, user=self.request.user)
 
     @detail_route(methods=['put', 'patch'],
                   permission_classes=(ThreadIsNotYetPublished,))
     def publish(self, request, pk=None):
-        instance = self.get_object()
+        instance = get_object_or_404(self.queryset, pk=pk)
         self.check_object_permissions(request, instance)
         instance.publish()
         instance.embed()
@@ -312,9 +216,10 @@ class ThreadViewSet(MultiSerializerMixin,
     @detail_route(methods=['get'],
                   permission_classes=(ThreadIsPublished, ))
     def neighbors(self, request, pk=None):
-        time_span = int(self.request.query_params.get('time-span',
-                                                      self.neighbors_time_span))
-        instance = Thread.objects.get(id=pk)
+        time_span = int(self.request.query_params.get(
+            'time_span',
+            settings.THREADS_DEFAULT_NEIGHBORS_TIMESPAN))
+        instance = get_object_or_404(self.queryset, pk=pk)
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)
         serializer = self.get_serializer(neighbors, many=True)
@@ -335,7 +240,7 @@ class ThreadViewSet(MultiSerializerMixin,
 
         us_count = Counter(du).most_common()
         users = []
-        for u, c in us_count[:self.size_max_user_filter]:
+        for u, c in us_count[:self.SIZE_MAX_USER_FILTER]:
             u.count = c
             users.append(u)
 
