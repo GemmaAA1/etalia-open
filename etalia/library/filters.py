@@ -27,8 +27,6 @@ class PaperFilter(filters.FilterSet):
     max_date = MethodFilter()
     time_span = MethodFilter()
 
-    distinct = True
-
     class Meta:
         model = Paper
         fields = [
@@ -102,10 +100,7 @@ class MyPaperFilter(PaperFilter):
         queryset=Author.objects.all(),
     )
     scored = MethodFilter()
-    type = MethodFilter()
     feed = MethodFilter()
-
-    distinct = True
 
     class Meta:
         model = Paper
@@ -127,7 +122,6 @@ class MyPaperFilter(PaperFilter):
             'journal_id',
             'author_id',
             'scored',
-            'type',
             'feed',
         ]
 
