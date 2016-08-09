@@ -239,7 +239,7 @@ define([
             this.listView.clear();
             this.$('#thread-next-page').show();
             this.filtersView.load(
-                App.config.api_root + '/thread/threads/filters/',
+                App.config.api_root + '/thread/my-threads/filters/',
                 App._.extend({},
                     this.listControls.getContext(),
                     this.controlsView.getContext(),

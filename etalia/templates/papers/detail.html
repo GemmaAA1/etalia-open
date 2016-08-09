@@ -1,11 +1,24 @@
-{% extends 'layout.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
 
-{% block content %}
-{% spaceless %}
+<p>
+    {{ object.title }}
+</p>
+<p>
+    {{ object.journal.title }}
+</p>
+<p>
+    {{ object.date }}
+</p>
+<p>
+    Neighbors:
+    {{ object.get_neighbors }}
+</p>
 
-
-{% endspaceless %}
-{% endblock content %}
-
-{% block javascript %}
-{% endblock javascript %}
+</body>
+</html>

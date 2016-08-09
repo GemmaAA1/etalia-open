@@ -123,6 +123,8 @@ def clean_tags(tags, drop=None):
     """Return list of tags compatible with keys in INSTANCE_TAGS_KEY but drop"""
     if drop is not None and not isinstance(drop, list):
         raise ValueError('drop kwargs must be a list of str')
+    if drop is None:
+        drop = []
     valid_keys = [key for key in INSTANCE_TAGS_KEY if key not in drop]
     return [tag for tag in tags if tag['Key'] in valid_keys]
 
@@ -131,14 +133,14 @@ def tag_instance(ec2, instance_id):
     """Tag instance"""
     instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
     tags = instance.tags
-    if not tags:  # get tags from AMI
-        ami = list(ec2.images.filter(ImageIds=[instance.image_id]))[0]
-        tags = clean_tags(ami.tags, drop=['Name'])
-        tags.append({"Key": "Name", "Value": get_instance_name(ec2, tags)})
-    else:  # update tags version and name
-        tags = clean_tags(tags, drop=['Name', 'version'])
-        tags.append({"Key": "version", "Value": get_etalia_version()})
-        tags.append({"Key": "Name", "Value": get_instance_name(ec2, tags)})
+    # if not tags:  # get tags from AMI
+    ami = list(ec2.images.filter(ImageIds=[instance.image_id]))[0]
+    tags = clean_tags(ami.tags, drop=['Name'])
+    tags.append({"Key": "Name", "Value": get_instance_name(ec2, tags)})
+    # else:  # update tags version and name
+    #     tags = clean_tags(tags, drop=['Name', 'version'])
+    #     tags.append({"Key": "version", "Value": get_etalia_version()})
+    #     tags.append({"Key": "Name", "Value": get_instance_name(ec2, tags)})
 
     # Update tags
     tags = instance.create_tags(Tags=tags)
@@ -169,7 +171,7 @@ def associate_elastic_ip(ec2, instance_id):
 
     instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
     tags = tags2dict(instance.tags)
-    roles = tags.get('role')
+    roles = tags.get('role', [])
 
     for k, props in ELASTIC_IP_MAPPING.items():
         if k in roles:

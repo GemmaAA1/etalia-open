@@ -41,7 +41,7 @@ define([
             }
 
             this.collection = new App.Model.Papers();
-            this.collection.url = App.config.api_root + '/library/papers/' + this.paperId + '/neighbors';
+            this.collection.url = App.config.api_root + '/library/my-papers/' + this.paperId + '/neighbors';
 
             this.collection.on("add", this.onCollectionAdd, this);
             this.collection.on("remove", this.onCollectionRemove, this);
@@ -98,7 +98,7 @@ define([
             this.clearList();
 
             this.collection.setQuery({
-                'time-span': this.activeTimespan
+                'time_span': this.activeTimespan
             });
 
             this.collection.fetch();

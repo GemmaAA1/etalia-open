@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = (
     'autofixture',
     'django_extensions',
     'rest_framework.authtoken',
+    'crispy_forms',
 )
 
 LOCAL_APPS = (
@@ -140,10 +141,6 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
-LIBRARY_ITEMS_PER_PAGE = 100
-LIBRARY_NUMBER_OF_NEIGHBORS = 5
-LIBRARY_NUMBER_OF_THREADS_NEIGHBORS = 5
-THREADS_NUMBER_OF_NEIGHBORS = 5
 
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -250,6 +247,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details',
     'social.pipeline.debug.debug',
     'etalia.users.pipeline.create_details',
+    'etalia.users.pipeline.update_usersession',
     'etalia.users.pipeline.init_user',
 
     # 'etalia.users.pipeline.require_affiliation',
@@ -308,6 +306,23 @@ NLP_MAX_KNN_NEIGHBORS = 10
 # Time in days for recomputing neighbors is accessed
 NLP_NEIGHBORS_REFRESH_TIME_LAPSE = 7
 
+
+# LIBRARY APP
+# ------------------------------------------------------------------------------
+
+LIBRARY_ITEMS_PER_PAGE = 100
+LIBRARY_NUMBER_OF_NEIGHBORS = 5
+LIBRARY_NUMBER_OF_THREADS_NEIGHBORS = 5
+LIBRARY_DEFAULT_NEIGHBORS_TIMESPAN = 60
+
+
+# THREAD APP
+# ------------------------------------------------------------------------------
+
+MAX_MEMBERS_NOT_JOINED = 3
+THREADS_NUMBER_OF_NEIGHBORS = 5
+THREADS_DEFAULT_NEIGHBORS_TIMESPAN = 60
+
 # FEED APP
 # ------------------------------------------------------------------------------
 FEED_SIZE_PER_DAY = 5
@@ -324,6 +339,8 @@ FEED_NB_CLUSTERS = 5
 FEEDS_DEFAULT_TIME_SPAN = 30
 
 HIDE_CLUSTER_ICON = True
+
+FEED_TIME_SPAN_DEFAULT = 30
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
@@ -345,7 +362,7 @@ AVATAR_RESIZE_METHOD = Image.ANTIALIAS
 AVATAR_GRAVATAR_BACKUP = False
 AVATAR_GRAVATAR_DEFAULT = None
 AVATAR_GRAVATAR_BASE_URL = 'https://www.gravatar.com/avatar/'
-AVATAR_CACHE_TIMEOUT = 10
+AVATAR_CACHE_TIMEOUT = 60 * 5
 AVATAR_DEFAULT_URL = 'img/avatar.jpg'
 AVATAR_MAX_AVATARS_PER_USER = 1
 AVATAR_ALLOWED_FILE_EXTS = ('.png', '.jpg')
@@ -360,11 +377,6 @@ AVATAR_CLEANUP_DELETED = False
 AVATAR_AUTO_GENERATE_SIZES = (AVATAR_DEFAULT_SIZE, 120)
 AVATAR_DEFAULT_MENDELEY = 'http://s3.amazonaws.com/mendeley-photos/awaiting.png'
 
-
-# THREAD
-# ------------------------------------------------------------------------------
-
-MAX_MEMBERS_NOT_JOINED = 3
 
 # POPOVERS
 # ------------------------------------------------------------------------------

@@ -6,7 +6,7 @@ define([
     'app/model/user/user'
 ], function (App) {
 
-    var path = '/thread/threads';
+    var path = '/thread/my-threads';
 
     App.Model.Thread = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + path,
