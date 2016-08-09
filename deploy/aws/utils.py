@@ -132,8 +132,12 @@ def clean_tags(tags, drop=None):
 def tag_instance(ec2, instance_id):
     """Tag instance"""
     instance = list(ec2.instances.filter(InstanceIds=[instance_id]))[0]
-    ami = list(ec2.images.filter(ImageIds=[instance.image_id]))[0]
-    tags = clean_tags(ami.tags, drop=['Name'])
+    try:
+        ami = list(ec2.images.filter(ImageIds=[instance.image_id]))[0]
+        tags = ami.tags
+    except IndexError:  # AMI id has been removed, use local tags
+        tags = instance.tags
+    tags = clean_tags(tags, drop=['Name', 'version'])
     tags.append({"Key": "version", "Value": get_etalia_version()})
     tags.append({"Key": "Name", "Value": get_instance_name(ec2, tags)})
 
