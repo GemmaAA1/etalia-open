@@ -27,6 +27,8 @@ class PaperFilter(filters.FilterSet):
     max_date = MethodFilter()
     time_span = MethodFilter()
 
+    distinct = True
+
     class Meta:
         model = Paper
         fields = [
@@ -102,6 +104,8 @@ class MyPaperFilter(PaperFilter):
     scored = MethodFilter()
     type = MethodFilter()
     feed = MethodFilter()
+
+    distinct = True
 
     class Meta:
         model = Paper

@@ -34,6 +34,8 @@ class ThreadFilter(filters.FilterSet):
     max_date = DateFilter(name='published_at', lookup_expr='lte')
     time_span = MethodFilter()
 
+    distinct = True
+
     class Meta:
         model = Thread
         fields = [
@@ -90,6 +92,8 @@ class MyThreadFilter(ThreadFilter):
     invited = MethodFilter()
     invited_pending = MethodFilter()
     invited_accepted = MethodFilter()
+
+    distinct = True
 
     class Meta:
         model = Thread
