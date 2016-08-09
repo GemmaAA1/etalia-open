@@ -100,7 +100,6 @@ class MyPaperFilter(PaperFilter):
         queryset=Author.objects.all(),
     )
     scored = MethodFilter()
-    feed = MethodFilter()
 
     class Meta:
         model = Paper
@@ -122,7 +121,6 @@ class MyPaperFilter(PaperFilter):
             'journal_id',
             'author_id',
             'scored',
-            'feed',
         ]
 
     def __init__(self, *args, **kwargs):
