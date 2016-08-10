@@ -127,7 +127,6 @@ body {
     z-index: 12;
     right: -244px;
     transition: right .25s;
-    padding-bottom: 32px;
 }
 
 body.flap-opened #backdrop {
@@ -1003,6 +1002,7 @@ form {
     .flap.right {
         z-index: 4;
         right: 0 !important;
+        padding-bottom: 32px;
     }
 
     .flap.right .flap-inner {
