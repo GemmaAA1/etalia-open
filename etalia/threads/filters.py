@@ -211,7 +211,7 @@ class MyThreadFilter(ThreadFilter):
         if value in ['1',  'true']:
             feed_name = self.data.get('feed', 'main')
             return queryset.filter(
-                Q(threadfeedthreads__threahdfeed__name=feed_name) &
+                Q(threadfeedthreads__threadfeed__name=feed_name) &
                 Q(threadfeedthreads__threadfeed__user=self.request.user)
             )
         return queryset
