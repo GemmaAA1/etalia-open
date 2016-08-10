@@ -58,6 +58,7 @@ class PaperSerializer(PaperMixin,
     state = serializers.SerializerMethodField()
     new = serializers.SerializerMethodField()
     linked_threads_count = serializers.SerializerMethodField()
+    authors = serializers.SerializerMethodField()
 
     class Meta:
         model = Paper
@@ -92,6 +93,14 @@ class PaperSerializer(PaperMixin,
         switch_kwargs = {
             'journal': {'serializer': JournalSerializer},
         }
+
+    def get_authors(self, obj):
+        authors = obj.authors.order_by('authorpaper__position')
+        return [reverse('api:author-detail',
+                        kwargs={'pk': auth.id},
+                        request=self.context.get('request', None),
+                        format=self.context.get('format', None))
+                for auth in authors]
 
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""
@@ -140,12 +149,20 @@ class PaperSerializer(PaperMixin,
 class PaperNestedSerializer(PaperSerializer):
     """Paper nested serializer"""
 
-    authors = AuthorSerializer(many=True, read_only=True)
+    authors = serializers.SerializerMethodField()
 
     class Meta(PaperSerializer.Meta):
         read_only_fields = (
             '__all__',
         )
+
+    def get_authors(self, obj):
+        authors = obj.authors.order_by('authorpaper__position')
+        return AuthorSerializer(
+            authors,
+            many=True,
+            context={'request': self.context.get('request', None)})\
+            .data
 
 
 class JournalFilterSerializer(serializers.ModelSerializer):
