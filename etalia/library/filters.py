@@ -25,7 +25,7 @@ class PaperFilter(filters.FilterSet):
     issn = MethodFilter()
     min_date = MethodFilter()
     max_date = MethodFilter()
-    time_span = MethodFilter()
+    time_span = MethodFilter(distinct=True)
 
     class Meta:
         model = Paper
@@ -99,9 +99,7 @@ class MyPaperFilter(PaperFilter):
         name='authors',
         queryset=Author.objects.all(),
     )
-    scored = MethodFilter()
-    type = MethodFilter()
-    feed = MethodFilter()
+    scored = MethodFilter(distinct=True)
 
     class Meta:
         model = Paper
@@ -123,8 +121,6 @@ class MyPaperFilter(PaperFilter):
             'journal_id',
             'author_id',
             'scored',
-            'type',
-            'feed',
         ]
 
     def __init__(self, *args, **kwargs):
