@@ -74,7 +74,7 @@ class ThreadFilter(filters.FilterSet):
     def filter_time_span(self, queryset, value):
         value = int(value)
         date = (datetime.datetime.now() - datetime.timedelta(days=value)).date()
-        return queryset.filter(published_date__gte=date)
+        return queryset.filter(published_at__gte=date)
 
 
 class MyThreadFilter(ThreadFilter):
