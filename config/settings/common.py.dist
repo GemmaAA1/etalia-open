@@ -349,11 +349,6 @@ ALTMETRIC_API_KEY = env('ALTMETRIC_API_KEY')
 ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 
 
-# LANDING
-# ------------------------------------------------------------------------------
-LANDING_ACTIVE_PAPERS_NUMBER = 1
-LANDING_ACTIVE_PAPERS_TIME_IN_DAYS = 30
-
 # AVATAR
 # ------------------------------------------------------------------------------
 from PIL import Image
