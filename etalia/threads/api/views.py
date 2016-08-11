@@ -159,8 +159,12 @@ class MyThreadViewSet(MultiSerializerMixin,
     TIME_SPAN_DEFAULT = 30
 
     @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(MyThreadViewSet, self).dispatch(request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        return super(MyThreadViewSet, self).list(request, *args, **kwargs)
+
+    @method_decorator(never_cache)
+    def retrieve(self, request, *args, **kwargs):
+        return super(MyThreadViewSet, self).retrieve(request, *args, **kwargs)
 
     def get_thread_id(self):
         return self.kwargs['pk']
@@ -193,13 +197,15 @@ class MyThreadViewSet(MultiSerializerMixin,
     def get_queryset(self):
         # Store session control
         self.store_controls(self.request)
-        queryset = Thread.objects.filter(
+        # Defined baseline queryset
+        self.queryset = Thread.objects.filter(
             ~(Q(published_at=None) & ~Q(user=self.request.user)),
             ~(Q(privacy=THREAD_PRIVATE) &
               ~(Q(threaduser__user=self.request.user) &
                 Q(threaduser__participate=THREAD_JOINED))
               )
         )
+        queryset = super(MyThreadViewSet, self).get_queryset()
         return self.get_serializer_class()\
             .setup_eager_loading(queryset, user=self.request.user)
 
@@ -281,7 +287,7 @@ class ThreadPostViewSet(MultiSerializerMixin,
                           IsThreadMember
                           )
 
-    @never_cache
+    @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(ThreadPostViewSet, self).dispatch(request, *args, **kwargs)
 
@@ -322,7 +328,7 @@ class ThreadCommentViewSet(MultiSerializerMixin,
 
     """
 
-    @never_cache
+    @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(ThreadCommentViewSet, self).dispatch(request, *args, **kwargs)
 
@@ -385,7 +391,7 @@ class ThreadUserViewSet(MultiSerializerMixin,
                           IsOwner,
                           )
 
-    @never_cache
+    @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(ThreadUserViewSet, self).dispatch(request, *args, **kwargs)
 
@@ -434,7 +440,7 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
                           IsToUserOrOwnersReadOnly,
                           )
 
-    @never_cache
+    @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(ThreadUserInviteViewSet, self).dispatch(request, *args, **kwargs)
 

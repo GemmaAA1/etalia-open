@@ -95,7 +95,11 @@ class PaperSerializer(PaperMixin,
         }
 
     def get_authors(self, obj):
-        authors = obj.authors.order_by('authorpaper__position')
+        # authors = list(obj.authors.all().order_by('authorpaper__position'))
+        id_aut = dict([(a.id, a) for a in obj.authors.all()])
+        pos_id = [(ap.position, ap.author_id) for ap in obj.authorpaper_set.all()]
+        pos_id = sorted(pos_id, key=lambda x: x[0])
+        authors = [id_aut[x[1]] for x in pos_id]
         return [reverse('api:author-detail',
                         kwargs={'pk': auth.id},
                         request=self.context.get('request', None),
@@ -137,13 +141,10 @@ class PaperSerializer(PaperMixin,
         return None
 
     def get_linked_threads_count(self, obj):
-        user_id = self.context['request'].user.id
-        return obj.thread_set\
-            .filter(~(Q(published_at=None) & ~Q(user_id=user_id)),
-                    ~(Q(privacy=THREAD_PRIVATE) &
-                      ~(Q(threaduser__user_id=user_id) &
-                        Q(threaduser__participate=THREAD_JOINED))))\
-            .count()
+        if hasattr(obj, 'threads'):
+            return len(obj.threads)
+        else:
+            return None
 
 
 class PaperNestedSerializer(PaperSerializer):

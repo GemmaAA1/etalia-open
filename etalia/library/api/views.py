@@ -3,8 +3,8 @@ from __future__ import unicode_literals, absolute_import
 
 from collections import Counter
 
-from django.views.decorators.cache import never_cache
-from rest_framework import viewsets, permissions, status, mixins
+from django.views.decorators.cache import never_cache, cache_page
+from rest_framework import viewsets, permissions, status, mixins, filters
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from django.db.models import Q
@@ -55,23 +55,39 @@ class PaperViewSet(MultiSerializerMixin,
     * **min_date=(str)**: Fetch paper that appears before max_date (YYYY-MM-DD)
     * **time_span=(str)**: Fetch paper that appears in the last time_span days
     * **search=(str)**: Fetch papers on title, journal, authors first and last names
+
+    ** Ordering: **
+
+    * **ordering=[+|-](str) **: order results by field. Choices are: 'date_fs' or 'altmetric__score'
+
     """
 
-    queryset = Paper.objects.filter(Q(is_trusted=True) & ~Q(abstract=''))
+    queryset = Paper.objects.filter(Q(is_trusted=True))
     serializer_class = {
         'default': PaperSerializer,
         'nested': PaperNestedSerializer,
     }
     permission_classes = (permissions.AllowAny,
                           )
-    filter_backends = (DisabledHTMLContextualFilterBackend,
-                       DisabledHTMLSearchFilterBackend,
-                       )
+    filter_backends = (
+        DisabledHTMLContextualFilterBackend,
+        DisabledHTMLSearchFilterBackend,
+        filters.OrderingFilter,
+    )
     filter_class = PaperFilter
+    ordering_fields = (
+        ('date_fs', 'Date first seen'),
+        ('altmetric__score', 'Altmetric Score')
+    )
+    ordering = ('date_fs',)
     search_fields = ('title',
                      'journal__title',
                      'authors__first_name',
                      'authors__last_name')
+
+    @method_decorator(cache_page(3600 * 24))
+    def list(self, request, *args, **kwargs):
+        return super(PaperViewSet, self).list(request, *args, **kwargs)
 
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):
@@ -195,8 +211,12 @@ class MyPaperViewSet(MultiSerializerMixin,
         serializer.save(user=self.request.user)
 
     @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(MyPaperViewSet, self).dispatch(request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        return super(MyPaperViewSet, self).list(request, *args, **kwargs)
+
+    @method_decorator(never_cache)
+    def retrieve(self, request, *args, **kwargs):
+        return super(MyPaperViewSet, self).retrieve(request, *args, **kwargs)
 
     def store_controls(self, request):
         # Store persistent user control states
@@ -357,11 +377,11 @@ class PaperStateViewSet(MultiSerializerMixin,
                           IsOwner,
                           )
 
-    @never_cache
+    @method_decorator(never_cache)
     def list(self, request, *args, **kwargs):
         return super(PaperStateViewSet, self).list(request, *args, **kwargs)
 
-    @never_cache
+    @method_decorator(never_cache)
     def retrieve(self, request, *args, **kwargs):
         return super(PaperStateViewSet, self).retrieve(request, *args, **kwargs)
 
