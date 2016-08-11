@@ -3,11 +3,13 @@ from __future__ import unicode_literals, absolute_import
 
 from config.celery import celery_app as app
 from celery.exceptions import SoftTimeLimitExceeded
+from time import sleep
 
 from django.utils import timezone
 from django.conf import settings
+from etalia.nlp.models import PaperEngine, PaperNeighbors
 from .models import Stats, Paper
-from etalia.nlp.models import Model, PaperEngine, PaperNeighbors
+
 
 import logging
 
@@ -19,6 +21,27 @@ def update_stats():
     """Create a new line of stats for the library"""
     stats = Stats.objects.create()
     stats.update()
+
+@app.task()
+def consolidate(paper_pk):
+    paper = Paper.objects.get(id=paper_pk)
+    paper.consolidate()
+    return paper_pk
+
+
+@app.task()
+def consolidate_papers(pks):
+    for pk in pks:
+        paper = Paper.objects.get(id=pk)
+        paper.consolidate_async()
+        sleep(.5)
+
+
+@app.task()
+def consolidate_library():
+    pks = Paper.objects.filter(is_trusted=False).values_list('pk', flat=True)
+    for pk in pks:
+        consolidate.delay(pk)
 
 
 def embed_paper(paper_pk):

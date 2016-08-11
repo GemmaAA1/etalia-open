@@ -17,21 +17,6 @@ class AttrDict(dict):
         self.__dict__ = self
 
 
-def get_env_variable(var_name, default=None):
-    """
-    Get the environment variable
-    """
-    try:
-        return os.environ[var_name]
-    except KeyError:
-        if default:
-            return default
-            pass
-        else:
-            error_msg = "Set the {} environment variable".format(var_name)
-            raise ImproperlyConfigured(error_msg)
-
-
 def get_celery_worker_status():
     ERROR_KEY = "ERROR"
     try:

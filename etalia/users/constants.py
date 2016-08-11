@@ -17,27 +17,6 @@ PROVIDER_TYPE = (
     ('', 'Unknown')
 )
 
-MENDELEY_PT = (
-    ('journal',                 'JOU'),
-    ('book',                    'BOO'),
-    ('book_section',            'BOS'),
-    ('conference_proceedings',  'PRO'),
-    ('working_paper',           'DRA'),
-    ('patent',                  'PAT'),
-    ('thesis',                  'THE'),
-    ('UNKNOWN',                 ''),
-)
-
-ZOTERO_PT = (
-    ('journalArticle',  'JOU'),
-    ('book',            'BOO'),
-    ('bookSection',     'BOS'),
-    ('conferencePaper', 'PRO'),
-    ('thesis',          'THE'),
-    ('patent',          'PAT'),
-    ('letter',          'LET'),
-    ('UNKNOWN',         ''),
-)
 
 INIT_STEPS = (
     ('NON', 'uninitialized'),

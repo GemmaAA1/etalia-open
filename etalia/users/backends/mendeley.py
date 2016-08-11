@@ -10,10 +10,6 @@ from mendeley.models.common import Person
 from mendeley.auth import MendeleySession, \
     MendeleyAuthorizationCodeTokenRefresher
 from mendeley.exception import MendeleyApiException
-from requests.exceptions import HTTPError
-from django.shortcuts import redirect
-
-from ..constants import MENDELEY_PT
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserMendeley
 
@@ -167,9 +163,24 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         return count
 
     @staticmethod
-    def add_paper(session, paper):
+    def build_mendeley_identifiers(paper):
+        identifiers = {}
+        if paper.id_doi:
+            identifiers['doi'] = paper.id_doi
+        if paper.id_pii:
+            identifiers['scopus'] = paper.id_pii
+        if paper.id_pmi:
+            identifiers['pmid'] = paper.id_pmi
+        if paper.id_arx:
+            identifiers['arxiv'] = paper.id_arx
+        if paper.journal.id_issn or paper.journal.id_eissn:
+            identifiers['issn'] = paper.journal.id_issn or paper.journal.id_eissn
+        return identifiers
 
-        mend_doc_type = dict([(doctype[1], doctype[0]) for doctype in MENDELEY_PT])
+    def add_paper(self, session, paper):
+
+        mend_doc_type = dict([(doctype[1], doctype[0])
+                              for doctype in self.parser.MENDELEY_PT])
         if paper.type:
             type_ = mend_doc_type.get(paper.type, 'journal')  # 'PRE' (pre-print is unknow type for mendeley)
         else:
@@ -182,7 +193,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         for auth in authors:
             mend_authors.append(Person.create(auth.first_name, auth.last_name))
         try:
-            ids = paper.build_mendeley_identifiers()
+            ids = self.build_mendeley_identifiers(paper)
             resp = session.documents.create(
                 paper.title,
                 type_,
@@ -204,8 +215,8 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         return None, resp.id, {'created': parse(str(resp.created) or 'Nothing'),
                                'last_modified': parse(str(resp.last_modified) or 'Nothing')}
 
-    @staticmethod
-    def trash_paper(session, paper_provider_id):
+
+    def trash_paper(self, session, paper_provider_id):
         try:
             doc = session.documents.get(id=paper_provider_id)
             if doc:

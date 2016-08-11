@@ -6,7 +6,6 @@ from django.db.models import Q
 from etalia.library.models import Paper, Journal, Author, AuthorPaper, CorpAuthor, \
     CorpAuthorPaper
 from etalia.library.forms import PaperFormFillBlanks
-from etalia.library.tasks import embed_paper
 
 from ..constants import USERLIB_SYNCING, USERLIB_IDLE
 from etalia.library.models import PaperUser
@@ -80,7 +79,10 @@ class BackendLibMixin(object):
                         except Journal.DoesNotExist:
                             journal = None
                     paper.journal = journal
-                    paper.is_trusted = False  # we do not trust provider source because they can be user made
+                    # we do not trust paper from provider because they can be
+                    # user made and prone to error
+                    paper.is_trusted = False
+
                     paper.save()
 
                     # create/get authors
@@ -110,7 +112,7 @@ class BackendLibMixin(object):
         paper, journal = self.get_or_create_entry(entry)
 
         if paper:
-            embed_paper(paper.pk)
+            paper.embed()
 
         return paper, journal
 
