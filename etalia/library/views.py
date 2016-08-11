@@ -9,7 +9,7 @@ from django.utils.text import slugify
 
 from .models import Paper
 from .filters import PaperFilter, MyPaperFilter
-from .mixins import PaperMixin
+from .mixins import PaperEagerLoadingMixin
 
 
 def my_papers(request):
@@ -50,7 +50,7 @@ class PaperViewPk(RedirectView):
 paper = PaperViewPk.as_view()
 
 
-class PaperListView(PaperMixin, FilterView):
+class PaperListView(PaperEagerLoadingMixin, FilterView):
 
     template_name = 'papers/list.html'
     # filterset_class = PaperFilter

@@ -13,15 +13,3 @@ CONSUMER_TYPE = (
     ('ARX', 'Arxiv'),
     ('IEE', 'IEEE'),
 )
-
-# Pubmed publication matching
-PUBMED_PT = (
-    ('JOURNAL ARTICLE', 'JOU'),
-    ('LETTER',          'LET'),
-    ('EDITORIAL',       'EDI'),
-    ('NEWS',            'NEW'),
-    ('CONGRESSES',      'PRO'),
-    ('REVIEW',          'REV'),
-    ('PATENTS',         'PAT'),
-    ('UNKNOWN',         ''),
-)

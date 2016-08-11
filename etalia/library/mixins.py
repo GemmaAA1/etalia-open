@@ -10,7 +10,7 @@ from etalia.threads.models import Thread
 from etalia.threads.constant import THREAD_PRIVATE
 
 
-class PaperMixin(object):
+class PaperEagerLoadingMixin(object):
 
     @staticmethod
     def setup_eager_loading(queryset, **kwargs):

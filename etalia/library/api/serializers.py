@@ -14,7 +14,7 @@ from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
 
 from ..models import Paper, Journal, Author, PaperUser
 from ..constants import PAPER_ADDED, PAPER_TRASHED, PAPER_STORE
-from ..mixins import PaperMixin
+from ..mixins import PaperEagerLoadingMixin
 
 
 class JournalSerializer(serializers.HyperlinkedModelSerializer):
@@ -50,7 +50,7 @@ class AuthorSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class PaperSerializer(PaperMixin,
+class PaperSerializer(PaperEagerLoadingMixin,
                       One2OneNestedLinkSwitchMixin,
                       serializers.HyperlinkedModelSerializer):
     """Paper serializer"""

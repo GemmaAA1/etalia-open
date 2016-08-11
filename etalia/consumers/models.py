@@ -18,14 +18,13 @@ from Bio import Medline
 from model_utils import Choices, fields
 
 from config.celery import celery_app as app
-from etalia.core.utils import get_env_variable
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 from etalia.library.forms import PaperFormFillBlanks
 from etalia.core.models import TimeStampedModel
 from etalia.library.tasks import embed_paper
 
-from .parsers import ParserPubmed, ParserArxiv, ParserElsevier
+from .parsers import PubmedParser, ArxivParser, ElsevierParser
 from .constants import CONSUMER_TYPE
 
 logger = logging.getLogger(__name__)
@@ -213,7 +212,8 @@ class Consumer(TimeStampedModel):
                 if form.is_valid():
                     paper = form.save()
                     paper.journal = journal
-                    paper.is_trusted = True  # we trust consumer source
+                    # we trust consumer as source
+                    paper.is_trusted = True
                     paper.save()
 
                     # create/get authors
@@ -345,10 +345,10 @@ class ConsumerPubmed(Consumer):
         super(ConsumerPubmed, self).__init__(*args, **kwargs)
         self.type = 'PUB'
 
-    parser = ParserPubmed()
+    parser = PubmedParser()
 
     # email
-    email = get_env_variable('CONSUMER_PUBMED_EMAIL')
+    email = settings.CONSUMER_PUBMED_EMAIL
 
     def journal_is_valid(self, journal):
         if super(ConsumerPubmed, self).journal_is_valid(journal):
@@ -430,10 +430,10 @@ class ConsumerPubmed(Consumer):
 class ConsumerElsevier(Consumer):
     """Pubmed Consumer"""
 
-    parser = ParserElsevier()
+    parser = ElsevierParser()
 
     # API key
-    API_KEY = get_env_variable('CONSUMER_ELSEVIER_API_KEY')
+    API_KEY = settings.CONSUMER_ELSEVIER_API_KEY
 
     # URL
     URL_QUERY = 'http://api.elsevier.com/content/search/index:SCIDIR?query='
@@ -540,7 +540,7 @@ class ConsumerArxiv(Consumer):
         super(ConsumerArxiv, self).__init__(*args, **kwargs)
         self.type = 'ARX'
 
-    parser = ParserArxiv()
+    parser = ArxivParser()
 
     URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
 
