@@ -680,7 +680,7 @@ class Paper(TimeStampedModel):
 
         if self.id_arx:
             resp = requests.get('{url}{id}'.format(url=URL_QUERY,
-                                                   id=self.id_arx))
+                                                   id=self.id_arx[:9]))
             entries = feedparser.parse(resp.text).get('entries')
             if entries:
                 parser = ArxivParser()
