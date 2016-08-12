@@ -122,19 +122,17 @@ class BackendLibMixin(object):
         """Update PaperUser and UserLibPaper table"""
         pu, new = PaperUser.objects.get_or_create(user=user, paper=paper)
         pu.add(provider_id, info)
-        # if new:
-        #     pu.pin()
         return new
 
     def get_session(self, social, user, *args, **kwargs):
         raise NotImplementedError('Implement in subclass')
 
-    def update_lib(self, user, session):
+    def update_lib(self, user, session, full=False):
         # update db state
         user.lib.set_state(USERLIB_SYNCING)
         user.stats.log_lib_starts_sync(user)
         # really update
-        count = self._update_lib(user, session)
+        count = self._update_lib(user, session, full=full)
         # retrieve first paper added
         user.lib.set_d_oldest()
         # update UserLib and Stats
@@ -142,7 +140,7 @@ class BackendLibMixin(object):
         user.lib.set_state(USERLIB_IDLE)
         return count
 
-    def _update_lib(self, session, user):
+    def _update_lib(self, session, user, full=None):
         raise NotImplementedError('Implement in subclass')
 
     def is_journal_has_id(self, item_journal):
