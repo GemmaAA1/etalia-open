@@ -173,7 +173,7 @@ class MyPaperFilter(PaperFilter):
                                datetime.timedelta(days=int(time_span))).date()
             if type == 'stream':
                 return queryset.filter(
-                    Q(streampapers__stream_name=feed_name) &
+                    Q(streampapers__stream__name=feed_name) &
                     Q(streampapers__stream__user=self.request.user) &
                     Q(streampapers__date__gt=cutoff_datetime)
                 ).order_by('-streampapers__score')
