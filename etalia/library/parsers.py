@@ -37,9 +37,10 @@ class CrossRefParser(Parser):
         journal['title'] = j_titles[0]
 
         issns = entry.get('ISSN')
-        if len(issns) > 1:
-            journal['id_eissn'] = issns[1]
-        journal['id_issn'] = issns[0]
+        if issns:
+            journal['id_issn'] = issns[0]
+            if len(issns) > 1:
+                journal['id_eissn'] = issns[1]
 
         return journal
 
