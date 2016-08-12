@@ -604,7 +604,7 @@ class Paper(TimeStampedModel):
                                    retmode="text")
             records = Medline.parse(handle)
             entries = [record for record in records]
-            if entries:
+            if entries and entries[0].get('PMID'):
                 parser = PubmedParser()
                 entry = entries[0]
                 data = parser.parse(entry)

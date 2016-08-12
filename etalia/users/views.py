@@ -35,7 +35,7 @@ from .models import Affiliation, UserLibPaper, UserSettings
 from .mixins import ProfileModalFormsMixin, SettingsModalFormsMixin
 from .tasks import update_lib
 from .constants import INIT_STEPS, USERLIB_IDLE, USERLIB_SYNCING
-
+from .utils import send_invite_email
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -541,20 +541,11 @@ def update_library(request):
 def send_invite(request):
     if request.POST:
         email_to = request.POST.get('email')
-
-        subject = 'An invitation to try Etalia'
-        to = [email_to]
-        from_email = request.user.email
-        ctx = {'bucket_url': settings.EMAIL_STATIC_BUCKET,
-               'root_url': request.get_host()}
-        text_content = ''
-        html_content = get_template(settings.INVITE_EMAIL_TEMPLATE)\
-            .render(Context(ctx))
-        email = EmailMultiAlternatives(subject, text_content, to=to, from_email=from_email)
-        email.attach_alternative(html_content, "text/html")
-        # email.content_subtype = 'html'
-        email.send()
-
+        send_invite_email(
+            email_to=email_to,
+            root_url=request.get_host(),
+            on_behalf=request.user,
+        )
         return JsonResponse(data={'success': True})
     else:
         redirect('invite:home')
