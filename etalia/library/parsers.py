@@ -81,9 +81,9 @@ class CrossRefParser(Parser):
             paper['date_pp'] = datetime.date(y, m, d)
 
         # Volume, issue, page
-        paper['volume'] = entry.get('volume')
-        paper['issue'] = entry.get('issue')
-        paper['page'] = entry.get('page')
+        paper['volume'] = entry.get('volume', '')
+        paper['issue'] = entry.get('issue', '')
+        paper['page'] = entry.get('page', '')
 
         return paper
 
