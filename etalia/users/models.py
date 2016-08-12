@@ -360,7 +360,7 @@ class UserLibPaper(TimeStampedModel):
 
     paper = models.ForeignKey(Paper, related_name='userlib_paper')
 
-    date_created = models.DateField(default=None, null=True)
+    date_created = models.DateField(default=None, null=True, db_index=True)
 
     date_last_modified = models.DateField(default=None, null=True)
 

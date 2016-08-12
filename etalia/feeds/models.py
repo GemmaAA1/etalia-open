@@ -152,9 +152,9 @@ class StreamPapers(TimeStampedModel):
 
     paper = models.ForeignKey(Paper)
 
-    score = models.FloatField(default=0.)
+    score = models.FloatField(default=0.0, db_index=True)
 
-    date = models.DateField()
+    date = models.DateField(db_index=True)
 
     new = models.BooleanField(default=True)
 
@@ -276,9 +276,9 @@ class TrendPapers(TimeStampedModel):
 
     paper = models.ForeignKey(Paper)
 
-    score = models.FloatField(default=0.0)
+    score = models.FloatField(default=0.0, db_index=True)
 
-    date = models.DateField()
+    date = models.DateField(db_index=True)
 
     new = models.BooleanField(default=True)
 
@@ -392,9 +392,9 @@ class ThreadFeedThreads(TimeStampedModel):
 
     thread = models.ForeignKey(Thread)
 
-    score = models.FloatField(default=0.0)
+    score = models.FloatField(default=0.0, db_index=True)
 
-    date = models.DateField()
+    date = models.DateField(db_index=True)
 
     new = models.BooleanField(default=True)
 

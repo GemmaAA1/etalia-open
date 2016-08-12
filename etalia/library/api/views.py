@@ -85,10 +85,6 @@ class PaperViewSet(MultiSerializerMixin,
                      'authors__first_name',
                      'authors__last_name')
 
-    @method_decorator(cache_page(3600 * 24))
-    def list(self, request, *args, **kwargs):
-        return super(PaperViewSet, self).list(request, *args, **kwargs)
-
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):
         time_span = int(
@@ -212,14 +208,6 @@ class MyPaperViewSet(MultiSerializerMixin,
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @method_decorator(never_cache)
-    def list(self, request, *args, **kwargs):
-        return super(MyPaperViewSet, self).list(request, *args, **kwargs)
-
-    @method_decorator(never_cache)
-    def retrieve(self, request, *args, **kwargs):
-        return super(MyPaperViewSet, self).retrieve(request, *args, **kwargs)
-
     def store_controls(self, request):
         # Store persistent user control states
         search = request.query_params.get('search', None)
@@ -275,10 +263,14 @@ class MyPaperViewSet(MultiSerializerMixin,
                                       many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @cache_page(60 * 60)
     @list_route(methods=['get'])
     def filters(self, request):
 
-        data = self.filter_queryset(self.get_queryset())
+        queryset = super(MyPaperViewSet, self).get_queryset()
+        queryset = queryset.select_related('journal')
+        queryset = queryset.prefetch_related('authors')
+        data = list(self.filter_queryset(queryset)[:settings.FEED_N_FIRST_PAPERS_ONLY])
 
         authors = []
         journals = []
@@ -308,7 +300,9 @@ class MyPaperViewSet(MultiSerializerMixin,
                     journals.insert(0, journals.pop(i))
 
             # Authors
-            da = [auth for d in data for auth in d.authors.all() if not auth.first_name == '' or not auth.first_name == '']
+            da = [auth for d in data for auth in d.authors.all()
+                  if not auth.first_name.strip() == '' or
+                  not auth.last_name.strip() == '']
             as_count = Counter(da).most_common()
 
             for a, c in as_count[:self.SIZE_MAX_AUTHOR_FILTER]:
@@ -381,14 +375,6 @@ class PaperStateViewSet(MultiSerializerMixin,
     permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsOwner,
                           )
-
-    @method_decorator(never_cache)
-    def list(self, request, *args, **kwargs):
-        return super(PaperStateViewSet, self).list(request, *args, **kwargs)
-
-    @method_decorator(never_cache)
-    def retrieve(self, request, *args, **kwargs):
-        return super(PaperStateViewSet, self).retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
