@@ -827,10 +827,12 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
 
     # Pinned or banned
     watch = models.PositiveIntegerField(null=True, default=None,
-                                        choices=PAPER_WATCH)
+                                        choices=PAPER_WATCH,
+                                        db_index=True)
     # Added or Trashed
     store = models.PositiveIntegerField(null=True, default=None,
-                                        choices=PAPER_STORE)
+                                        choices=PAPER_STORE,
+                                        db_index=True)
 
     class Meta:
         unique_together = (('paper', 'user'),)
