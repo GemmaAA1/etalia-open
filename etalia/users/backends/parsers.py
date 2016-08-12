@@ -76,7 +76,7 @@ class ParserMendeley(ParserBackend):
         paper['type'] = dict(self.MENDELEY_PT).get(type_, '')
 
         # Title
-        paper['title'] = entry.title
+        paper['title'] = entry.title.strip()
 
         # Identifiers
         # match template
@@ -133,9 +133,9 @@ class ParserMendeley(ParserBackend):
                 paper['date_pp'] = datetime.date(year, month, day)
 
         # Volume, issue, page
-        paper['volume'] = entry.volume
-        paper['issue'] = entry.issue
-        paper['page'] = entry.pages
+        paper['volume'] = entry.volume.strip()
+        paper['issue'] = entry.issue.strip()
+        paper['page'] = entry.pages.strip()
 
         # Language
 
@@ -152,8 +152,8 @@ class ParserMendeley(ParserBackend):
         if full_authors:
             for auth in full_authors:
                 author = self.author_template.copy()
-                author['last_name'] = auth.last_name or ''
-                author['first_name'] = auth.first_name or ''
+                author['last_name'] = auth.last_name.strip() or ''
+                author['first_name'] = auth.first_name.strip() or ''
                 authors.append(author)
         return authors
 
@@ -219,7 +219,7 @@ class ParserZotero(ParserBackend):
         paper['type'] = dict(self.ZOTERO_PT).get(type_, '')
 
         # Title
-        paper['title'] = entry.get('title', '')
+        paper['title'] = entry.get('title', '').strip()
 
         # Identifiers
         paper['id_doi'] = entry.get('DOI', '')
@@ -258,14 +258,14 @@ class ParserZotero(ParserBackend):
             pass
 
         # Volume, issue, page
-        paper['volume'] = entry.get('volume', '')
-        paper['issue'] = entry.get('issue', '')
-        paper['page'] = entry.get('pages', '')
+        paper['volume'] = entry.get('volume', '').strip()
+        paper['issue'] = entry.get('issue', '').strip()
+        paper['page'] = entry.get('pages', '').strip()
 
         # Language
 
         # Abstract
-        paper['abstract'] = entry.get('abstractNote', '')
+        paper['abstract'] = entry.get('abstractNote', '').strip()
 
         return paper
 
@@ -276,8 +276,8 @@ class ParserZotero(ParserBackend):
         full_authors = entry.get('creators', '')
         for auth in full_authors:
             author = self.author_template.copy()
-            author['first_name'] = auth.get('firstName', '')
-            author['last_name'] = auth.get('lastName', '')
+            author['first_name'] = auth.get('firstName', '').strip()
+            author['last_name'] = auth.get('lastName', '').strip()
             authors.append(author)
 
         return authors
