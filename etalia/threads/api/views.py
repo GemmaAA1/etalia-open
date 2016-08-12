@@ -158,14 +158,6 @@ class MyThreadViewSet(MultiSerializerMixin,
     NEIGHBORS_TIME_SPAN = 60
     TIME_SPAN_DEFAULT = 30
 
-    @method_decorator(never_cache)
-    def list(self, request, *args, **kwargs):
-        return super(MyThreadViewSet, self).list(request, *args, **kwargs)
-
-    @method_decorator(never_cache)
-    def retrieve(self, request, *args, **kwargs):
-        return super(MyThreadViewSet, self).retrieve(request, *args, **kwargs)
-
     def get_thread_id(self):
         return self.kwargs['pk']
 
@@ -287,10 +279,6 @@ class ThreadPostViewSet(MultiSerializerMixin,
                           IsThreadMember
                           )
 
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(ThreadPostViewSet, self).dispatch(request, *args, **kwargs)
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -327,10 +315,6 @@ class ThreadCommentViewSet(MultiSerializerMixin,
     * **post_id=(int)**: Filter comments related to Post post_id
 
     """
-
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(ThreadCommentViewSet, self).dispatch(request, *args, **kwargs)
 
     queryset = ThreadComment.objects.filter()
     serializer_class = {
@@ -391,10 +375,6 @@ class ThreadUserViewSet(MultiSerializerMixin,
                           IsOwner,
                           )
 
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(ThreadUserViewSet, self).dispatch(request, *args, **kwargs)
-
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
@@ -439,10 +419,6 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
     permission_classes = (IsSessionAuthenticatedOrReadOnly,
                           IsToUserOrOwnersReadOnly,
                           )
-
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(ThreadUserInviteViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access

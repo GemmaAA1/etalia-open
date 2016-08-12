@@ -99,7 +99,8 @@ class MyPaperFilter(PaperFilter):
         name='authors',
         queryset=Author.objects.all(),
     )
-    scored = MethodFilter(distinct=True)
+    scored = MethodFilter()
+    time_span = MethodFilter()
 
     class Meta:
         model = Paper
@@ -113,13 +114,13 @@ class MyPaperFilter(PaperFilter):
             'issn',
             'min_date',
             'max_date',
-            'time_span',
             'added',
             'trashed',
             'pinned',
             'banned',
             'journal_id',
             'author_id',
+            'time_span',
             'scored',
         ]
 
@@ -128,34 +129,14 @@ class MyPaperFilter(PaperFilter):
         self.form.fields['journal_id'].always_filter = False
         self.form.fields['author_id'].always_filter = False
 
-    @property
-    def qs(self):
-        """To deal with ordering"""
-        qs = super(MyPaperFilter, self).qs
-
-        # Manage ordering
-        type = self.data.get('type', 'stream')
-        scored = self.data.get('scored', '0')
-        pinned = self.data.get('pinned', '0')
-        added = self.data.get('added', '0')
-        if scored in ['1', 'true']:
-            if type == 'stream':
-                qs = qs.order_by('-streampapers__score')
-            elif type == 'trend':
-                qs = qs.order_by('-trendpapers__score')
-        elif added in ['1', 'true']:  # in my-library | papers
-            qs = qs.order_by('-userlib_paper__date_created')
-        elif pinned in ['1', 'true']:  # in my-library | pinned
-            qs = qs.order_by('-paperuser__modified')
-
-        self._qs = qs
-        return self._qs
+    def filter_time_span(self, queryset, value):
+        return queryset
 
     def filter_added(self, queryset, value):
-        query = Q(paperuser__user=self.request.user) & \
-                Q(paperuser__store=PAPER_ADDED)
+        user = self.request.user
+        query = Q(userlib_paper__userlib=user.id)
         if value in ['1', 'true']:
-            return queryset.filter(query)
+            return queryset.filter(query).order_by('-userlib_paper__date_created')
         elif value in ['0', 'false']:
             return queryset.filter(~query)
 
@@ -171,7 +152,7 @@ class MyPaperFilter(PaperFilter):
         query = Q(paperuser__user=self.request.user) & \
                 Q(paperuser__watch=PAPER_PINNED)
         if value in ['1', 'true']:
-            return queryset.filter(query)
+            return queryset.filter(query).order_by('-paperuser__modified')
         elif value in ['0', 'false']:
             return queryset.filter(~query)
 
@@ -187,34 +168,21 @@ class MyPaperFilter(PaperFilter):
         if value in ['1', 'true']:
             type = self.data.get('type', 'stream')
             feed_name = self.data.get('feed', 'main')
+            time_span = self.data.get('time_span', settings.FEED_TIME_SPAN_DEFAULT)
+            cutoff_datetime = (datetime.datetime.now() -
+                               datetime.timedelta(days=int(time_span))).date()
 
             if type == 'stream':
                 return queryset.filter(
                     Q(streampapers__stream__name=feed_name) &
-                    Q(streampapers__stream__user=self.request.user)
-                )
+                    Q(streampapers__stream__user=self.request.user) &
+                    Q(streampapers__date__gt=cutoff_datetime)
+                ).order_by('-streampapers__score')
             elif type == 'trend':
                 return queryset.filter(
                     Q(trendpapers__trend__name=feed_name) &
-                    Q(trendpapers__trend__user=self.request.user)
-                )
+                    Q(trendpapers__trend__user=self.request.user) &
+                    Q(trendpapers__date__gt=cutoff_datetime)
+                ).order_by('-trendpapers__score')
 
         return queryset
-
-    def filter_time_span(self, queryset, value):
-        time_span = int(value) or settings.FEED_TIME_SPAN_DEFAULT
-        cutoff_datetime = (datetime.datetime.now() -
-                           datetime.timedelta(days=int(time_span))).date()
-        scored = bool(int(self.data.get('scored', '0')))
-        type = self.data.get('type', 'stream')
-
-        if scored:
-            if type == 'stream':
-                return queryset.filter(
-                    Q(streampapers__date__gt=cutoff_datetime))
-            elif type == 'trend':
-                return queryset.filter(
-                    Q(trendpapers__date__gt=cutoff_datetime))
-        else:
-            return queryset.filter(
-                Q(userlib_paper__date_created__gt=cutoff_datetime))

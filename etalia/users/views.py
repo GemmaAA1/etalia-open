@@ -18,6 +18,7 @@ from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 from django.db import transaction
+from django.views.decorators.cache import never_cache, cache_page
 
 from braces.views import LoginRequiredMixin
 
@@ -421,6 +422,7 @@ update_email_digest_settings = UserEmailDigestSettingsUpdateView.as_view()
 
 
 @login_required
+@never_cache
 def user_init_check(request):
     if request.method == 'GET':
         messages = []

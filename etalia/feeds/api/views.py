@@ -32,11 +32,6 @@ class StreamPapersViewSets(viewsets.ReadOnlyModelViewSet):
     serializer_class = StreamPapersSerializer
     queryset = StreamPapers.objects.all()
 
-    @never_cache
-    def dispatch(self, request, *args, **kwargs):
-        return super(StreamPapersViewSets, self).dispatch(request, *args,
-                                                          **kwargs)
-
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
@@ -63,11 +58,6 @@ class TrendPapersViewSets(viewsets.ReadOnlyModelViewSet):
     serializer_class = TrendPapersSerializer
     queryset = TrendPapers.objects.all()
 
-    @never_cache
-    def dispatch(self, request, *args, **kwargs):
-        return super(TrendPapersViewSets, self).dispatch(request, *args,
-                                                         **kwargs)
-
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
@@ -93,11 +83,6 @@ class ThreadFeedThreadsViewSets(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = ThreadFeedThreadsSerializer
     queryset = ThreadFeedThreads.objects.all()
-
-    @never_cache
-    def dispatch(self, request, *args, **kwargs):
-        return super(ThreadFeedThreadsViewSets, self).dispatch(request, *args,
-                                                               **kwargs)
 
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access

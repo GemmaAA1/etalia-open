@@ -83,7 +83,6 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIDDLEWARE CONFIGURATION
 # ------------------------------------------------------------------------------
 MIDDLEWARE_CLASSES = (
-    'django.middleware.cache.UpdateCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,7 +92,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'etalia.last_seen.middleware.LastSeenMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
 )
 
 
@@ -323,24 +321,17 @@ MAX_MEMBERS_NOT_JOINED = 3
 THREADS_NUMBER_OF_NEIGHBORS = 5
 THREADS_DEFAULT_NEIGHBORS_TIMESPAN = 60
 
+
 # FEED APP
 # ------------------------------------------------------------------------------
-FEED_SIZE_PER_DAY = 5
-
-FEEDS_SCORE_KEEP_N_PAPERS = 200
-FEEDS_DISPLAY_N_PAPERS = 50
-# Number of papers to rank
-FEED_MAX_TARGETS = 200000
-
-# Number of Clusters
-FEED_NB_CLUSTERS = 5
-
 # Feeds default controls states
 FEEDS_DEFAULT_TIME_SPAN = 30
 
 HIDE_CLUSTER_ICON = True
 
 FEED_TIME_SPAN_DEFAULT = 30
+
+FEED_N_FIRST_PAPERS_ONLY = 1000
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
@@ -392,7 +383,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 25,
+    'PAGE_SIZE': 10,
     'URL_FIELD_NAME': 'link',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
