@@ -41,10 +41,10 @@ class PaperFilter(filters.FilterSet):
             'max_date',
             'time_span',
         ]
-        order_by = (
-            ('date_fs', 'Date first seen'),
-            ('altmetric__score', 'Altmetric Score')
-        )
+        # order_by = (
+        #     ('date_fs', 'Date first seen'),
+        #     ('altmetric__score', 'Altmetric Score')
+        # )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)

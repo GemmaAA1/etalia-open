@@ -20,6 +20,7 @@ class MyRouter(object):
         ('etalia.nlp', {'queue': 'nlp', 'routing_key': 'nlp'}),
         ('etalia.feeds', {'queue': 'feed', 'routing_key': 'feed'}),
         ('etalia.altmetric', {'queue': 'altmetric', 'routing_key': 'altmetric'}),
+        ('etalia.library', {'queue': 'library', 'routing_key': 'library'}),
     ]
 
     def route_for_task(self, task, args=None, kwargs=None):

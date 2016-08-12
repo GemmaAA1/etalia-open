@@ -6,8 +6,6 @@ import string
 import random
 from dateutil.parser import parse
 import datetime
-
-from ..constants import MENDELEY_PT, ZOTERO_PT
 from etalia.core.parsers import Parser
 
 
@@ -42,6 +40,17 @@ class ParserBackend(Parser):
 class ParserMendeley(ParserBackend):
     """Mendeley Parser"""
 
+    MENDELEY_PT = (
+        ('journal',                 'JOU'),
+        ('book',                    'BOO'),
+        ('book_section',            'BOS'),
+        ('conference_proceedings',  'PRO'),
+        ('working_paper',           'DRA'),
+        ('patent',                  'PAT'),
+        ('thesis',                  'THE'),
+        ('UNKNOWN',                 ''),
+    )
+
     def parse_journal(self, entry):
 
         journal = self.journal_template.copy()
@@ -64,7 +73,7 @@ class ParserMendeley(ParserBackend):
 
         # Type
         type_ = entry.type
-        paper['type'] = dict(MENDELEY_PT).get(type_, '')
+        paper['type'] = dict(self.MENDELEY_PT).get(type_, '')
 
         # Title
         paper['title'] = entry.title
@@ -174,6 +183,17 @@ class ParserMendeley(ParserBackend):
 class ParserZotero(ParserBackend):
     """Zotero Parser"""
 
+    ZOTERO_PT = (
+        ('journalArticle',  'JOU'),
+        ('book',            'BOO'),
+        ('bookSection',     'BOS'),
+        ('conferencePaper', 'PRO'),
+        ('thesis',          'THE'),
+        ('patent',          'PAT'),
+        ('letter',          'LET'),
+        ('UNKNOWN',         ''),
+    )
+
     def parse_journal(self, entry):
 
         journal = self.journal_template.copy()
@@ -196,7 +216,7 @@ class ParserZotero(ParserBackend):
 
         # Type
         type_ = entry.get('itemType')
-        paper['type'] = dict(ZOTERO_PT).get(type_, '')
+        paper['type'] = dict(self.ZOTERO_PT).get(type_, '')
 
         # Title
         paper['title'] = entry.get('title', '')

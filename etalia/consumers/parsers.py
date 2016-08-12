@@ -3,17 +3,27 @@ from __future__ import unicode_literals, absolute_import
 
 import re
 from dateutil.parser import parse
+from nameparser import HumanName
 
 from etalia.core.parsers import Parser
 
-from .constants import PUBMED_PT
 
-
-class ParserPubmed(Parser):
+class PubmedParser(Parser):
     """Pubmed Parser"""
 
     TEMPLATE_IDS = {'id_doi': r'(.+)\s\[doi\]',
                     'id_pii': r'(.+)\s\[pii\]'}
+
+    PUBMED_PT = (
+        ('JOURNAL ARTICLE', 'JOU'),
+        ('LETTER',          'LET'),
+        ('EDITORIAL',       'EDI'),
+        ('NEWS',            'NEW'),
+        ('CONGRESSES',      'PRO'),
+        ('REVIEW',          'REV'),
+        ('PATENTS',         'PAT'),
+        ('UNKNOWN',         ''),
+    )
 
     def parse_journal(self, entry):
 
@@ -49,7 +59,8 @@ class ParserPubmed(Parser):
         type_ = entry.get('PT', [''])
         if type_:
             paper['type'] = \
-                [dict(PUBMED_PT).get(typ.upper(), '') for typ in type_][0]
+                [dict(self.PUBMED_PT).get(typ.upper(), '')
+                 for typ in type_][0]
 
         # Identifiers
         # match template
@@ -117,17 +128,9 @@ class ParserPubmed(Parser):
         full_authors = entry.get('FAU', [''])
         for auth in full_authors:
             author = self.author_template.copy()
-            try:
-                tmp = []
-                for s in auth.split(','):
-                    tmp.append(s.strip())
-                last, first = tuple(tmp)
-            except ValueError:
-                last = auth.strip()
-                first = ''
-                pass
-            author['last_name'] = last
-            author['first_name'] = first
+            name = HumanName(auth)
+            author['last_name'] = name.last.strip()
+            author['first_name'] = name.first.strip() + ' ' + name.middle.strip()
             authors.append(author)
         return authors
 
@@ -149,26 +152,18 @@ class ParserPubmed(Parser):
         return corp_authors
 
 
-class ParserArxiv(Parser):
+class ArxivParser(Parser):
     """Arxiv Parser"""
+
     def parse_authors(self, entry):
         authors = []
 
         full_authors = entry.get('authors', [''])
         for auth in full_authors:
             author = self.author_template.copy()
-            # assuming all first name are only initialized [e.g E. J. Martin]
-            split_auth = []
-            for s in auth['name'].split('.'):
-                split_auth.append(s.strip())
-            if len(split_auth) > 1:
-                first = ' '.join(split_auth[:-1])
-                last = split_auth[-1]
-            else:
-                last = auth['name'].strip()
-                first = ''
-            author['last_name'] = last
-            author['first_name'] = first
+            name = HumanName(auth['name'])
+            author['last_name'] = name.last.strip()
+            author['first_name'] = name.first.strip() + ' ' + name.middle.strip()
             authors.append(author)
 
         return authors
@@ -222,8 +217,9 @@ class ParserArxiv(Parser):
         return []
 
 
-class ParserElsevier(Parser):
+class ElsevierParser(Parser):
     """Elsevier Parser"""
+
     def parse_authors(self, entry):
         authors = []
 
@@ -233,8 +229,8 @@ class ParserElsevier(Parser):
             for auth in full_authors:
                 author = self.author_template.copy()
                 try:
-                    author['first_name'] = auth.get('given-name', '')
-                    author['last_name'] = auth.get('surname', '')
+                    author['first_name'] = auth.get('given-name', '').strip()
+                    author['last_name'] = auth.get('surname', '').strip()
                     authors.append(author)
                 except AttributeError:
                     pass

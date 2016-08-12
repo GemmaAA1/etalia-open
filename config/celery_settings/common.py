@@ -32,6 +32,7 @@ CELERY_QUEUES = (
     Queue('feed', routing_key='feed.#'),
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
+    Queue('library', routing_key='library.#'),
     Queue('test', routing_key='test.#'),
 )
 CELERY_DEFAULT_EXCHANGE = 'tasks'
@@ -80,5 +81,9 @@ CELERYBEAT_SCHEDULE = {
     'elsevier-once-a-day': {
         'task': 'etalia.consumers.tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
+    },
+    'consolidate-library': {
+        'task': 'etalia.library.tasks.consolidate_library',
+        'schedule': crontab(minute=0, hour=2),  # daily at UTC+2
     },
 }

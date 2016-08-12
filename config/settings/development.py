@@ -65,16 +65,16 @@ NLP_PE_BUCKET_NAME = 'etalia-development-nlp-pe'
 NLP_TE_BUCKET_NAME = 'etalia-development-nlp-te'
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'TIMEOUT': 60 * 10,    # in seconds
-    },
-    'files': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'TIMEOUT': 60 * 60,         # 1 h
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         'TIMEOUT': 60 * 10,    # in seconds
+#     },
+#     'files': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         'TIMEOUT': 60 * 60,         # 1 h
+#     }
+# }
 
 
 # Local redis cache for debug (redis-server must be on)

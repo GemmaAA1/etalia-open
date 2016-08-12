@@ -9,7 +9,6 @@ import logging
 
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserZotero
-from ..constants import ZOTERO_PT
 
 logger = logging.getLogger(__name__)
 
@@ -111,10 +110,10 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return count
 
-    @staticmethod
-    def add_paper(session, paper):
+    def add_paper(self, session, paper):
 
-        zot_doc_type = dict([(doctype[1], doctype[0]) for doctype in ZOTERO_PT])
+        zot_doc_type = dict([(doctype[1], doctype[0])
+                             for doctype in self.parser.ZOTERO_PT])
         # if paper.type:
         #     type_ = zot_doc_type[paper.type]
         # else:
@@ -160,8 +159,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
             logger.warning(resp['failed'])
             return None, None, None
 
-    @staticmethod
-    def trash_paper(session, paper_provider_id):
+    def trash_paper(self, session, paper_provider_id):
         """Trash item from zotero library"""
         try:  # retrieve item by id
             item = session.item(paper_provider_id)
