@@ -124,7 +124,9 @@ class PaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         queryset = super(PaperViewSet, self).get_queryset()
         return self.get_serializer_class()\
-            .setup_eager_loading(queryset, user=self.request.user)
+            .setup_eager_loading(queryset,
+                                 user=self.request.user,
+                                 request=self.request)
 
 
 class MyPaperViewSet(MultiSerializerMixin,
@@ -244,9 +246,12 @@ class MyPaperViewSet(MultiSerializerMixin,
         # Store session control
         self.store_controls(self.request)
 
-        queryset = super(MyPaperViewSet, self).get_queryset()
+        queryset = super(MyPaperViewSet, self)\
+            .get_queryset()
         return self.get_serializer_class()\
-            .setup_eager_loading(queryset, user=self.request.user)
+            .setup_eager_loading(queryset,
+                                 user=self.request.user,
+                                 request=self.request)
 
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):

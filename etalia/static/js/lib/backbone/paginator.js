@@ -219,10 +219,10 @@
        server API accepts.
     */
     queryParams: {
-      currentPage: "page",
-      pageSize: "per_page",
-      totalPages: "total_pages",
-      totalRecords: "total_entries",
+      //currentPage: "page",
+      //pageSize: "per_page",
+      //totalPages: "total_pages",
+      //totalRecords: "total_entries",
       sortKey: "sort_by",
       order: "order",
       directions: {

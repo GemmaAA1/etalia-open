@@ -8,6 +8,7 @@ from etalia.users.constants import USER_INDIVIDUAL
 from .models import PaperUser
 from etalia.threads.models import Thread
 from etalia.threads.constant import THREAD_PRIVATE
+from etalia.feeds.models import StreamPapers, TrendPapers
 
 
 class PaperEagerLoadingMixin(object):
@@ -37,4 +38,30 @@ class PaperEagerLoadingMixin(object):
                     queryset=PaperUser.objects.filter(user=kwargs['user'])
                 )
             )
+            if 'request' in kwargs:
+                request = kwargs.get('request')
+                scored = request.query_params.get('scored')
+                type = request.query_params.get('type', 'stream')
+                feed_name = request.query_params.get('feed', 'main')
+                if scored == '1':
+                    if type == 'stream':
+                        queryset = queryset.prefetch_related(
+                            Prefetch(
+                                'streampapers_set',
+                                to_attr='sp',
+                                queryset=StreamPapers.objects.filter(
+                                    stream__user=kwargs['user'],
+                                    stream__name=feed_name)
+                            )
+                        )
+                    if type == 'trend':
+                        queryset = queryset.prefetch_related(
+                            Prefetch(
+                                'trendpapers_set',
+                                to_attr='tp',
+                                queryset=TrendPapers.objects.filter(
+                                    trend__user=kwargs['user'],
+                                    trend__name=feed_name)
+                            )
+                        )
         return queryset

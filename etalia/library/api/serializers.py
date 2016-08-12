@@ -95,7 +95,6 @@ class PaperSerializer(PaperEagerLoadingMixin,
         }
 
     def get_authors(self, obj):
-        # authors = list(obj.authors.all().order_by('authorpaper__position'))
         id_aut = dict([(a.id, a) for a in obj.authors.all()])
         pos_id = [(ap.position, ap.author_id) for ap in obj.authorpaper_set.all()]
         pos_id = sorted(pos_id, key=lambda x: x[0])
@@ -130,11 +129,21 @@ class PaperSerializer(PaperEagerLoadingMixin,
         try:
             if scored == '1':
                 if type == 'stream':
-                    return obj.streampapers_set.get(stream__user=request.user,
-                                                    stream__name=feed_name).new
+                    if hasattr(obj, 'sp') and obj.sp:
+                        return obj.sp[0].new
+                    else:
+                        return obj.streampapers_set\
+                            .get(stream__user=request.user,
+                                 stream__name=feed_name)\
+                            .new
                 if type == 'trend':
-                    return obj.trendpapers_set.get(trend__user=request.user,
-                                                   trend__name=feed_name).new
+                    if hasattr(obj, 'tp') and obj.tp:
+                        return obj.tp[0].new
+                    else:
+                        return obj.trendpapers_set\
+                            .get(trend__user=request.user,
+                                 trend__name=feed_name)\
+                            .new
         except StreamPapers.DoesNotExist or TrendPapers.DoesNotExist:
             pass
 
@@ -158,7 +167,10 @@ class PaperNestedSerializer(PaperSerializer):
         )
 
     def get_authors(self, obj):
-        authors = obj.authors.order_by('authorpaper__position')
+        id_aut = dict([(a.id, a) for a in obj.authors.all()])
+        pos_id = [(ap.position, ap.author_id) for ap in obj.authorpaper_set.all()]
+        pos_id = sorted(pos_id, key=lambda x: x[0])
+        authors = [id_aut[x[1]] for x in pos_id]
         return AuthorSerializer(
             authors,
             many=True,

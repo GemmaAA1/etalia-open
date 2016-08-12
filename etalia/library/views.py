@@ -59,7 +59,9 @@ class PaperListView(PaperEagerLoadingMixin, FilterView):
 
     def get_filterset(self, filterset_class):
         filterset = super(PaperListView, self).get_filterset(filterset_class)
-        filterset._qs = self.setup_eager_loading(filterset.qs, user=self.request.user)
+        filterset._qs = self.setup_eager_loading(filterset.qs,
+                                                 user=self.request.user,
+                                                 request=self.request)
         return filterset
 
 papers = PaperListView.as_view()
