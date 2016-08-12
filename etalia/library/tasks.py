@@ -22,7 +22,8 @@ def update_stats():
     stats = Stats.objects.create()
     stats.update()
 
-@app.task()
+
+@app.task(rate_limit='2/s')
 def consolidate(paper_pk):
     paper = Paper.objects.get(id=paper_pk)
     paper.consolidate()
@@ -34,7 +35,6 @@ def consolidate_papers(pks):
     for pk in pks:
         paper = Paper.objects.get(id=pk)
         paper.consolidate_async()
-        sleep(.5)
 
 
 @app.task()
