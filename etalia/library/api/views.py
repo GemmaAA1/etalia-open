@@ -266,7 +266,6 @@ class MyPaperViewSet(MultiSerializerMixin,
     @method_decorator(cache_page(60 * 60))
     @list_route(methods=['get'])
     def filters(self, request):
-
         queryset = super(MyPaperViewSet, self).get_queryset()
         queryset = queryset.select_related('journal')
         queryset = queryset.prefetch_related('authors')

@@ -114,6 +114,7 @@ class MyPaperFilter(PaperFilter):
             'issn',
             'min_date',
             'max_date',
+            'scored',
             'added',
             'trashed',
             'pinned',
@@ -121,7 +122,6 @@ class MyPaperFilter(PaperFilter):
             'journal_id',
             'author_id',
             'time_span',
-            'scored',
         ]
 
     def __init__(self, *args, **kwargs):
@@ -171,10 +171,9 @@ class MyPaperFilter(PaperFilter):
             time_span = self.data.get('time_span', settings.FEED_TIME_SPAN_DEFAULT)
             cutoff_datetime = (datetime.datetime.now() -
                                datetime.timedelta(days=int(time_span))).date()
-
             if type == 'stream':
                 return queryset.filter(
-                    Q(streampapers__stream__name=feed_name) &
+                    Q(streampapers__stream_name=feed_name) &
                     Q(streampapers__stream__user=self.request.user) &
                     Q(streampapers__date__gt=cutoff_datetime)
                 ).order_by('-streampapers__score')
