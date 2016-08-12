@@ -78,6 +78,7 @@ body {
     height: 56px;
 
     background: #d0e6e3;
+    /*background: rgb(201, 231, 243);*/
     border-bottom: 1px solid #cbced1;
 }
 
@@ -1002,7 +1003,7 @@ form {
     .flap.right {
         z-index: 4;
         right: 0 !important;
-        padding-bottom: 32px;
+        /*padding-bottom: 32px;*/
     }
 
     .flap.right .flap-inner {
