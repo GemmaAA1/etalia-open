@@ -641,6 +641,12 @@ class Paper(TimeStampedModel):
                         AuthorPaper.objects.get_or_create(paper=self,
                                                           author=author,
                                                           position=pos)
+
+                # Remove any possible duplicates (e.g with a PMID but not a DOI)
+                Paper.objects\
+                    .filter(Q(id_doi=self.id_doi) | Q(id_pmi=self.id_doi))\
+                    .exclude(id=self.id).delete()
+                # Save
                 self.is_trusted = True
                 self.save()
 
