@@ -225,21 +225,21 @@ class PaperFilterSerializer(serializers.BaseSerializer):
         return {
             'groups': [
                 {
-                    "name": "author_id",
-                    "label": "Authors",
-                    "entries": [
-                        AuthorFilterSerializer(instance=author,
-                                               context=self.context).data
-                        for author in instance.get('authors', None)
-                        ]
-                },
-                {
                     "name": "journal_id",
                     "label": "Journals",
                     "entries": [
                         JournalFilterSerializer(instance=journal,
                                                 context=self.context).data
                         for journal in instance.get('journals', None)
+                        ]
+                },
+                {
+                    "name": "author_id",
+                    "label": "Authors",
+                    "entries": [
+                        AuthorFilterSerializer(instance=author,
+                                               context=self.context).data
+                        for author in instance.get('authors', None)
                         ]
                 }
             ]
