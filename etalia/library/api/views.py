@@ -263,7 +263,7 @@ class MyPaperViewSet(MultiSerializerMixin,
                                       many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @cache_page(60 * 60)
+    @method_decorator(cache_page(60 * 60))
     @list_route(methods=['get'])
     def filters(self, request):
 
