@@ -644,7 +644,7 @@ class Paper(TimeStampedModel):
 
                 # Remove any possible duplicates (e.g with a PMID but not a DOI)
                 Paper.objects\
-                    .filter(Q(id_doi=self.id_doi) | Q(id_pmi=self.id_doi))\
+                    .filter(Q(id_doi=self.id_doi) | Q(id_pmi=self.id_pmi))\
                     .exclude(id=self.id).delete()
                 # Save
                 self.is_trusted = True
