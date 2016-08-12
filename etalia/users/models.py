@@ -573,3 +573,11 @@ class Relationship(TimeStampedModel):
 
     class Meta:
         unique_together = ('from_user', 'to_user')
+
+
+class UserInvited(TimeStampedModel):
+
+    from_user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                  null=True, blank=True, default=None)
+
+    to_email = models.EmailField()

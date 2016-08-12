@@ -232,8 +232,9 @@ ul li {
 				<tr>
 					<td>
 						<p class="lead">
-                            I am sending you this invite to try <span class="bold">
-                            Etalia,</span> an intelligent platform for scholarly communications.
+                            Hi! I am sending you this invite to try <span class="bold">
+                            Etalia</span>{% if on_behalf %} on the behalf of {{ on_behalf }}{% endif %}.
+                            Etalia is a new intelligent platform for scholarly communications.
                             Etalia is free. Here is more information.
                         </p>
                         <hr class="divider">
@@ -247,7 +248,9 @@ ul li {
                             and ranked by <span class="bold">relevance</span> to your interests,
                             saving you time and ensuring no relevant news is missed.
                         </p>
+
                         <hr class="divider">
+                        <h2> How it works </h2>
                         <table>
                             <tr>
                                 <td>
@@ -272,11 +275,6 @@ ul li {
                                 </td>
                             </tr>
                         </table>
-
-
-
-                        <hr class="divider">
-                        <h2> How it works </h2>
                         <p class="follow">
                             Etalia fetches what you are reading by connecting to your
                             reference software manager (e.g. <a href="http://www.zotero.org/">Zotero</a> or
@@ -296,7 +294,6 @@ ul li {
                             <a href="{{ root_url }}" class="btn-primary">Try it now</a>
                             </p>
                         </div>
-                        <hr class="divider">
 					</td>
 				</tr>
                 <tr>

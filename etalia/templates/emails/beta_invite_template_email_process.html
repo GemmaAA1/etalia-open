@@ -1,5 +1,4 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<<<<<<< HEAD
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; margin: 0; padding: 0;">&#13;
 <head>&#13;
 <meta name="viewport" content="width=device-width" />&#13;
@@ -24,8 +23,9 @@
 				<tr style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; margin: 0; padding: 0;">&#13;
 					<td style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; margin: 0; padding: 0;">&#13;
 						<p class="lead" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 18px; line-height: 1.6; font-weight: 400; margin: 0 0 10px; padding: 0;">&#13;
-                            I am sending you this invite to try <span class="bold" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; font-weight: 600; margin: 0; padding: 0;">&#13;
-                            Etalia,</span> an intelligent platform for scholarly communications.&#13;
+                            Hi! I am sending you this invite to try <span class="bold" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; font-weight: 600; margin: 0; padding: 0;">&#13;
+                            Etalia</span>{% if on_behalf %} on the behalf of {{ on_behalf }}{% endif %}.&#13;
+                            Etalia is a new intelligent platform for scholarly communications.&#13;
                             Etalia is free. Here is more information.&#13;
                         </p>&#13;
                         <hr class="divider" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; border-top-style: none; border-bottom-width: 1px; border-bottom-color: #e7e7e7; border-bottom-style: solid; margin: 20px 0; padding: 0;" />&#13;
@@ -39,7 +39,9 @@
                             and ranked by <span class="bold" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; font-weight: 600; margin: 0; padding: 0;">relevance</span> to your interests,&#13;
                             saving you time and ensuring no relevant news is missed.&#13;
                         </p>&#13;
+&#13;
                         <hr class="divider" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; border-top-style: none; border-bottom-width: 1px; border-bottom-color: #e7e7e7; border-bottom-style: solid; margin: 20px 0; padding: 0;" />&#13;
+                        <h2 style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 28px; line-height: 1.2; color: #000; font-weight: 300; text-align: center; margin: 20px 0 15px; padding: 0;" align="center"> How it works </h2>&#13;
                         <table style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; width: 100%; margin: 0; padding: 0;">&#13;
                             <tr style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; margin: 0; padding: 0;">&#13;
                                 <td style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; margin: 0; padding: 0;">&#13;
@@ -64,11 +66,6 @@
                                 </td>&#13;
                             </tr>&#13;
                         </table>&#13;
-&#13;
-&#13;
-&#13;
-                        <hr class="divider" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; border-top-style: none; border-bottom-width: 1px; border-bottom-color: #e7e7e7; border-bottom-style: solid; margin: 20px 0; padding: 0;" />&#13;
-                        <h2 style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 28px; line-height: 1.2; color: #000; font-weight: 300; text-align: center; margin: 20px 0 15px; padding: 0;" align="center"> How it works </h2>&#13;
                         <p class="follow" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 16px; line-height: 1.6; font-weight: 400; margin: 0 0 10px; padding: 0;">&#13;
                             Etalia fetches what you are reading by connecting to your&#13;
                             reference software manager (e.g. <a href="http://www.zotero.org/" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; color: #348eda; margin: 0; padding: 0;">Zotero</a> or&#13;
@@ -88,7 +85,6 @@
                             <a href="{{ root_url }}" class="btn-primary" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; color: #FFF; text-decoration: none; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 25px; background-color: #348eda; margin: 20px 10px 20px 0; padding: 10px 20px;">Try it now</a>&#13;
                             </p>&#13;
                         </div>&#13;
-                        <hr class="divider" style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; border-top-style: none; border-bottom-width: 1px; border-bottom-color: #e7e7e7; border-bottom-style: solid; margin: 20px 0; padding: 0;" />&#13;
 					</td>&#13;
 				</tr>&#13;
                 <tr style="font-family: 'Lato','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 100%; line-height: 1.6; margin: 0; padding: 0;">&#13;
