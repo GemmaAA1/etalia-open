@@ -542,7 +542,8 @@ class Paper(TimeStampedModel):
                             issns.append(id_)
                     try:
                         self.journal = Journal.objects\
-                                .get(Q(id_issn__in=issns) | Q(id_eissn__in=issns))
+                                .filter(Q(id_issn__in=issns) | Q(id_eissn__in=issns))\
+                                .first()
                     except Journal.DoesNotExist:
                         pass
 
@@ -621,7 +622,8 @@ class Paper(TimeStampedModel):
                             issns.append(id_)
                     try:
                         self.journal = Journal.objects\
-                            .get(Q(id_issn__in=issns) | Q(id_eissn__in=issns))
+                            .filter(Q(id_issn__in=issns) | Q(id_eissn__in=issns))\
+                            .first()
                     except Journal.DoesNotExist:
                         pass
 
