@@ -71,23 +71,31 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
     def get_session(self, social, user, *args, **kwargs):
 
         key, secret = self.get_key_and_secret()
-
-        tokens = {'access_token': social.extra_data['access_token'],
-                  'refresh_token': social.extra_data['refresh_token']}
+        tokens = {
+            'access_token': social.access_token,
+            'refresh_token': social.extra_data['refresh_token']
+        }
 
         # start authorization flow
-        mendeley = Mendeley(key,
-                            client_secret=secret,
-                            redirect_uri=self.redirect_uri)
-
+        mendeley = Mendeley(
+            key,
+            client_secret=secret,
+            redirect_uri=self.redirect_uri
+        )
         auth = mendeley.start_authorization_code_flow()
 
         try:
             # start mendeley session
             mendeley_session = MendeleySession(
-                mendeley, tokens, client=auth.client,
-                refresher=MendeleyAuthorizationCodeTokenRefresher(auth))
-
+                mendeley,
+                tokens,
+                client=auth.client,
+                refresher=MendeleyAuthorizationCodeTokenRefresher(auth)
+            )
+            # Refresh tokens
+            for key in mendeley_session.token.keys():
+                social.extra_data[key] = mendeley_session.token[key]
+            social.save(update_fields=('extra_data', ))
             # try session
             _ = mendeley_session.profiles.me.display_name
         except MendeleyApiException:
