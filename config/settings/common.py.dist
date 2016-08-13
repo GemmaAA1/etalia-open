@@ -263,10 +263,17 @@ SOCIAL_AUTH_ZOTERO_SECRET = env('SOCIAL_AUTH_ZOTERO_SECRET')
 
 SOCIAL_AUTH_ZOTERO_AUTH_EXTRA_ARGUMENTS = {'write_access': '1'}
 
+
+# SESSION
+# ------------------------------------------------------------------------------
+SESSION_CACHE_ALIAS = 'default'
+
+
 # LAST SEEN
 # ------------------------------------------------------------------------------
 LAST_SEEN_DEFAULT_MODULE = 'default'
 LAST_SEEN_INTERVAL = 2 * 60 * 60
+
 
 # AWS S3
 # ------------------------------------------------------------------------------
@@ -374,6 +381,7 @@ POPOVERS_DISPLAY_HIGHEST_PRIORITY = True
 POPOVERS_DISPLAY_NEW_ANCHORED = 1
 POPOVERS_DISPLAY_NEW_MODAL = 1
 POPOVERS_DISPLAY_REFRESH_PERIOD = 3600  # in seconds
+
 
 # REST FRAMEWORK
 # ------------------------------------------------------------------------------
