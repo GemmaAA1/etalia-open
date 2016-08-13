@@ -342,15 +342,25 @@ class UserLib(TimeStampedModel):
         err = backend.trash_paper(session, provider_id)
         return err
 
-    def update(self):
+    def update(self, full=False):
         try:
             session, backend = self.get_session_backend()
             # update lib
-            backend.update_lib(self.user, session)
+            backend.update_lib(self.user, session, full=full)
         except MendeleyApiException:
             # Put user on renew auth state
             self.set_state(USERLIB_NEED_REAUTH)
             UserSession.delete_user_sessions(self.user_id)
+
+    def clear(self):
+        ulps = UserLibPaper.objects.filter(userlib=self)
+        pus = PaperUser.objects.filter(user=self.user)
+        ulps.delete()
+        pus.update(store=None)
+
+    def reset(self):
+        self.clear()
+        self.update(full=True)
 
 
 class UserLibPaper(TimeStampedModel):
