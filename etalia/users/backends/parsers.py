@@ -133,9 +133,9 @@ class ParserMendeley(ParserBackend):
                 paper['date_pp'] = datetime.date(year, month, day)
 
         # Volume, issue, page
-        paper['volume'] = entry.volume.strip()
-        paper['issue'] = entry.issue.strip()
-        paper['page'] = entry.pages.strip()
+        paper['volume'] = (entry.volume or '').strip()
+        paper['issue'] = (entry.issue or '').strip()
+        paper['page'] = (entry.pages or '').strip()
 
         # Language
 
@@ -152,8 +152,8 @@ class ParserMendeley(ParserBackend):
         if full_authors:
             for auth in full_authors:
                 author = self.author_template.copy()
-                author['last_name'] = auth.last_name.strip() or ''
-                author['first_name'] = auth.first_name.strip() or ''
+                author['last_name'] = (auth.last_name or '').strip()
+                author['first_name'] = (auth.first_name or '').strip()
                 authors.append(author)
         return authors
 

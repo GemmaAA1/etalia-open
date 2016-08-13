@@ -353,14 +353,14 @@ class UserLib(TimeStampedModel):
             UserSession.delete_user_sessions(self.user_id)
 
     def clear(self):
-        uls = UserLib.objects.filter(userlib=self)
+        ulps = UserLibPaper.objects.filter(userlib=self)
         pus = PaperUser.objects.filter(user=self.user)
-        uls.delete()
+        ulps.delete()
         pus.update(store=None)
 
     def reset(self):
         self.clear()
-        self.update()
+        self.update(full=True)
 
 
 class UserLibPaper(TimeStampedModel):
