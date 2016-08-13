@@ -12,6 +12,7 @@ from mendeley.auth import MendeleySession, \
 from mendeley.exception import MendeleyApiException
 from .BaseMixin import BackendLibMixin
 from .parsers import ParserMendeley
+from time import time
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
     def get_session(self, social, user, *args, **kwargs):
 
-        key, secret = self.get_key_and_secret()
+        client_id, client_secret = self.get_key_and_secret()
         tokens = {
             'access_token': social.access_token,
             'refresh_token': social.extra_data['refresh_token']
@@ -78,30 +79,30 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         # start authorization flow
         mendeley = Mendeley(
-            key,
-            client_secret=secret,
+            client_id,
+            client_secret=client_secret,
             redirect_uri=self.redirect_uri
         )
         auth = mendeley.start_authorization_code_flow()
+        refresher = MendeleyAuthorizationCodeTokenRefresher(auth)
+        session = MendeleySession(
+            mendeley,
+            tokens,
+            client=auth.client,
+            refresher=MendeleyAuthorizationCodeTokenRefresher(auth)
+        )
 
-        try:
-            # start mendeley session
-            mendeley_session = MendeleySession(
-                mendeley,
-                tokens,
-                client=auth.client,
-                refresher=MendeleyAuthorizationCodeTokenRefresher(auth)
-            )
-            # Refresh tokens
-            for key in mendeley_session.token.keys():
-                social.extra_data[key] = mendeley_session.token[key]
+        # test token expiration
+        expires_at = social.extra_data['expires_at']
+        if (expires_at or 0) < time():   # renew
+            refresher.refresh(session)
+
+            # Store new tokens
+            for key in session.token.keys():
+                social.extra_data[key] = session.token[key]
             social.save(update_fields=('extra_data', ))
-            # try session
-            _ = mendeley_session.profiles.me.display_name
-        except MendeleyApiException:
-            raise
 
-        return mendeley_session
+        return session
 
     def _update_lib(self, user, session, full=False):
         """Update User Lib
@@ -222,7 +223,6 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return None, resp.id, {'created': parse(str(resp.created) or 'Nothing'),
                                'last_modified': parse(str(resp.last_modified) or 'Nothing')}
-
 
     def trash_paper(self, session, paper_provider_id):
         try:

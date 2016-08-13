@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
+import re
 import requests
 from requests.exceptions import HTTPError
 import feedparser
@@ -679,8 +680,12 @@ class Paper(TimeStampedModel):
         URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
 
         if self.id_arx:
+            id_arx = re.sub(r'v[0-9]+', '', self.id_arx)
+            if id_arx.startswith('arXiv:'):
+                id_arx = id_arx.strip('arXiv:')
+
             resp = requests.get('{url}{id}'.format(url=URL_QUERY,
-                                                   id=self.id_arx[:9]))
+                                                   id=id_arx))
             entries = feedparser.parse(resp.text).get('entries')
             if entries:
                 parser = ArxivParser()
