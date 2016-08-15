@@ -81,7 +81,6 @@ scripts/tmp
 config/settings/*.bk
 config/settings/common.py
 etalia/static/compiled
-deploy/push_to_prod.py
 # redis
 *.rdb
 
