@@ -58,6 +58,23 @@ except ThreadEngine.DoesNotExist:
     pass
 
 
+@app.task(name='warmup_nlp_model')
+def warmup_nlp_model():
+    nlp_dispatcher.delay('dummy')
+
+
+@app.task(name='warmup_paper_engine')
+def warmup_paper_engine():
+    pe_dispatcher.delay('dummy')
+
+
+@app.task(name='warmup_thread_engine')
+def warmup_thread_engine():
+    te_dispatcher.delay('dummy')
+
+
+
+
 @app.task(base=TestTask, bind=True, queue='test', routing_key='test.return_shape')
 def test_shape(self, *args, **kwargs):
     return self.engine.shape
@@ -107,3 +124,6 @@ def add_nlp(x, y):
     """dummy task"""
     logger.info("--> Processing task add")
     return x + y
+
+
+
