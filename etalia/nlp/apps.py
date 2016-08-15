@@ -24,4 +24,5 @@ class NLPConfig(AppConfig):
     if not(os.path.isdir(settings.NLP_TE_PATH)):
         makedirs_p(settings.NLP_TE_PATH)
 
-
+    def ready(self):
+        import etalia.nlp.signals  #noqa
