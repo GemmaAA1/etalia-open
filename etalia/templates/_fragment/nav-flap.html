@@ -7,20 +7,19 @@
     <div class="flap-scroll">
         <div class="flap-inner">
             <ul id="main-nav">
-                <li class="{% active request 'feeds.+' %}">
+                <li class="{% active request 'my-feeds.+' %}">
                     <a href="{% url 'feeds:my_feeds' %}">
                         <span class="eai eai-feed"></span>
                         My Feeds
                     </a>
                 </li>
-                <li class="{% active request 'papers.+' %}">
+                <li class="{% active request 'my-papers.+' %}">
                     <a href="{% url 'library:my_papers' %}">
                         <span class="eai eai-paper"></span>
                         My Library
                     </a>
                 </li>
-                <li class="{% active request 'threads.+' %}">
-                    {# TODO change route name 'my_threads' #}
+                <li class="{% active request 'my-threads.+' %}">
                     <a href="{% url 'threads:my_threads' %}">
                         <span class="eai eai-comments"></span>
                         My Threads
@@ -31,7 +30,8 @@
 
                 <li class="{% active request 'user/settings.+' %}">
                     <a href="{% url 'user:settings' %}">
-                       <span class="eai eai-settings"></span>
+{#                       <span class="eai eai-settings"></span>#}
+                        <span class="eai eai-wrench"></span>
                         Settings
                     </a>
                 </li>
