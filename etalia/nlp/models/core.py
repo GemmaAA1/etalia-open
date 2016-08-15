@@ -710,6 +710,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                                                      name=self.name))
 
         # save to db (to get id)
+        self.upload_state = 'ING'
         self.save_db_only()
 
         # save files to local volume
@@ -722,10 +723,10 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
         # push files to s3
         if self.BUCKET_NAME:
-            self.upload_state = 'ING'
-            self.save_db_only()
             self.push_to_s3()
-            self.upload_state = 'IDL'
+
+        self.upload_state = 'IDL'
+        self.save_db_only(update_fields=['upload_state', ])
 
     def save_db_only(self, *args, **kwargs):
         super(PaperEngine, self).save(*args, **kwargs)
@@ -749,6 +750,18 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             except IOError:
                 pass
         super(PaperEngine, self).delete(**kwargs)
+
+    def remove_entry_id(self, paper_id):
+        """Remove entry from data structure"""
+        if paper_id in self.data['ids']:
+            idx = self.data['ids'].index(paper_id)
+            self.data['ids'].pop(idx)
+            self.data['journal-ids'].pop(idx)
+            self.data['authors-ids'].pop(idx)
+            self.data['date'].pop(idx)
+            self.data['altmetric'].pop(idx)
+            self.data['embedding'] = np.delete(self.data['embedding'], idx, 0)
+            self.save()
 
     def full_update(self):
         """Full update of data structure"""
@@ -1213,6 +1226,17 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
     def __str__(self):
         return '{id}/{name}'.format(id=self.id, name=self.name)
 
+    def remove_entry_id(self, thread_id):
+        """Remove entry from data structure"""
+        if thread_id in self.data['ids']:
+            idx = self.data['ids'].index(thread_id)
+            self.data['ids'].pop(idx)
+            self.data['paper-ids'].pop(idx)
+            self.data['users-ids'].pop(idx)
+            self.data['date'].pop(idx)
+            self.data['embedding'] = np.delete(self.data['embedding'], idx, 0)
+            self.save()
+
     def activate(self):
         """Set model to active. Only one model can be active at once"""
         ThreadEngine.objects.all() \
@@ -1231,6 +1255,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
                                                      name=self.name))
 
         # save to db (to get id)
+        self.upload_state = 'ING'
         self.save_db_only()
 
         # save files to local volume
@@ -1243,10 +1268,10 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
 
         # push files to s3
         if self.BUCKET_NAME:
-            self.upload_state = 'ING'
-            self.save_db_only()
             self.push_to_s3()
-            self.upload_state = 'IDL'
+
+        self.upload_state = 'IDL'
+        self.save_db_only(update_fields=['upload_state', ])
 
     def save_db_only(self, *args, **kwargs):
         super(ThreadEngine, self).save(*args, **kwargs)

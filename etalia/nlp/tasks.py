@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+
 # Register Model based tasks
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 try:
     model_name = Model.objects.get(is_active=True)
     # specific task name
@@ -28,8 +29,9 @@ try:
 except Model.DoesNotExist:
     pass
 
+
 # Register PaperEngine based tasks
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 try:
     pe = PaperEngine.objects.get(is_active=True)
     # specific task name
@@ -41,8 +43,9 @@ try:
 except PaperEngine.DoesNotExist:
     pass
 
+
 # Register ThreadEngine based tasks
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 try:
     te = ThreadEngine.objects.get(is_active=True)
     # specific task name
