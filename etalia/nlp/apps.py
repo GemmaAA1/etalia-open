@@ -13,6 +13,7 @@ class NLPConfig(AppConfig):
     """
 
     name = 'etalia.nlp'
+    verbose_name = "NLP app"
 
     # Creating default folders for NLP
     if not(os.path.isdir(settings.NLP_MODELS_PATH)):

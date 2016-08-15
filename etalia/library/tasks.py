@@ -47,8 +47,11 @@ def consolidate_library():
 def embed_paper(paper_pk):
     """Send task to embed paper
     """
-    from etalia.nlp.tasks import nlp_dispatcher
-    nlp_dispatcher.delay('infer_paper', paper_pk)
+    try:
+        from etalia.nlp.tasks import nlp_dispatcher
+        nlp_dispatcher.delay('infer_paper', paper_pk)
+    except ImportError:
+        pass
 
 
 def embed_papers(pks, model_name, batch_size=1000):

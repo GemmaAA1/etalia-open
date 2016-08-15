@@ -163,7 +163,7 @@ class Consumer(TimeStampedModel):
         except ConsumerJournal.DoesNotExist:
             return False
         # is 'idle' and journal has id_eissn or id_issn
-        if cj.status == 'idle':
+        if cj.status == 'idle' or cj.status == 'retry':
             return True
         else:
             return False
@@ -237,8 +237,8 @@ class Consumer(TimeStampedModel):
                     return None
             return None
         # TODO: specify exception
-        except Exception as e:
-            return None
+        except Exception:
+            raise
 
     def get_start_date(self, cj):
         if cj.last_date_cons:
@@ -256,9 +256,6 @@ class Consumer(TimeStampedModel):
 
         Args:
             journal_pk (Journal): pk of journal instance
-
-        Returns:
-            (int): Number of matches added
         """
 
         journal = Journal.objects.get(pk=journal_pk)
@@ -266,35 +263,40 @@ class Consumer(TimeStampedModel):
         paper_added = 0
 
         if self.journal_is_valid(journal):
+            try:
 
-            logger.info('Consuming {type}/{consumer}/{title} - starting...'
-                .format(type=self.type,
+                logger.info('Consuming {type}/{consumer}/{title} - starting...'
+                    .format(type=self.type,
+                            consumer=self.name,
+                            title=journal.title))
+
+                # retrieve new entries from journal
+                entries = self.consume_journal(journal)
+
+                # save to database
+                for entry in entries:
+                    item = self.parser.parse(entry)
+                    paper = self.add_entry(item, journal)
+                    if paper:
+                        paper_added += 1
+
+                        # Embed paper
+                        embed_paper(paper.pk)
+
+                # Update consumer_journal
+                cj = self.consumerjournal_set.get(journal=journal)
+                cj.update_stats('pass', len(entries), paper_added)
+
+                logger.info(
+                    'Consuming {type}/{consumer}/{title} - ({count}) done'.format(
+                        type=self.type,
                         consumer=self.name,
-                        title=journal.title))
+                        title=journal.title,
+                        count=paper_added)
+                )
+            except Exception:
 
-            # retrieve new entries from journal
-            entries, success = self.consume_journal(journal)
-
-            # save to database
-            for entry in entries:
-                item = self.parser.parse(entry)
-                paper = self.add_entry(item, journal)
-                if paper:
-                    paper_added += 1
-
-                    # Embed paper
-                    embed_paper(paper.pk)
-
-            # Update consumer_journal
-            cj = self.consumerjournal_set.get(journal=journal)
-            cj.update_stats(success, len(entries), paper_added)
-
-            logger.info('Consuming {type}/{consumer}/{title} - DONE'.format(
-                type=self.type,
-                consumer=self.name,
-                title=journal.title))
-
-        return paper_added
+                raise
 
     def run_once_per_period(self):
         """Run Consumer: Consumes active Journal associated with consumer.
@@ -363,12 +365,10 @@ class ConsumerPubmed(Consumer):
         """Consumes Pubmed API for journal"""
 
         entries = []
-        ok = True
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
-        cj.status = 'consuming'
-        cj.save()
+        cj.status_to('consuming')
 
         # Configure API
         # add email for contact
@@ -418,15 +418,10 @@ class ConsumerPubmed(Consumer):
 
             # close handle
             handle.close()
-
-            logger.debug('consuming {0}: OK'.format(journal.title))
         except Exception:
-            logger.error('consuming {0} from {1}: FAILED'.format(
-                journal.title,
-                self.name)
-            )
+            cj.status_to('error')
             raise
-        return entries, ok
+        return entries
 
 
 class ConsumerElsevier(Consumer):
@@ -475,12 +470,10 @@ class ConsumerElsevier(Consumer):
         """
 
         entries = []
-        ok = True
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
-        cj.status = 'consuming'
-        cj.save()
+        cj.status_to('consuming')
 
         try:
             headers = {'X-ELS-APIKey': self.API_KEY}
@@ -525,15 +518,10 @@ class ConsumerElsevier(Consumer):
                         count += self.ret_max
                 else:
                     break
-
-            logger.debug('consuming {0}: OK'.format(journal.title))
-        except Exception as e:
-            ok = False
-            entries = []
-            logger.error('consuming {0} from {1}: FAILED'.format(journal.title,
-                                                     self.name))
-
-        return entries, ok
+        except Exception:
+            cj.status_to('error')
+            raise
+        return entries
 
 
 class ConsumerArxiv(Consumer):
@@ -556,12 +544,10 @@ class ConsumerArxiv(Consumer):
     def consume_journal(self, journal):
         """Consume Arxiv 'journal'"""
         entries = []
-        ok = True
 
         # Update consumer_journal status
         cj = self.consumerjournal_set.get(journal=journal)
-        cj.status = 'consuming'
-        cj.save()
+        cj.status_to('consuming')
         try:
             # get category
             cat = re.sub(r'arxiv\.', '', cj.journal.id_arx)
@@ -602,21 +588,22 @@ class ConsumerArxiv(Consumer):
                     data = feedparser.parse(resp.text)
                 count += self.ret_max
                 entries += data.entries
+        except Exception:
+            cj.status_to('error')
+            raise
 
-            logger.debug('consuming {0}: OK'.format(journal.title))
-        except Exception as e:
-            ok = False
-            entries = []
-            logger.error('consuming {0} from {1}: FAILED'.format(journal.title,
-                                                                 self.name))
-
-        return entries, ok
+        return entries
 
 
 class ConsumerJournal(TimeStampedModel):
     """Table for Consumer-Journal relationship"""
 
-    STATUS = Choices('inactive', 'idle', 'in_queue', 'consuming', 'error')
+    STATUS = Choices('inactive',
+                     'idle',
+                     'in_queue',
+                     'consuming',
+                     'error',
+                     'retry')
 
     # journal
     journal = models.ForeignKey(Journal)
@@ -646,6 +633,10 @@ class ConsumerJournal(TimeStampedModel):
     def __str__(self):
         return '{0}@{1}'.format(self.journal.short_title or self.journal.title,
                                 self.consumer.name)
+
+    def status_to(self, status):
+        self.status = status
+        self.save(update_fields=['status', ])
 
     def reset(self):
         fields_to_reset = ['status',

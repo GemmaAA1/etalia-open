@@ -2,9 +2,8 @@
 from __future__ import unicode_literals, absolute_import
 
 from config.celery import celery_app as app
-from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
-from etalia.library.models import Journal
-from django.conf import settings
+from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
+    ConsumerJournal
 
 
 @app.task()
@@ -52,6 +51,10 @@ def elsevier_run(name):
 @app.task(bind=True)
 def populate_journal(self, consumer, journal_pk):
     try:
-        return consumer.populate_journal(journal_pk)
+        consumer.populate_journal(journal_pk)
     except Exception as exc:
-        raise self.retry(exc=exc, countdown=60)
+        cj = ConsumerJournal(consumer=consumer,
+                             journal_id=journal_pk)
+        cj.status = 'retry'
+        cj.save(update_fields=['status'])
+        raise self.retry(exc=exc, countdown=1)

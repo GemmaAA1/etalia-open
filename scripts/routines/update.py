@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-./update.py
+./update.py --help for help
 """
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
@@ -401,9 +401,19 @@ if __name__ == '__main__':
 
 
     # Input parser
-    parser = argparse.ArgumentParser(description=
-                                     'Init and Update Etalia database and related-objects in devolpment:\n',
-                                     formatter_class=RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=
+        'Update Etalia DB and Engines in development\n'
+        '\n'
+        'Use cases:\n'
+        '  - When starting from scratch, run:\n'
+        '      update.py -l (load test data and update engines)\n'
+        '  - When not starting from scratch, run:\n'
+        '      update.py (update engines and DB)\n'
+        '  - If previous fails, run:\n'
+        '      update.py -f (flush the DB)\n'
+        '      update.py -l (reload test data and update engines)\n',
+        formatter_class=RawTextHelpFormatter)
     parser.add_argument("-i", "--init",
                         help="Populate database with test data",
                         action="store_true")
@@ -426,7 +436,7 @@ if __name__ == '__main__':
                         help="Populate OAuth user with data only",
                         type=str)
     parser.add_argument("-d", "--dump",
-                        help="Dump database to fxiture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
+                        help="Dump database to fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
                         nargs='?',
                         const=INIT_DEFAULT_FIXTURE_FILE,
                         metavar='file',
