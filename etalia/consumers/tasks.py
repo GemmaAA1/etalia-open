@@ -2,8 +2,8 @@
 from __future__ import unicode_literals, absolute_import
 
 from config.celery import celery_app as app
-from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
-from django.conf import settings
+from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
+    ConsumerJournal
 
 
 @app.task()
@@ -46,3 +46,15 @@ def arxiv_run(name):
 def elsevier_run(name):
     elsevier_consumer = ConsumerElsevier.objects.get(name=name)
     elsevier_consumer.run_once_per_period()
+
+
+@app.task(bind=True)
+def populate_journal(self, consumer, journal_pk):
+    try:
+        consumer.populate_journal(journal_pk)
+    except Exception as exc:
+        cj = ConsumerJournal(consumer=consumer,
+                             journal_id=journal_pk)
+        cj.status = 'retry'
+        cj.save(update_fields=['status'])
+        raise self.retry(exc=exc, countdown=1)

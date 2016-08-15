@@ -20,8 +20,11 @@ logger = logging.getLogger(__name__)
 def embed_thread(thread_pk):
     """Send task to embed thread
     """
-    from etalia.nlp.tasks import nlp_dispatcher
-    nlp_dispatcher.delay('infer_thread', thread_pk)
+    try:
+        from etalia.nlp.tasks import nlp_dispatcher
+        nlp_dispatcher.delay('infer_thread', thread_pk)
+    except ImportError:
+        pass
 
 
 def embed_threads(pks, batch_size=1000):
