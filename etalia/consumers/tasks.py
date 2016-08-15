@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier
+from etalia.library.models import Journal
 from django.conf import settings
 
 
@@ -46,3 +47,11 @@ def arxiv_run(name):
 def elsevier_run(name):
     elsevier_consumer = ConsumerElsevier.objects.get(name=name)
     elsevier_consumer.run_once_per_period()
+
+
+@app.task(bind=True)
+def populate_journal(self, consumer, journal_pk):
+    try:
+        return consumer.populate_journal(journal_pk)
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)

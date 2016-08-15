@@ -248,7 +248,6 @@ class Consumer(TimeStampedModel):
             start_date = timezone.now() - timezone.timedelta(self.day0)
         return start_date
 
-    @app.task(filter=task_method)
     def populate_journal(self, journal_pk):
         """Consume data from journal
 
@@ -314,6 +313,7 @@ class Consumer(TimeStampedModel):
         After consumption, <base_counter_period> is increased by 1 if no paper
         was fetched, decreased by 1 if papers were fetched.
         """
+        from .tasks import populate_journal
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,
                                                                 self.name))
@@ -335,9 +335,9 @@ class Consumer(TimeStampedModel):
         # NB: concurrency of consumer queue is 4 and we gently want to respect
         # a 1/s request.
         for sec, consumerjournal in enumerate(consumerjournals_go_to_queue):
-            self.populate_journal.apply_async(
-                args=[consumerjournal.journal.pk, ],
-                countdown=sec)
+            populate_journal.apply_async(
+                args=[self, consumerjournal.journal.pk, ],
+                countdown=sec * 1.1)
 
 
 class ConsumerPubmed(Consumer):
@@ -420,12 +420,12 @@ class ConsumerPubmed(Consumer):
             handle.close()
 
             logger.debug('consuming {0}: OK'.format(journal.title))
-        except Exception as e:
-            ok = False
-            entries = []
-            logger.error('consuming {0} from {1}: FAILED'.format(journal.title,
-                                                     self.name))
-
+        except Exception:
+            logger.error('consuming {0} from {1}: FAILED'.format(
+                journal.title,
+                self.name)
+            )
+            raise
         return entries, ok
 
 
