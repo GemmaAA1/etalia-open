@@ -250,7 +250,7 @@ class Consumer(TimeStampedModel):
 
     # NB: concurrency of consumer queue is 4 and we gently want to respect
     # a 1/s request.
-    @app.task(filter=task_method, rate_limit='15/min')
+    @app.task(filter=task_method, rate_limit='15/m')
     def populate_journal(self, journal_pk):
         """Consume data from journal
 
