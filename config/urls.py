@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.conf.urls import include, patterns, url
 from django.contrib import admin
+from django.views.generic import TemplateView
 from django.conf import settings
 
 from etalia.core.api.router import api_urls
@@ -17,6 +18,10 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     # the API namespaces are defined at the app api.urls level
     url(r'^api/v1/', include(api_urls(), namespace='api')),
+    url(r'^robots\.txt$', TemplateView.as_view(
+        template_name="robots.txt",
+        content_type={'mimetype': 'text/plain'})),
+
 ]
 
 
