@@ -1,3 +1,4 @@
+/deploy/push_to_prod.py
 /scripts/routines/beta_emails.py
 
 .idea
