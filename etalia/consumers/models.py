@@ -248,7 +248,9 @@ class Consumer(TimeStampedModel):
             start_date = timezone.now() - timezone.timedelta(self.day0)
         return start_date
 
-    @app.task(filter=task_method)
+    # NB: concurrency of consumer queue is 4 and we gently want to respect
+    # a 1/s request.
+    @app.task(filter=task_method, rate_limit='15/min')
     def populate_journal(self, journal_pk):
         """Consume data from journal
 
@@ -334,8 +336,7 @@ class Consumer(TimeStampedModel):
         # queue journal for consumption
         for consumerjournal in consumerjournals_go_to_queue:
             self.populate_journal.apply_async(
-                args=[consumerjournal.journal.pk, ],
-                countdown=1)
+                args=[consumerjournal.journal.pk, ])
 
 
 class ConsumerPubmed(Consumer):
