@@ -407,12 +407,14 @@ if __name__ == '__main__':
         '\n'
         'Use cases:\n'
         '  - When starting from scratch, run:\n'
-        '      update.py -l (load test data and update engines)\n'
+        '      update.py -l (load test data)\n'
+        '      update.py (refresh data, update engines)\n'
         '  - When not starting from scratch, run:\n'
-        '      update.py (update engines and DB)\n'
+        '      update.py (refresh data, update engines)\n'
         '  - If previous fails, run:\n'
         '      update.py -f (flush the DB)\n'
-        '      update.py -l (reload test data and update engines)\n',
+        '      update.py -l (load test data)\n'
+        '      update.py (refresh data, update engines)\n',
         formatter_class=RawTextHelpFormatter)
     parser.add_argument("-i", "--init",
                         help="Populate database with test data",
