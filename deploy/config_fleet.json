@@ -93,11 +93,12 @@
         ],
         "InstanceTypes": [
           "r3.large",
-          "m3.large",
+          "m4.xlarge",
+          "r3.xlarge",
+          "m3.xlarge",
+          "m4.2xlarge",
           "c4.xlarge",
-          "c3.xlarge",
-          "m4.large",
-          "m4.xlarge"
+          "c3.xlarge"
         ],
         "KeyName": "npannetier-key-pair",
         "Type": "request"
