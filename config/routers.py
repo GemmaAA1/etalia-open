@@ -30,6 +30,3 @@ class MyRouter(object):
             if task.startswith(pattern):
                 return route.copy()
         return None
-
-    app.conf.task_queues = (Broadcast('broadcast_tasks'),)
-app.conf.task_routes = {'tasks.reload_cache': {'queue': 'broadcast_tasks'}}
