@@ -6,12 +6,14 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db.models import Count, F
 from celery.canvas import chain
+from mendeley.exception import MendeleyApiException
 
 from config.celery import celery_app as app
 from etalia.feeds.tasks import update_stream, update_trend, update_threadfeed
 from etalia.popovers.tasks import init_popovers
+from etalia.usersession.models import UserSession
 from .models import UserLib
-from .constants import USERLIB_IDLE
+from .constants import USERLIB_IDLE, USERLIB_NEED_REAUTH
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +30,19 @@ def userlib_update_all():
         update_lib.delay(user_pk)
 
 
-@app.task()
-def update_lib(user_pk):
+@app.task(bind=True)
+def update_lib(self, user_pk):
     """Async task for updating user library"""
     userlib = UserLib.objects.get(user_id=user_pk)
-    userlib.update()
+    try:
+        userlib.update()
+    except MendeleyApiException as exc:
+        if not self.request.retries > 1:
+            raise self.retry(exc=exc, countdown=60 * 10)
+        else:
+            # Remove session so that user need to re-authenticate
+            userlib.set_state(USERLIB_NEED_REAUTH)
+            UserSession.delete_user_sessions(self.user_id)
     return user_pk
 
 

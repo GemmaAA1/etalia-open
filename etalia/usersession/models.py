@@ -16,4 +16,4 @@ class UserSession(TimeStampedModel):
     def delete_user_sessions(cls, user_id):
         user_sessions = cls.objects.filter(user_id=user_id)
         for user_session in user_sessions:
-            user_session.session.flush()
+            user_session.session.delete()
