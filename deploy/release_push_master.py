@@ -56,13 +56,13 @@ if __name__ == '__main__':
     call(['git', 'push'])
 
     # Deploy
-    deploy_dir = './{0}'.format(os.path.join(ROOT_DIR, 'deploy'))
-    call(['cd', deploy_dir])
-    call(['workon', 'fab'])
-    call(['./deploy.py', '-{0}'.format(args.options), 'production'])
-
-    # Back to develop
-    call(['cd', ROOT_DIR])
-    call(['workon', 'paper'])
-    call(['git', 'checkout', 'develop'])
+    # deploy_dir = './{0}'.format(os.path.join(ROOT_DIR, 'deploy'))
+    # call(['cd', deploy_dir])
+    # call(['workon', 'fab'])
+    # call(['./deploy.py', '-{0}'.format(args.options), 'production'])
+    #
+    # # Back to develop
+    # call(['cd', ROOT_DIR])
+    # call(['workon', 'paper'])
+    # call(['git', 'checkout', 'develop'])
 

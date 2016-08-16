@@ -21,6 +21,7 @@ def user_logged_in_handler(sender, request, user, **kwargs):
 
 @receiver(detected_timezone, sender=User)
 def process_timezone(sender, instance, timezone, **kwargs):
-    if instance.timezone != timezone:
-        instance.timezone = timezone
-        instance.save()
+    if instance.is_authenticated():
+        if instance.timezone != timezone:
+            instance.timezone = timezone
+            instance.save()
