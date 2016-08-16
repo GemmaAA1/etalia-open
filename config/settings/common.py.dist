@@ -60,6 +60,7 @@ THIRD_PARTY_APPS = (
     'django_extensions',
     'rest_framework.authtoken',
     'crispy_forms',
+    'easy_timezones',
 )
 
 LOCAL_APPS = (
@@ -68,7 +69,7 @@ LOCAL_APPS = (
     'etalia.consumers',
     'etalia.threads',
     'etalia.library',
-    'etalia.nlp',
+    'etalia.nlp.apps.NLPConfig',
     'etalia.users',
     'etalia.feeds',
     'etalia.altmetric',
@@ -91,6 +92,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'easy_timezones.middleware.EasyTimezoneMiddleware',
     'etalia.last_seen.middleware.LastSeenMiddleware',
 )
 
@@ -197,7 +199,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
-INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_process.html'
+INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_processed.html'
+PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email_processed.html'
+# PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email.html'
+PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -382,6 +387,11 @@ POPOVERS_DISPLAY_NEW_ANCHORED = 1
 POPOVERS_DISPLAY_NEW_MODAL = 1
 POPOVERS_DISPLAY_REFRESH_PERIOD = 3600  # in seconds
 
+
+# EASY TIMEZONE
+# ------------------------------------------------------------------------------
+GEOIP_DATABASE = os.path.join(str(ROOT_DIR), 'data/GeoIP/GeoLiteCity.dat')
+GEOIPV6_DATABASE = os.path.join(str(ROOT_DIR), 'data/GeoIP/GeoLiteCityv6.dat')
 
 # REST FRAMEWORK
 # ------------------------------------------------------------------------------

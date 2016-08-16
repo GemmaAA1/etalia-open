@@ -551,4 +551,24 @@ def send_invite(request):
         redirect('invite:home')
 
 
+def test_template(request):
+    from django.template.response import TemplateResponse
+    papers = request.user.streams.first().papers.all()
+    papers = papers.select_related('altmetric')
+    papers = papers.select_related('journal')
+    papers = papers.prefetch_related('authors')
+    papers = list(papers[:settings.PERIODIC_RECOMMENDATION_NUMBER_PAPERS])
+
+    return TemplateResponse(
+        request,
+        settings.PERIODIC_RECOMMENDATION_TEMPLATE,
+        {'papers': papers,
+         'bucket_url': settings.EMAIL_STATIC_BUCKET,
+         'root_url': 'http://etalia.io',
+         }
+    )
+
+
+
+
 
