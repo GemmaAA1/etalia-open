@@ -333,7 +333,9 @@ def fetch_new_papers():
 def dump_data():
     print('Dump data to file...')
     call([os.path.join(root_path, "manage.py"), "dumpdata",
-          "--exclude", "auth", "--exclude", "contenttypes",
+          "--exclude", "auth",
+          "--exclude", "contenttypes",
+          "--exclude", "usersession",
           "-o", os.path.join(root_path, "scripts", "routines", INIT_DEFAULT_FIXTURE_FILE)])
 
 
