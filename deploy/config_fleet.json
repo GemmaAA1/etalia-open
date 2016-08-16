@@ -9,7 +9,7 @@
       "SecurityGroups": [
         "paperstream_sg"
       ],
-      "InstanceType": "t2.micro",
+      "InstanceType": "t2.small",
       "Placement": {
         "AvailabilityZone": "us-west-2b"
       }
