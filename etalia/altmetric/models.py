@@ -88,6 +88,11 @@ class AltmetricModel(TimeStampedModel):
                 cbs.append((field.name, getattr(self, field.name)))
         return cbs
 
+    @property
+    def print_badge(self):
+        url_base = 'https://altmetric-badges.a.ssl.fastly.net/?size=128&score={score:.0f}&types={type}'
+        return url_base.format(score=self.score, type=self.type)
+
     def update(self):
         rsp = None
         a = Altmetric(settings.ALTMETRIC_API_KEY)

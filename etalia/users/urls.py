@@ -29,4 +29,5 @@ urlpatterns = [
     url(r'^user-update-stream-check$', views.user_update_stream_check, name='user-update-stream-check'),
     url(r'^user-update-trend-check$', views.user_update_trend_check, name='user-update-trend-check'),
     url(r'^user-update-settings-check$', views.user_update_settings_check, name='user-update-settings-check'),
+    url(r'^test$', views.test_template, name='test'),
 ]

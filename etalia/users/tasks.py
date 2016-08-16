@@ -5,13 +5,18 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count, F
+from pytz import timezone
+from datetime import datetime, timedelta
 from celery.canvas import chain
+from mendeley.exception import MendeleyApiException
 
 from config.celery import celery_app as app
 from etalia.feeds.tasks import update_stream, update_trend, update_threadfeed
 from etalia.popovers.tasks import init_popovers
-from .models import UserLib
-from .constants import USERLIB_IDLE
+from etalia.usersession.models import UserSession
+from .models import UserLib, UserPeriodicEmail
+from .constants import USERLIB_IDLE, USERLIB_NEED_REAUTH
+from .utils import send_periodic_recommendation_email, next_weekday
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +33,19 @@ def userlib_update_all():
         update_lib.delay(user_pk)
 
 
-@app.task()
-def update_lib(user_pk):
+@app.task(bind=True)
+def update_lib(self, user_pk):
     """Async task for updating user library"""
     userlib = UserLib.objects.get(user_id=user_pk)
-    userlib.update()
+    try:
+        userlib.update()
+    except MendeleyApiException as exc:
+        if not self.request.retries > 1:
+            raise self.retry(exc=exc, countdown=60 * 10)
+        else:
+            # Remove session so that user need to re-authenticate
+            userlib.set_state(USERLIB_NEED_REAUTH)
+            UserSession.delete_user_sessions(self.user_id)
     return user_pk
 
 
@@ -65,3 +78,53 @@ def init_user(user_pk):
 
     task()
     return user_pk
+
+
+@app.task()
+def send_monday_7am_recommendation_emails():
+    """Task that send batch of emails recommdation.
+
+    Emails are sent to user on Monday 7am (in user timezone). Frequency varies
+    depending on user settings.
+
+    Task must be run once a week not to closed from the Monday 7am date +/- all
+    timezones...
+    """
+
+    us = User.objects.filter(settings__email_digest_frequency__gt=0)\
+        .annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)
+    us = us.select_related('settings')
+    us = us.select_related('userperiodicemail')
+
+    # Get some date data
+    utc = timezone('UTC')   # servers are in UTC
+    nm = next_weekday(datetime.now().date(), 0)  # next monday
+
+    for user in us:
+        if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
+            now = utc.localize(datetime.now())
+            delta_since_last_email = (now - user.userperiodicemail.last_sent_on)
+            user_period = user.settings.email_digest_frequency
+
+            if timedelta(days=user_period) - delta_since_last_email > timedelta(days=2):
+                break
+
+        # Do the math for the email to be send on monday 7am
+        user_timezone = timezone(user.timezone)
+        loc_dt = user_timezone.localize(datetime(nm.year, nm.month, nm.day, 7, 0, 0))
+        utc_dt = loc_dt.astimezone(utc)
+        # fire task
+        send_periodic_email_at_eta.apply_async(args=[user.id, ],
+                                               eta=utc_dt)
+
+
+@app.task()
+def send_periodic_email_at_eta(user_id):
+    """Send recommendations email"""
+    send_periodic_recommendation_email(user_id)
+    # Record email has been sent
+    upe, _ = UserPeriodicEmail.objects.get_or_create(user_id=user_id)
+    utc = timezone('UTC')
+    upe.last_sent_on = utc.localize(datetime.now())
+    upe.save()

@@ -99,7 +99,9 @@ class UserPopOverUpdateDisplay(TimeStampedModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
-    task_id = models.CharField(max_length=128, null=True, blank=True,
+    task_id = models.CharField(max_length=128,
+                               null=False,
+                               blank=True,
                                default='')
 
     def deferred_display_update(self):

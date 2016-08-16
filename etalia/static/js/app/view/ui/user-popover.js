@@ -57,7 +57,7 @@ define([
                 placement: 'auto',
                 template: '<div class="popover" role="tooltip">' +
                     '<div class="arrow"></div>' +
-                    '<h3 class="popover-title"></h3>' +
+                    //'<h3 class="popover-title"></h3>' +
                     '<div class="popover-content"></div>' +
                     '<div class="popover-footer">' +
                         '<button class="btn btn-primary btn-sm">Got it !</button>' +
