@@ -45,14 +45,15 @@ def send_invite_email(email_to=None,
 def send_periodic_recommendation_email(user_id):
 
     users = User.objects.filter(id=user_id).select_related('settings')
-    users = users.select_related('userperiodicemail')
     user = users[0]
     if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
         date_since = user.userperiodicemail.last_sent_on
     else:
         date_since = datetime.datetime.now() - \
                      datetime.timedelta(days=user.settings.email_digest_frequency)
-    papers = user.streams.first().papers.filter(streampapers__date__gte=date_since)
+    papers = user.streams.first().papers\
+        .filter(streampapers__date__gte=date_since)\
+        .order_by(('-streampapers__score', ))
     papers = papers.select_related('altmetric')
     papers = papers.select_related('journal')
     papers = papers.prefetch_related('authors')
