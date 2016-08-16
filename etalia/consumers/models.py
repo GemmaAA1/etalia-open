@@ -12,12 +12,10 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q, F
-from celery.contrib.methods import task_method
 from Bio import Entrez
 from Bio import Medline
 from model_utils import Choices, fields
 
-from config.celery import celery_app as app
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 from etalia.library.forms import PaperFormFillBlanks
