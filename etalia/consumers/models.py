@@ -313,7 +313,7 @@ class Consumer(TimeStampedModel):
         After consumption, <base_counter_period> is increased by 1 if no paper
         was fetched, decreased by 1 if papers were fetched.
         """
-        from .tasks import populate_journal
+        from .tasks import populate_journal as populate_journal_async
 
         logger.info('starting {0}:{1} daily consumption'.format(self.type,
                                                                 self.name))
@@ -335,8 +335,8 @@ class Consumer(TimeStampedModel):
         # NB: concurrency of consumer queue is 4 and we gently want to respect
         # a 1/s request.
         for sec, consumerjournal in enumerate(consumerjournals_go_to_queue):
-            populate_journal.apply_async(
-                args=[self, consumerjournal.journal.pk, ],
+            populate_journal_async.apply_async(
+                args=[self.id, self.type, consumerjournal.journal.pk, ],
                 countdown=sec * 1.1)
 
 
@@ -390,7 +390,7 @@ class ConsumerPubmed(Consumer):
             ret_start = 0
             while True:
                 # query
-                handle = Entrez.esearch(db="pubmed",
+                handle = Entrez.esearch("pubmed",
                                         term=query,
                                         retmax=self.ret_max,
                                         retstart=ret_start)
@@ -406,7 +406,7 @@ class ConsumerPubmed(Consumer):
                 # update ret_start
                 ret_start += self.ret_max
             # fetch items
-            handle = Entrez.efetch(db="pubmed", id=id_list, rettype="medline",
+            handle = Entrez.efetch("pubmed", id=id_list, rettype="medline",
                                    retmode="text")
 
             records = Medline.parse(handle)

@@ -49,8 +49,17 @@ def elsevier_run(name):
 
 
 @app.task(bind=True)
-def populate_journal(self, consumer, journal_pk):
+def populate_journal(self, consumer_id, type, journal_pk):
     try:
+        if type == 'PUB':
+            ConsumerClass = ConsumerPubmed
+        elif type == 'ELS':
+            ConsumerClass = ConsumerPubmed
+        elif type == 'ARX':
+            ConsumerClass = ConsumerArxiv
+        else:
+            raise ValueError('Consumer type unknown {0}'.format(type))
+        consumer = ConsumerClass.objects.get(id=consumer_id)
         consumer.populate_journal(journal_pk)
     except Exception as exc:
         cj = ConsumerJournal(consumer=consumer,
