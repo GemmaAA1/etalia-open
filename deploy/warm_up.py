@@ -8,16 +8,15 @@ def warm_up():
     # I.e warm up tasks are broadcasting to workers but
     # within one worker if concurrency is >1, task is only seen by 1 thread
     for _ in range(10):
-        warmup_paper_engine.delay()
-        warmup_thread_engine.delay()
-        warmup_nlp_model.delay()
+        nlp_dispatcher.delay('dummy')
+        pe_dispatcher.delay('dummy')
+        te_dispatcher.delay('dummy')
 
 
 if __name__ == '__main__':
 
     # import django
     # django.setup()
-    from etalia.nlp.tasks import warmup_paper_engine, warmup_thread_engine, \
-        warmup_nlp_model
+    from etalia.nlp.tasks import nlp_dispatcher, te_dispatcher, pe_dispatcher
 
     warm_up()
