@@ -241,25 +241,17 @@
 
         .card .icons {
             position: absolute;
-            right: 0;
-            top: 0;
-            text-align: right;
-        }
-
-        .card .icons {
+            right: 20px;
+            top: -10px;
             height: 36px;
-            width: 80px;
+            width: 36px;
+            text-align: right;
         }
 
         .card .icons > span {
             display: block;
             width: 32px;
             height: 32px;
-            margin-top: -20px;
-        }
-
-        .card .icons > span:last-child {
-            margin-right: 0;
         }
 
         .card .abstract {
@@ -283,10 +275,12 @@
                     <tr>
                         <td class="header">
                             <div>
+                                <a href="{{ url_root }}" target="_blank">
                                 <img class="etalia-logo"
-                                     src="data:image/png;base64,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"
+                                     src="{{ bucket_url }}etalia_digest.png"
                                      alt="Etalia Digest Logo"/>
                                 <hr class="divider">
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -307,16 +301,17 @@
 
                                     <div class="infos">
                                         <p class="truncate">
-                                            {{ paper.print_journal_title|truncatechars:60 }}
+                                            {{ paper.print_journal_title|truncatechars:40 }}
                                             <em>{{ paper.print_date }}</em>
                                         </p>
-
+                                        {% if paper.altmetric.score > 0 %}
                                         <p class="icons">
                                         <span>
                                             <img src="{{ paper.altmetric.print_badge }}"
                                                  alt="Altmetric score"/>
                                         </span>
                                         </p>
+                                        {% endif %}
                                     </div>
                                     <div class="abstract">
                                         {{ paper.abstract|capfirst|truncatechars:180 }}

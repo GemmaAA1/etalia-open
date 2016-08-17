@@ -39,7 +39,7 @@ def send_invite_email(email_to=None,
     email.send()
 
     # save to database
-    UserInvited.objects.create(from_user=on_behalf, email_to=email_to)
+    UserInvited.objects.create(from_user=on_behalf, to_email=email_to)
 
 
 def send_periodic_recommendation_email(user_id):
@@ -53,7 +53,7 @@ def send_periodic_recommendation_email(user_id):
                      datetime.timedelta(days=user.settings.email_digest_frequency)
     papers = user.streams.first().papers\
         .filter(streampapers__date__gte=date_since)\
-        .order_by(('-streampapers__score', ))
+        .order_by('-streampapers__score')
     papers = papers.select_related('altmetric')
     papers = papers.select_related('journal')
     papers = papers.prefetch_related('authors')
