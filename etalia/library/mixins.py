@@ -2,7 +2,6 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.db.models import Prefetch, Q
-from django.db.models.query import prefetch_related_objects
 
 from etalia.users.constants import USER_INDIVIDUAL
 

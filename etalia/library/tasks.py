@@ -7,6 +7,7 @@ from time import sleep
 
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import Case, When
 from etalia.nlp.models import PaperEngine, PaperNeighbors
 from .models import Stats, Paper
 
@@ -100,9 +101,8 @@ def get_neighbors_papers(paper_pk, time_span):
 
     neigh_pk_list = [neigh for neigh in neighbors[:settings.LIBRARY_NUMBER_OF_NEIGHBORS] if neigh]
 
-    clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i)
-                        for i, pk in enumerate(neigh_pk_list)])
-    ordering = 'CASE %s END' % clauses
-    return Paper.objects.filter(pk__in=neigh_pk_list).extra(
-       select={'ordering': ordering}, order_by=('ordering',))
+    # preserved order
+    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(neigh_pk_list)])
+
+    return Paper.objects.filter(pk__in=neigh_pk_list).order_by(preserved)
 
