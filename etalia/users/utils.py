@@ -39,7 +39,7 @@ def send_invite_email(email_to=None,
     email.send()
 
     # save to database
-    UserInvited.objects.create(from_user=on_behalf, email_to=email_to)
+    UserInvited.objects.create(from_user=on_behalf, to_email=email_to)
 
 
 def send_periodic_recommendation_email(user_id):
