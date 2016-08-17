@@ -62,8 +62,8 @@ def populate_journal(self, consumer_id, type, journal_pk):
         consumer = ConsumerClass.objects.get(id=consumer_id)
         consumer.populate_journal(journal_pk)
     except Exception as exc:
-        cj = ConsumerJournal(consumer=consumer,
-                             journal_id=journal_pk)
+        cj = ConsumerJournal.objects.get(consumer=consumer,
+                                         journal_id=journal_pk)
         cj.status = 'retry'
         cj.save(update_fields=['status'])
         raise self.retry(exc=exc, countdown=1)
