@@ -53,7 +53,7 @@ def send_periodic_recommendation_email(user_id):
                      datetime.timedelta(days=user.settings.email_digest_frequency)
     papers = user.streams.first().papers\
         .filter(streampapers__date__gte=date_since)\
-        .order_by(('-streampapers__score', ))
+        .order_by('-streampapers__score')
     papers = papers.select_related('altmetric')
     papers = papers.select_related('journal')
     papers = papers.prefetch_related('authors')
