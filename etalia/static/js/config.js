@@ -45,7 +45,8 @@ requirejs.config({
         moment: 'lib/moment/moment',
         select2: 'lib/select2/select2',
         tinymce: 'lib/tinymce/tinymce',
-        underscore: 'lib/underscore'
+        underscore: 'lib/underscore',
+        app: 'app/app'
     },
     config: {
         moment: {
