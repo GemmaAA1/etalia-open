@@ -54,7 +54,7 @@ def populate_journal(self, consumer_id, type, journal_pk):
         if type == 'PUB':
             ConsumerClass = ConsumerPubmed
         elif type == 'ELS':
-            ConsumerClass = ConsumerPubmed
+            ConsumerClass = ConsumerElsevier
         elif type == 'ARX':
             ConsumerClass = ConsumerArxiv
         else:
