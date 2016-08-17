@@ -57,9 +57,8 @@
 </div>
 
 {#<script data-main="{% static 'js/config.js' %}" src="{% static 'js/require.js' %}"></script>#}
-<script src="{% static 'js/require.js' %}"></script>
 <script>
-    require.config({
+    var require = {
         baseUrl: '/static/js',
         shim: {
             bootstrap: {
@@ -114,8 +113,9 @@
                 noGlobal: true
             }
         }
-    });
+    };
 </script>
+<script src="{% static 'js/require.js' %}" data-main="{% static 'js/config.js' %}"></script>
 {% block javascript %}
     <script>requirejs(['app/default']);</script>
 {% endblock javascript %}
