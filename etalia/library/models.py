@@ -424,6 +424,15 @@ class Paper(TimeStampedModel):
         else:
             return ''
 
+    @property
+    def build_url(self):
+        if self.id_doi:
+            return 'http://doi.org/' + self.id_doi
+        elif self.id_arx:
+            return self.url
+        else:
+            return self.url
+
     def get_ids(self):
         """Return dictionary of paper ids"""
         ids = {}
