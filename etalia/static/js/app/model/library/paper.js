@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'app/model/library/journal',
     'app/model/library/author',
     'app/model/library/state'

@@ -1,4 +1,4 @@
-define(['app/app'], function (App) {
+define(['app'], function (App) {
 
     var userPopoverPath = '/popover/states/';
 

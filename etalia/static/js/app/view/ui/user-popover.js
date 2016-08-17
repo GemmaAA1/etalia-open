@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'app/model/ui/user-popover',
     'bootstrap'
 ], function (App) {

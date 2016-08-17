@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'app/model/thread/post'
 ], function (App) {
 

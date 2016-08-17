@@ -1,4 +1,4 @@
-define(['app/app', 'app/model/thread/invite', 'select2'], function (App) {
+define(['app', 'app/model/thread/invite', 'select2'], function (App) {
 
     App.View.Thread.InviteCreateForm = App.Backbone.Form.extend({
 

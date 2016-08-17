@@ -1,4 +1,4 @@
-define(['app/app', 'app/model/user/user'], function (App) {
+define(['app', 'app/model/user/user'], function (App) {
 
     App.Model.Avatar = App.Backbone.RelationalModel.extend({
         //urlRoot: App.config.api_root + '/user/users',

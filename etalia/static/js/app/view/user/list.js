@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'text!app/templates/user/list.hbs',
     'app/view/user/thumb'
 ], function (App, template) {
