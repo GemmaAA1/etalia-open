@@ -41,6 +41,14 @@
       "priority": 40
     },
     {
+      "id": 6,
+      "title": "The Pin Filter",
+      "template_path": "popovers/anchor_pin_filter.html",
+      "anchor": "#toggle-pinned",
+      "type": 1,
+      "priority": 120
+    },
+    {
       "id": 7,
       "title": "The Time Filter",
       "template_path": "popovers/anchor_time_filter.html",
@@ -49,12 +57,13 @@
       "priority": 110
     },
     {
-      "id": 6,
-      "title": "The Pin Filter",
-      "template_path": "popovers/anchor_pin_filter.html",
-      "anchor": "#toggle-pinned",
-      "type": 1,
-      "priority": 120
+      "id": 8,
+      "title": "Your library is empty",
+      "template_path": "popovers/no_paper_in_library.html",
+      "anchor": "",
+      "type": 2,
+      "priority": 2,
+      "extra": "no_paper"
     }
   ]
 }

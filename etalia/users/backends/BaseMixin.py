@@ -134,7 +134,8 @@ class BackendLibMixin(object):
         # really update
         count = self._update_lib(user, session, full=full)
         # retrieve first paper added
-        user.lib.set_d_oldest()
+        if user.lib.papers.count() > 0:
+            user.lib.set_d_oldest()
         # update UserLib and Stats
         user.stats.log_lib_ends_sync(user, count)
         user.lib.set_state(USERLIB_IDLE)
