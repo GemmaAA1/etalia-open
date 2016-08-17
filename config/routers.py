@@ -12,8 +12,6 @@ class MyRouter(object):
     TASKS_ROUTING_MAP = [
         ('etalia.consumers', {'queue': 'consumers', 'routing_key': 'consumers'}),
         ('etalia.users', {'queue': 'default', 'routing_key': 'default.users'}),
-        ('warmup_paper_engine', {'queue': 'broadcast_paper_engine'}),
-        ('warmup_thread_engine', {'queue': 'broadcast_thread_engine'}),
         ('etalia.nlp.tasks.pe_dispatcher', {'queue': 'pe', 'routing_key': 'pe'}),
         ('etalia.nlp.tasks.te_dispatcher', {'queue': 'te', 'routing_key': 'te'}),
         ('etalia.nlp.tasks.nlp_dispatcher', {'queue': 'nlp', 'routing_key': 'nlp'}),
