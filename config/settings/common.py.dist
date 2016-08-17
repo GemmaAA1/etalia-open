@@ -69,13 +69,13 @@ LOCAL_APPS = (
     'etalia.consumers',
     'etalia.threads',
     'etalia.library',
-    'etalia.nlp.apps.NLPConfig',
+    'etalia.nlp',
     'etalia.users',
     'etalia.feeds',
     'etalia.altmetric',
     'etalia.last_seen',
     'etalia.popovers',
-    'etalia.usersession.apps.UserSessionConfig',
+    'etalia.usersession',
     # 'functional_tests',
 )
 
