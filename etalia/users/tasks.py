@@ -5,6 +5,7 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count, F
+from django.conf import settings
 from pytz import timezone
 from datetime import datetime, timedelta
 from celery.canvas import chain
@@ -81,42 +82,43 @@ def init_user(user_pk):
 
 
 @app.task()
-def send_monday_7am_recommendation_emails():
+def send_recommendation_emails_on_wed_11am():
     """Task that send batch of emails recommdation.
 
-    Emails are sent to user on Monday 7am (in user timezone). Frequency varies
+    Emails are sent to user on Wednesday 11am (in user timezone). Frequency varies
     depending on user settings.
 
     Task must be run once a week not to closed from the Monday 7am date +/- all
     timezones...
     """
 
-    us = User.objects.filter(settings__email_digest_frequency__gt=0)\
-        .annotate(social_count=Count(F('social_auth')))\
-        .exclude(social_count__lt=1)
-    us = us.select_related('settings')
-    us = us.select_related('userperiodicemail')
+    if settings.RECOMMENDATIONS_EMAILS_ON:
+        us = User.objects.filter(settings__email_digest_frequency__gt=0)\
+            .annotate(social_count=Count(F('social_auth')))\
+            .exclude(social_count__lt=1)
+        us = us.select_related('settings')
+        us = us.select_related('userperiodicemail')
 
-    # Get some date data
-    utc = timezone('UTC')   # servers are in UTC
-    nm = next_weekday(datetime.now().date(), 0)  # next monday
+        # Get some date data
+        utc = timezone('UTC')   # servers are in UTC
+        nm = next_weekday(datetime.now().date(), 2)  # next wednesday
 
-    for user in us:
-        if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
-            now = utc.localize(datetime.now())
-            delta_since_last_email = (now - user.userperiodicemail.last_sent_on)
-            user_period = user.settings.email_digest_frequency
+        for user in us:
+            if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
+                now = utc.localize(datetime.now())
+                delta_since_last_email = (now - user.userperiodicemail.last_sent_on)
+                user_period = user.settings.email_digest_frequency
 
-            if timedelta(days=user_period) - delta_since_last_email > timedelta(days=2):
-                break
+                if timedelta(days=user_period) - delta_since_last_email > timedelta(days=5):
+                    break
 
-        # Do the math for the email to be send on monday 7am
-        user_timezone = timezone(user.timezone)
-        loc_dt = user_timezone.localize(datetime(nm.year, nm.month, nm.day, 7, 0, 0))
-        utc_dt = loc_dt.astimezone(utc)
-        # fire task
-        send_periodic_email_at_eta.apply_async(args=[user.id, ],
-                                               eta=utc_dt)
+            # Do the math for the email to be send on monday 7am
+            user_timezone = timezone(user.timezone)
+            loc_dt = user_timezone.localize(datetime(nm.year, nm.month, nm.day, 11, 0, 0))
+            utc_dt = loc_dt.astimezone(utc)
+            # fire task
+            send_periodic_email_at_eta.apply_async(args=[user.id, ],
+                                                   eta=utc_dt)
 
 
 @app.task()
