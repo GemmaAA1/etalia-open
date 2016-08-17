@@ -12,7 +12,7 @@ from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from etalia.feeds.models import ThreadFeedThreads
-from ..mixins import ThreadMixin
+from ..mixins import ThreadEagerLoadingMixin
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
     THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING, THREAD_INVITE_ACCEPTED, \
@@ -61,7 +61,7 @@ class ThreadFilterSerializer(serializers.BaseSerializer):
         }
 
 
-class ThreadSerializer(ThreadMixin,
+class ThreadSerializer(ThreadEagerLoadingMixin,
                        One2OneNestedLinkSwitchMixin,
                        serializers.HyperlinkedModelSerializer):
     """Thread serializer"""

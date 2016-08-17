@@ -11,7 +11,7 @@ from etalia.users.constants import USER_INDIVIDUAL
 from .models import ThreadUser
 
 
-class ThreadMixin(object):
+class ThreadEagerLoadingMixin(object):
 
     @staticmethod
     def setup_eager_loading(queryset, **kwargs):
