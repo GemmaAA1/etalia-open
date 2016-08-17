@@ -3,7 +3,6 @@ from __future__ import unicode_literals, absolute_import
 
 import environ
 from kombu import Queue, Exchange
-from kombu.common import Broadcast
 from celery.schedules import crontab
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
