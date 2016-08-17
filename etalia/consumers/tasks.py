@@ -67,3 +67,8 @@ def populate_journal(self, consumer_id, type, journal_pk):
         cj.status = 'retry'
         cj.save(update_fields=['status'])
         raise self.retry(exc=exc, countdown=1)
+
+
+@app.task()
+def consumer_add(x, y):
+    return x + y
