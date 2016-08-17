@@ -1,5 +1,5 @@
 define([
-    'app',
+    'app/app',
     'app/model/user/user',
     'app/model/thread/thread'
 ], function (App) {

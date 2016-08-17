@@ -1,4 +1,4 @@
-define(['app', 'app/model/user/user'], function (App) {
+define(['app/app', 'app/model/user/user'], function (App) {
 
     var path = '/thread/comments';
 

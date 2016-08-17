@@ -1,4 +1,4 @@
-define(['app'], function (App) {
+define(['app/app'], function (App) {
 
     var path = '/library/authors';
 

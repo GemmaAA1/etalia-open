@@ -1,5 +1,5 @@
 define([
-    'app',
+    'app/app',
     'text!app/templates/ui/controls.hbs',
     'text!app/templates/ui/controls/search.hbs',
     'text!app/templates/ui/controls/cluster.hbs',

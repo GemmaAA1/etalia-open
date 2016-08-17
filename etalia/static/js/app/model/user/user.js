@@ -1,4 +1,4 @@
-define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (App) {
+define(['app/app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (App) {
 
     var user_path = '/user/users',
         relationship_path = '/user/relationships';

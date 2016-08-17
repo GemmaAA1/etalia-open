@@ -1,4 +1,4 @@
-define(['app'], function (App) {
+define(['app/app'], function (App) {
 
     return App.Model.Journal = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + '/library/journals',
