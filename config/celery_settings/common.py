@@ -90,7 +90,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=2),  # daily at UTC+2
     },
     'emails-recommendations': {
-        'task': 'etalia.users.tasks.send_monday_7am_recommendation_emails',
-        'schedule': crontab(minute=0, hour=0, day_of_week='sat'),
+        'task': 'etalia.users.tasks.send_recommendation_emails_on_wed_11am',
+        'schedule': crontab(minute=0, hour=0, day_of_week='mon'),
     },
 }
