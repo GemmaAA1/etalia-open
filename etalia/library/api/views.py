@@ -96,6 +96,8 @@ class PaperViewSet(MultiSerializerMixin,
         instance = get_object_or_404(self.queryset, pk=pk)
         self.check_object_permissions(request, instance)
         neighbors = instance.get_neighbors(time_span)
+        neighbors = self.get_serializer_class()\
+            .setup_eager_loading(neighbors)
         serializer = self.get_serializer(neighbors, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -125,8 +127,7 @@ class PaperViewSet(MultiSerializerMixin,
                                  request=self.request)
 
 
-class MyPaperViewSet(MultiSerializerMixin,
-                     viewsets.ReadOnlyModelViewSet):
+class MyPaperViewSet(PaperViewSet):
     """
     My Papers
 
@@ -234,39 +235,17 @@ class MyPaperViewSet(MultiSerializerMixin,
         # Store session control
         self.store_controls(self.request)
 
-        queryset = super(MyPaperViewSet, self)\
+        queryset = super(PaperViewSet, self)\
             .get_queryset()
         return self.get_serializer_class()\
             .setup_eager_loading(queryset,
                                  user=self.request.user,
                                  request=self.request)
 
-    @detail_route(methods=['get'])
-    def neighbors(self, request, pk=None):
-        time_span = int(self.request.query_params.get('time_span',
-                                                      settings.LIBRARY_DEFAULT_NEIGHBORS_TIMESPAN))
-        instance = get_object_or_404(self.queryset, pk=pk)
-        self.check_object_permissions(request, instance)
-        neighbors = instance.get_neighbors(time_span)
-        serializer = self.get_serializer(neighbors, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @detail_route(methods=['get'], url_path='related-threads')
-    def related_threads(self, request, pk=None):
-        time_span = int(self.request.query_params.get('time_span',
-                                                      settings.LIBRARY_DEFAULT_NEIGHBORS_TIMESPAN))
-        instance = get_object_or_404(self.queryset, pk=pk)
-        self.check_object_permissions(request, instance)
-        threads = instance.get_related_threads(request.user.id, time_span)
-        serializer = ThreadSerializer(threads,
-                                      context=self.get_serializer_context(),
-                                      many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     # @method_decorator(cache_page(60 * 60))
     @list_route(methods=['get'])
     def filters(self, request):
-        queryset = super(MyPaperViewSet, self).get_queryset()
+        queryset = super(PaperViewSet, self).get_queryset()
         queryset = queryset.select_related('journal')
         queryset = queryset.prefetch_related('authors')
         data = list(self.filter_queryset(queryset)[:settings.FEED_N_FIRST_PAPERS_ONLY])
