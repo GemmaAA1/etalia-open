@@ -178,46 +178,47 @@ class ThreadEngineScoringMixin(object):
 
     def score_threadfeed(self, user_id, name='main'):
 
-        results = []
         if self.data['ids']:
             # Gather user fingerprint
             f = self.get_user_fingerprint(user_id, name=name)
 
-            # Get user settings
-            us = UserSettings.objects.get(user_id=user_id)
+            if f.embedding:     # fingerprint is defined (library is not empty)
+                # Get user settings
+                us = UserSettings.objects.get(user_id=user_id)
 
-            # Convert user data
-            seed = np.array(f.thread_embedding[:self.embedding_size]) \
-                   + self.score_thread_embedding_paper_weight \
-                   * np.array(f.embedding[:self.embedding_size])
-            ub = self.convert_to_user_boost(f.threads_users_counts)
-            ubdic = dict([(k, ub[i]) for i, k in enumerate(f.threads_users_ids)])
+                # Convert user data
+                seed = np.array(f.thread_embedding[:self.embedding_size]) \
+                       + self.score_thread_embedding_paper_weight \
+                       * np.array(f.embedding[:self.embedding_size])
+                ub = self.convert_to_user_boost(f.threads_users_counts)
+                ubdic = dict([(k, ub[i]) for i, k in enumerate(f.threads_users_ids)])
 
-            # Compute
-            uboost = np.zeros((self.data['embedding'].shape[0], ))
-            for i, uid in enumerate(self.data['users-ids']):
-                if uid in list(ubdic.keys()):
-                    uboost[i] = ubdic[uid]
+                # Compute
+                uboost = np.zeros((self.data['embedding'].shape[0], ))
+                for i, uid in enumerate(self.data['users-ids']):
+                    if uid in list(ubdic.keys()):
+                        uboost[i] = ubdic[uid]
 
-            user_pids = PaperUser.objects.filter(
-                Q(user_id=user_id) & (Q(store=PAPER_ADDED) | Q(watch=PAPER_PINNED))) \
-                .values_list('paper_id', flat=True)
-            pboost = np.zeros((self.data['embedding'].shape[0], ))
-            for i, pid in enumerate(self.data['paper-ids']):
-                if pid in user_pids:
-                    pboost[i] = self.score_paper_boost
+                user_pids = PaperUser.objects.filter(
+                    Q(user_id=user_id) & (Q(store=PAPER_ADDED) | Q(watch=PAPER_PINNED))) \
+                    .values_list('paper_id', flat=True)
+                pboost = np.zeros((self.data['embedding'].shape[0], ))
+                for i, pid in enumerate(self.data['paper-ids']):
+                    if pid in user_pids:
+                        pboost[i] = self.score_paper_boost
 
-            # Compute
-            score = np.dot(self.data['embedding'], seed.T) + \
-                    uboost + \
-                    pboost
+                # Compute
+                score = np.dot(self.data['embedding'], seed.T) + \
+                        uboost + \
+                        pboost
 
-            results = self.order_n(self.data['ids'],
-                                   score,
-                                   self.data['date'],
-                                   self.score_n_threads)
+                results = self.order_n(self.data['ids'],
+                                       score,
+                                       self.data['date'],
+                                       self.score_n_threads)
 
-        return results
+                return results
+        return []
 
     def order_n(self, ids, vals, date, n):
         """"Return top scores

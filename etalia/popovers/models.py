@@ -26,6 +26,8 @@ class PopOver(TimeStampedModel):
                                            validators=[MinValueValidator(1),
                                                        MaxValueValidator(9), ])
 
+    extra = models.CharField(max_length=64, default='', blank=True)
+
     def __str__(self):
         return self.title
 

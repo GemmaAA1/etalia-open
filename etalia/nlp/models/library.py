@@ -234,10 +234,12 @@ class PaperEngineScoringMixin(object):
         if UserFingerprint.objects.filter(user_id=user_id,
                                           name=name,
                                           model=self.model).exists():
-            f = UserFingerprint.objects.get(user_id=user_id, name=name,
+            f = UserFingerprint.objects.get(user_id=user_id,
+                                            name=name,
                                             model=self.model)
         else:
-            f = UserFingerprint.objects.create(user_id=user_id, name=name,
+            f = UserFingerprint.objects.create(user_id=user_id,
+                                               name=name,
                                                model=self.model)
             f.update()
 
@@ -248,61 +250,65 @@ class PaperEngineScoringMixin(object):
         # Gather user fingerprint
         f = self.get_user_fingerprint(user_id, name=name)
 
-        # Convert user data
-        seed = np.array(f.embedding[:self.embedding_size])
-        jb = self.convert_to_journal_boost(f.journals_counts)
-        ab = self.convert_to_author_boost(f.authors_counts)
-        jbdic = dict([(k, jb[i]) for i, k in enumerate(f.journals_ids)])
-        abdic = dict([(k, ab[i]) for i, k in enumerate(f.authors_ids)])
+        if f.embedding:     # fingerprint is defined (library is not empty)
+            # Convert user data
+            seed = np.array(f.embedding[:self.embedding_size])
+            jb = self.convert_to_journal_boost(f.journals_counts)
+            ab = self.convert_to_author_boost(f.authors_counts)
+            jbdic = dict([(k, jb[i]) for i, k in enumerate(f.journals_ids)])
+            abdic = dict([(k, ab[i]) for i, k in enumerate(f.authors_ids)])
 
-        # Get user settings
-        us = UserSettings.objects.get(user_id=user_id)
+            # Get user settings
+            us = UserSettings.objects.get(user_id=user_id)
 
-        # Compute
-        jboost = np.zeros((self.data['embedding'].shape[0], ))
-        for i, jid in enumerate(self.data['journal-ids']):
-            if jid in list(jbdic.keys()):
-                jboost[i] = jbdic[jid]
+            # Compute
+            jboost = np.zeros((self.data['embedding'].shape[0], ))
+            for i, jid in enumerate(self.data['journal-ids']):
+                if jid in list(jbdic.keys()):
+                    jboost[i] = jbdic[jid]
 
-        aboost = np.zeros((self.data['embedding'].shape[0], ))
-        aids_set = set(abdic.keys())
-        for i, aids in enumerate(self.data['authors-ids']):
-            b = 0
-            for aid in aids_set.intersection(set(aids)):
-                b += abdic[aid]
-            aboost[i] = min([b, self.score_author_boost])
+            aboost = np.zeros((self.data['embedding'].shape[0], ))
+            aids_set = set(abdic.keys())
+            for i, aids in enumerate(self.data['authors-ids']):
+                b = 0
+                for aid in aids_set.intersection(set(aids)):
+                    b += abdic[aid]
+                aboost[i] = min([b, self.score_author_boost])
 
-        score = us.stream_vector_weight * np.dot(self.data['embedding'], seed.T) + \
-                us.stream_journal_weight * jboost + \
-                us.stream_author_weight * aboost
+            score = us.stream_vector_weight * np.dot(self.data['embedding'], seed.T) + \
+                    us.stream_journal_weight * jboost + \
+                    us.stream_author_weight * aboost
 
-        results = self.order_n(self.data['ids'], score, self.data['date'], self.score_n_papers)
+            results = self.order_n(self.data['ids'], score, self.data['date'], self.score_n_papers)
 
-        return results
+            return results
+        return []
 
     def score_trend(self, user_id, name='main'):
 
         # Gather user fingerprint
         f = self.get_user_fingerprint(user_id, name=name)
 
-        # Convert user data
-        seed = np.array(f.embedding[:self.embedding_size])
+        if f.embedding:     # fingerprint is defined (library is not empty)
+            # Convert user data
+            seed = np.array(f.embedding[:self.embedding_size])
 
-        # Get user settings
-        us = UserSettings.objects.get(user_id=user_id)
+            # Get user settings
+            us = UserSettings.objects.get(user_id=user_id)
 
-        # Convert altmetric
-        altmetric_boost = np.array(self.convert_to_boost(
-            self.data['altmetric'],
-            self.SCORE_ALTMETRIC_CAP_SCORE,
-            self.score_altmetric_boost))
+            # Convert altmetric
+            altmetric_boost = np.array(self.convert_to_boost(
+                self.data['altmetric'],
+                self.SCORE_ALTMETRIC_CAP_SCORE,
+                self.score_altmetric_boost))
 
-        score = us.trend_doc_weight * np.dot(self.data['embedding'], seed.T) + \
-                us.trend_altmetric_weight * altmetric_boost
+            score = us.trend_doc_weight * np.dot(self.data['embedding'], seed.T) + \
+                    us.trend_altmetric_weight * altmetric_boost
 
-        results = self.order_n(self.data['ids'], score, self.data['date'], self.score_n_papers)
+            results = self.order_n(self.data['ids'], score, self.data['date'], self.score_n_papers)
 
-        return results
+            return results
+        return []
 
     def order_n(self, ids, vals, date, n):
         """"Return top scores

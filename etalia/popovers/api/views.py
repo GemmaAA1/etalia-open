@@ -51,9 +51,15 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            return UserPopOver.objects\
-                .filter(user=self.request.user)\
-                .order_by('-popover__type', 'popover__priority')
+            if self.request.user.lib.papers.count() > 0:
+                return UserPopOver.objects\
+                    .filter(user=self.request.user)\
+                    .exclude(popover__extra='no_paper')\
+                    .order_by('-popover__type', 'popover__priority')
+            else:
+                return UserPopOver.objects\
+                    .filter(user=self.request.user)\
+                    .order_by('-popover__type', 'popover__priority')
         return UserPopOver.objects.all()
 
 

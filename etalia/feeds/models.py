@@ -100,42 +100,43 @@ class Stream(TimeStampedModel):
         # Score
         task = pe_dispatcher.delay('score_stream', self.user.id)
         res = task.get()
-        # reformat
-        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                        for r in res if r['score'] > self.score_threshold])
-        pids = list(res_dic.keys())
+        if res:     # res can be empty is user library is empty
+            # reformat
+            res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
+                            for r in res if r['score'] > self.score_threshold])
+            pids = list(res_dic.keys())
 
-        # clean stream
-        self.clean_not_in(pids)
+            # clean stream
+            self.clean_not_in(pids)
 
-        # Update existing StreamPapers
-        with transaction.atomic():
-            sp_update = StreamPapers.objects.select_for_update()\
-                .filter(stream=self, paper_id__in=pids)
-            update_pids = []
-            for sp in sp_update:
-                sp.score = res_dic[sp.paper_id]['score']
-                sp.save()
-                update_pids.append(sp.paper_id)
+            # Update existing StreamPapers
+            with transaction.atomic():
+                sp_update = StreamPapers.objects.select_for_update()\
+                    .filter(stream=self, paper_id__in=pids)
+                update_pids = []
+                for sp in sp_update:
+                    sp.score = res_dic[sp.paper_id]['score']
+                    sp.save()
+                    update_pids.append(sp.paper_id)
 
-        # Create new StreamPapers
-        create_objs = []
-        create_pids = set(pids).difference(set(update_pids))
-        for id_ in create_pids:
-            create_objs.append(StreamPapers(
-                stream=self,
-                paper_id=id_,
-                score=res_dic[id_]['score'],
-                date=res_dic[id_]['date'],
-                new=True))
-        StreamPapers.objects.bulk_create(create_objs)
+            # Create new StreamPapers
+            create_objs = []
+            create_pids = set(pids).difference(set(update_pids))
+            for id_ in create_pids:
+                create_objs.append(StreamPapers(
+                    stream=self,
+                    paper_id=id_,
+                    score=res_dic[id_]['score'],
+                    date=res_dic[id_]['date'],
+                    new=True))
+            StreamPapers.objects.bulk_create(create_objs)
 
-        # Get last user visit. use for the tagging matched with 'new'
-        try:
-            last_seen = LastSeen.objects.when(user=self.user)
-            StreamPapers.objects.filter(created__lt=last_seen).update(new=False)
-        except LastSeen.DoesNotExist:
-            pass
+            # Get last user visit. use for the tagging matched with 'new'
+            try:
+                last_seen = LastSeen.objects.when(user=self.user)
+                StreamPapers.objects.filter(created__lt=last_seen).update(new=False)
+            except LastSeen.DoesNotExist:
+                pass
 
         self.updated_at = timezone.now()
         self.save(update_fields=('updated_at', ))
@@ -226,42 +227,43 @@ class Trend(TimeStampedModel):
         # Score
         task = pe_dispatcher.delay('score_trend', self.user.id)
         res = task.get()
-        # reformat
-        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                        for r in res if r['score'] > self.score_threshold])
-        pids = list(res_dic.keys())
+        if res:     # res can be empty is user library is empty
+            # reformat
+            res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
+                            for r in res if r['score'] > self.score_threshold])
+            pids = list(res_dic.keys())
 
-        # clean trend
-        self.clean_not_in(pids)
+            # clean trend
+            self.clean_not_in(pids)
 
-        # Update existing TrendPapers
-        with transaction.atomic():
-            tp_update = TrendPapers.objects.select_for_update()\
-                .filter(trend=self, paper_id__in=pids)
-            update_pids = []
-            for tp in tp_update:
-                tp.score = res_dic[tp.paper_id]['score']
-                tp.save()
-                update_pids.append(tp.paper_id)
+            # Update existing TrendPapers
+            with transaction.atomic():
+                tp_update = TrendPapers.objects.select_for_update()\
+                    .filter(trend=self, paper_id__in=pids)
+                update_pids = []
+                for tp in tp_update:
+                    tp.score = res_dic[tp.paper_id]['score']
+                    tp.save()
+                    update_pids.append(tp.paper_id)
 
-        # Create new TrendPapers
-        create_objs = []
-        create_pids = set(pids).difference(set(update_pids))
-        for id_ in create_pids:
-            create_objs.append(TrendPapers(
-                trend=self,
-                paper_id=id_,
-                score=res_dic[id_]['score'],
-                date=res_dic[id_]['date'],
-                new=True))
-        TrendPapers.objects.bulk_create(create_objs)
+            # Create new TrendPapers
+            create_objs = []
+            create_pids = set(pids).difference(set(update_pids))
+            for id_ in create_pids:
+                create_objs.append(TrendPapers(
+                    trend=self,
+                    paper_id=id_,
+                    score=res_dic[id_]['score'],
+                    date=res_dic[id_]['date'],
+                    new=True))
+            TrendPapers.objects.bulk_create(create_objs)
 
-        # Get last user visit. use for the tagging matched with 'new'
-        try:
-            last_seen = LastSeen.objects.when(user=self.user)
-            TrendPapers.objects.filter(created__lt=last_seen).update(new=False)
-        except LastSeen.DoesNotExist:
-            pass
+            # Get last user visit. use for the tagging matched with 'new'
+            try:
+                last_seen = LastSeen.objects.when(user=self.user)
+                TrendPapers.objects.filter(created__lt=last_seen).update(new=False)
+            except LastSeen.DoesNotExist:
+                pass
 
         self.updated_at = timezone.now()
         self.save(update_fields=('updated_at', ))
@@ -342,42 +344,43 @@ class ThreadFeed(TimeStampedModel):
         # Score
         task = te_dispatcher.delay('score_threadfeed', self.user.id)
         res = task.get()
-        # reformat
-        res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                        for r in res if r['score'] > self.score_threshold])
-        tids = list(res_dic.keys())
+        if res:     # res can be empty is user library is empty
+            # reformat
+            res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
+                            for r in res if r['score'] > self.score_threshold])
+            tids = list(res_dic.keys())
 
-        # clean threadfeed
-        self.clean_not_in(tids)
+            # clean threadfeed
+            self.clean_not_in(tids)
 
-        # Update existing TrendFeedThreads
-        with transaction.atomic():
-            tfp_update = ThreadFeedThreads.objects.select_for_update()\
-                .filter(threadfeed=self, thread_id__in=tids)
-            update_tids = []
-            for tfp in tfp_update:
-                tfp.score = res_dic[tfp.thread_id]['score']
-                tfp.save()
-                update_tids.append(tfp.thread_id)
+            # Update existing TrendFeedThreads
+            with transaction.atomic():
+                tfp_update = ThreadFeedThreads.objects.select_for_update()\
+                    .filter(threadfeed=self, thread_id__in=tids)
+                update_tids = []
+                for tfp in tfp_update:
+                    tfp.score = res_dic[tfp.thread_id]['score']
+                    tfp.save()
+                    update_tids.append(tfp.thread_id)
 
-        # Create new TrendFeedThreads
-        create_objs = []
-        create_pids = set(tids).difference(set(update_tids))
-        for id_ in create_pids:
-            create_objs.append(ThreadFeedThreads(
-                threadfeed=self,
-                thread_id=id_,
-                score=res_dic[id_]['score'],
-                date=res_dic[id_]['date'],
-                new=True))
-        ThreadFeedThreads.objects.bulk_create(create_objs)
+            # Create new TrendFeedThreads
+            create_objs = []
+            create_pids = set(tids).difference(set(update_tids))
+            for id_ in create_pids:
+                create_objs.append(ThreadFeedThreads(
+                    threadfeed=self,
+                    thread_id=id_,
+                    score=res_dic[id_]['score'],
+                    date=res_dic[id_]['date'],
+                    new=True))
+            ThreadFeedThreads.objects.bulk_create(create_objs)
 
-        # Get last user visit. use for the tagging matched with 'new'
-        try:
-            last_seen = LastSeen.objects.when(user=self.user)
-            ThreadFeedThreads.objects.filter(created__lt=last_seen).update(new=False)
-        except LastSeen.DoesNotExist:
-            pass
+            # Get last user visit. use for the tagging matched with 'new'
+            try:
+                last_seen = LastSeen.objects.when(user=self.user)
+                ThreadFeedThreads.objects.filter(created__lt=last_seen).update(new=False)
+            except LastSeen.DoesNotExist:
+                pass
 
         self.updated_at = timezone.now()
         self.save(update_fields=('updated_at', ))
