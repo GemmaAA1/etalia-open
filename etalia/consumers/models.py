@@ -406,16 +406,17 @@ class ConsumerPubmed(Consumer):
                 # update ret_start
                 ret_start += self.ret_max
             # fetch items
-            handle = Entrez.efetch("pubmed", id=id_list, rettype="medline",
-                                   retmode="text")
+            if id_list:
+                handle = Entrez.efetch("pubmed", id=id_list, rettype="medline",
+                                       retmode="text")
 
-            records = Medline.parse(handle)
+                records = Medline.parse(handle)
 
-            for record in records:
-                entries.append(record)
+                for record in records:
+                    entries.append(record)
 
-            # close handle
-            handle.close()
+                # close handle
+                handle.close()
         except Exception:
             cj.status_to('error')
             raise
