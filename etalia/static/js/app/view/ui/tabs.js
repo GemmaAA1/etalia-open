@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'text!app/templates/ui/tabs.hbs'
 ], function (App, template) {
 

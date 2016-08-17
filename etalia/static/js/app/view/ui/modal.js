@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'text!app/templates/ui/modal.hbs',
     'bootstrap'
 ], function (App, template) {

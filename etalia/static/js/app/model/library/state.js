@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'app/model/user/user',
     'app/model/user/user-lib'
 ], function (App) {

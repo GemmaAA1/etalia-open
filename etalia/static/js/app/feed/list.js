@@ -1,5 +1,5 @@
 define([
-    'app/app',
+    'app',
     'app/view/ui/controls',
     'app/view/ui/filters',
     'app/view/ui/tabs',
