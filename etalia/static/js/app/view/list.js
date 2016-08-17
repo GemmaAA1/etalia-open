@@ -1,5 +1,5 @@
 define([
-    'app'
+    'app/app'
 ], function (App) {
 
     App.View.List = App.Backbone.View.extend({

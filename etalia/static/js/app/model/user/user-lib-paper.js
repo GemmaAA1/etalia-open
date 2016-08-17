@@ -1,4 +1,4 @@
-define(['app', 'app/model/library/paper'], function (App) {
+define(['app/app', 'app/model/library/paper'], function (App) {
 
     return App.Model.UserLibPaper = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + '/user/user-lib-papers',

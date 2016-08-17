@@ -1,5 +1,5 @@
 define([
-    'app',
+    'app/app',
     'app/model/thread/state',
     'app/model/library/paper',
     'app/model/thread/post',

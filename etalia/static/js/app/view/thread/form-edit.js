@@ -1,4 +1,4 @@
-define(['app', 'app/model/thread/thread'], function (App) {
+define(['app/app', 'app/model/thread/thread'], function (App) {
 
     App.View.Thread = App.View.Thread || {};
 

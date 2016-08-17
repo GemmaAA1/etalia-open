@@ -61,7 +61,7 @@ def send_periodic_recommendation_email(user_id):
 
     if papers:
         subject = 'Recommendations from Etalia'
-        from_email = 'contact@etalia.io'
+        from_email = 'etalia@etalia.io'
         to = [user.email]
 
         ctx = {

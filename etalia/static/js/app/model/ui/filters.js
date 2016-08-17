@@ -1,4 +1,4 @@
-define(['app'], function (App) {
+define(['app/app'], function (App) {
 
     App.Model.Ui = App.Model.Ui || {};
 

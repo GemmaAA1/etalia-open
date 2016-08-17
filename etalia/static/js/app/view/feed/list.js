@@ -1,5 +1,5 @@
 define([
-    'app',
+    'app/app',
     'app/view/paper/list',
     'app/view/thread/list'
 ], function (App) {

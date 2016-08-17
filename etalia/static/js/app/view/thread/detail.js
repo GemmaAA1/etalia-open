@@ -1,5 +1,5 @@
 define([
-    'app',
+    'app/app',
     'text!app/templates/thread/detail.hbs',
     'app/view/detail',
     //'app/util/utils',

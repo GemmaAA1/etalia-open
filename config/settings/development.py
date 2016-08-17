@@ -2,8 +2,8 @@
 
 from .common import *
 
-CONFIG_FILE = __file__
-#CONFIG_FILE = 'production'
+# CONFIG_FILE = __file__
+CONFIG_FILE = 'production'
 
 # DEBUG
 # ------------------------------------------------------------------------------
