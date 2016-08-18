@@ -51,6 +51,8 @@ class ParserMendeley(ParserBackend):
         ('UNKNOWN',                 ''),
     )
 
+    type = 'MEN'
+
     def parse_journal(self, entry):
 
         journal = self.journal_template.copy()
@@ -182,6 +184,8 @@ class ParserMendeley(ParserBackend):
 
 class ParserZotero(ParserBackend):
     """Zotero Parser"""
+
+    type = 'ZOT'
 
     ZOTERO_PT = (
         ('journalArticle',  'JOU'),
