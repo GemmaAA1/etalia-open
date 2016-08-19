@@ -83,7 +83,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
     },
     'consolidate-library': {
-        'task': 'etalia.library.tasks.consolidate_library',
+        'task': 'etalia.consumers.tasks.consolidate_library',
         'schedule': crontab(minute=0, hour=2),  # daily at UTC+2
     },
     'emails-recommendations': {
