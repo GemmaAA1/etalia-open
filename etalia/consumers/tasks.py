@@ -71,11 +71,18 @@ def populate_journal(self, consumer_id, type, journal_pk):
         raise self.retry(exc=exc, countdown=1)
 
 
-@app.task()
+@app.task(rate_limit='1/s')
 def consolidate_paper(paper_id):
     pm = PaperManager()
     paper = Paper.objects.get(id=paper_id)
     pm.consolidate_paper(paper)
+
+
+@app.task()
+def consolidate_library():
+    pks = Paper.objects.filter(is_trusted=False).values_list('pk', flat=True)
+    for pk in pks:
+        consolidate_paper.delay(pk)
 
 
 @app.task()

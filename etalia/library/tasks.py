@@ -26,27 +26,6 @@ def update_stats():
     stats.update()
 
 
-@app.task(rate_limit='2/s')
-def consolidate(paper_pk):
-    paper = Paper.objects.get(id=paper_pk)
-    paper.consolidate()
-    return paper_pk
-
-
-@app.task()
-def consolidate_papers(pks):
-    for pk in pks:
-        paper = Paper.objects.get(id=pk)
-        paper.consolidate_async()
-
-
-@app.task()
-def consolidate_library():
-    pks = Paper.objects.filter(is_trusted=False).values_list('pk', flat=True)
-    for pk in pks:
-        consolidate.delay(pk)
-
-
 def embed_paper(paper_pk):
     """Send task to embed paper
     """

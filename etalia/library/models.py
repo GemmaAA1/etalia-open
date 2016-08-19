@@ -3,7 +3,6 @@ from __future__ import unicode_literals, absolute_import
 
 import json
 from django.db import models, connection, transaction
-from django.db.models import Q
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -12,7 +11,6 @@ from model_utils.fields import MonitorField
 
 from etalia.core.models import TimeStampedModel, NullableCharField
 from etalia.core.mixins import ModelDiffMixin
-from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
 
 from .validators import validate_issn, validate_author_names
 from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS, \
