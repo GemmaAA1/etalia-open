@@ -349,6 +349,10 @@ class UserLib(TimeStampedModel):
         session, backend = self.get_session_backend()
         # update lib
         backend.update_lib(self.user, session, full=full)
+        # update fingerprint
+        fs = self.user.fingerprint.all()
+        for f in fs:
+            f.update()
 
     def clear(self):
         ulps = UserLibPaper.objects.filter(userlib=self)

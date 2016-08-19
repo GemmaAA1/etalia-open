@@ -18,11 +18,12 @@ from model_utils import Choices, fields
 
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
-from etalia.library.forms import PaperFormFillBlanks
+
 from etalia.core.models import TimeStampedModel
 from etalia.library.tasks import embed_paper
 
 from .parsers import PubmedParser, ArxivParser, ElsevierParser
+from .utils import PaperManager
 from .constants import CONSUMER_TYPE
 
 logger = logging.getLogger(__name__)
@@ -180,61 +181,21 @@ class Consumer(TimeStampedModel):
     def add_entry(self, entry, journal):
         """Add entry to database library
 
-        Entry is a dictionary structure parsed by consumer Parser.
-        If corresponding paper is already in library (based on paper ids), the
-        entry tried to consolidate the library paper
-
         Args:
-            entry (dict): Entry to be added coming from consumer parser
+            entry (dict): dictionary structure parsed by consumer Parser.
             journal: Journal instance
 
         Returns:
             (Paper instance): Paper instance created
         """
         try:
-            # minimum to be a paper: have a title and an author
-            if entry['paper'].get('title', '') and entry['authors']:
-                item_paper = entry['paper']
-                item_paper['source'] = self.type
-                # create/consolidate paper
-                try:
-                    paper = Paper.objects.get(Q(id_doi=item_paper['id_doi']) |
-                                              Q(id_pmi=item_paper['id_pmi']) |
-                                              Q(id_pii=item_paper['id_pii']) |
-                                              Q(id_arx=item_paper['id_arx']) |
-                                              Q(id_isbn=item_paper['id_isbn']) |
-                                              Q(id_oth=item_paper['id_oth']))
-                except Paper.DoesNotExist:
-                    paper = None
-                form = PaperFormFillBlanks(item_paper, instance=paper)
-                if form.is_valid():
-                    paper = form.save()
-                    paper.journal = journal
-                    # we trust consumer as source
-                    paper.is_trusted = True
-                    paper.save()
-
-                    # create/get authors
-                    for pos, item_author in enumerate(entry['authors']):
-                        author, _ = Author.objects.get_or_create(
-                            first_name=item_author['first_name'],
-                            last_name=item_author['last_name'])
-                        AuthorPaper.objects.get_or_create(paper=paper,
-                                                          author=author,
-                                                          position=pos)
-                    # create/get corp author
-                    for pos, item_corp_author in enumerate(entry['corp_authors']):
-                        corp_author, _ = CorpAuthor.objects.get_or_create(
-                            name=item_corp_author['name']
-                        )
-                        CorpAuthorPaper.objects.get_or_create(
-                            paper=paper,
-                            corp_author=corp_author)
-                    return paper
-                else:
-                    return None
-            return None
-        # TODO: specify exception
+            entry['is_trusted'] = True
+            paper, _ = PaperManager().get_or_create_from_entry(
+                entry, fetch_journal=False)
+            if paper:
+                paper.journal = journal
+                paper.save(update_fields=['journal'])
+            return paper
         except Exception:
             raise
 
@@ -258,7 +219,7 @@ class Consumer(TimeStampedModel):
 
         journal = Journal.objects.get(pk=journal_pk)
 
-        paper_added = 0
+        paper_count = 0
 
         if self.journal_is_valid(journal):
             try:
@@ -276,24 +237,20 @@ class Consumer(TimeStampedModel):
                     item = self.parser.parse(entry)
                     paper = self.add_entry(item, journal)
                     if paper:
-                        paper_added += 1
-
-                        # Embed paper
-                        embed_paper(paper.pk)
+                        paper_count += 1
 
                 # Update consumer_journal
                 cj = self.consumerjournal_set.get(journal=journal)
-                cj.update_stats('pass', len(entries), paper_added)
+                cj.update_stats('pass', len(entries), paper_count)
 
                 logger.info(
                     'Consuming {type}/{consumer}/{title} - ({count}) done'.format(
                         type=self.type,
                         consumer=self.name,
                         title=journal.title,
-                        count=paper_added)
+                        count=paper_count)
                 )
             except Exception:
-
                 raise
 
     def run_once_per_period(self):

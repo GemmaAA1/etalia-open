@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
-
-import re
 import requests
+from django.db.models import Q
 from requests.exceptions import RequestException
 from django import forms
 
-from .models import Journal, Paper, Author, Publisher, CorpAuthor
+from .models import Journal, Paper, Author, Publisher, CorpAuthor, \
+    CorpAuthorPaper, AuthorPaper
 from .constants import SOURCE_TYPE
 
 
@@ -188,89 +188,3 @@ class PaperForm(forms.ModelForm):
 
 class PaperFormFillBlanks(FillBlanksMixin, PaperForm):
     pass
-
-
-class PaperFormClean(FillBlanksMixin, PaperForm):
-
-    def clean_url(self):
-        # Check if URL returns 200
-        url = self.cleaned_data['url']
-        if url:
-            try:
-                response = requests.get(url)
-                if response.status_code == 200:
-                    return url
-                else:
-                    return ''
-            except RequestException:
-                return ''
-
-    def clean_id_doi(self):
-        """Check if doi exist of doi.org"""
-        # format
-        id_doi = self.cleaned_data['id_doi'].lower()
-
-        # Check if doi valid requesting http://doi.org/<doi>
-        if id_doi:
-            url = 'http://doi.org/{doi}'.format(doi=id_doi)
-            try:
-                response = requests.get(url)
-                if response.status_code == 200:
-                    return id_doi
-                else:
-                    return ''
-            except RequestException:
-                return ''
-
-    # def clean_id_arx(self):
-    #     #TODO:
-    #     raise NotImplemented
-    #
-    # def clean_id_pii(self):
-    #     #TODO:
-    #     raise NotImplemented
-    #
-    # def clean_id_pmi(self):
-    #     #TODO:
-    #     raise NotImplemented
-    #
-    # def clean_journal(self):
-    #     #TODO:
-    #     raise NotImplemented
-
-    def clean(self):
-        cleaned_data = super(PaperForm, self).clean()
-
-        # Detect language
-        if not self.cleaned_data['language']:
-            text = ' '.join([self.cleaned_data['abstract'],
-                             self.cleaned_data['title']])
-            self.cleaned_data['language'] = \
-                self.Meta.model.detect_language(text)
-
-        # Test URL
-        # try with id_doi
-        if not cleaned_data['url']:
-            id_doi = cleaned_data.get('id_doi', '')
-            if id_doi:
-                url = 'http://doi.org/{doi}'.format(doi=id_doi)
-                try:
-                    response = requests.get(url)
-                    if response.status_code == 200:
-                        cleaned_data['url'] = url
-                except RequestException:
-                    pass
-        # try with id_pmi
-        if not cleaned_data['url']:
-            id_pmi = cleaned_data.get('id_pmi', '')
-            if id_pmi:
-                url = 'http://www.ncbi.nlm.nih.gov/pubmed/{pmi}'.format(
-                    pmi=id_pmi)
-                try:
-                    response = requests.get(url)
-                    if response.status_code == 200:
-                        cleaned_data['url'] = url
-                except RequestException:
-                    pass
-
-        return cleaned_data
