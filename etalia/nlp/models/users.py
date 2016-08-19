@@ -93,16 +93,16 @@ class UserFingerprint(TimeStampedModel):
         self.save(update_fields=('state', ))
 
     def update_added_after(self):
-        if not self.user.settings.fingerprint_roll_back_deltatime and \
-                self.user.lib.papers.count() > 0:
-            self.user.settings.init_fingerprint_roll_back_deltatime()
-
-        delta = self.user.settings.fingerprint_roll_back_deltatime  # in months
-        added_after = (timezone.now() - timezone.timedelta(days=delta*30.5)).date()
-        if not self.added_after == added_after:
-            self.added_after = added_after
-            self.save(update_fields=('added_after', ))
-        return self.added_after
+        if self.user.lib.papers.count() > 0:
+            if not self.user.settings.fingerprint_roll_back_deltatime:
+                self.user.settings.init_fingerprint_roll_back_deltatime()
+            delta = self.user.settings.fingerprint_roll_back_deltatime  # in months
+            added_after = (timezone.now() - timezone.timedelta(days=delta*30.5)).date()
+            if not self.added_after == added_after:
+                self.added_after = added_after
+                self.save(update_fields=('added_after', ))
+            return self.added_after
+        return None
 
     def update_async(self):
         from ..tasks import update_userfingerprint
