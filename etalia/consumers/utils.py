@@ -248,8 +248,11 @@ class PaperManager(object):
         for k, v in entry['paper'].items():
             if k.startswith('id_') and v is None:
                 entry['paper'][k] = ''
+        for k, v in entry['journal'].items():
+            if k.startswith('id_') and v is None:
+                entry['journal'][k] = ''
 
-        # consolidate entry
+        # consolidate entry 
         new_entry = Consolidate(entry).consolidate()
         ep = new_entry['paper']
 
@@ -291,9 +294,10 @@ class PaperManager(object):
         if form.is_valid():
             paper = form.save()
 
-        journal = self.get_journal_from_entry(entry['journal'])
-        paper.journal = journal
-        paper.save(update_fields=['journal'])
+        if entry['journal']:
+            journal = self.get_journal_from_entry(entry['journal'])
+            paper.journal = journal
+            paper.save(update_fields=['journal'])
 
         # Clean authors and rewrite from trusted source
         paper.authors.all().delete()
