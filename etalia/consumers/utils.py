@@ -223,7 +223,8 @@ class PaperManager(object):
                     # consolidate async
                     if self.consolidate:
                         from .tasks import consolidate_paper
-                        consolidate_paper.delay(paper.id, countdown=5)
+                        consolidate_paper.apply_async(args=(paper.id, ),
+                                                      countdown=5)
 
                     # Embed async
                     paper.embed()
