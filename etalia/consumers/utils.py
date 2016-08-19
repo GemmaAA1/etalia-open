@@ -4,6 +4,7 @@ import re
 import requests
 import feedparser
 from habanero import Crossref
+from config.celery_settings.development import CELERY_ALWAYS_EAGER
 from Bio import Entrez, Medline
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -221,10 +222,12 @@ class PaperManager(object):
                     paper.save()
 
                     # consolidate async
-                    if self.consolidate:
+                    # NB: This task if run as eager true conflict with
+                    # update_lib pipeline because it modifies paper id.
+                    if self.consolidate and not CELERY_ALWAYS_EAGER:
                         from .tasks import consolidate_paper
                         consolidate_paper.apply_async(args=(paper.id, ),
-                                                      countdown=5)
+                                                      countdown=30)
 
                     # Embed async
                     paper.embed()
