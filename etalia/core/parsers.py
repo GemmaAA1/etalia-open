@@ -21,6 +21,7 @@ class Parser(object):
         author_template: Template for Author
         corp_author_tempalte: Template for CorpAuthor
     """
+    type = None
 
     paper_template = dict([(field, Paper._meta.get_field(field).default)
                            for field in PaperForm.Meta.fields])
@@ -72,7 +73,7 @@ class Parser(object):
             paper['id_oth'] = 'gen' + self.generated_hash_id(paper,
                                                              journal,
                                                              authors)
-
+        paper['source'] = self.type
         return {'journal': journal, 'authors': authors, 'paper': paper,
                 'corp_authors': corp_authors}
 

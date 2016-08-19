@@ -24,6 +24,7 @@ define([
                     view: 'nested',
                     scored: 1,
                     banned: 0,
+                    added: 0,
                     type: 'stream'
                 },
                 actions: {
@@ -41,6 +42,7 @@ define([
                     view: 'nested',
                     scored: 1,
                     banned: 0,
+                    added: 0,
                     type: 'trend'
                 },
                 actions: {
@@ -57,6 +59,7 @@ define([
                 data: {
                     view: 'nested',
                     scored: 1,
+                    joined: 0,
                     banned: 0
                 },
                 actions: {

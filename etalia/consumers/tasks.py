@@ -4,6 +4,8 @@ from __future__ import unicode_literals, absolute_import
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
     ConsumerJournal
+from etalia.library.models import Paper
+from .utils import PaperManager
 
 
 @app.task()
@@ -67,6 +69,13 @@ def populate_journal(self, consumer_id, type, journal_pk):
         cj.status = 'retry'
         cj.save(update_fields=['status'])
         raise self.retry(exc=exc, countdown=1)
+
+
+@app.task()
+def consolidate_paper(paper_id):
+    pm = PaperManager()
+    paper = Paper.objects.get(id=paper_id)
+    pm.consolidate_paper(paper)
 
 
 @app.task()

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import re
+import datetime
 from dateutil.parser import parse
 from nameparser import HumanName
 
@@ -24,6 +25,7 @@ class PubmedParser(Parser):
         ('PATENTS',         'PAT'),
         ('UNKNOWN',         ''),
     )
+    source = 'PUB'
 
     def parse_journal(self, entry):
 
@@ -130,7 +132,9 @@ class PubmedParser(Parser):
             author = self.author_template.copy()
             name = HumanName(auth)
             author['last_name'] = name.last.strip()
-            author['first_name'] = name.first.strip() + ' ' + name.middle.strip()
+            author['first_name'] = name.first.strip()
+            if name.middle.strip():
+                author['first_name'] += ' ' + name.middle.strip()
             authors.append(author)
         return authors
 
@@ -155,6 +159,8 @@ class PubmedParser(Parser):
 class ArxivParser(Parser):
     """Arxiv Parser"""
 
+    source = 'ARX'
+
     def parse_authors(self, entry):
         authors = []
 
@@ -163,7 +169,9 @@ class ArxivParser(Parser):
             author = self.author_template.copy()
             name = HumanName(auth['name'])
             author['last_name'] = name.last.strip()
-            author['first_name'] = name.first.strip() + ' ' + name.middle.strip()
+            author['first_name'] = name.first.strip()
+            if name.middle:
+                author['first_name'] += ' ' + name.middle.strip()
             authors.append(author)
 
         return authors
@@ -204,21 +212,20 @@ class ArxivParser(Parser):
                                                'a_date_that_excepts'))
         except ValueError or AttributeError:
             paper['date_lr'] = None
-        paper['abstract'] = entry.get('summary', '')
+        paper['abstract'] = ' '.join(entry.get('summary', '').split())
 
-        paper['title'] = entry.get('title', '')
+        paper['title'] = ' '.join(entry.get('title', '').split())
 
         return paper
 
     def parse_corp_authors(self, entry):
-
-        corp_author = self.corp_author_template.copy()
-
         return []
 
 
 class ElsevierParser(Parser):
     """Elsevier Parser"""
+
+    source = 'ELS'
 
     def parse_authors(self, entry):
         authors = []
@@ -259,9 +266,10 @@ class ElsevierParser(Parser):
 
         if 'Available online' in entry.get('prism:coverDisplayDate', ''):
             paper['publish_status'] = 'aheadofprint'
-            date_ep = re.sub(r'Available online',
-                             '',
-                             entry.get('prism:coverDisplayDate', 'rejected')).strip()
+            date_ep = re.sub(
+                r'Available online',
+                '',
+                entry.get('prism:coverDisplayDate', 'rejected')).strip()
             try:
                 paper['date_ep'] = parse(date_ep)
             except ValueError or AttributeError:
@@ -299,7 +307,102 @@ class ElsevierParser(Parser):
         return paper
 
     def parse_corp_authors(self, entry):
+        return []
 
-        corp_author = self.corp_author_template.copy()
 
+class CrossRefParser(Parser):
+    """CrossRef Parser
+    """
+
+    source = 'CRO'
+
+    CROSSREF_PT = (
+        ('journal-article',         'JOU'),
+        ('report',                  'JOU'),
+        ('book',                    'BOO'),
+        ('book-set',                'BOO'),
+        ('book-series',             'BOO'),
+        ('editor-book',             'BOO'),
+        ('reference-book',          'BOO'),
+        ('book-track',              'BOs'),
+        ('book-part',               'BOS'),
+        ('proceedings-article',     'PRO'),
+        ('proceedings',             'PRO'),
+        ('patent',                  'PAT'),
+        ('dissertation',            'THE'),
+        ('other',                   ''),
+        ('UNKNOWN',                 ''),
+    )
+
+    def parse_journal(self, entry):
+
+        journal = self.journal_template.copy()
+
+        # Journal
+        j_titles = entry.get('container-title', [])
+        if len(j_titles) > 1:
+            journal['short_title'] = j_titles[1]
+        journal['title'] = j_titles[0]
+
+        issns = entry.get('ISSN')
+        if issns:
+            journal['id_issn'] = issns[0]
+            if len(issns) > 1:
+                journal['id_eissn'] = issns[1]
+
+        return journal
+
+    def parse_paper(self, entry):
+
+        paper = self.paper_template.copy()
+
+        # type
+        type_ = entry.get('type', 'UNKNOWN')
+        paper['type'] = dict(self.CROSSREF_PT).get(type_)
+
+        # title
+        paper['title'] = entry.get('title')[0]
+
+        # publisher
+        publisher = entry.get('publisher')
+
+        # id
+        paper['id_doi'] = entry.get('DOI')
+        if publisher.lower().startswith('elsevier'):
+            paper['id_pii'] = entry.get('alternative-id', [''])[0]
+
+        # url
+        paper['url'] = entry.get('URL')
+
+        # Published date
+        if 'published-print' in entry:
+            date = entry.get('published-print')['date-parts'][0]
+            y = date[0]
+            m = date[1] if len(date) > 1 else 1
+            d = date[2] if len(date) > 2 else 1
+            paper['date_pp'] = datetime.date(y, m, d)
+        if 'published-online' in entry:
+            date = entry.get('published-online')['date-parts'][0]
+            y = date[0]
+            m = date[1] if len(date) > 1 else 1
+            d = date[2] if len(date) > 2 else 1
+            paper['date_pp'] = datetime.date(y, m, d)
+
+        # Volume, issue, page
+        paper['volume'] = entry.get('volume', '')
+        paper['issue'] = entry.get('issue', '')
+        paper['page'] = entry.get('page', '')
+
+        return paper
+
+    def parse_authors(self, entry):
+        authors = []
+        for auth in entry.get('author', []):
+            author = self.author_template.copy()
+            author['last_name'] = auth.get('family')
+            author['first_name'] = auth.get('given', '')
+            authors.append(author)
+        return authors
+
+    def parse_corp_authors(self, entry):
         return []

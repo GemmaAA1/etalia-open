@@ -5,10 +5,11 @@ from django.db.models import Prefetch, Q
 
 from etalia.users.constants import USER_INDIVIDUAL
 
-from .models import PaperUser
 from etalia.threads.models import Thread
 from etalia.threads.constant import THREAD_PRIVATE
 from etalia.feeds.models import StreamPapers, TrendPapers
+
+from .models import PaperUser
 
 
 class PaperEagerLoadingMixin(object):

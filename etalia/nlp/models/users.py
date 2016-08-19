@@ -25,10 +25,7 @@ class UserFingerprintManager(models.Manager):
     def create(self, **kwargs):
         obj = super(UserFingerprintManager, self).create(**kwargs)
 
-        if not obj.user.settings.fingerprint_roll_back_deltatime and \
-                        obj.user.lib.papers.count() > 0:
-                obj.user.settings.init_fingerprint_roll_back_deltatime()
-                obj.update_added_after()
+        obj.update_added_after()
 
         return obj
 
@@ -96,6 +93,10 @@ class UserFingerprint(TimeStampedModel):
         self.save(update_fields=('state', ))
 
     def update_added_after(self):
+        if not self.user.settings.fingerprint_roll_back_deltatime and \
+                self.user.lib.papers.count() > 0:
+            self.user.settings.init_fingerprint_roll_back_deltatime()
+
         delta = self.user.settings.fingerprint_roll_back_deltatime  # in months
         added_after = (timezone.now() - timezone.timedelta(days=delta*30.5)).date()
         if not self.added_after == added_after:

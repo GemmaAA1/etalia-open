@@ -2,13 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
-import re
-import requests
-from requests.exceptions import HTTPError
-import feedparser
-from habanero import Crossref, exceptions
-from Bio import Entrez, Medline
-from django.db import models, connection
+from django.db import models, connection, transaction
 from django.db.models import Q
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -25,7 +19,6 @@ from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS, \
     PAPER_BANNED, PAPER_PINNED, PAPER_WATCH, PAPER_STORE, PAPER_ADDED, \
     PAPER_TRASHED
 from .utils import langcode_to_langpap
-from .exceptions import PubmedException, ArxivException
 
 from langdetect import detect
 
@@ -462,30 +455,8 @@ class Paper(TimeStampedModel):
         return get_neighbors_papers(self.id, time_span)
 
     def get_related_threads(self, user_id, time_span=-1):
-        from etalia.nlp.tasks import te_dispatcher
-        from etalia.nlp.models import ThreadEngine
-        from etalia.threads.models import Thread
-
-        threads = list(self.thread_set
-                       .filter(~(Q(published_at=None) & ~Q(user_id=user_id)),
-                               ~(Q(privacy=THREAD_PRIVATE) &
-                                 ~(Q(threaduser__user_id=user_id) &
-                                   Q(threaduser__participate=THREAD_JOINED))))
-                       .order_by('-published_at'))
-        # Search for knn threads based on paper vector
-        try:
-            if len(threads) < settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS:  # add some knn neighbors
-                res = te_dispatcher.apply_async(args=('get_knn_from_paper', self.id),
-                                          kwargs={'time_lapse': time_span,
-                                           'k': settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS},
-                                          timeout=10,
-                                          soft_timeout=5)
-                neighbors = res.get()
-                threads += list(Thread.objects.filter(id__in=neighbors[:settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS - len(threads)]))
-        except IndexError:
-            pass
-
-        return threads
+        from .tasks import get_related_threads
+        return get_related_threads(self.id, time_span)
 
     def state(self, user):
         if PaperUser.objects.filter(user=user, paper=self).exists():
@@ -496,249 +467,6 @@ class Paper(TimeStampedModel):
     def embed(self):
         from .tasks import embed_paper
         embed_paper(self.id)
-
-    def consolidate_async(self):
-        from .tasks import consolidate
-        consolidate.delay(self.id)
-
-    def consolidate(self):
-        if self.id_doi:
-            try:
-                # In PubMed abstract are available
-                self.consolidate_with_pubmed()
-            except PubmedException:
-                self.consolidate_with_crossref()
-        elif self.id_arx:
-            self.consolidate_with_arxiv()
-        self.embed()
-        return self
-
-    def consolidate_with_crossref(self):
-
-        from .parsers import CrossRefParser
-
-        FIELDS_TO_UPDATE = [
-            'volume',
-            'issue',
-            'page',
-            'url',
-            'title',
-            'date_ep',
-            'date_pp',
-        ]
-        RELATIONS_TO_UPDATE = [
-            'journal',
-            'authors'
-        ]
-
-        if self.id_doi:
-            doi = self.id_doi
-            parser = CrossRefParser()
-            cr = Crossref()
-            try:
-                entry = cr.works(ids=[doi]).get('message')
-                data = parser.parse(entry)
-
-                self.source = 'crossref'
-                data_paper = data['paper']
-                data_journal = data['journal']
-                data_authors = data['authors']
-
-                # Fetch journal
-                if 'journal' in RELATIONS_TO_UPDATE:
-                    issns = []
-                    for id_ in [data_journal['id_issn'], data_journal['id_eissn']]:
-                        if not id_ == '':
-                            issns.append(id_)
-                    try:
-                        self.journal = Journal.objects\
-                                .filter(Q(id_issn__in=issns) | Q(id_eissn__in=issns))\
-                                .first()
-                    except Journal.DoesNotExist:
-                        pass
-
-                # Update paper
-                for field in FIELDS_TO_UPDATE:
-                    setattr(self, field, data_paper.get(field))
-
-                # update authors
-                if 'authors' in RELATIONS_TO_UPDATE:
-                    self.authors.all().delete()
-                    for pos, item_author in enumerate(data_authors):
-                        author, _ = Author.objects.get_or_create(
-                            first_name=item_author['first_name'],
-                            last_name=item_author['last_name'])
-                        AuthorPaper.objects.get_or_create(paper=self,
-                                                          author=author,
-                                                          position=pos)
-                self.is_trusted = True
-                self.save()
-            except HTTPError:
-                raise
-        else:
-            raise ValueError('paper has no DOI')
-
-    def consolidate_with_pubmed(self):
-
-        from etalia.consumers.parsers import PubmedParser
-
-        FIELDS_TO_UPDATE = [
-            'volume',
-            'issue',
-            'page',
-            'url',
-            'title',
-            'date_ep',
-            'date_pp',
-            'abstract',
-            'id_pmi',
-            'id_doi',
-        ]
-        RELATIONS_TO_UPDATE = [
-            'journal',
-            'authors'
-        ]
-
-        email = settings.CONSUMER_PUBMED_EMAIL
-        Entrez.email = email
-        if self.id_doi:     # fetch using DOI
-            doi = self.id_doi
-            handle = Entrez.esearch(db='pubmed',
-                                    term='{doi}[AID]'.format(doi=doi))
-            record = Entrez.read(handle)
-            handle.close()
-            id_list = list(record["IdList"])
-            handle = Entrez.efetch(db="pubmed",
-                                   id=id_list,
-                                   rettype="medline",
-                                   retmode="text")
-            records = Medline.parse(handle)
-            entries = [record for record in records]
-            if entries and entries[0].get('PMID'):
-                parser = PubmedParser()
-                entry = entries[0]
-                data = parser.parse(entry)
-
-                self.source = 'pubmed'
-                data_paper = data['paper']
-                data_journal = data['journal']
-                data_authors = data['authors']
-
-                # Fetch journal
-                if 'journal' in RELATIONS_TO_UPDATE:
-                    issns = []
-                    for id_ in [data_journal['id_issn'], data_journal['id_eissn']]:
-                        if not id_ == '':
-                            issns.append(id_)
-                    try:
-                        self.journal = Journal.objects\
-                            .filter(Q(id_issn__in=issns) | Q(id_eissn__in=issns))\
-                            .first()
-                    except Journal.DoesNotExist:
-                        pass
-
-                # Update paper
-                for field in FIELDS_TO_UPDATE:
-                    setattr(self, field, data_paper.get(field))
-
-                # update authors
-                if 'authors' in RELATIONS_TO_UPDATE:
-                    self.authors.all().delete()
-                    for pos, item_author in enumerate(data_authors):
-                        author, _ = Author.objects.get_or_create(
-                            first_name=item_author['first_name'],
-                            last_name=item_author['last_name'])
-                        AuthorPaper.objects.get_or_create(paper=self,
-                                                          author=author,
-                                                          position=pos)
-
-                # Remove any possible duplicates (e.g with a PMID but not a DOI)
-                Paper.objects\
-                    .filter(Q(id_doi=self.id_doi) | Q(id_pmi=self.id_pmi))\
-                    .exclude(id=self.id).delete()
-                # Save
-                self.is_trusted = True
-                self.save()
-
-            else:
-                raise PubmedException(
-                    'No paper with DOI {0} found'.format(self.id_doi)
-                )
-        else:
-            raise ValueError('paper has no DOI')
-
-    def consolidate_with_arxiv(self):
-
-        from etalia.consumers.parsers import ArxivParser
-
-        FIELDS_TO_UPDATE = [
-            'volume',
-            'issue',
-            'page',
-            'url',
-            'title',
-            'date_ep',
-            'date_pp',
-            'date_lr',
-            'abstract',
-        ]
-        RELATIONS_TO_UPDATE = [
-            'journal',
-            'authors'
-        ]
-        URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
-
-        if self.id_arx:
-            id_arx = re.sub(r'v[0-9]+', '', self.id_arx)
-            if id_arx.startswith('arXiv:'):
-                id_arx = id_arx.strip('arXiv:')
-
-            resp = requests.get('{url}{id}'.format(url=URL_QUERY,
-                                                   id=id_arx))
-            entries = feedparser.parse(resp.text).get('entries')
-            if entries:
-                parser = ArxivParser()
-                entry = entries[0]
-                data = parser.parse(entry)
-
-                self.source = 'arxiv'
-                data_paper = data['paper']
-                data_journal = data['journal']
-                data_authors = data['authors']
-
-                # Fetch journal
-                if 'journal' in RELATIONS_TO_UPDATE:
-                    try:
-                        journal = Journal.objects.get(
-                            id_arx=data_journal.get('id_arx')
-                        )
-                        self.journal = journal
-                    except Journal.DoesNotExist:
-                        pass
-
-                # Update paper
-                for field in FIELDS_TO_UPDATE:
-                    setattr(self, field, data_paper.get(field))
-
-                # update authors
-                if 'authors' in RELATIONS_TO_UPDATE:
-                    self.authors.all().delete()
-                    for pos, item_author in enumerate(data_authors):
-                        author, _ = Author.objects.get_or_create(
-                            first_name=item_author['first_name'],
-                            last_name=item_author['last_name'])
-                        AuthorPaper.objects.get_or_create(paper=self,
-                                                          author=author,
-                                                          position=pos)
-                self.is_trusted = True
-                self.save()
-
-            else:
-                raise ArxivException('paper with id {0} not found'.format(
-                    self.id_arx)
-                )
-        else:
-            raise ValueError('paper has no arxiv id')
 
     def __str__(self):
         return self.short_title
@@ -860,11 +588,13 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
         self.save()
 
     def add(self, provider_id=None, info=None):
-        if not provider_id:
-            provider_id, info = self.user.lib.add_paper_on_provider(self.paper)
-        self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
-        self.store = PAPER_ADDED
-        self.save()
+        """Add paper"""
+        with transaction.atomic():
+            if not provider_id:
+                provider_id, info = self.user.lib.add_paper_on_provider(self.paper)
+            self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
+            self.store = PAPER_ADDED
+            self.save()
 
     def trash(self):
         paper_provider_id = self.user.lib.userlib_paper\
