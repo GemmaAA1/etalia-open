@@ -12,7 +12,7 @@ from django.db.models import Q
 from etalia.library.models import Paper, Author, AuthorPaper, Journal, \
     CorpAuthor, CorpAuthorPaper, PaperUser
 from etalia.users.models import UserLibPaper
-from etalia.library.forms import PaperForm, AuthorForm, JournalForm
+from etalia.library.forms import PaperForm, AuthorForm, JournalForm, CorpAuthorForm
 from etalia.threads.models import Thread
 from etalia.feeds.models import StreamPapers, TrendPapers
 from .parsers import CrossRefParser, ArxivParser, PubmedParser
@@ -242,7 +242,9 @@ class PaperManager(object):
             'paper': PaperForm(instance=paper).initial,
             'authors': [AuthorForm(instance=auth).initial for auth in
                         paper.authors.all().order_by('authorpaper')],
-            'journal': JournalForm(instance=paper.journal).initial
+            'journal': JournalForm(instance=paper.journal).initial,
+            'corp_authors': [CorpAuthorForm(instance=ca).initial for ca in
+                            paper.corp_author.all()]
         }
         # update None id_* to blank (for database query)
         for k, v in entry['paper'].items():
