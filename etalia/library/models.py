@@ -455,31 +455,8 @@ class Paper(TimeStampedModel):
         return get_neighbors_papers(self.id, time_span)
 
     def get_related_threads(self, user_id, time_span=-1):
-        # TODO: refactor
-        from etalia.nlp.tasks import te_dispatcher
-        from etalia.nlp.models import ThreadEngine
-        from etalia.threads.models import Thread
-
-        threads = list(self.thread_set
-                       .filter(~(Q(published_at=None) & ~Q(user_id=user_id)),
-                               ~(Q(privacy=THREAD_PRIVATE) &
-                                 ~(Q(threaduser__user_id=user_id) &
-                                   Q(threaduser__participate=THREAD_JOINED))))
-                       .order_by('-published_at'))
-        # Search for knn threads based on paper vector
-        try:
-            if len(threads) < settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS:  # add some knn neighbors
-                res = te_dispatcher.apply_async(args=('get_knn_from_paper', self.id),
-                                          kwargs={'time_lapse': time_span,
-                                           'k': settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS},
-                                          timeout=10,
-                                          soft_timeout=5)
-                neighbors = res.get()
-                threads += list(Thread.objects.filter(id__in=neighbors[:settings.LIBRARY_NUMBER_OF_THREADS_NEIGHBORS - len(threads)]))
-        except IndexError:
-            pass
-
-        return threads
+        from .tasks import get_related_threads
+        return get_related_threads(self.id, time_span)
 
     def state(self, user):
         if PaperUser.objects.filter(user=user, paper=self).exists():
