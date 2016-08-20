@@ -378,18 +378,28 @@ class PaperManager(object):
                 # keep journals with most reference and delete other
                 counts = [(j, j.paper_set.count()) for j in journals]
                 counts = sorted(counts, key=lambda x: x[1])
-                keep, _ = counts.pop()
+                journal, _ = counts.pop()
                 for i in counts:
                     Paper.objects.filter(journal_id=i[0].id)\
-                        .update(journal_id=keep.id)
+                        .update(journal_id=journal.id)
                     Journal.objects.get(id=i[0].id).delete()
-                return keep
+                pass
         else:
             try:
                 journal = Journal.objects.get(
                     title__iexact=ej['title'])
             except Journal.DoesNotExist:
                 journal = None
+                pass
+            except Journal.MultipleObjectsReturned:
+                # clean up journals
+                journal = Journal.objects.filter(
+                    Q(id_issn=ej['id_issn']) |
+                    Q(id_eissn=ej['id_issn']) |
+                    Q(id_eissn=ej['id_eissn']) |
+                    Q(id_arx=ej['id_arx']) |
+                    Q(id_oth=ej['id_oth'])).first()
+                pass
         return journal
 
     @staticmethod
