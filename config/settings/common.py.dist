@@ -199,9 +199,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
 INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_processed.html'
-PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email_processed.html'
-# PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email.html'
+
+
+# RECOMMENDATION EMAILS
+# ------------------------------------------------------------------------------
+
+RECOMMENDATIONS_EMAILS_ON = True
+# PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email_processed.html'
+PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email.html'
 PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
+
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -247,6 +254,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.associate_user',
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
+    # 'social.pipeline.debug.debug',
     'etalia.users.pipeline.create_details',
     'etalia.users.pipeline.update_usersession',
     'etalia.users.pipeline.init_user',
