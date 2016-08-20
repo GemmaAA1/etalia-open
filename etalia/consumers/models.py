@@ -20,7 +20,6 @@ from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 
 from etalia.core.models import TimeStampedModel
-from etalia.library.tasks import embed_paper
 
 from .parsers import PubmedParser, ArxivParser, ElsevierParser
 from .utils import PaperManager

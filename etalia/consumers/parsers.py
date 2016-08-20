@@ -361,7 +361,8 @@ class CrossRefParser(Parser):
         paper['type'] = dict(self.CROSSREF_PT).get(type_)
 
         # title
-        paper['title'] = entry.get('title')[0]
+        if entry.get('title'):
+            paper['title'] = entry.get('title')[0]
 
         # publisher
         publisher = entry.get('publisher')
