@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 import re
 import requests
+from requests.exceptions import HTTPError
 import feedparser
 from habanero import Crossref
 from config.celery_settings.development import CELERY_ALWAYS_EAGER
@@ -159,13 +160,15 @@ class Consolidate(object):
         cr = Crossref()
         doi = doc_id
         if doi:
-            entry = cr.works(ids=[doi]).get('message')
-            return parser.parse(entry)
-        else:
-            entries = cr.works(query=query, limit=1).get('items')
-            if entries:
-                entry = entries[0]
+            try:
+                entry = cr.works(ids=[doi]).get('message')
                 return parser.parse(entry)
+            except HTTPError:
+                pass
+        entries = cr.works(query=query, limit=1).get('items')
+        if entries:
+            entry = entries[0]
+            return parser.parse(entry)
 
         return None
 
@@ -355,6 +358,23 @@ class PaperManager(object):
                     Q(id_oth=ej['id_oth']))
             except Journal.DoesNotExist:
                 journal = None
+            except Journal.MultipleObjectsReturned:
+                # clean up journals
+                journals = Journal.objects.filter(
+                    Q(id_issn=ej['id_issn']) |
+                    Q(id_eissn=ej['id_issn']) |
+                    Q(id_eissn=ej['id_eissn']) |
+                    Q(id_arx=ej['id_arx']) |
+                    Q(id_oth=ej['id_oth']))
+                # keep journals with most reference and delete other
+                counts = [(j, j.paper_set.count()) for j in journals]
+                counts = sorted(counts, key=lambda x: x[1])
+                keep, _ = counts.pop()
+                for i in counts:
+                    Paper.objects.filter(journal_id=i[0].id)\
+                        .update(journal_id=keep.id)
+                    Journal.objects.get(id=i[0].id).delete()
+                return keep
         else:
             try:
                 journal = Journal.objects.get(
