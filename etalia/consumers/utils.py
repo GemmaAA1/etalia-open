@@ -334,6 +334,15 @@ class PaperManager(object):
             )
             if paper.is_trusted:
                 return paper, paper.journal
+        except Paper.MultipleObjectsReturned:
+            paper = Paper.objects.filter(
+                Q(id_doi=ep['id_doi']) |
+                Q(id_pmi=ep['id_pmi']) |
+                Q(id_pii=ep['id_pii']) |
+                Q(id_arx=ep['id_arx']) |
+                Q(id_isbn=ep['id_isbn']) |
+                Q(id_oth=ep['id_oth'])
+            ).first()
 
         except Paper.DoesNotExist:
             paper = None
