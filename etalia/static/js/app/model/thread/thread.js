@@ -148,8 +148,8 @@ define([
                 state = new App.Model.ThreadState({
                     user: App.getCurrentUser(),
                     thread: this
-                });
-                this.set({state: state});
+                }, {silent: true});
+                this.set({state: state}, {silent: true});
             }
             return state;
         },
