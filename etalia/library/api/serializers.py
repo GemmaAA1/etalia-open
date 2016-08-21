@@ -59,6 +59,7 @@ class PaperSerializer(PaperEagerLoadingMixin,
     new = serializers.SerializerMethodField()
     linked_threads_count = serializers.SerializerMethodField()
     authors = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     class Meta:
         model = Paper
@@ -93,6 +94,12 @@ class PaperSerializer(PaperEagerLoadingMixin,
         switch_kwargs = {
             'journal': {'serializer': JournalSerializer},
         }
+
+    def get_url(self, obj):
+        if obj.id_doi:
+            return obj.get_url_doi()
+        else:
+            return obj.url
 
     def get_authors(self, obj):
         id_aut = dict([(a.id, a) for a in obj.authors.all()])
