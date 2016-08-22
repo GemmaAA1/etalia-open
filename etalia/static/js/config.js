@@ -36,11 +36,12 @@ requirejs.config({
     ],
     paths: {
         altmetric: 'https://d1bxh8uas1mnw7.cloudfront.net/assets/embed',
+        userlike: '//userlike-cdn-widgets.s3-eu-west-1.amazonaws.com/c9ac5d10d017cd983dedce8234673ff2038cb737309a7aa83e818e5e9b924fc5',
         bootstrap: 'lib/bootstrap',
         endless: 'lib/endless-pagination',
         handlebars: 'lib/handlebars',
         hogan: 'lib/hogan',
-        jquery: 'lib/jquery',
+        jquery: 'extend/jquery',
         'jquery-ui': 'lib/jquery-ui',
         moment: 'lib/moment/moment',
         select2: 'lib/select2/select2',

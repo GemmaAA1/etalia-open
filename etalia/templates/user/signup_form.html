@@ -59,5 +59,9 @@
 
 
 {% block javascript %}
-    <script>requirejs(['app/user/signup']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/user/signup']);
+    });
+</script>
 {% endblock javascript %}

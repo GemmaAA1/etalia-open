@@ -2,6 +2,25 @@
     <p>Papers</p>
 </div> --}}
 
+<p id="paper-trash-actions" style="display:none;" class="list-actions">
+    <a href="javascript:void(0)" id="paper-trash-empty" class="btn btn-xs btn-danger">
+        Empty trash
+    </a>
+</p>
+
+<div class="list-header">
+
+    {{!<div class="list-controls left"></div>}}
+
+    <div class="list-controls right">
+        <button id="paper-trash-empty" type="button" class="btn btn-danger"
+                title="Empty trash">
+            <span class="eai eai-library-trash"></span>
+        </button>
+    </div>
+
+</div>
+
 <div data-list-placeholder></div>
 
 <a href="javascript: void(0)" id="paper-next-page">

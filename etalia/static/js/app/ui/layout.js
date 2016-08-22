@@ -1,11 +1,44 @@
 define([
+    'require',
     'jquery',
-    'app/util/utils',
     'app/ui/layout/flap',
-    'app/ui/layout/interact',
-    'app/ui/layout/invite',
-    'app/ui/layout/close-alerts'
-], function ($, Util, Flap) {
+    'app/ui/layout/invite'
+], function (require, $, Flap) {
+
+    $(function () {
+        // Close alerts notifications
+        $("a.close[close-href]").click(function (e) {
+            e.preventDefault();
+            $.post($(this).attr("close-href"), "", function () {});
+        });
+
+        // Load userLike live tchat
+        if (window.userlikeData) {
+            require(['userlike']);
+            /*setTimeout(function () {
+                var script = document.createElement('script');
+                script.src = "//userlike-cdn-widgets.s3-eu-west-1.amazonaws.com/c9ac5d10d017cd983dedce8234673ff2038cb737309a7aa83e818e5e9b924fc5.js";
+                document.getElementsByTagName('head')[0].appendChild(script);
+            }, 2000);*/
+        }
+    });
+
+    function toggleClass($element, cssClass, state) {
+        if (typeof state != 'undefined') {
+            if (state) {
+                $element.addClass(cssClass);
+            } else {
+                $element.removeClass(cssClass);
+            }
+            return state;
+        }
+        if ($element.hasClass(cssClass)) {
+            $element.removeClass(cssClass);
+            return false;
+        }
+        $element.addClass(cssClass);
+        return true;
+    }
 
     var Layout = function (config) {
         this.config = $.extend({
@@ -111,7 +144,7 @@ define([
 
         if ($profileDropDown.length) {
             $toggleProfile.on('click', function (e) {
-                if (Util.toggleClass($(e.delegateTarget), 'active')) {
+                if (toggleClass($(e.delegateTarget), 'active')) {
                     $profileDropDown.show();
                 } else {
                     $profileDropDown.hide();

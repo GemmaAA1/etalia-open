@@ -1,5 +1,7 @@
 {% extends 'list_base.html' %}
 
+{% load staticfiles %}
+
 {% block title %}{{ block.super }} - My Threads{% endblock %}
 {% block content %}
 {% spaceless %}
@@ -19,5 +21,9 @@
 {% endblock content %}
 
 {% block javascript %}
-<script>requirejs(['app/thread/list']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/thread/list']);
+    });
+</script>
 {% endblock javascript %}
