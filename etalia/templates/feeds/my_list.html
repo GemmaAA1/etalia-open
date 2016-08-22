@@ -1,11 +1,14 @@
 {% extends 'list_base.html' %}
 
+{% load staticfiles %}
+
 {% block title %}{{ block.super }} - My Feeds{% endblock %}
 {% block content %}
 {% spaceless %}
 
 <div id="list" class="document">
     <div class="wrapper">
+        <!--<p><a href="12" data-router>Test</a></p>-->
         <div data-tabs-placeholder></div>
         <div class="inner" id="feed-container">
             <div data-list-placeholder></div>
@@ -19,5 +22,9 @@
 {% endblock content %}
 
 {% block javascript %}
-<script>requirejs(['app/feed/list']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/feed/list']);
+    });
+</script>
 {% endblock javascript %}

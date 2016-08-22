@@ -171,5 +171,9 @@
 
 
 {% block javascript %}
-<script>requirejs(['app/user/settings']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/user/settings']);
+    });
+</script>
 {% endblock javascript %}

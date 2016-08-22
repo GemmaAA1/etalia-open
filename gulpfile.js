@@ -242,10 +242,15 @@ gulp.task('styles', function() {
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(gulp.dest(config.dest + '/css'));
 
+    var bootstrap = gulp
+        .src(config.src + '/css/lib/bootstrap.css')
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest(config.dest + '/css/lib'));
+
     var content = gulp
         .src(config.src + '/css/app/content.css')
         .pipe(minify({compatibility: 'ie8'}))
-        .pipe(gulp.dest(config.dest + '/css'));
+        .pipe(gulp.dest(config.dest + '/css/app'));
 
     var page = gulp
         .src(config.src + '/css/app/page.css')

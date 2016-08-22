@@ -7,7 +7,8 @@
     optimize: 'uglify2',
 
     paths: {
-        altmetric: 'empty:'
+        altmetric: 'empty:',
+        userlike: 'empty:'
     },
 
     modules: [
@@ -49,15 +50,15 @@
         },
         {
             name: 'app/feed/list',
-            exclude: ['app/app']
+            exclude: ['app/app', 'select2']
         },
         {
             name: 'app/paper/list',
-            exclude: ['app/app']
+            exclude: ['app/app', 'select2']
         },
         {
             name: 'app/thread/list',
-            exclude: ['app/app']
+            exclude: ['app/app', 'select2']
         }
     ]
 })

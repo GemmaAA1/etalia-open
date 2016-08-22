@@ -2,7 +2,6 @@ define([
     'app',
     'text!app/templates/thread/detail.hbs',
     'app/view/detail',
-    //'app/util/utils',
     'app/view/ui/modal',
     'app/view/user/thumb',
     'app/view/user/list',
@@ -158,6 +157,11 @@ define([
             // TODO
             console.log('Not yet implemented');
 
+            /*window.location.href = 'mailto:'
+                + '?subject=' + this.model.get('title')
+                + '&body=Hi,I found this article and thought you might like it: '
+                + this.model.get('url');*/
+
             App.trigger('etalia.thread.share', this.model, 'mail');
         },
 
@@ -167,6 +171,26 @@ define([
             // TODO
             console.log('Not yet implemented');
 
+            /*var longURL = this.model.get('url'),
+                title = this.model.get('title');
+            App.$.ajax({
+                type: 'POST',
+                url: "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyCG85OFeMEgZMeHOI2dJB4VkuP-2HfGPPo",
+                data: JSON.stringify({longUrl: longURL}),
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+                    App.popup(
+                        'https://twitter.com/intent/tweet/'
+                        + '?text=' + title
+                        + '&url=' + encodeURI(data.id)
+                        + '&via=etaliaio'
+                        //+ '&hashtags=web,development';
+                        , 'share-popup',
+                        520, 377
+                    );
+                }
+            });*/
+
             App.trigger('etalia.thread.share', this.model, 'twitter');
         },
 
@@ -175,6 +199,11 @@ define([
 
             // TODO
             console.log('Not yet implemented');
+
+            /*var url = 'https://plus.google.com/share'
+                + '?url=' + this.model.get('url');
+
+            App.popup(url, 'share-popup');*/
 
             App.trigger('etalia.thread.share', this.model, 'google-plus');
         },

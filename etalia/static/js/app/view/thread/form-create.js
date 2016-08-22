@@ -1,4 +1,4 @@
-define(['app', 'app/model/thread/thread'], function (App) {
+define(['app', 'app/model/thread/thread', 'select2'], function (App) {
 
     App.View.Thread = App.View.Thread || {};
 
@@ -38,7 +38,8 @@ define(['app', 'app/model/thread/thread'], function (App) {
 
             paper: {
                 type: 'Select',
-                options: function(callback) {
+                options: [],
+                /*options: function(callback) {
                     var user = App.getCurrentUser(),
                         papers = new App.Model.Papers();
 
@@ -55,7 +56,7 @@ define(['app', 'app/model/thread/thread'], function (App) {
                             throw textStatus + ' ' + errorThrown;
                         });
 
-                },
+                },*/
                 validators: [App.Model.Thread.validators.paper]
             }
         },
@@ -96,10 +97,56 @@ define(['app', 'app/model/thread/thread'], function (App) {
             if (this.getEditor('type').getValue() == App.Model.Thread.TYPE_PAPER) {
                 this.$('.field-paper').show();
             } else {
-                this.$('.field-paper').hide();
+                this.$('.field-paper').hide().find('select').empty();
             }
 
             return this;
+        },
+
+        postRender: function() {
+
+            function formatResult(state) {
+                //console.log(state);
+                if (!state.id) {
+                    return $('<span>' + state.text + '</span>');
+                }
+
+                return $('<span>' + state.title + '</span>');
+            }
+
+            App.$('select[name="paper"]').css({width: '100%'}).select2({
+                ajax: {
+                    url: App.config.api_root + "/library/papers",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term, // search term
+                            page: params.page
+                        };
+                    },
+                    processResults: function (data, params) {
+                        // parse the results into the format expected by Select2
+                        // since we are using custom formatting functions we do not need to
+                        // alter the remote JSON data, except to indicate that infinite
+                        // scrolling can be used
+                        params.page = params.page || 1;
+
+                        return {
+                            results: data.results,
+                            pagination: {
+                                more: (params.page * 30) < data.total_count
+                            }
+                        };
+                    },
+                    cache: true
+                },
+                escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+                minimumInputLength: 3,
+                templateResult: formatResult, // omitted for brevity, see the source of this page
+                templateSelection: formatResult // omitted for brevity, see the source of this page
+            });
+
         },
 
         _onTypeChange: function(form, typeEditor) {
@@ -110,7 +157,7 @@ define(['app', 'app/model/thread/thread'], function (App) {
             } else {
                 this.$('.field-type .help-block:last-child')
                     .text('A question that is not related to a paper.');
-                this.$('.field-paper').hide();
+                this.$('.field-paper').hide().find('select').empty();
             }
         },
 

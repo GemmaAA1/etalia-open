@@ -6,6 +6,36 @@ define([
     'app/view/feed/list'
 ], function (App) {
 
+    /*var Router = App.Backbone.Router.extend({
+        routes: {
+            "":    "list",
+            ":id": "detail"
+        },
+
+        list: function() {
+            console.log('list');
+        },
+
+        detail: function(id) {
+            console.log('detail: ' + id);
+        }
+    });
+
+    var router = new Router();
+
+    App.Backbone.history.start({
+        pushState: true,
+        root: '/my-feeds/'
+    });
+
+    App.$(document).on('click', '[data-router]', function(e) {
+        e.preventDefault();
+
+        router.navigate(App.$(e.currentTarget).attr('href'), true);
+
+        return false;
+    });*/
+
     var controlsView, filtersView, tabsView;
 
     controlsView = new App.View.Ui.Controls.create({}, {
