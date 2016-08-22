@@ -1,5 +1,7 @@
 {% extends 'list_base.html' %}
 
+{% load staticfiles %}
+
 {% block title %}{{ block.super }} - My Feeds{% endblock %}
 {% block content %}
 {% spaceless %}
@@ -20,5 +22,9 @@
 {% endblock content %}
 
 {% block javascript %}
-<script>requirejs(['app/feed/list']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/feed/list']);
+    });
+</script>
 {% endblock javascript %}

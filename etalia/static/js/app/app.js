@@ -328,7 +328,7 @@ define([
                 editor.on('change', onChange);
             };
 
-            require(['jquery', 'tinymce'], function ($, tinymce) {
+            require(['tinymce'], function () {
                 tinymce.EditorManager.execCommand('mceRemoveEditor', true, that.tinymceEditorId);
 
                 tinymce.init(settings);
@@ -339,7 +339,7 @@ define([
 
         remove: function () {
             var that = this;
-            require(['tinymce'], function (tinymce) {
+            require(['tinymce'], function () {
                 tinymce.EditorManager.execCommand('mceRemoveEditor', true, that.tinymceEditorId);
             });
 
@@ -501,6 +501,20 @@ define([
                     console.log(arguments[0]);
                 }
             }
+        },
+
+        popup: function(url, name, width, height) {
+            name = name || 'etalia-popup';
+            width = width || 520;
+            height = height || 460;
+
+            var left = Math.round((window.innerWidth/ 2) - (width / 2)),
+                top = Math.round((window.innerHeight / 2) - (height / 2)),
+                params = "menubar=no,toolbar=no,resizable=yes,scrollbars=yes," +
+                    "width=" + width + ",height=" + height + "," +
+                    "top=" + top + ",left=" + left;
+
+            return window.open(url, name, params);
         },
 
         getProperty: function(object, path) {

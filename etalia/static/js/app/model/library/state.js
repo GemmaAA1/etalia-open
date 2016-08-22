@@ -4,9 +4,11 @@ define([
     'app/model/user/user-lib'
 ], function (App) {
 
+    var urlRoot = App.config.api_root + '/library/states';
+
     App.Model.PaperState = App.Backbone.RelationalModel.extend({
 
-        urlRoot: App.config.api_root + '/library/states',
+        urlRoot: urlRoot,
 
         defaults: {
             watch: null,
@@ -120,6 +122,14 @@ define([
                 });
         }
     });
+
+    App.Model.PaperState.emptyTrash = function () {
+        return App.$.ajax({
+            url: urlRoot + '/empty-trash',
+            method: 'DELETE',
+            dataType: 'json'
+        });
+    };
 
     App.Model.PaperState.WATCH_PINNED = 1;
     App.Model.PaperState.WATCH_BANNED = 2;

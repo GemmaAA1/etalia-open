@@ -38,5 +38,9 @@
 
 
 {% block javascript %}
-<script>requirejs(['app/default']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/default']);
+    });
+</script>
 {% endblock javascript %}

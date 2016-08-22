@@ -2,7 +2,6 @@ define([
     'app',
     'text!app/templates/thread/detail.hbs',
     'app/view/detail',
-    //'app/util/utils',
     'app/view/ui/modal',
     'app/view/user/thumb',
     'app/view/user/list',
@@ -180,7 +179,7 @@ define([
                 data: JSON.stringify({longUrl: longURL}),
                 contentType: 'application/json; charset=utf-8',
                 success: function (data) {
-                    utils.popup(
+                    App.popup(
                         'https://twitter.com/intent/tweet/'
                         + '?text=' + title
                         + '&url=' + encodeURI(data.id)
@@ -204,7 +203,7 @@ define([
             /*var url = 'https://plus.google.com/share'
                 + '?url=' + this.model.get('url');
 
-            utils.popup(url, 'share-popup');*/
+            App.popup(url, 'share-popup');*/
 
             App.trigger('etalia.thread.share', this.model, 'google-plus');
         },

@@ -1,12 +1,11 @@
 define([
     'app',
     'text!app/templates/paper/detail.hbs',
-    'app/util/utils',
     'app/view/ui/modal',
     'app/view/paper/neighbors',
     'app/view/paper/related-threads',
     'altmetric'
-], function (App, template, utils) {
+], function (App, template) {
 
     App.View.Paper = App.View.Paper || {};
 
@@ -95,7 +94,7 @@ define([
                 data: JSON.stringify({ longUrl:longURL}),
                 contentType: 'application/json; charset=utf-8',
                 success: function(data) {
-                    utils.popup(
+                    App.popup(
                         'https://twitter.com/intent/tweet/'
                         + '?text=' + title
                         + '&url=' + encodeURI(data.id)
@@ -116,7 +115,7 @@ define([
             var url = 'https://plus.google.com/share'
                     + '?url=' + this.model.get('url');
 
-            utils.popup(url, 'share-popup');
+            App.popup(url, 'share-popup');
 
             App.trigger('etalia.paper.share', this.model, 'google-plus');
         },
