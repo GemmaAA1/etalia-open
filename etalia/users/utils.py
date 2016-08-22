@@ -17,7 +17,7 @@ def send_invite_email(email_to=None,
                       on_behalf=None):
     subject = 'An invitation to try Etalia'
     to = [email_to]
-    from_email = 'nicolas.pannetier@etalia.io'
+    from_email =    'nicolas.pannetier@etalia.io'
     if on_behalf:
         user_name= '{first} {last}'.format(
                 first=on_behalf.first_name,

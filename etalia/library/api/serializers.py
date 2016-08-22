@@ -97,7 +97,7 @@ class PaperSerializer(PaperEagerLoadingMixin,
 
     def get_url(self, obj):
         if obj.id_doi:
-            return obj.get_url_doi()
+            return obj.get_doi_url()
         else:
             return obj.url
 
