@@ -407,7 +407,7 @@ def compiles_assets():
         run_as_root('npm install -g gulp')
         run('npm install gulp --save-dev')
         run_as_root('npm install -g bower')
-    run_as_root('cd {0} && gulp prod'.format(env.source_dir))
+    run_as_root('cd {0} && sudo gulp prod'.format(env.source_dir))
 
 
 @task
@@ -687,6 +687,11 @@ def restart_flower():
 
 
 @task
+def restart_update_tags_and_ips():
+    run('supervisorctl restart update_tags_and_ips')
+
+
+@task
 def stop_all():
     run('supervisorctl stop all')
 
@@ -715,6 +720,8 @@ def clear_nlp_data():
 @task
 def remove_env(stack):
     run('rmvirtualenv staging')
+
+
 
 
 @task
