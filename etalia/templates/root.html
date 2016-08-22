@@ -56,9 +56,25 @@
     </div>
 </div>
 
-<script data-main="{% static 'js/config.js' %}" src="{% static 'js/require.js' %}"></script>
+{% if environment == 'production' %}
+<!-- begin userlike code -->
+<script>
+    var userlikeData = {};
+    userlikeData.user = {};
+    userlikeData.user.name= "{{ user.first_name }} {{ user.last_name }}";
+    userlikeData.user.email = "{{ user.email }}";
+</script>
+{#<script type="text/javascript" src="//userlike-cdn-widgets.s3-eu-west-1.amazonaws.com/c9ac5d10d017cd983dedce8234673ff2038cb737309a7aa83e818e5e9b924fc5.js"></script>#}
+<!-- end userlike code -->
+{% endif %}
+
+<script src="{% static 'js/require.js' %}"></script>
 {% block javascript %}
-    <script>requirejs(['app/default']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/default']);
+    });
+</script>
 {% endblock javascript %}
 
 <script>
@@ -69,18 +85,7 @@
     ga('create', 'UA-72708308-1', 'auto');
     ga('send', 'pageview');
 </script>
-{% if environment == 'production' %}
-<!-- begin userlike code -->
-<script>
- var userlikeData = {};
- userlikeData.user = {};
- userlikeData.user.name= "{{ user.first_name }} {{ user.last_name }}";
- userlikeData.user.email = "{{ user.email }}";
-</script>
-<script type="text/javascript" src="//userlike-cdn-widgets.s3-eu-west-1.amazonaws.com/c9ac5d10d017cd983dedce8234673ff2038cb737309a7aa83e818e5e9b924fc5.js">
-</script>
-<!-- end userlike code -->
-{% endif %}
+
 </body>
 </html>
 {% endwith %}

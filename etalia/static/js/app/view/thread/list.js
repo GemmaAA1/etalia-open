@@ -476,6 +476,10 @@ define([
                 });
             });
 
+            modal.on('shown', function () {
+                form.postRender();
+            });
+
             form.once('cancel', function () {
                 modal.close();
             });

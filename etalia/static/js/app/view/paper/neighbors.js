@@ -54,6 +54,8 @@ define([
         },
 
         openDetail: function(model) {
+            App.log('PaperNeighborsView::openDetail');
+
             var options = {
                 model: model,
                 buttons: this.buttons

@@ -466,6 +466,11 @@ class Paper(TimeStampedModel):
         from .tasks import embed_paper
         embed_paper(self.id)
 
+    def get_doi_url(self):
+        if self.id_doi:
+            return 'http://doi.org/{doi}'.format(doi=self.id_doi)
+        return None
+
     def __str__(self):
         return self.short_title
 

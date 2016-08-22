@@ -27,7 +27,8 @@ define([
         listView: null,
 
         events: {
-            "click #paper-next-page": "onNextPageClick"
+            "click #paper-next-page": "onNextPageClick",
+            "click #paper-trash-empty": "onEmptyTrashClick"
         },
 
         initialize: function (options) {
@@ -44,7 +45,7 @@ define([
             }
             this.tabsView = options.tabsView;
             if (!options.silentTabs) {
-                this.listenTo(this.tabsView, "context-change", this._loadFilters);
+                this.listenTo(this.tabsView, "context-change", this.onActiveTabChange);
             }
 
             // Filters (right flap)
@@ -96,6 +97,7 @@ define([
             });
             this.pushSubView(this.listView);
 
+            this._toggleListHeaderVisibility();
             this._loadFilters();
 
             return this;
@@ -159,6 +161,16 @@ define([
             this._loadNextPage();
         },
 
+        onEmptyTrashClick: function() {
+            // TODO request empty trash
+            var that = this;
+            App.Model.PaperState
+                .emptyTrash()
+                .done(function() {
+                    that.load();
+                });
+        },
+
         _renderAltmetricBadges: function() {
             // TODO this is ugly : should be triggered once the last thumb has been rendered
             if (this.altmetricTimeout) {
@@ -199,6 +211,19 @@ define([
                     this.tabsView.getContext()
                 )
             );
+        },
+
+        _toggleListHeaderVisibility: function() {
+            if (this.tabsView.getActiveTab().name == 'paper:trash') {
+                this.$('.list-header').show();
+            } else {
+                this.$('.list-header').hide();
+            }
+        },
+
+        onActiveTabChange: function() {
+            this._toggleListHeaderVisibility();
+            this._loadFilters();
         },
 
         onPaperPin: function(paper) {

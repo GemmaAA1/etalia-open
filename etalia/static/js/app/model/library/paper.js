@@ -63,8 +63,8 @@ define([
                 state = new App.Model.PaperState({
                     user: App.getCurrentUser(),
                     paper: this
-                });
-                this.set({state: state});
+                }, {silent: true});
+                this.set({state: state}, {silent: true});
             }
             return state;
         },

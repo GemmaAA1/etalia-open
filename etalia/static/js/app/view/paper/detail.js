@@ -1,7 +1,6 @@
 define([
     'app',
     'text!app/templates/paper/detail.hbs',
-    //'app/util/utils',
     'app/view/ui/modal',
     'app/view/paper/neighbors',
     'app/view/paper/related-threads',
@@ -36,7 +35,6 @@ define([
             "click .detail-twitter": "onTwitterClick",
             "click .detail-google-plus": "onGooglePlusClick"
         },
-
 
         initialize: function (options) {
             if (options.listView) {
@@ -77,8 +75,10 @@ define([
         onMailClick: function(e) {
             e.preventDefault();
 
-            // TODO
-            console.log('Not yet implemented');
+            window.location.href = 'mailto:'
+                + '?subject=' + this.model.get('title')
+                + '&body=Hi,I found this article and thought you might like it: '
+                + this.model.get('url');
 
             App.trigger('etalia.paper.share', this.model, 'mail');
         },
@@ -86,8 +86,25 @@ define([
         onTwitterClick: function(e) {
             e.preventDefault();
 
-            // TODO
-            console.log('Not yet implemented');
+            var longURL = this.model.get('url'),
+                title = this.model.get('title'); // TODO + main author
+            App.$.ajax({
+                type: 'POST',
+                url: "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyCG85OFeMEgZMeHOI2dJB4VkuP-2HfGPPo",
+                data: JSON.stringify({ longUrl:longURL}),
+                contentType: 'application/json; charset=utf-8',
+                success: function(data) {
+                    App.popup(
+                        'https://twitter.com/intent/tweet/'
+                        + '?text=' + title
+                        + '&url=' + encodeURI(data.id)
+                        + '&via=etaliaio'
+                        //+ '&hashtags=web,development';
+                        , 'share-popup',
+                        520, 377
+                    );
+                }
+            });
 
             App.trigger('etalia.paper.share', this.model, 'twitter');
         },
@@ -95,8 +112,10 @@ define([
         onGooglePlusClick: function(e) {
             e.preventDefault();
 
-            // TODO
-            console.log('Not yet implemented');
+            var url = 'https://plus.google.com/share'
+                    + '?url=' + this.model.get('url');
+
+            App.popup(url, 'share-popup');
 
             App.trigger('etalia.paper.share', this.model, 'google-plus');
         },

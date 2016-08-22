@@ -290,13 +290,12 @@ class ElsevierParser(Parser):
         paper['id_doi'] = entry.get('prism:doi', '')
 
         # pii
-        paper['id_pii'] = re.sub('http://api.elsevier.com/content/article/pii:',
-                                 '',
-                                 entry.get('prism:url', ''))
+        if entry.get('prism:url'):
+            paper['id_pii'] = entry.get('prism:url').split('/')[-1]
 
         paper['issue'] = entry.get('prism:issueIdentifier', '')
 
-        paper['url'] = '{urlbase}{pii}X'.format(
+        paper['url'] = '{urlbase}{pii}'.format(
             urlbase='http://www.sciencedirect.com/science/article/pii/',
             pii=paper['id_pii'])
 

@@ -35,5 +35,9 @@
 
 
 {% block javascript %}
-<script>requirejs(['app/pages']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/pages']);
+    });
+</script>
 {% endblock javascript %}

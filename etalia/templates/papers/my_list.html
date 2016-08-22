@@ -1,5 +1,7 @@
 {% extends 'list_base.html' %}
 
+{% load staticfiles %}
+
 {% block title %}{{ block.super }} - My Library{% endblock %}
 {% block content %}
 {% spaceless %}
@@ -19,5 +21,9 @@
 {% endblock content %}
 
 {% block javascript %}
-<script>requirejs(['app/paper/list']);</script>
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/paper/list']);
+    });
+</script>
 {% endblock javascript %}
