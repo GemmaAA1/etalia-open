@@ -42,7 +42,19 @@
 {#                    </a>#}
 {#                </li>#}
             </ul>
+
             <div id="sub-nav">
+                <div class="social">
+                    <a href="https://twitter.com/etaliaio" target="_blank" class="twitter">
+                        <span class="eai eai-twitter"></span>
+                    </a>
+                    <a href="https://www.facebook.com/etalia.io" target="_blank" class="facebook">
+                        <span class="eai eai-facebook"></span>
+                    </a>
+                    <a href="https://plus.google.com/+EtaliaIo" target="_blank" class="google-plus">
+                        <span class="eai eai-google-plus"></span>
+                    </a>
+                </div>
                 <ul>
                     <li>
                         <a href="{% url 'core:support' %}">Support</a>
@@ -65,23 +77,10 @@
                         <a href="{% url 'core:terms_privacy' %}">Privacy</a>
                     </li>
                 </ul>
-                <div class="social">
-                    <a href="https://twitter.com/etaliaio" target="_blank" class="twitter">
-                        <span class="eai eai-twitter"></span>
-                    </a>
-                    <a href="https://www.facebook.com/etalia.io" target="_blank" class="facebook">
-                        <span class="eai eai-facebook"></span>
-                    </a>
-                    <a href="https://plus.google.com/+EtaliaIo" target="_blank" class="google-plus">
-                        <span class="eai eai-google-plus"></span>
-                    </a>
-                </div>
                 <div class="copyright">
                     Copyright &copy; 2015-{% now "Y" %} Etalia, Inc<br>
-                    All rights reserved. v{{ version }}
                 </div>
             </div>
-
         </div>
     </div>
 </div>

@@ -427,20 +427,20 @@ a.btn-provider:hover {
     padding: 5px;
 }
 
+
 #sub-nav {
     position: absolute;
     width: 100%;
-    bottom: 0;
-    background: #bec2c6;
+    bottom: 10px;
 }
 
 #sub-nav > ul {
     list-style: none;
+    font-size: 80%;
     margin: 0;
-    padding: 7px 0 7px 20px;
+    padding: 5px 0 0 20px;
     width: 112px;
     float: left;
-    font-size: 12px;
 }
 
 #sub-nav > ul > li {
@@ -448,39 +448,42 @@ a.btn-provider:hover {
 }
 
 #sub-nav > ul > li > a {
-    color: #ffffff;
+    /*color: #ffffff;*/
+    color: #7a7d80;
 }
 
 #sub-nav .social {
-    font-size: 90%;
+    font-size: 80%;
     width: 100%;
     text-align: center;
     float: left;
     margin: 0;
-    color: #ffffff
+    color: #7a7d80;
+    border-bottom: 1px solid #cbced1;
+}
+
+#sub-nav .social a {
+    /*display: inline-block;*/
+    padding: 0 10px 0 10px;
+    line-height: 24px;
+    text-align: center;
+    /*float: left;*/
+    color: #7a7d80;
+    text-decoration: none;
 }
 
 #about-networks {
     margin-top: 20px;
 }
 
-#sub-nav .social a {
-    display: inline-block;
-    padding: 0 10px 0 10px;
-    line-height: 24px;
-    text-align: center;
-    color: #ffffff;
-    text-decoration: none;
-}
-
 #sub-nav .copyright {
-    font-size: 70%;
+    font-size: 60%;
     width: 100%;
-    text-align: center;
+    padding: 5px 0 0 20px;
     float: left;
     margin: 0;
-    padding: 0 0 5px 0;
-    color: #ffffff
+    color: #7a7d80;
+    /*border-top: 1px solid #cbced1;*/
 }
 
 /* -------------------------------------- SIGNUP -------------------------------------- */
