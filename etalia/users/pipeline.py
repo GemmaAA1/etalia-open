@@ -6,6 +6,7 @@ import urllib.request
 from urllib.parse import urlparse
 from django.core.files import File
 from django.shortcuts import redirect
+from django.core.mail import send_mail
 from django.conf import settings
 from social.pipeline.partial import partial
 from avatar.models import Avatar
@@ -98,9 +99,21 @@ def update_usersession(strategy, details, *args, **kwargs):
 
 
 @partial
+def send_admin_email(strategy, details, *args, **kwargs):
+    emails = [u[1] for u in settings.ADMINS]
+    user = kwargs.get('user')
+    send_mail('New Signup ({0})'.format(user.email),
+               '{0} just signed-up'.format(user.email),
+               'etalia@etalia.io',
+                emails,
+               fail_silently=False)
+
+@partial
 def init_user(social, user, *args, **kwargs):
     if user.lib.state == USERLIB_UNINITIALIZED:  # user non-initialized yet
         async_init_user(user.pk)
     return {}
+
+
 
 
