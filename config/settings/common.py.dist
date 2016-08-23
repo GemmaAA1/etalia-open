@@ -195,6 +195,12 @@ ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+# Admin
+# ------------------------------------------------------------------------------
+# Admins received email of the full exception information when DEGUB=False
+ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
+          ]
+
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
@@ -205,8 +211,8 @@ INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_processed.html'
 # ------------------------------------------------------------------------------
 
 RECOMMENDATIONS_EMAILS_ON = True
-# PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email_processed.html'
-PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email.html'
+PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email_processed.html'
+# PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email.html'
 PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
 
 
@@ -257,7 +263,9 @@ SOCIAL_AUTH_PIPELINE = (
     # 'social.pipeline.debug.debug',
     'etalia.users.pipeline.create_details',
     'etalia.users.pipeline.update_usersession',
+    'etalia.users.pipeline.send_admin_email',
     'etalia.users.pipeline.init_user',
+
 
     # 'etalia.users.pipeline.require_affiliation',
 )
