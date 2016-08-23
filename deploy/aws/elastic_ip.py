@@ -12,5 +12,9 @@ ELASTIC_IP_MAPPING = {
     'master': {
         'ip': env.str('RABBITMQ_ELASTIC_IP'),
         'allocation_id': env.str('RABBITMQ_ELASTIC_ALLOCATION_ID')
+    },
+    'web': {
+        'ip': env.str('WEB_ELASTIC_IP'),
+        'allocation_id': env.str('WEB_ELASTIC_ALLOCATION_ID')
     }
 }
