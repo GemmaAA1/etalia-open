@@ -431,16 +431,16 @@ a.btn-provider:hover {
     position: absolute;
     width: 100%;
     bottom: 0;
-    background: #bec2c6;
+    border-top: 1px solid #cbced1;
 }
 
 #sub-nav > ul {
     list-style: none;
+    font-size: 80%;
     margin: 0;
-    padding: 7px 0 7px 20px;
+    padding: 10px 0 0 20px;
     width: 112px;
     float: left;
-    font-size: 12px;
 }
 
 #sub-nav > ul > li {
@@ -448,16 +448,17 @@ a.btn-provider:hover {
 }
 
 #sub-nav > ul > li > a {
-    color: #ffffff;
+    /*color: #ffffff;*/
+    color: #7a7d80;
 }
 
 #sub-nav .social {
-    font-size: 90%;
+    font-size: 80%;
     width: 100%;
     text-align: center;
     float: left;
     margin: 0;
-    color: #ffffff
+    color: #7a7d80;
 }
 
 #about-networks {
@@ -466,21 +467,20 @@ a.btn-provider:hover {
 
 #sub-nav .social a {
     display: inline-block;
-    padding: 0 10px 0 10px;
+    padding: 0 0 0 20px;
     line-height: 24px;
-    text-align: center;
-    color: #ffffff;
+    float: left;
+    color: #7a7d80;
     text-decoration: none;
 }
 
 #sub-nav .copyright {
-    font-size: 70%;
+    font-size: 80%;
     width: 100%;
-    text-align: center;
+    padding: 0 0 5px 20px;
     float: left;
     margin: 0;
-    padding: 0 0 5px 0;
-    color: #ffffff
+    color: #7a7d80;
 }
 
 /* -------------------------------------- SIGNUP -------------------------------------- */

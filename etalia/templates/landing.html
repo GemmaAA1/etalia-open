@@ -220,8 +220,18 @@
                 <a href="{% url 'core:terms_privacy' %}">Privacy Policy</a>
             </li>
         </ul>
-        <p>Copyright &copy; 2015-{% now "Y" %} Etalia, Inc <br>
-            All rights reserved. version {{ version }}</p>
+        <div class="socials">
+            <a href="https://twitter.com/etaliaio" target="_blank" class="twitter">
+                <span class="eai eai-twitter"></span>
+            </a>
+            <a href="https://www.facebook.com/etalia.io" target="_blank" class="facebook">
+                <span class="eai eai-facebook"></span>
+            </a>
+            <a href="https://plus.google.com/+EtaliaIo" target="_blank" class="google-plus">
+                <span class="eai eai-google-plus"></span>
+            </a>
+        </div>
+        <p>Copyright &copy; 2015-{% now "Y" %} Etalia, Inc</p>
     </div>
 </div>
 {% endspaceless %}
