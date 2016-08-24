@@ -306,14 +306,19 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 # Minimum delay between same journal is consumed twice (in period of scheduler.
 # ie if period is a day, then unit is in days)
-CONS_MIN_DELAY = 0
-CONS_MAX_DELAY = 7
+CONSUMER_MIN_DELAY = 0
+CONSUMER_MAX_DELAY = 7
 
 # In days, how many day in the past to look at when initializing database
-CONS_INIT_PAST = 365
+# for regular paper consumer
+CONSUMER_INIT_PAST = 365
+# for pubstream
+CONSUMER_PUBPEER_INIT_PAST = 365
 
 CONSUMER_PUBMED_EMAIL = env('CONSUMER_PUBMED_EMAIL')
 CONSUMER_ELSEVIER_API_KEY = env('CONSUMER_ELSEVIER_API_KEY')
+CONSUMER_PUBPEER_API_KEY = env('PUBPEER_KEY')
+CONSUMER_PUBPEER_USER_EMAIL = 'contact@pubpeer.com'
 
 
 # NLP APP

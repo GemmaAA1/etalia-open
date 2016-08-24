@@ -16,7 +16,7 @@ from etalia.users.models import UserLibPaper
 from etalia.library.forms import PaperForm, AuthorForm, JournalForm, CorpAuthorForm
 from etalia.threads.models import Thread
 from etalia.feeds.models import StreamPapers, TrendPapers
-from .parsers import CrossRefParser, ArxivParser, PubmedParser
+from .parsers import CrossRefPaperParser, ArxivPaperParser, PubmedPaperParser
 
 
 def concatenate_last_names(authors):
@@ -127,7 +127,7 @@ class Consolidate(object):
     @staticmethod
     def get_pubmed(doc_id='', query=''):
         """Return data from pubmed api"""
-        parser = PubmedParser()
+        parser = PubmedPaperParser()
         email = settings.CONSUMER_PUBMED_EMAIL
         Entrez.email = email
         doi = doc_id
@@ -156,7 +156,7 @@ class Consolidate(object):
     @staticmethod
     def get_crossref(doc_id='', query=''):
         """Return data from crossref api"""
-        parser = CrossRefParser()
+        parser = CrossRefPaperParser()
         cr = Crossref()
         doi = doc_id
         if doi:
@@ -191,7 +191,7 @@ class Consolidate(object):
 
         entries = feedparser.parse(resp.text).get('entries')
         if entries:
-            parser = ArxivParser()
+            parser = ArxivPaperParser()
             entry = entries[0]
             return parser.parse(entry)
 

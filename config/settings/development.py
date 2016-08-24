@@ -33,6 +33,8 @@ GRAPH_MODELS = {
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database
 CONS_INIT_PAST = 30
+# for pubstream
+CONS_PUBPEER_INIT_PAST = 30
 
 # Mail settings
 # ------------------------------------------------------------------------------

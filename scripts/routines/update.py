@@ -489,7 +489,7 @@ if __name__ == '__main__':
         THREAD_PAPER, THREAD_QUESTION
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
-    from utils.avatar import AvatarGenerator
+    from .utils.avatar import AvatarGenerator
     from autofixture import AutoFixture
 
     User = get_user_model()
