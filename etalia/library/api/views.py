@@ -221,13 +221,13 @@ class MyPaperViewSet(PaperViewSet):
         if scored == '1':
             request.session['feeds-control-states'] = {
                 'time_span': time_span,
-                'search': search,
+                # 'search': search,
                 'pin': 1 if pin == '1' else 0
             }
         else:
             request.session['library-control-states'] = {
                 'time_span': time_span,
-                'search': search,
+                # 'search': search,
                 'pin': 1 if pin == '1' else 0
             }
 
