@@ -116,12 +116,13 @@ define(['app', 'app/model/thread/thread', 'select2'], function (App) {
 
             App.$('select[name="paper"]').css({width: '100%'}).select2({
                 ajax: {
-                    url: App.config.api_root + "/library/papers",
+                    url: App.config.api_root + "/library/my-papers",
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
                         return {
                             search: params.term, // search term
+                            added: 1,
                             page: params.page
                         };
                     },
@@ -152,7 +153,7 @@ define(['app', 'app/model/thread/thread', 'select2'], function (App) {
         _onTypeChange: function(form, typeEditor) {
             if (typeEditor.getValue() == App.Model.Thread.TYPE_PAPER) {
                 this.$('.field-type .help-block:last-child')
-                    .text('A discussion about a paper.');
+                    .text('A discussion about a paper you have in your library');
                 this.$('.field-paper').show();
             } else {
                 this.$('.field-type .help-block:last-child')
