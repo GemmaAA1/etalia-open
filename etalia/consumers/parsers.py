@@ -5,15 +5,8 @@ import re
 import datetime
 from dateutil.parser import parse
 from nameparser import HumanName
-from django.contrib.auth import get_user_model
-from django.conf import settings
-from etalia.threads.models import Thread, PubPeer, PubPeerComment
-from etalia.threads.forms import ThreadForm, PubPeerForm, PubPeerCommentForm
-from etalia.threads.constant import THREAD_PAPER, THREAD_PUBLIC
 
 from etalia.core.parsers import PaperParser
-
-User = get_user_model()
 
 
 class PubmedPaperParser(PaperParser):
@@ -393,7 +386,7 @@ class CrossRefPaperParser(PaperParser):
             y = date[0]
             m = date[1] if len(date) > 1 else 1
             d = date[2] if len(date) > 2 else 1
-            paper['date_pp'] = datetime.date(y, m, d)
+            paper['date_ep'] = datetime.date(y, m, d)
 
         # Volume, issue, page
         paper['volume'] = entry.get('volume', '')
@@ -415,71 +408,3 @@ class CrossRefPaperParser(PaperParser):
         return []
 
 
-class PubPeerThreadParser(object):
-
-    source = 'PP'
-
-    thread_template = dict([(field, Thread._meta.get_field(field).default)
-                           for field in ThreadForm.Meta.fields])
-
-    pubpeer_template = dict([(field, PubPeer._meta.get_field(field).default)
-                             for field in PubPeerForm.Meta.fields])
-
-    pubpeercomment_template = \
-        dict([(field, PubPeerComment._meta.get_field(field).default)
-              for field in PubPeerCommentForm.Meta.fields])
-
-    def parse(self, entry):
-
-        return {
-            'thread': self.parse_thread(entry),
-            'pubpeer': self.parse_pubpeer(entry),
-            'comments': self.parse_comments(entry)
-        }
-
-    def parse_thread(self, entry):
-        thread = self.thread_template.copy()
-
-        thread['type'] = THREAD_PAPER
-        thread['user'] = User.objects.get(
-            email=settings.CONSUMER_PUBPEER_USER_EMAIL
-        )
-        thread['privacy'] = THREAD_PUBLIC
-        thread['published_at'] = self.get_datetime_of_first_comment(entry)
-
-        return thread
-
-    def get_datetime_of_first_comment(self, entry):
-        dates = []
-        for c in entry['comments']:
-            dates.append(datetime.datetime.fromtimestamp(int(c['date'])))
-        return min(dates)
-
-    def parse_pubpeer(self, entry):
-
-        pubpeer = self.pubpeer_template.copy()
-
-        pubpeer['doi'] = entry.get('doi', '')
-        pubpeer['link'] = entry.get('link', '')
-        pubpeer['pubpeer_id'] = entry.get('pubpeer_id')
-
-        return pubpeer
-
-    def parse_comments(self, entry):
-
-        comments = []
-
-        for c in entry['comments']:
-
-            pubpeercomment = self.pubpeercomment_template.copy()
-            pubpeercomment['body'] = c['body']
-            pubpeercomment['date'] = datetime.datetime.fromtimestamp(
-                int(c['date'])
-            )
-            pubpeercomment['pubpeercomment_id'] = c.get('id', None)
-            pubpeercomment['permalink'] = c.get('permalink', '')
-            pubpeercomment['rating'] = c.get('rating', 0)
-            pubpeercomment['user'] = c.get('user', '')
-            comments.append(pubpeercomment)
-
-        return comments

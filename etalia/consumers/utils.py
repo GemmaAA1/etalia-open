@@ -52,9 +52,9 @@ class Consolidate(object):
 
     METHOD_UPDATE_FIELDS = {
         'crossref': ['id_doi', 'volume', 'issue', 'page', 'url', 'title',
-                     'date_ep', 'date_pp'],
+                     'date_ep', 'date_pp', 'type'],
         'pubmed': ['id_pmi', 'id_doi', 'volume', 'issue', 'page', 'url',
-                   'title', 'date_ep', 'date_pp', 'abstract'],
+                   'title', 'date_ep', 'date_pp', 'abstract', 'type'],
         'arxiv': ['id_arx', 'volume', 'issue', 'page', 'url', 'title',
                   'date_ep', 'date_pp', 'date_lr', 'abstract']
     }
@@ -115,8 +115,8 @@ class Consolidate(object):
         else:
             doc_id = self.entry['paper'].get('id_doi')
         query = '{title} {authors}'.format(
-            title=self.entry['paper']['title'],
-            authors=concatenate_last_names(self.entry['authors']))
+            title=self.entry['paper'].get('title', ''),
+            authors=concatenate_last_names(self.entry.get('authors', [])))
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry:
             if doc_id or self.check_query_match(new_entry):

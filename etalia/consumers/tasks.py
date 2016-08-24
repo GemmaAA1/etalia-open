@@ -71,11 +71,14 @@ def populate_journal(self, consumer_id, type, journal_pk):
         raise self.retry(exc=exc, countdown=1)
 
 
-@app.task(rate_limit='1/s')
-def consolidate_paper(paper_id):
+@app.task(bind=True, rate_limit='1/s')
+def consolidate_paper(self, paper_id):
     pm = PaperManager()
     paper = Paper.objects.get(id=paper_id)
-    pm.consolidate_paper(paper)
+    try:
+        pm.consolidate_paper(paper)
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=5)
 
 
 @app.task()

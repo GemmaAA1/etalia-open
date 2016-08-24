@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import re
 import logging
 import time
-import json
+
 
 import requests
 import feedparser
@@ -20,11 +20,9 @@ from model_utils import Choices, fields
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
 from etalia.threads.models import Thread, PubPeer, PubPeerComment
-from etalia.threads.forms import ThreadForm, PubPeerCommentForm, PubPeerForm
 from etalia.core.models import TimeStampedModel
 
-from .parsers import PubmedPaperParser, ArxivPaperParser, ElsevierPaperParser, \
-    PubPeerThreadParser
+from .parsers import PubmedPaperParser, ArxivPaperParser, ElsevierPaperParser
 from .utils import PaperManager
 from .constants import CONSUMER_TYPE
 
@@ -721,101 +719,6 @@ class ConsumerJournalStat(TimeStampedModel):
 
     class Meta:
         ordering = ['datetime']
-
-
-class PubPeerConsumer(TimeStampedModel):
-
-    last_consume_at = models.DateTimeField(null=True, blank=True)
-
-    parser = PubPeerThreadParser()
-
-    URL_QUERY = 'http://api.pubpeer.com/v1/publications/dump/'
-
-    # API key
-    API_KEY = settings.CONSUMER_PUBPEER_API_KEY
-
-    def consume(self):
-        """Retrieve PubPeer comments from API"""
-        entries = []
-        page = 1
-        if self.last_consume_at:
-            from_date = self.last_consume_at.timestamp() - 3600 * 24
-        else:
-            from_date = time.time() - 3600 * 24 * settings.CONS_PUBPEER_INIT_PAST
-        while True:
-            time.sleep(2)
-            query = '{url}{page}?devkey={key}'.format(
-                url=self.URL_QUERY,
-                page=page,
-                key=self.API_KEY
-            )
-            resp = requests.get(query)
-            entries += json.loads(resp.text)['publications']
-
-            ds = min([float(c['date']) for d in data for c in d['comments']])
-            if ds < from_date:
-                break
-            page += 1
-
-        return entries
-
-    def populate(self):
-        """Populate DB with PubPeer comments"""
-        # consume
-        entries = self.consume()
-
-        # save to database
-        count = 0
-        for entry in entries:
-            item = self.parser.parse(entry)
-            thread = self.add_or_update_entry(item)
-            if thread:
-                count += 1
-
-        return count
-
-    def add_or_update_entry(self, item):
-
-        thread = item['thread']
-        pubpeer = item['pubpeer']
-        comments = item['pubpeercomments']
-
-        # Thread
-        try:
-            t = Thread.objects.get(pubpeer__pubpeer_id=pubpeer['pubpeer_id'])
-        except Thread.DoesNotExist:
-            ThreadForm
-
-
-        # PubPeer
-
-        try:
-            pb = PubPeer.objects.get(
-                pubpeer_id=pubpeer['pubpeer_id']
-            )
-        except PubPeer.DoesNotExist:
-            form = PubPeer(pubpeer)
-            if form.is_valid():
-                pb = form.save()
-            else:
-                raise ValueError('PubPeerForm is invalid')
-
-        # PubPeerComment
-        pbcs = []
-        for c in comments:
-            try:
-                pbc = PubPeerComment.objects.get(
-                    pubpeercomment_id=c['pubpeercomment_id']
-                )
-            except PubPeerComment.DoesNotExist:
-                c['pubpeer'] = pb
-                form = PubPeerCommentForm(c)
-                if form.is_valid():
-                    pbc = form.save()
-                else:
-                    raise ValueError('PubPeerComment form is invalid')
-            pbcs.append(pbc)
-
 
 
 
