@@ -50,19 +50,9 @@ define([
         },
 
         onTitleClick: function(e) {
-            e.preventDefault();
-
             if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
-                console.log(this.model.thirdparty_url);
-                if (this.model.isThirdParty()) {
-                    var win = window.open(this.model.get('thirdparty_url'), '_blank');
-                    if (win) {
-                        win.focus();
-                    } else {
-                        alert('Please allow popups for this website');
-                    }
-                }
-                else {
+                if (!this.model.isThirdParty()) {
+                    e.preventDefault();
                     this.list.trigger('model:detail', this.model, this);
                 }
             }
