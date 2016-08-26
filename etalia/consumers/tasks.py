@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
-    ConsumerJournal
+    ConsumerJournal, PubPeerConsumer
 from etalia.library.models import Paper
 from etalia.core.managers import PaperManager
 
@@ -69,6 +69,12 @@ def populate_journal(self, consumer_id, type, journal_pk):
         cj.status = 'retry'
         cj.save(update_fields=['status'])
         raise self.retry(exc=exc, countdown=1)
+
+
+@app.task()
+def populate_pubpeer():
+    ppc = PubPeerConsumer.objects.first()
+    ppc.populate()
 
 
 @app.task(bind=True, rate_limit='1/s')

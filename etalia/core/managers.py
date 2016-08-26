@@ -479,11 +479,14 @@ class PubPeerManager(object):
             thread = None
             doi = pubpeer_entry['doi']
             paper = self.get_or_create_related_paper(doi)
-            thread_entry['paper'] = paper.id
-            thread_entry['title'] = 'Comment on: {0}'.format(paper.title)
-            thread_entry['user'] = User.objects.get(
-                email=settings.CONSUMER_PUBPEER_USER_EMAIL
-            ).id
+            if paper:
+                thread_entry['paper'] = paper.id
+                thread_entry['title'] = 'Comment on: {0}'.format(paper.title)
+                thread_entry['user'] = User.objects.get(
+                    email=settings.CONSUMER_PUBPEER_USER_EMAIL
+                ).id
+            else:
+                return None
 
         form = ThreadForm(thread_entry, instance=thread)
         if form.is_valid():

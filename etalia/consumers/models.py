@@ -777,11 +777,13 @@ class PubPeerConsumer(TimeStampedModel):
                     pass
                 if thread:
                     count += 1
-        self.last_consume_at = datetime.datetime.now()
+        self.last_consume_at = timezone.now()
         self.save()
         return count
 
     def add_or_update_entry(self, entry):
 
         ppm = PubPeerManager()
-        ppm.add_or_update_entry(entry)
+        thread = ppm.add_or_update_entry(entry)
+
+        return thread
