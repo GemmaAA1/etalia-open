@@ -70,6 +70,9 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
     members = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
     new = serializers.SerializerMethodField()
+    thirdparty_url = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField()
+    members_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Thread
@@ -94,6 +97,9 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
             'modified',
             'published_at',
             'new',
+            'thirdparty_url',
+            'posts_count',
+            'members_count',
         )
         read_only_fields = (
             'id',
@@ -105,6 +111,9 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
             'modified',
             'published_at',
             'new',
+            'thirdparty_url',
+            'comments_count',
+            'members_count',
         )
         switch_kwargs = {
             'user': {'serializer': UserSerializer},
@@ -113,6 +122,27 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
                       'allow_null': True,
                       }
         }
+
+    def get_thirdparty_url(self, obj):
+        for _, third_party_model_name in obj.THIRD_PARTY_TYPES:
+            third_party = getattr(obj, third_party_model_name.lower(), None)
+            if third_party:
+                return third_party.url
+        return None
+
+    def get_posts_count(self, obj):
+        for _, third_party_model_name in obj.THIRD_PARTY_TYPES:
+            third_party = getattr(obj, third_party_model_name.lower(), None)
+            if third_party:
+                return third_party.comments_count
+        return obj.posts.all().count()
+
+    def get_members_count(self, obj):
+        for _, third_party_model_name in obj.THIRD_PARTY_TYPES:
+            third_party = getattr(obj, third_party_model_name.lower(), None)
+            if third_party:
+                return third_party.members_count
+        return obj.members.count()
 
     def get_paper_queryset(self):
         return self.context['request'].user.lib.papers.all()

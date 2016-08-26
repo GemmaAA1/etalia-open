@@ -6,11 +6,11 @@ import string
 import random
 from dateutil.parser import parse
 import datetime
-from etalia.core.parsers import Parser
+from etalia.core.parsers import PaperParser
 
 
-class ParserBackend(Parser):
-    """Backend Parser
+class PaperParserBackend(PaperParser):
+    """Backend PaperParser
 
     Attributes:
         user_info_template: A dictionary that stores data on how paper
@@ -28,7 +28,7 @@ class ParserBackend(Parser):
         raise NotImplementedError('Implemented in subclass')
 
     def parse(self, entry):
-        out = super(ParserBackend, self).parse(entry)
+        out = super(PaperParserBackend, self).parse(entry)
         return dict({'user_info': self.parse_user_info(entry)}, **out)
 
     @staticmethod
@@ -37,8 +37,8 @@ class ParserBackend(Parser):
         return ''.join(random.choice(chars) for _ in range(size))
 
 
-class ParserMendeley(ParserBackend):
-    """Mendeley Parser"""
+class ParserMendeley(PaperParserBackend):
+    """Mendeley PaperParser"""
 
     MENDELEY_PT = (
         ('journal',                 'JOU'),
@@ -182,8 +182,8 @@ class ParserMendeley(ParserBackend):
         return user_info
 
 
-class ParserZotero(ParserBackend):
-    """Zotero Parser"""
+class ParserZotero(PaperParserBackend):
+    """Zotero PaperParser"""
 
     type = 'ZOT'
 

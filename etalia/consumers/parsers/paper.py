@@ -6,11 +6,11 @@ import datetime
 from dateutil.parser import parse
 from nameparser import HumanName
 
-from etalia.core.parsers import Parser
+from etalia.core.parsers import PaperParser
 
 
-class PubmedParser(Parser):
-    """Pubmed Parser"""
+class PubmedPaperParser(PaperParser):
+    """Pubmed PaperParser"""
 
     TEMPLATE_IDS = {'id_doi': r'(.+)\s\[doi\]',
                     'id_pii': r'(.+)\s\[pii\]'}
@@ -60,9 +60,10 @@ class PubmedParser(Parser):
         # Type
         type_ = entry.get('PT', [''])
         if type_:
-            paper['type'] = \
-                [dict(self.PUBMED_PT).get(typ.upper(), '')
-                 for typ in type_][0]
+            types = [dict(self.PUBMED_PT).get(typ.upper(), '') for typ in type_]
+            types = [t for t in types if t]
+            if types:
+                paper['type'] = types[0]
 
         # Identifiers
         # match template
@@ -156,8 +157,8 @@ class PubmedParser(Parser):
         return corp_authors
 
 
-class ArxivParser(Parser):
-    """Arxiv Parser"""
+class ArxivPaperParser(PaperParser):
+    """Arxiv PaperParser"""
 
     source = 'ARX'
 
@@ -222,8 +223,8 @@ class ArxivParser(Parser):
         return []
 
 
-class ElsevierParser(Parser):
-    """Elsevier Parser"""
+class ElsevierPaperParser(PaperParser):
+    """Elsevier PaperParser"""
 
     source = 'ELS'
 
@@ -309,8 +310,8 @@ class ElsevierParser(Parser):
         return []
 
 
-class CrossRefParser(Parser):
-    """CrossRef Parser
+class CrossRefPaperParser(PaperParser):
+    """CrossRef PaperParser
     """
 
     source = 'CRO'
@@ -386,7 +387,7 @@ class CrossRefParser(Parser):
             y = date[0]
             m = date[1] if len(date) > 1 else 1
             d = date[2] if len(date) > 2 else 1
-            paper['date_pp'] = datetime.date(y, m, d)
+            paper['date_ep'] = datetime.date(y, m, d)
 
         # Volume, issue, page
         paper['volume'] = entry.get('volume', '')
@@ -406,3 +407,5 @@ class CrossRefParser(Parser):
 
     def parse_corp_authors(self, entry):
         return []
+
+

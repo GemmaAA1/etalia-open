@@ -53,7 +53,18 @@ define([
             e.preventDefault();
 
             if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
-                this.list.trigger('model:detail', this.model, this);
+                console.log(this.model.thirdparty_url);
+                if (this.model.isThirdParty()) {
+                    var win = window.open(this.model.get('thirdparty_url'), '_blank');
+                    if (win) {
+                        win.focus();
+                    } else {
+                        alert('Please allow popups for this website');
+                    }
+                }
+                else {
+                    this.list.trigger('model:detail', this.model, this);
+                }
             }
         },
 

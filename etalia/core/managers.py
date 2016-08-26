@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
+
 import re
 import requests
 from requests.exceptions import HTTPError
@@ -10,13 +11,16 @@ from Bio import Entrez, Medline
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 from etalia.library.models import Paper, Author, AuthorPaper, Journal, \
     CorpAuthor, CorpAuthorPaper, PaperUser
 from etalia.users.models import UserLibPaper
 from etalia.library.forms import PaperForm, AuthorForm, JournalForm, CorpAuthorForm
-from etalia.threads.models import Thread
 from etalia.feeds.models import StreamPapers, TrendPapers
-from .parsers import CrossRefParser, ArxivParser, PubmedParser
+from etalia.consumers.parsers import CrossRefPaperParser, ArxivPaperParser, PubmedPaperParser
+from etalia.core.parsers import PaperParser
+from etalia.threads.forms import PubPeerCommentForm, PubPeerForm, ThreadForm
+from etalia.threads.models import Thread, PubPeer, PubPeerComment
 
 
 def concatenate_last_names(authors):
@@ -42,8 +46,8 @@ class ObjDict(dict):
             raise AttributeError("No such attribute: " + name)
 
 
-class Consolidate(object):
-    """ The Consolidate class provides methods for consolidate entries
+class ConsolidateManager(object):
+    """ The ConsolidateManager class provides methods for consolidate entries
     as return by parsers (e.g. ZoteroParser, MendeleyParser, etc)
 
     The consolidation workflow depends on the field found in the entry.
@@ -52,18 +56,18 @@ class Consolidate(object):
 
     METHOD_UPDATE_FIELDS = {
         'crossref': ['id_doi', 'volume', 'issue', 'page', 'url', 'title',
-                     'date_ep', 'date_pp'],
+                     'date_ep', 'date_pp', 'type'],
         'pubmed': ['id_pmi', 'id_doi', 'volume', 'issue', 'page', 'url',
-                   'title', 'date_ep', 'date_pp', 'abstract'],
+                   'title', 'date_ep', 'date_pp', 'abstract', 'type'],
         'arxiv': ['id_arx', 'volume', 'issue', 'page', 'url', 'title',
-                  'date_ep', 'date_pp', 'date_lr', 'abstract']
+                  'date_ep', 'date_pp', 'date_lr', 'abstract', 'type']
     }
 
     def __init__(self, entry):
         self.entry = entry
 
     def consolidate(self):
-        """Consolidate dispatcher workflow """
+        """ConsolidateManager dispatcher workflow """
         if self.entry['paper'].get('id_arx'):
             self.consolidate_with('arxiv')
         else:
@@ -107,7 +111,7 @@ class Consolidate(object):
         return True
 
     def consolidate_with(self, method_name):
-        """Consolidate method dispatcher"""
+        """ConsolidateManager method dispatcher"""
 
         method = getattr(self, 'get_{name}'.format(name=method_name))
         if method_name == 'arxiv':
@@ -115,8 +119,8 @@ class Consolidate(object):
         else:
             doc_id = self.entry['paper'].get('id_doi')
         query = '{title} {authors}'.format(
-            title=self.entry['paper']['title'],
-            authors=concatenate_last_names(self.entry['authors']))
+            title=self.entry['paper'].get('title', ''),
+            authors=concatenate_last_names(self.entry.get('authors', [])))
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry:
             if doc_id or self.check_query_match(new_entry):
@@ -127,7 +131,7 @@ class Consolidate(object):
     @staticmethod
     def get_pubmed(doc_id='', query=''):
         """Return data from pubmed api"""
-        parser = PubmedParser()
+        parser = PubmedPaperParser()
         email = settings.CONSUMER_PUBMED_EMAIL
         Entrez.email = email
         doi = doc_id
@@ -156,7 +160,7 @@ class Consolidate(object):
     @staticmethod
     def get_crossref(doc_id='', query=''):
         """Return data from crossref api"""
-        parser = CrossRefParser()
+        parser = CrossRefPaperParser()
         cr = Crossref()
         doi = doc_id
         if doi:
@@ -191,7 +195,7 @@ class Consolidate(object):
 
         entries = feedparser.parse(resp.text).get('entries')
         if entries:
-            parser = ArxivParser()
+            parser = ArxivPaperParser()
             entry = entries[0]
             return parser.parse(entry)
 
@@ -257,8 +261,8 @@ class PaperManager(object):
             if k.startswith('id_') and v is None:
                 entry['journal'][k] = ''
 
-        # consolidate entry 
-        new_entry = Consolidate(entry).consolidate()
+        # consolidate entry
+        new_entry = ConsolidateManager(entry).consolidate()
         ep = new_entry['paper']
 
         # check for uniqueness
@@ -313,6 +317,7 @@ class PaperManager(object):
 
     @staticmethod
     def update_related_paper_fk(from_id, to_id):
+        from etalia.threads.models import Thread
         with transaction.atomic():
             UserLibPaper.objects.filter(paper_id=from_id).update(paper_id=to_id)
             PaperUser.objects.filter(paper_id=from_id).update(paper_id=to_id)
@@ -438,3 +443,90 @@ class PaperManager(object):
     def journal_has_id(item_journal):
         return any([True for key, val in item_journal.items()
                     if key.startswith('id_') and val])
+
+
+class PubPeerManager(object):
+    """Pipe PubPeer data to etalia"""
+
+    def get_or_create_related_paper(self, doi):
+        try:
+            paper = Paper.objects.get(id_doi=doi)
+        except Paper.DoesNotExist:
+            paper_template = PaperParser.paper_template.copy()
+            paper_template['id_doi'] = doi
+            entry = {'paper': paper_template}
+            new_entry = ConsolidateManager(entry).consolidate()
+            new_entry['paper']['source'] = 'PPR'
+            new_entry['is_trusted'] = True
+            paper, _ = PaperManager().get_or_create_from_entry(new_entry)
+        return paper
+
+    def add_or_update_entry(self, entry):
+
+        User = get_user_model()
+        thread_entry = entry['thread']
+        pubpeer_entry = entry['pubpeer']
+        comments_entry = entry['comments']
+
+        # Thread
+        try:
+            thread = Thread.objects.get(pubpeer__pubpeer_id=
+                                        pubpeer_entry['pubpeer_id'])
+            thread_entry['paper'] = thread.paper.id
+            thread_entry['title'] = thread.title
+            thread_entry['user'] = thread.user.id
+        except Thread.DoesNotExist:
+            thread = None
+            doi = pubpeer_entry['doi']
+            paper = self.get_or_create_related_paper(doi)
+            thread_entry['paper'] = paper.id
+            thread_entry['title'] = 'Comment on: {0}'.format(paper.title)
+            thread_entry['user'] = User.objects.get(
+                email=settings.CONSUMER_PUBPEER_USER_EMAIL
+            ).id
+
+        form = ThreadForm(thread_entry, instance=thread)
+        if form.is_valid():
+            thread = form.save()
+            thread.published_at = thread_entry['published_at']
+            thread.save(update_fields=['published_at'])
+        else:
+            raise ValueError('ThreadForm is invalid {0}'
+                             .format(form._errors))
+
+        # PubPeer
+        if thread:
+            try:
+                pb = PubPeer.objects.get(
+                    pubpeer_id=pubpeer_entry['pubpeer_id']
+                )
+                pubpeer_entry['thread'] = pb.thread_id
+            except PubPeer.DoesNotExist:
+                pb = None
+                pubpeer_entry['thread'] = thread.id
+            form = PubPeerForm(pubpeer_entry, instance=pb)
+            if form.is_valid():
+                pb = form.save()
+            else:
+                raise ValueError('PubPeerForm is invalid {0}'
+                                 .format(form._errors))
+
+            # PubPeerComment
+            with transaction.atomic():
+                for c in comments_entry:
+                    try:
+                        pbc = PubPeerComment.objects.get(
+                            pubpeercomment_id=c['pubpeercomment_id']
+                        )
+                        c['pubpeer'] = pbc.pubpeer_id
+                    except PubPeerComment.DoesNotExist:
+                        pbc = None
+                        c['pubpeer'] = pb.id
+                    form = PubPeerCommentForm(c, instance=pbc)
+                    if form.is_valid():
+                        form.save()
+                    else:
+                        raise ValueError('PubPeerComment form is invalid {0}'
+                                         .format(form._errors))
+
+        return thread

@@ -6,7 +6,9 @@ import logging
 import time
 
 import requests
+import json
 import feedparser
+import datetime
 from dateutil import parser
 from django.db import models
 from django.conf import settings
@@ -18,11 +20,13 @@ from model_utils import Choices, fields
 
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
-
+from etalia.core.parsers import PaperParser
+from etalia.threads.models import Thread, PubPeer, PubPeerComment
 from etalia.core.models import TimeStampedModel
 
-from .parsers import PubmedParser, ArxivParser, ElsevierParser
-from .utils import PaperManager
+from .parsers import PubmedPaperParser, ArxivPaperParser, ElsevierPaperParser, \
+    PubPeerThreadParser
+from etalia.core.managers import PaperManager, PubPeerManager
 from .constants import CONSUMER_TYPE
 
 logger = logging.getLogger(__name__)
@@ -181,7 +185,7 @@ class Consumer(TimeStampedModel):
         """Add entry to database library
 
         Args:
-            entry (dict): dictionary structure parsed by consumer Parser.
+            entry (dict): dictionary structure parsed by consumer PaperParser.
             journal: Journal instance
 
         Returns:
@@ -260,8 +264,8 @@ class Consumer(TimeStampedModel):
         between 2 consumptions is dynamically adapted per journal.
 
         <base_countdown_period> defined the period between two consumptions
-        (in <period> unit).It take values in range [settings.CONS_MIN_DELAY,
-        settings.CONS_MAX_DELAY].
+        (in <period> unit).It take values in range [settings.CONSUMER_MIN_DELAY,
+        settings.CONSUMER_MAX_DELAY].
         <countdown_period> is init to <base_countdown_period> after journal
         has been consumed. It is decreased by 1 at each run_once_per_period call
         journal is queued for consumption if <countdown_period> = 1
@@ -303,7 +307,7 @@ class ConsumerPubmed(Consumer):
         super(ConsumerPubmed, self).__init__(*args, **kwargs)
         self.type = 'PUB'
 
-    parser = PubmedParser()
+    parser = PubmedPaperParser()
 
     # email
     email = settings.CONSUMER_PUBMED_EMAIL
@@ -382,7 +386,7 @@ class ConsumerPubmed(Consumer):
 class ConsumerElsevier(Consumer):
     """Pubmed Consumer"""
 
-    parser = ElsevierParser()
+    parser = ElsevierPaperParser()
 
     # API key
     API_KEY = settings.CONSUMER_ELSEVIER_API_KEY
@@ -485,7 +489,7 @@ class ConsumerArxiv(Consumer):
         super(ConsumerArxiv, self).__init__(*args, **kwargs)
         self.type = 'ARX'
 
-    parser = ArxivParser()
+    parser = ArxivPaperParser()
 
     URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
 
@@ -660,15 +664,15 @@ class ConsumerJournal(TimeStampedModel):
                   status='SUC')
             # update base countdown
             if n_fet < 0:
-                if self.base_coundown_period < settings.CONS_MAX_DELAY:
+                if self.base_coundown_period < settings.CONSUMER_MAX_DELAY:
                     self.base_coundown_period += 1
                 else:
-                    self.base_coundown_period = settings.CONS_MAX_DELAY
+                    self.base_coundown_period = settings.CONSUMER_MAX_DELAY
             elif n_fet > 0:
-                if self.base_coundown_period > settings.CONS_MIN_DELAY:
+                if self.base_coundown_period > settings.CONSUMER_MIN_DELAY:
                     self.base_coundown_period -= 1
                 else:
-                    self.base_coundown_period = settings.CONS_MIN_DELAY
+                    self.base_coundown_period = settings.CONSUMER_MIN_DELAY
             # reinit counter
             self.coundown_period = self.base_coundown_period
             self.save()
@@ -718,3 +722,66 @@ class ConsumerJournalStat(TimeStampedModel):
 
     class Meta:
         ordering = ['datetime']
+
+
+class PubPeerConsumer(TimeStampedModel):
+
+    last_consume_at = models.DateTimeField(null=True, blank=True)
+
+    parser = PubPeerThreadParser()
+
+    URL_QUERY = 'http://api.pubpeer.com/v1/publications/dump/'
+
+    # API key
+    API_KEY = settings.CONSUMER_PUBPEER_API_KEY
+
+    def consume(self):
+        """Retrieve PubPeer comments from API"""
+        entries = []
+        page = 1
+        if self.last_consume_at:
+            from_date = self.last_consume_at.timestamp() - 3600 * 24
+        else:
+            from_date = time.time() - 3600 * 24 * settings.CONS_PUBPEER_INIT_PAST
+        while True:
+            time.sleep(2)
+            query = '{url}{page}?devkey={key}'.format(
+                url=self.URL_QUERY,
+                page=page,
+                key=self.API_KEY
+            )
+            resp = requests.get(query)
+            entries += json.loads(resp.text)['publications']
+
+            ds = min([float(c['date']) for d in entries for c in d['comments']])
+            if ds < from_date:
+                break
+            page += 1
+
+        return entries
+
+    def populate(self):
+        """Populate DB with PubPeer     comments"""
+        # consume
+        entries = self.consume()
+
+        # save to database
+        count = 0
+        for entry in entries:
+            item = self.parser.parse(entry)
+            if item['pubpeer']['doi']:
+                try:
+                    thread = self.add_or_update_entry(item)
+                except RuntimeError:
+                    thread = None
+                    pass
+                if thread:
+                    count += 1
+        self.last_consume_at = datetime.datetime.now()
+        self.save()
+        return count
+
+    def add_or_update_entry(self, entry):
+
+        ppm = PubPeerManager()
+        ppm.add_or_update_entry(entry)

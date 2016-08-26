@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+
 class ModelError(Exception):
     """Top-level error for model exception.
     This exception should normally not be raised, only subclasses of this

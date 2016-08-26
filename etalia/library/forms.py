@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
-import requests
-from django.db.models import Q
-from requests.exceptions import RequestException
 from django import forms
 
-from .models import Journal, Paper, Author, Publisher, CorpAuthor, \
-    CorpAuthorPaper, AuthorPaper
+from .models import Journal, Paper, Author, Publisher, CorpAuthor
 from .constants import SOURCE_TYPE
 
 
