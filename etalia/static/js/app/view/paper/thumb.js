@@ -19,10 +19,10 @@ define([
         },
 
         mode: null,
-        list: null,
+        //list: null,
 
         events: {
-            "click .title a": "onTitleClick",
+            //"click .title a": "onTitleClick",
             "click .thumb-pin": "onPinClick",
             "click .thumb-ban": "onBanClick",
             "click .thumb-add": "onAddClick",
@@ -31,12 +31,13 @@ define([
 
         initialize: function (options) {
             this.mode = options.mode || App.View.Paper.Thumb.MODE_LIST;
-            if (this.mode == App.View.Paper.Thumb.MODE_LIST) {
+            // TODO remove list parameter at instantiation level
+            /*if (this.mode == App.View.Paper.Thumb.MODE_LIST) {
                 if (!options.list) {
                     throw '"options.list" is mandatory is list mode.';
                 }
                 this.list = options.list;
-            }
+            }*/
 
             if (options.buttons) {
                 this.buttons = App._.extend({}, this.buttons, options.buttons);
@@ -46,13 +47,13 @@ define([
             this.listenTo(this.model, "change:state", this.render);
         },
 
-        onTitleClick: function(e) {
+        /*onTitleClick: function(e) {
             e.preventDefault();
 
             if (this.mode == App.View.Paper.Thumb.MODE_LIST) {
                 this.list.trigger('model:detail', this.model, this);
             }
-        },
+        },*/
 
         onPinClick: function(e) {
             e.preventDefault();

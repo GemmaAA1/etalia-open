@@ -1,13 +1,13 @@
 define([
     'app',
     'text!app/templates/paper/list.hbs',
-    'app/view/detail',
+    // TODO remove 'app/view/detail',
     'app/model/library/paper',
     'app/view/list',
     'app/view/ui/modal',
     'app/view/paper/detail',
     'app/view/paper/thumb'
-], function (App, template, Detail) {
+], function (App, template/* TODO remove , Detail*/) {
 
     var $window = $(window),
         $document = $(document);
@@ -57,7 +57,7 @@ define([
             this.listenTo(this.filtersView, "context-change", this.load);
 
             // Detail
-            this.listenTo(this, "model:detail", this.openDetail);
+            // TODO remove this.listenTo(this, "model:detail", this.openDetail);
 
             App._.bindAll(this,
                 'onPaperPin', 'onPaperUnpin',
@@ -246,7 +246,7 @@ define([
             var tabName = this.tabsView.getActiveTab().name;
             if (0 <= ['feed:papers', 'paper:papers', 'paper:pins'].indexOf(tabName)) {
                 this.onModelRemove(paper);
-                Detail.close();
+                // TODO remove Detail.close();
             } else {
                 this._renderAltmetricBadges();
             }
@@ -321,6 +321,7 @@ define([
             this.listView.hideEmptyMessage().clear();
         },
 
+        // TODO remove
         openDetail: function (model) {
             App.log('PaperListView::onModelDetail');
 
