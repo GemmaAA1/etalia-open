@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.db import transaction
-from etalia.consumers.utils import PaperManager
+from etalia.core.managers import PaperManager
 from etalia.library.models import PaperUser
 
 from ..constants import USERLIB_SYNCING, USERLIB_IDLE
@@ -16,7 +16,7 @@ class BackendLibMixin(object):
     parser = None
 
     def add_entry(self, entry):
-        """Consolidate and add entry to DB"""
+        """ConsolidateManager and add entry to DB"""
 
         # insert to DB or retrieve
         entry['is_trusted'] = False

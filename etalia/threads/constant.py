@@ -60,6 +60,7 @@ THREAD_PARTICIPATE = (
 )
 
 # THIRD PARTY
+# NB: Second member of tuple must match model name
 THIRD_PARTY_PUBPEER = 1
 THIRD_PARTY_TYPES = (
     (THIRD_PARTY_PUBPEER, 'PubPeer'),

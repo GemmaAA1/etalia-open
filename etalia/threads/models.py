@@ -7,11 +7,8 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 
 from etalia.core.models import TimeStampedModel
-
-
 from etalia.library.models import Paper
 from etalia.core.mixins import ModelDiffMixin
 from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
@@ -22,6 +19,8 @@ from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
 
 
 class Thread(TimeStampedModel):
+
+    THIRD_PARTY_TYPES = THIRD_PARTY_TYPES
 
     # type of thread
     type = models.IntegerField(choices=THREAD_TYPES, default=THREAD_QUESTION,
@@ -224,8 +223,17 @@ class PubPeer(TimeStampedModel):
     pubpeer_id = models.CharField(max_length=30, unique=True)
 
     @property
-    def comments_counts(self):
-        return self.comments.count()
+    def comments_count(self):
+        return self.comments.all().count()
+
+    @property
+    def members_count(self):
+        members = set([c.user for c in self.comments.all()])
+        return len(members)
+
+    @property
+    def url(self):
+        return self.link
 
 
 class PubPeerComment(TimeStampedModel):

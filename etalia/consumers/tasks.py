@@ -5,7 +5,7 @@ from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
     ConsumerJournal
 from etalia.library.models import Paper
-from .utils import PaperManager
+from etalia.core.managers import PaperManager
 
 
 @app.task()

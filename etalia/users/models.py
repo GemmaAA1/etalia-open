@@ -2,7 +2,6 @@
 from __future__ import unicode_literals, absolute_import
 
 from nameparser import HumanName
-from mendeley.exception import MendeleyApiException
 
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
@@ -18,7 +17,6 @@ from etalia.library.models import Paper, Journal, Author, PaperUser
 from etalia.feeds.constants import STREAM_METHODS, TREND_METHODS
 from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
-from etalia.threads.models import Thread
 from etalia.usersession.models import UserSession
 
 from .validators import validate_first_name, validate_last_name

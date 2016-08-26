@@ -60,9 +60,10 @@ class PubmedPaperParser(PaperParser):
         # Type
         type_ = entry.get('PT', [''])
         if type_:
-            paper['type'] = \
-                [dict(self.PUBMED_PT).get(typ.upper(), '')
-                 for typ in type_][0]
+            types = [dict(self.PUBMED_PT).get(typ.upper(), '') for typ in type_]
+            types = [t for t in types if t]
+            if types:
+                paper['type'] = types[0]
 
         # Identifiers
         # match template
