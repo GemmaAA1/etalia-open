@@ -454,27 +454,29 @@ class ConsumerElsevier(Consumer):
                         'start': str(count),
                         }
 
-                resp = requests.post(query, data=data, headers=headers)
+                resp = requests.get(query, data=data, headers=headers)
+                if 'search-results' in resp.json().keys():
+                    entries += resp.json().get('search-results').get('entry')
+                    count += self.ret_max
 
-                entries += resp.json()['search-results']['entry']
-                count += self.ret_max
+                    # sort entries by doi (doi are really time stamped)
+                    entries = sorted(entries, key=lambda x: x['prism:doi'][-11:],
+                                     reverse=True)
 
-                # sort entries by doi (doi are really time stamped)
-                entries = sorted(entries, key=lambda x: x['prism:doi'][-11:],
-                                 reverse=True)
-
-                if entries:
-                    current_start_date = entries[-1]['prism:coverDate'][0].get('$')
-                    # strip 'Available online' tag if in coverDisplayDate
-                    current_start_date = re.sub(r'Available online', '',
-                                                current_start_date).strip()
-                    current_start_date = parser.parse(current_start_date)
-                    current_start_date = current_start_date.replace(
-                        tzinfo=timezone.pytz.timezone('UTC'))
-                    if current_start_date < start_date:
-                        break
+                    if entries:
+                        current_start_date = entries[-1]['prism:coverDate'][0].get('$')
+                        # strip 'Available online' tag if in coverDisplayDate
+                        current_start_date = re.sub(r'Available online', '',
+                                                    current_start_date).strip()
+                        current_start_date = parser.parse(current_start_date)
+                        current_start_date = current_start_date.replace(
+                            tzinfo=timezone.pytz.timezone('UTC'))
+                        if current_start_date < start_date:
+                            break
+                        else:
+                            count += self.ret_max
                     else:
-                        count += self.ret_max
+                        break
                 else:
                     break
         except Exception:

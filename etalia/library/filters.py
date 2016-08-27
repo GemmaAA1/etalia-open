@@ -133,11 +133,12 @@ class MyPaperFilter(PaperFilter):
         return queryset
 
     def filter_added(self, queryset, value):
-        user = self.request.user
-        query = Q(userlib_paper__userlib=user.id)
         if value in ['1', 'true']:
+            query = Q(userlib_paper__userlib=self.request.user.id)
             return queryset.filter(query).order_by('-userlib_paper__date_created')
         elif value in ['0', 'false']:
+            query = Q(paperuser__user=self.request.user) & \
+                Q(paperuser__store=PAPER_TRASHED)
             return queryset.filter(~query)
 
     def filter_trashed(self, queryset, value):
