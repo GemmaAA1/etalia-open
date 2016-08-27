@@ -65,17 +65,17 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'etalia.core',
-    'etalia.populate',
-    'etalia.consumers',
-    'etalia.library',
-    'etalia.nlp',
     'etalia.users',
+    'etalia.library',
     'etalia.threads',
+    'etalia.nlp',
+    'etalia.consumers',
     'etalia.feeds',
     'etalia.altmetric',
     'etalia.last_seen',
     'etalia.popovers',
     'etalia.usersession',
+    'etalia.populate',
     # 'functional_tests',
 )
 
