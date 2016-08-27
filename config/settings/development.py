@@ -32,9 +32,9 @@ GRAPH_MODELS = {
 # CONSUMER
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database
-CONS_INIT_PAST = 30
+CONSUMER_INIT_PAST = 30
 # for pubstream
-CONS_PUBPEER_INIT_PAST = 2
+CONSUMER_PUBPEER_INIT_PAST = 2
 
 # Mail settings
 # ------------------------------------------------------------------------------

@@ -48,7 +48,7 @@ class Consumer(TimeStampedModel):
     ret_max = models.IntegerField(default=25)
 
     # number of past day to look through during initialization
-    day0 = models.IntegerField(default=settings.CONS_INIT_PAST)
+    day0 = models.IntegerField(default=settings.CONSUMER_INIT_PAST)
 
     # Journal associated with consumer
     journals = models.ManyToManyField(Journal, through='ConsumerJournal')
@@ -744,7 +744,8 @@ class PubPeerConsumer(TimeStampedModel):
         if self.last_consume_at:
             from_date = self.last_consume_at.timestamp() - 3600 * 24
         else:
-            from_date = time.time() - 3600 * 24 * settings.CONS_PUBPEER_INIT_PAST
+            from_date = time.time() - \
+                        3600 * 24 * settings.CONSUMER_PUBPEER_INIT_PAST
         while True:
             time.sleep(2)
             query = '{url}{page}?devkey={key}'.format(
