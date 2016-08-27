@@ -7,6 +7,7 @@ from mendeley.exception import MendeleyApiException
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from django.utils.text import slugify
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.core.api.exceptions import MendeleyRedirectLoginErrorSerializer
 from etalia.feeds.models import StreamPapers, TrendPapers
@@ -60,6 +61,7 @@ class PaperSerializer(PaperEagerLoadingMixin,
     linked_threads_count = serializers.SerializerMethodField()
     authors = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
 
     class Meta:
         model = Paper
@@ -86,6 +88,7 @@ class PaperSerializer(PaperEagerLoadingMixin,
             'new',
             'date_ep',
             'date_pp',
+            'slug',
             'linked_threads_count',
         )
         read_only_fields = (
@@ -94,6 +97,10 @@ class PaperSerializer(PaperEagerLoadingMixin,
         switch_kwargs = {
             'journal': {'serializer': JournalSerializer},
         }
+
+    def get_slug(self, obj):
+        return '{slug}_{id}'.format(slug=slugify(obj.title),
+                                    id=obj.id)
 
     def get_url(self, obj):
         if obj.id_doi:
