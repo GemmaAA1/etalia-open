@@ -29,7 +29,7 @@ def my_papers(request):
 
 class PaperDetail(DetailView):
 
-    template_name = 'papers/list.html'
+    template_name = 'papers/my_list.html'
     model = Paper
 
     def get_template_names(self):
@@ -55,18 +55,16 @@ class PaperViewPk(RedirectView):
 paper = PaperViewPk.as_view()
 
 
-class PaperListView(PaperEagerLoadingMixin, FilterView):
-
-    template_name = 'papers/list.html'
-    # filterset_class = PaperFilter
-    filterset_class = MyPaperFilter
-    paginate_by = 25
-
-    def get_filterset(self, filterset_class):
-        filterset = super(PaperListView, self).get_filterset(filterset_class)
-        filterset._qs = self.setup_eager_loading(filterset.qs,
-                                                 user=self.request.user,
-                                                 request=self.request)
-        return filterset
-
-papers = PaperListView.as_view()
+def papers(request):
+    return TemplateResponse(
+        request,
+        'trends/list.html',
+        {'control_states': json.dumps(
+            request.session.get('library-control-states',
+                                {'time_span': None,
+                                 'search': None,
+                                 'pin': 0}
+                                )
+        )
+        }
+    )
