@@ -29,8 +29,13 @@ def my_papers(request):
 
 class PaperDetail(DetailView):
 
-    template_name = 'papers/detail.html'
+    template_name = 'papers/list.html'
     model = Paper
+
+    def get_template_names(self):
+        if self.request.user.is_anonymous():
+            self.template_name = 'trends/list.html'
+        return super(PaperDetail, self).get_template_names()
 
 paper_slug = PaperDetail.as_view()
 

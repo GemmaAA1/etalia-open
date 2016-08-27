@@ -342,13 +342,19 @@ class CrossRefPaperParser(PaperParser):
         j_titles = entry.get('container-title', [])
         if len(j_titles) > 1:
             journal['short_title'] = j_titles[1]
-        journal['title'] = j_titles[0]
+        try:
+            journal['title'] = j_titles[0]
+        except IndexError:
+            journal['title'] = ''
 
         issns = entry.get('ISSN')
         if issns:
-            journal['id_issn'] = issns[0]
             if len(issns) > 1:
                 journal['id_eissn'] = issns[1]
+            try:
+                journal['id_issn'] = issns[0]
+            except IndexError:
+                journal['id_issn'] = ''
 
         return journal
 
