@@ -83,8 +83,7 @@ class ThreadViewSet(MultiSerializerMixin,
                      'user__last_name')
 
 
-class MyThreadViewSet(MultiSerializerMixin,
-                      viewsets.ModelViewSet):
+class MyThreadViewSet(ThreadViewSet):
 
     """
     My Threads
@@ -225,16 +224,10 @@ class MyThreadViewSet(MultiSerializerMixin,
 
     @list_route(methods=['get'])
     def filters(self, request):
-        tids = self.get_queryset().values_list('id', flat=True)
-        values = ', '.join(['({0})'.format(i) for i in tids])
-        du = []
-        if values:
-            qu = User.objects.raw(
-                        "SELECT * "
-                        "FROM users_user u "
-                        "LEFT JOIN threads_thread t ON u.id = t.user_id "
-                        "WHERE t.id IN (VALUES {0}) ".format(values))
-            du = list(qu)
+        queryset = super(ThreadViewSet, self).get_queryset()
+        queryset = queryset.select_related('user')
+        data = list(self.filter_queryset(queryset))
+        du = [d.user for d in data]
 
         us_count = Counter(du).most_common()
         users = []
