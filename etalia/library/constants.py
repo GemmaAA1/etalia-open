@@ -4,10 +4,11 @@ from __future__ import unicode_literals, absolute_import
 
 from etalia.consumers.constants import CONSUMER_TYPE
 from etalia.users.constants import PROVIDER_TYPE
+from etalia.threads.constants import CONSUMER_THREAD_TYPE
 
 # Define constants used in models
 
-SOURCE_TYPE = tuple(set(CONSUMER_TYPE + PROVIDER_TYPE))
+SOURCE_TYPE = tuple(set(CONSUMER_TYPE + PROVIDER_TYPE + CONSUMER_THREAD_TYPE))
 
 PAPER_TYPE = (
     ('JOU', 'Journal Article'),

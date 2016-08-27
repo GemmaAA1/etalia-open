@@ -50,10 +50,11 @@ define([
         },
 
         onTitleClick: function(e) {
-            e.preventDefault();
-
             if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
-                this.list.trigger('model:detail', this.model, this);
+                if (!this.model.isThirdParty()) {
+                    e.preventDefault();
+                    this.list.trigger('model:detail', this.model, this);
+                }
             }
         },
 

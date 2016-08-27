@@ -46,8 +46,11 @@ def send_periodic_recommendation_email(user_id):
 
     users = User.objects.filter(id=user_id).select_related('settings')
     user = users[0]
+    date_7d_before = datetime.datetime.now() - datetime.timedelta(days=7)
     if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
         date_since = user.userperiodicemail.last_sent_on
+        if date_since > date_7d_before:
+            date_since = date_7d_before
     else:
         date_since = datetime.datetime.now() - \
                      datetime.timedelta(days=user.settings.email_digest_frequency)

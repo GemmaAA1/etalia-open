@@ -82,9 +82,13 @@ CELERYBEAT_SCHEDULE = {
         'task': 'etalia.consumers.tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
     },
+    '': {
+        'task': 'etalia.consumers.tasks.populate_pubpeer',
+        'schedule': crontab(minute=0, hour=19),  # daily at UTC+19
+    },
     'consolidate-library': {
         'task': 'etalia.consumers.tasks.consolidate_library',
-        'schedule': crontab(minute=0, hour=2),  # daily at UTC+2
+        'schedule': crontab(minute=0, hour=20),  # daily at UTC-4
     },
     'emails-recommendations': {
         'task': 'etalia.users.tasks.send_recommendation_emails_on_wed_11am',

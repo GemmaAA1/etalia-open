@@ -32,6 +32,7 @@ class ThreadFilter(filters.FilterSet):
     min_date = DateFilter(name='published_at', lookup_expr='gte')
     max_date = DateFilter(name='published_at', lookup_expr='lte')
     time_span = MethodFilter(distinct=True)
+    third_party = MethodFilter()
 
     class Meta:
         model = Thread
@@ -75,6 +76,16 @@ class ThreadFilter(filters.FilterSet):
         value = int(value)
         date = (datetime.datetime.now() - datetime.timedelta(days=value)).date()
         return queryset.filter(published_at__gte=date)
+
+    def filter_third_party(self, queryset, value):
+        if value in ['0',  'false']:
+            third_party_models = Thread.THIRD_PARTY_TYPES
+            kwargs = dict((('{0}__isnull'.format(n.lower()), True)
+                           for _, n in third_party_models))
+            return queryset.filter(**kwargs)
+        else:
+            kwargs = {'{0}__isnull'.format(value): False}
+            return queryset.filter(**kwargs)
 
 
 class MyThreadFilter(ThreadFilter):

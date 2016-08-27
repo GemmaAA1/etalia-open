@@ -19,7 +19,10 @@ define([
             content: null,
             created: null,
             modified: null,
-            published_at: null
+            published_at: null,
+            posts_count: 0,
+            members_count: 0,
+            thirdparty_url: null
         },
 
         relations: [
@@ -162,6 +165,10 @@ define([
             return this.get('privacy') === App.Model.Thread.PRIVACY_PUBLIC;
         },
 
+        isThirdParty: function() {
+            return this.get('thirdparty_url') != null;
+        },
+
         isOwner: function (user) {
             return this.get('user').get('id') === user.get('id');
         },
@@ -173,11 +180,13 @@ define([
         },
 
         getMembersCount: function() {
-            return this.getRelation('members').getCount()
+            return this.get('members_count');
+            //return this.getRelation('members').getCount()
         },
 
         getPostsCount: function() {
-            return this.getRelation('posts').getCount()
+            return this.get('posts_count');
+            //return this.getRelation('posts').getCount()
         }
     });
 

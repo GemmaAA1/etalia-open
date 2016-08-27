@@ -8,10 +8,10 @@ from abc import abstractmethod
 import hashlib
 
 
-class Parser(object):
-    """Abstract Parser class
+class PaperParser(object):
+    """Abstract PaperParser class
 
-    Parser is used to parse entry in journal, paper, authors and corp_author
+    PaperParser is used to parse entry in journal, paper, authors and corp_author
     so that it library database can be populated. This abstract class initialize
     several attribute based on their Model fields.
 

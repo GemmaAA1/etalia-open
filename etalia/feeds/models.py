@@ -97,6 +97,9 @@ class Stream(TimeStampedModel):
         logger.info('Updating stream {id}'.format(id=self.id))
         self.set_state('ING')
 
+        # update score threshold
+        self.score_threshold = self.user.settings.stream_score_threshold
+
         # Score
         task = pe_dispatcher.delay('score_stream', self.user.id)
         res = task.get()

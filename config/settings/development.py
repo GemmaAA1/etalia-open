@@ -33,6 +33,8 @@ GRAPH_MODELS = {
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database
 CONS_INIT_PAST = 30
+# for pubstream
+CONS_PUBPEER_INIT_PAST = 2
 
 # Mail settings
 # ------------------------------------------------------------------------------
@@ -110,16 +112,16 @@ AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 # NLP_DATA_BUCKET_NAME = 'etalia-production-nlp-data'
 # NLP_MODELS_BUCKET_NAME = 'etalia-production-nlp-models'
 # NLP_MS_BUCKET_NAME = 'etalia-production-nlp-pe'
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': env.str('AWS_RDS_DB_NAME'),
-#         'USER': env.str('AWS_RDS_USERNAME'),
-#         'PASSWORD': env.str('AWS_RDS_PASSWORD'),
-#         'HOST': env.str('AWS_RDS_HOSTNAME'),
-#         'PORT': env.str('AWS_RDS_PORT'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env.str('AWS_RDS_DB_NAME'),
+        'USER': env.str('AWS_RDS_USERNAME'),
+        'PASSWORD': env.str('AWS_RDS_PASSWORD'),
+        'HOST': env.str('AWS_RDS_HOSTNAME'),
+        'PORT': env.str('AWS_RDS_PORT'),
+    }
+}
 #
 # CACHE_FILE_DIR = str((ROOT_DIR-1).path('cache_files'))
 # # Create directory to store cache files if does not exists

@@ -7,21 +7,20 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 
 from etalia.core.models import TimeStampedModel
-
-
 from etalia.library.models import Paper
 from etalia.core.mixins import ModelDiffMixin
 from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
     THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, \
-    THREAD_QUESTION, \
+    THREAD_QUESTION, THIRD_PARTY_TYPES, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PARTICIPATE, THREAD_WATCH, \
     THREAD_JOINED, THREAD_BANNED, THREAD_PINNED, THREAD_LEFT
 
 
 class Thread(TimeStampedModel):
+
+    THIRD_PARTY_TYPES = THIRD_PARTY_TYPES
 
     # type of thread
     type = models.IntegerField(choices=THREAD_TYPES, default=THREAD_QUESTION,
@@ -209,3 +208,46 @@ class ThreadUserHistory(TimeStampedModel):
 
     class Meta:
         ordering = ('-created', )
+
+
+class PubPeer(TimeStampedModel):
+
+    thread = models.OneToOneField(Thread)
+
+    doi = models.CharField(max_length=64, blank=True, default='',
+                           null=False, unique=True, verbose_name='DOI',
+                           db_index=True)
+
+    link = models.URLField()
+
+    pubpeer_id = models.CharField(max_length=30, unique=True)
+
+    @property
+    def comments_count(self):
+        return self.comments.all().count()
+
+    @property
+    def members_count(self):
+        members = set([c.user for c in self.comments.all()])
+        return len(members)
+
+    @property
+    def url(self):
+        return self.link
+
+
+class PubPeerComment(TimeStampedModel):
+
+    pubpeer = models.ForeignKey(PubPeer, related_name='comments')
+
+    body = models.TextField(default='')
+
+    date = models.DateTimeField()
+
+    pubpeercomment_id = models.IntegerField(unique=True)
+
+    permalink = models.URLField()
+
+    rating = models.FloatField()
+
+    user = models.CharField(max_length=128)
