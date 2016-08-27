@@ -4,7 +4,6 @@ from __future__ import unicode_literals, absolute_import
 import re
 import logging
 import time
-
 import requests
 import json
 import feedparser
@@ -17,6 +16,9 @@ from django.db.models import Q, F
 from Bio import Entrez
 from Bio import Medline
 from model_utils import Choices, fields
+
+from config.celery import celery_app as app
+from celery.contrib.methods import task_method
 
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
@@ -774,7 +776,7 @@ class PubPeerConsumer(TimeStampedModel):
             item = self.parser.parse(entry)
             if item['pubpeer']['doi']:
                 try:
-                    thread = self.add_or_update_entry(item)
+                    thread = self.add_or_update_entry.delay(item)
                 except RuntimeError:
                     thread = None
                     pass
@@ -784,6 +786,7 @@ class PubPeerConsumer(TimeStampedModel):
         self.save()
         return count
 
+    @app.task(filter=task_method)
     def add_or_update_entry(self, entry):
 
         ppm = PubPeerManager()
