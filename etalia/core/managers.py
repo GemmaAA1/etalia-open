@@ -123,8 +123,12 @@ class ConsolidateManager(object):
             authors=concatenate_last_names(self.entry.get('authors', [])))
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry:
-            if doc_id or self.check_query_match(new_entry):
+            if doc_id:
                 self.update_entry(new_entry, method_name)
+            elif self.check_query_match(new_entry):
+                self.update_entry(new_entry, method_name)
+                # remove id_gen if any
+                self.entry['id_gen'] = ''
 
         return self.entry
 
@@ -232,7 +236,7 @@ class PaperManager(object):
                     # NB: This task if run as eager true conflict with
                     # update_lib pipeline because it modifies paper id.
                     if self.consolidate and not CELERY_ALWAYS_EAGER:
-                        from .tasks import consolidate_paper
+                        from etalia.consumers.tasks import consolidate_paper
                         consolidate_paper.apply_async(args=(paper.id, ),
                                                       countdown=30)
 

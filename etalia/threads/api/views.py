@@ -83,7 +83,8 @@ class ThreadViewSet(MultiSerializerMixin,
                      'user__last_name')
 
 
-class MyThreadViewSet(ThreadViewSet):
+class MyThreadViewSet(ThreadViewSet,
+                      viewsets.ModelViewSet):
 
     """
     My Threads

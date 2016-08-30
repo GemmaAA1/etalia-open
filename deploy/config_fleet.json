@@ -97,8 +97,8 @@
           "r3.xlarge",
           "m3.xlarge",
           "m4.2xlarge",
-          "c4.xlarge",
-          "c3.xlarge"
+          "c4.2xlarge",
+          "c3.2xlarge"
         ],
         "KeyName": "npannetier-key-pair",
         "Type": "request"

@@ -87,14 +87,16 @@ def reset_trend(user_pk, name='main'):
 
 
 @app.task()
-def update_threadfeed(user_pk, name='main'):
-    df, _ = ThreadFeed.objects.get_or_create(user_id=user_pk, name=name)
-    df.update()
-    return user_pk
+def reset_all_main_threadfeed():
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .values_list('id', flat=True)
+    for user_pk in us_pk:
+        update_threadfeed.delay(user_pk)
 
 
 @app.task()
-def reset_threadfeed(user_pk, name='main'):
+def update_threadfeed(user_pk, name='main'):
     df, _ = ThreadFeed.objects.get_or_create(user_id=user_pk, name=name)
     df.update()
     return user_pk
