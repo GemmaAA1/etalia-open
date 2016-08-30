@@ -102,11 +102,15 @@ def update_usersession(strategy, details, *args, **kwargs):
 def send_admin_email(strategy, details, *args, **kwargs):
     emails = [u[1] for u in settings.ADMINS]
     user = kwargs.get('user')
-    send_mail('New Signup ({0})'.format(user.email),
-               '{0} just signed-up'.format(user.email),
-               'etalia@etalia.io',
-                emails,
-               fail_silently=False)
+    try:
+        send_mail('New Signup ({0})'.format(user.email),
+                   '{0} just signed-up'.format(user.email),
+                   'etalia@etalia.io',
+                    emails,
+                   fail_silently=False)
+    # TODO specify exceptions
+    except:
+        pass
 
 @partial
 def init_user(social, user, *args, **kwargs):
