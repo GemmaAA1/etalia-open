@@ -334,8 +334,16 @@ class ParserZotero(PaperParserBackend):
             elif 'url' in entry:
                 res = re.match(r'http:\/\/arxiv.org\/abs\/(?P<id>[\d\.]+)',
                                entry.get('url', ''))
-                paper_id_arx = res.groupdict().get('id', '')
-                journal_id_arx = 'arxiv.abs'
+                if res:
+                    paper_id_arx = res.groupdict().get('id', '')
+                    journal_id_arx = 'arxiv.abs'
+                else:
+                    res = re.match(r'http:\/\/arxiv.org\/abs\/(?P<jid>[\w-]+)\/(?P<id>[\d\.]+)',
+                               entry.get('url', ''))
+                    if res:
+                        paper_id_arx = res.groupdict().get('id', '')
+                        journal_id_arx = res.groupdict().get('jid', '')
+
 
         if return_what == 'paper':
             return paper_id_arx
