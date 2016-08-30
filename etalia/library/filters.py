@@ -135,7 +135,8 @@ class MyPaperFilter(PaperFilter):
     def filter_added(self, queryset, value):
         if value in ['1', 'true']:
             query = Q(userlib_paper__userlib=self.request.user.id) & \
-                    Q(paperuser__store=PAPER_ADDED)
+                    Q(paperuser__store=PAPER_ADDED) & \
+                    Q(paperuser__user=self.request.user)
             return queryset.filter(query).order_by('-userlib_paper__date_created')
         elif value in ['0', 'false']:
             query = Q(paperuser__user=self.request.user) & \
