@@ -40,7 +40,7 @@ class Thread(TimeStampedModel):
                               verbose_name='Related Paper')
 
     # title of thread
-    title = models.CharField(max_length=256, verbose_name='Title', default='')
+    title = models.CharField(max_length=512, verbose_name='Title', default='')
 
     # content of the thread
     content = models.TextField(null=True, blank=True, default='',
