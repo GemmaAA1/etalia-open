@@ -182,7 +182,7 @@ class ConsolidateManager(object):
             if entries:
                 entry = entries[0]
                 return parser.parse(entry)
-        except RequestError:
+        except:
             pass
 
         return None
