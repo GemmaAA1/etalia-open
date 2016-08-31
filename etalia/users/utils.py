@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from .models import UserInvited
 
@@ -46,7 +47,7 @@ def send_periodic_recommendation_email(user_id):
 
     users = User.objects.filter(id=user_id).select_related('settings')
     user = users[0]
-    date_7d_before = datetime.datetime.now() - datetime.timedelta(days=7)
+    date_7d_before = timezone.now() - datetime.timedelta(days=7)
     if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
         date_since = user.userperiodicemail.last_sent_on
         if date_since > date_7d_before:

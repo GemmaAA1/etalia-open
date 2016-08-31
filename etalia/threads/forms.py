@@ -18,6 +18,14 @@ class ThreadForm(forms.ModelForm):
             'content'
         )
 
+    def clean_title(self, data):
+        title = self.cleaned_data['title']
+        # if title is longer than max_length, truncate
+        title_max = self.Meta.model._meta.get_field('title').max_length
+        if len(title) > title_max:
+            title = title[:title_max]
+        return title
+
 
 class PubPeerForm(forms.ModelForm):
 
