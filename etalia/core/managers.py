@@ -246,7 +246,7 @@ class PaperManager(object):
             return paper, journal
         return None, None
 
-    def consolidate_paper(self, paper):
+    def consolidate_paper(self, paper, force=False):
 
         # convert paper to entry type
         entry = {
@@ -290,7 +290,7 @@ class PaperManager(object):
         except Paper.DoesNotExist:
             pass
 
-        if not paper.is_trusted:
+        if not paper.is_trusted and not force:
             # update paper with new_entry
             paper = self.update_paper_from_entry(new_entry, paper)
             paper.is_trusted = True
