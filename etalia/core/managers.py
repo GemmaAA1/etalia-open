@@ -290,7 +290,7 @@ class PaperManager(object):
         except Paper.DoesNotExist:
             pass
 
-        if not paper.is_trusted and not force:
+        if force or not paper.is_trusted:
             # update paper with new_entry
             paper = self.update_paper_from_entry(new_entry, paper)
             paper.is_trusted = True
