@@ -454,7 +454,6 @@ a.btn-provider:hover {
 }
 
 #sub-nav .social {
-    font-size: 80%;
     width: 100%;
     text-align: center;
     float: left;
@@ -469,7 +468,7 @@ a.btn-provider:hover {
     padding: 0 10px 0 10px;
     line-height: 24px;
     text-align: center;
-    /*float: left;*/
+    float: right;
     color: #7a7d80;
     text-decoration: none;
 }

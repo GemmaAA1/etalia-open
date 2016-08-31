@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from django.db.models import Q, Prefetch
+from django.utils.text import slugify
 from mendeley.exception import MendeleyApiException
 
 from rest_framework import serializers
@@ -11,7 +11,6 @@ from django.utils.text import slugify
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.core.api.exceptions import MendeleyRedirectLoginErrorSerializer
 from etalia.feeds.models import StreamPapers, TrendPapers
-from etalia.threads.constant import THREAD_PRIVATE, THREAD_JOINED
 
 from ..models import Paper, Journal, Author, PaperUser
 from ..constants import PAPER_ADDED, PAPER_TRASHED, PAPER_STORE
@@ -84,12 +83,12 @@ class PaperSerializer(PaperEagerLoadingMixin,
             'abstract',
             'url',
             'date',
-            'state',
-            'new',
             'date_ep',
             'date_pp',
             'slug',
             'linked_threads_count',
+            'state',
+            'new',
         )
         read_only_fields = (
             '__all__',
