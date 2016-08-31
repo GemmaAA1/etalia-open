@@ -127,9 +127,12 @@ class ConsolidateManager(object):
                 self.update_entry(new_entry, method_name)
             elif self.check_query_match(new_entry):
                 self.update_entry(new_entry, method_name)
-                # remove id_gen if any
+                # remove id_gen if any (because paper must have doi, arx or pmi
+                # id if it has be found)
                 self.entry['id_gen'] = ''
-
+            self.entry['is_trusted'] = True
+        else:
+            self.entry['is_trusted'] = False
         return self.entry
 
     @staticmethod
@@ -279,30 +282,33 @@ class PaperManager(object):
         ep = new_entry['paper']
 
         # check for uniqueness
-        try:  # many the new_entry is already in DB, let's check
-            qs = Paper.objects\
-                .filter(
-                    Q(id_doi=ep['id_doi']) |
-                    Q(id_pmi=ep['id_pmi']) |
-                    Q(id_pii=ep['id_pii']) |
-                    Q(id_arx=ep['id_arx']) |
-                    Q(id_isbn=ep['id_isbn']) |
-                    Q(id_oth=ep['id_oth']))\
-                .exclude(id=paper.id)
+        # maybe the new_entry is already in DB, let's check
+        qs = Paper.objects\
+            .filter(
+                Q(id_doi=ep['id_doi']) |
+                Q(id_pmi=ep['id_pmi']) |
+                Q(id_pii=ep['id_pii']) |
+                Q(id_arx=ep['id_arx']) |
+                Q(id_isbn=ep['id_isbn']) |
+                Q(id_oth=ep['id_oth']))\
+            .exclude(id=paper.id)
 
-            if qs.count() > 0:
-                # if so relink related objects to same_paper
-                self.update_related_paper_fk(paper.id, qs[0].id)
-                # delete current paper
-                paper.delete()
+        if qs.count() > 0:
+            # if so relink related objects to same_paper
+            self.update_related_paper_fk(paper.id, qs[0].id)
+            # delete current paper
+            paper.delete()
+            paper = qs[0]
+        else:
+            try:
                 paper = qs[0]
-        except Paper.DoesNotExist:
-            pass
+            except IndexError:
+                pass
 
         if force or not paper.is_trusted:
             # update paper with new_entry
             paper = self.update_paper_from_entry(new_entry, paper)
-            paper.is_trusted = True
+            paper.is_trusted = new_entry['is_trusted']
             paper.save()
 
             # send embedding
@@ -469,7 +475,6 @@ class PubPeerManager(object):
             entry = {'paper': paper_template}
             new_entry = ConsolidateManager(entry).consolidate()
             new_entry['paper']['source'] = 'PPR'
-            new_entry['is_trusted'] = True
             paper, _ = PaperManager().get_or_create_from_entry(new_entry)
         return paper
 
