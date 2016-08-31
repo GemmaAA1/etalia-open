@@ -294,7 +294,7 @@ class PaperManager(object):
             # update paper with new_entry
             paper = self.update_paper_from_entry(new_entry, paper)
             paper.is_trusted = True
-            paper.save(update_fields=['is_trusted'])
+            paper.save()
 
             # send embedding
             paper.embed()
@@ -433,7 +433,6 @@ class PaperManager(object):
                 CorpAuthorPaper.objects.get_or_create(
                     paper=paper,
                     corp_author=corp_author)
-
 
     @staticmethod
     def entry_is_valid(entry):
