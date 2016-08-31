@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from social.pipeline.partial import partial
 from avatar.models import Avatar
+from django.utils import timezone
 
 from etalia.core.utils import get_celery_worker_status
 from etalia.usersession.models import UserSession
@@ -99,18 +100,19 @@ def update_usersession(strategy, details, *args, **kwargs):
 
 
 @partial
-def send_admin_email(strategy, details, *args, **kwargs):
+def send_email_of_new_signup(strategy, details, *args, **kwargs):
     emails = [u[1] for u in settings.ADMINS]
     user = kwargs.get('user')
-    try:
-        send_mail('New Signup ({0})'.format(user.email),
-                   '{0} just signed-up'.format(user.email),
-                   'etalia@etalia.io',
-                    emails,
-                   fail_silently=False)
-    # TODO specify exceptions
-    except:
-        pass
+    if not user.last_login:
+        try:
+            send_mail('New Signup ({0})'.format(user.email),
+                       '{0} just signed-up'.format(user.email),
+                       'etalia@etalia.io',
+                        emails,
+                       fail_silently=False)
+        # TODO specify exceptions
+        except:
+            pass
 
 @partial
 def init_user(social, user, *args, **kwargs):
