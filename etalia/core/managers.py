@@ -103,10 +103,9 @@ class ConsolidateManager(object):
             return False
 
         # compare last name authors
-        fetch_names = ''.join([a['last_name'] for a in new['authors']])
-        store_names = ''.join([a['last_name'] for a in self.entry['authors']])
-        if not pattern.sub('', store_names.lower()) in \
-                pattern.sub('', fetch_names.lower()):
+        fetch_names = set([a['last_name'].lower() for a in new['authors']])
+        store_names = set([a['last_name'].lower() for a in self.entry['authors']])
+        if store_names.issubset(fetch_names):
             return False
 
         return True
