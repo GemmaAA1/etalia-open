@@ -3,9 +3,10 @@ from __future__ import unicode_literals, absolute_import
 
 import re
 import requests
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, ConnectionError, Timeout
 import feedparser
 from habanero import Crossref
+from habanero.exceptions import RequestError
 from config.celery_settings.development import CELERY_ALWAYS_EAGER
 from Bio import Entrez, Medline
 from django.conf import settings
@@ -135,73 +136,82 @@ class ConsolidateManager(object):
     @staticmethod
     def get_pubmed(doc_id='', query=''):
         """Return data from pubmed api"""
-        parser = PubmedPaperParser()
-        email = settings.CONSUMER_PUBMED_EMAIL
-        Entrez.email = email
-        doi = doc_id
-        if doi:
-            handle = Entrez.esearch(db='pubmed',
-                                    term='{doi}[AID]'.format(doi=doi))
-        else:
-            handle = Entrez.esearch(db='pubmed',
-                                    term=query)
+        try:
+            parser = PubmedPaperParser()
+            email = settings.CONSUMER_PUBMED_EMAIL
+            Entrez.email = email
+            doi = doc_id
+            if doi:
+                handle = Entrez.esearch(db='pubmed',
+                                        term='{doi}[AID]'.format(doi=doi))
+            else:
+                handle = Entrez.esearch(db='pubmed',
+                                        term=query)
 
-        record = Entrez.read(handle)
-        handle.close()
-        id_list = list(record["IdList"])
-        handle = Entrez.efetch(db="pubmed",
-                               id=id_list,
-                               rettype="medline",
-                               retmode="text")
-        records = Medline.parse(handle)
-        entries = [record for record in records]
-        if entries and entries[0].get('PMID'):
-            entry = entries[0]
-            return parser.parse(entry)
+            record = Entrez.read(handle)
+            handle.close()
+            id_list = list(record["IdList"])
+            handle = Entrez.efetch(db="pubmed",
+                                   id=id_list,
+                                   rettype="medline",
+                                   retmode="text")
+            records = Medline.parse(handle)
+            entries = [record for record in records]
+            if entries and entries[0].get('PMID'):
+                entry = entries[0]
+                return parser.parse(entry)
+        except IOError:
+            pass
 
         return None
 
     @staticmethod
     def get_crossref(doc_id='', query=''):
         """Return data from crossref api"""
-        parser = CrossRefPaperParser()
-        cr = Crossref()
-        doi = doc_id
-        if doi:
-            try:
-                entry = cr.works(ids=[doi]).get('message')
+        try:
+            parser = CrossRefPaperParser()
+            cr = Crossref()
+            doi = doc_id
+            if doi:
+                try:
+                    entry = cr.works(ids=[doi]).get('message')
+                    return parser.parse(entry)
+                except HTTPError:
+                    pass
+            entries = cr.works(query=query, limit=1).get('items')
+            if entries:
+                entry = entries[0]
                 return parser.parse(entry)
-            except HTTPError:
-                pass
-        entries = cr.works(query=query, limit=1).get('items')
-        if entries:
-            entry = entries[0]
-            return parser.parse(entry)
+        except RequestError:
+            pass
 
         return None
 
     @staticmethod
     def get_arxiv(doc_id='', query=''):
         """Return data from arXiv api"""
-        url_query = 'http://export.arxiv.org/api/query?search_query='
+        try:
+            url_query = 'http://export.arxiv.org/api/query?search_query='
 
-        if doc_id:
-            id_arx = re.sub(r'v[0-9]+', '', doc_id)
-            if id_arx.startswith('arXiv:'):
-                id_arx = id_arx.strip('arXiv:')
-            resp = requests.get('{url}{id}'.format(url=url_query,
-                                                   id=id_arx))
-        else:
-            resp = requests.get('{url}{query}&max_results=1'.format(
-                url=url_query,
-                query=query)
-            )
+            if doc_id:
+                id_arx = re.sub(r'v[0-9]+', '', doc_id)
+                if id_arx.startswith('arXiv:'):
+                    id_arx = id_arx.strip('arXiv:')
+                resp = requests.get('{url}{id}'.format(url=url_query,
+                                                       id=id_arx))
+            else:
+                resp = requests.get('{url}{query}&max_results=1'.format(
+                    url=url_query,
+                    query=query)
+                )
 
-        entries = feedparser.parse(resp.text).get('entries')
-        if entries:
-            parser = ArxivPaperParser()
-            entry = entries[0]
-            return parser.parse(entry)
+            entries = feedparser.parse(resp.text).get('entries')
+            if entries:
+                parser = ArxivPaperParser()
+                entry = entries[0]
+                return parser.parse(entry)
+        except Timeout or HTTPError or ConnectionError:
+            pass
 
         return None
 
