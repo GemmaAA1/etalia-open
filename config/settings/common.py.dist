@@ -263,7 +263,7 @@ SOCIAL_AUTH_PIPELINE = (
     # 'social.pipeline.debug.debug',
     'etalia.users.pipeline.create_details',
     'etalia.users.pipeline.update_usersession',
-    'etalia.users.pipeline.send_admin_email',
+    'etalia.users.pipeline.send_email_of_new_signup',
     'etalia.users.pipeline.init_user',
 
 
