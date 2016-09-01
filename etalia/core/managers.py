@@ -122,14 +122,9 @@ class ConsolidateManager(object):
             title=self.entry['paper'].get('title', ''),
             authors=concatenate_last_names(self.entry.get('authors', [])))
         new_entry = method(doc_id=doc_id, query=query)
-        if new_entry:
-            if doc_id:
-                self.update_entry(new_entry, method_name)
-            elif self.check_query_match(new_entry):
-                self.update_entry(new_entry, method_name)
-                # remove id_gen if any (because paper must have doi, arx or pmi
-                # id if it has be found)
-                self.entry['id_gen'] = ''
+        if new_entry and (doc_id or self.check_query_match(new_entry)):
+            self.update_entry(new_entry, method_name)
+            self.entry['id_gen'] = ''
             self.entry['is_trusted'] = True
         else:
             self.entry['is_trusted'] = False
