@@ -78,11 +78,11 @@ def populate_pubpeer():
 
 
 @app.task(bind=True, rate_limit='1/s')
-def consolidate_paper(self, paper_id):
+def consolidate_paper(self, paper_id, **kwargs):
     pm = PaperManager()
     paper = Paper.objects.get(id=paper_id)
     try:
-        pm.consolidate_paper(paper)
+        pm.consolidate_paper(paper, **kwargs)
     except Exception as exc:
         raise self.retry(exc=exc, countdown=5)
 
