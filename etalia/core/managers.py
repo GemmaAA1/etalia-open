@@ -597,5 +597,5 @@ class PubPeerManager(object):
                     else:
                         raise ValueError('PubPeerComment form is invalid {0}'
                                          .format(form._errors))
-
+        thread.pubpeer.update_is_active()
         return thread
