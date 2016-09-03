@@ -18,7 +18,7 @@ class ThreadForm(forms.ModelForm):
             'content'
         )
 
-    def clean_title(self, data):
+    def clean_title(self):
         title = self.cleaned_data['title']
         # if title is longer than max_length, truncate
         title_max = self.Meta.model._meta.get_field('title').max_length
