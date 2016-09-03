@@ -18,10 +18,15 @@ from etalia.library.models import Paper, Author, AuthorPaper, Journal, \
 from etalia.users.models import UserLibPaper
 from etalia.library.forms import PaperForm, AuthorForm, JournalForm, CorpAuthorForm
 from etalia.feeds.models import StreamPapers, TrendPapers
-from etalia.consumers.parsers import CrossRefPaperParser, ArxivPaperParser, PubmedPaperParser
+from etalia.consumers.parsers import CrossRefPaperParser, ArxivPaperParser, \
+    PubmedPaperParser, ElsevierPaperParser
 from etalia.core.parsers import PaperParser
 from etalia.threads.forms import PubPeerCommentForm, PubPeerForm, ThreadForm
 from etalia.threads.models import Thread, PubPeer, PubPeerComment
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def concatenate_last_names(authors):
@@ -69,14 +74,18 @@ class ConsolidateManager(object):
 
     def consolidate(self):
         """ConsolidateManager dispatcher workflow """
+        self.entry['is_trusted'] = False
         if self.entry['paper'].get('id_arx'):
             self.consolidate_with('arxiv')
+        elif self.entry['paper'].get('id_pmi'):
+            self.consolidate_with('pubmed')
         else:
-            self.consolidate_with('crossref')
-            if self.entry['paper'].get('id_doi'):
-                self.consolidate_with('pubmed')
-            else:
-                self.consolidate_with('arxiv')
+            seq = ['crossref', 'pubmed', 'elsevier', 'arxiv']
+            count = 0
+            while (self.entry.get('is_trusted') == False
+                or self.entry.get('abstract') == '') and count < len(seq):
+                self.consolidate_with(seq[count])
+                count += 1
 
         return self.entry
 
@@ -118,9 +127,10 @@ class ConsolidateManager(object):
             doc_id = self.entry['paper'].get('id_arx')
         else:
             doc_id = self.entry['paper'].get('id_doi')
-        query = '{title} {authors}'.format(
+        query = requests.utils.quote('{title} {authors}'.format(
             title=self.entry['paper'].get('title', ''),
-            authors=concatenate_last_names(self.entry.get('authors', [])))
+            authors=concatenate_last_names(self.entry.get('authors', []))))
+        query = requests.utils.quote(query, safe='')
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry and (doc_id or self.check_query_match(new_entry)):
             self.update_entry(new_entry, method_name)
@@ -133,6 +143,7 @@ class ConsolidateManager(object):
     @staticmethod
     def get_pubmed(doc_id='', query=''):
         """Return data from pubmed api"""
+        logger.info('Starting new HTTP connection (1): pubmed')
         try:
             parser = PubmedPaperParser()
             email = settings.CONSUMER_PUBMED_EMAIL
@@ -210,6 +221,34 @@ class ConsolidateManager(object):
         except Timeout or HTTPError or ConnectionError:
             pass
 
+        return None
+
+    @staticmethod
+    def get_elsevier(doc_id='', query=''):
+        api_key = settings.CONSUMER_ELSEVIER_API_KEY
+        url_query = 'http://api.elsevier.com/content/search/index:SCIDIR?query='
+        headers = {'X-ELS-APIKey': api_key}
+        try:
+            data = {
+                'count': 1,
+                'field': u'doi,coverDate,coverDisplayDate,url,identifier,title,'
+                         'publicationName,issueIdentifier,coverDisplayName,'
+                         'authors,creator,description,startingPage,issn,'
+                         'endingPage',
+                'start': 0,
+            }
+            if doc_id:
+                q = '{base}DOI({id})'.format(base=url_query, id=doc_id)
+            else:
+                q = '{base}{query}'.format(base=url_query, query=query)
+            resp = requests.post(q, data=data, headers=headers)
+            if 'search-results' in resp.json().keys():
+                entries = resp.json().get('search-results').get('entry')
+                parser = ElsevierPaperParser()
+                entry = entries[0]
+                return parser.parse(entry)
+        except Timeout or HTTPError or ConnectionError:
+            pass
         return None
 
 

@@ -456,7 +456,7 @@ class ConsumerElsevier(Consumer):
                         'start': str(count),
                         }
 
-                resp = requests.get(query, data=data, headers=headers)
+                resp = requests.post(query, data=data, headers=headers)
                 if 'search-results' in resp.json().keys():
                     entries += resp.json().get('search-results').get('entry')
                     count += self.ret_max
