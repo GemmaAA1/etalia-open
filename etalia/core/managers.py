@@ -371,12 +371,27 @@ class PaperManager(object):
     @staticmethod
     def update_related_paper_fk(from_id, to_id):
         from etalia.threads.models import Thread
-        with transaction.atomic():
+        # Try/except to deal with unique_together constraint
+        try:
             UserLibPaper.objects.filter(paper_id=from_id).update(paper_id=to_id)
+        except IntegrityError:
+            pass
+        try:
             PaperUser.objects.filter(paper_id=from_id).update(paper_id=to_id)
+        except IntegrityError:
+            pass
+        try:
             StreamPapers.objects.filter(paper_id=from_id).update(paper_id=to_id)
+        except IntegrityError:
+            pass
+        try:
             TrendPapers.objects.filter(paper_id=from_id).update(paper_id=to_id)
+        except IntegrityError:
+            pass
+        try:
             Thread.objects.filter(paper_id=from_id).update(paper_id=to_id)
+        except IntegrityError:
+            pass
 
     @staticmethod
     def get_or_create_paper_from_entry(ep):
