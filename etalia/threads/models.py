@@ -214,6 +214,9 @@ class PubPeer(TimeStampedModel):
 
     thread = models.OneToOneField(Thread)
 
+    # specify if pubpeer comment should be active in etalia
+    is_active = models.BooleanField(default=True)
+
     doi = models.CharField(max_length=64, blank=True, default='',
                            null=False, unique=True, verbose_name='DOI',
                            db_index=True)
@@ -234,6 +237,14 @@ class PubPeer(TimeStampedModel):
     @property
     def url(self):
         return self.link
+
+    def update_is_active(self):
+        c = self.comments.first()
+        if c.body.startswith('Using the R package statcheck'):
+            self.is_active = False
+        else:
+            self.is_active = True
+        self.save(update_fields=['is_active'])
 
 
 class PubPeerComment(TimeStampedModel):
