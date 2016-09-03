@@ -831,7 +831,8 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                     self.data['authors-ids'].append(dic[i])
                 else:
                     self.data['authors-ids'].append([])
-
+            del q2, d2
+        del q1
         self.order_data()
         self.save()
 
@@ -905,7 +906,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                     self.data['authors-ids'].append(dic[i])
                 else:
                     self.data['authors-ids'].append([])
-
+            del q1, q2, d2
             self.order_data()
             self.save()
 
