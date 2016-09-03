@@ -66,7 +66,9 @@ class ConsolidateManager(object):
         'pubmed': ['id_pmi', 'id_doi', 'volume', 'issue', 'page', 'url',
                    'title', 'date_ep', 'date_pp', 'abstract', 'type'],
         'arxiv': ['id_arx', 'volume', 'issue', 'page', 'url', 'title',
-                  'date_ep', 'date_pp', 'date_lr', 'abstract', 'type']
+                  'date_ep', 'date_pp', 'date_lr', 'abstract', 'type'],
+        'elsevier': ['id_doi', 'id_pii', 'volume', 'issue', 'page', 'url',
+                     'title', 'date_ep', 'date_pp', 'abstract', 'type']
     }
 
     def __init__(self, entry):
