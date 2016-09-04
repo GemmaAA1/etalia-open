@@ -39,9 +39,9 @@ define(['app', 'app/model/thread/invite', 'select2'], function (App) {
         },
 
         postRender: function() {
+            var that = this;
 
             function formatResult(state) {
-                //console.log(state);
                 if (!state.id) {
                     return $('<span>' + state.text + '</span>');
                 }
@@ -49,38 +49,48 @@ define(['app', 'app/model/thread/invite', 'select2'], function (App) {
                 return $('<span>' + state.first_name + ' ' + state.last_name + '</span>');
             }
 
-            App.$('select[name="to_user"]').select2({
-                ajax: {
-                    url: App.config.api_root + "/user/users/",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            search: params.term, // search term
-                            page: params.page
-                        };
-                    },
-                    processResults: function (data, params) {
-                        // parse the results into the format expected by Select2
-                        // since we are using custom formatting functions we do not need to
-                        // alter the remote JSON data, except to indicate that infinite
-                        // scrolling can be used
-                        params.page = params.page || 1;
+            App.$('select[name="to_user"]')
+                .select2({
+                    ajax: {
+                        url: App.config.api_root + "/user/users/",
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                search: params.term,
+                                page: params.page
+                            };
+                        },
+                        processResults: function (data, params) {
+                            params.page = params.page || 1;
 
-                        return {
-                            results: data.results,
-                            pagination: {
-                                more: (params.page * 30) < data.total_count
-                            }
-                        };
+                            return {
+                                results: data.results,
+                                pagination: {
+                                    more: (params.page * 30) < data.total_count
+                                }
+                            };
+                        },
+                        cache: true
                     },
-                    cache: true
-                },
-                escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-                minimumInputLength: 3,
-                templateResult: formatResult, // omitted for brevity, see the source of this page
-                templateSelection: formatResult // omitted for brevity, see the source of this page
-            });
+                    minimumInputLength: 3,
+                    templateResult: formatResult,
+                    templateSelection: formatResult
+                })
+                .on('select2:select', function(e) {
+                var model = App.Model.User.find(e.params.data.id);
+                    if (!model) {
+                        model = new App.Model.User({id: e.params.data.id});
+                        model
+                            .fetch({data: {view: 'nested'}})
+                            .done(function() {
+                                that.fields.to_user.editor.setValue(model);
+                            });
+
+                        return;
+                    }
+                    that.fields.to_user.editor.setValue(model, 20);
+                });
 
             return this;
         },

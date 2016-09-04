@@ -140,7 +140,7 @@ define([
                         paper_id: this.model.get('id'),
                         buttons: this.buttons,
                         return_callback: function() {
-                            that.listView.openDetail(that.model);
+                            // TODO that.listView.openDetail(that.model);
                         }
                     }, {
                         $target: this.$('[data-related-threads-placeholder]')
@@ -155,7 +155,7 @@ define([
                         paper_id: this.model.get('id'),
                         buttons: this.buttons,
                         return_callback: function() {
-                            that.listView.openDetail(that.model);
+                            // TODO that.listView.openDetail(that.model);
                         }
                     }, {
                         $target: this.$('[data-neighbors-placeholder]')
