@@ -10,7 +10,7 @@ from etalia.threads.constant import THREAD_PAPER, THREAD_PUBLIC
 
 class PubPeerThreadParser(object):
 
-    source = 'PPR'
+    type = 'PPR'
 
     pubpeer_template = dict([(field, PubPeer._meta.get_field(field).default)
                              for field in PubPeerForm.Meta.fields])
