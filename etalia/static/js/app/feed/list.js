@@ -29,63 +29,63 @@ define([
         });
         controlsView.cluster.disable();
 
-    tabsView = new App.View.Ui.Tabs.create({
-        tabs: [
-            {
-                name: 'feed:papers',
-                title: 'Papers',
-                icon: 'eai-paper',
-                count: false,
-                data: {
-                    view: 'nested',
-                    scored: 1,
-                    banned: 0,
-                    type: 'stream'
+        tabsView = new App.View.Ui.Tabs.create({
+            tabs: [
+                {
+                    name: 'feed:papers',
+                    title: 'Papers',
+                    icon: 'eai-paper',
+                    count: false,
+                    data: {
+                        view: 'nested',
+                        scored: 1,
+                        banned: 0,
+                        type: 'stream'
+                    },
+                    actions: {
+                        pin: true,
+                        ban: true,
+                        add: true
+                    }
                 },
-                actions: {
-                    pin: true,
-                    ban: true,
-                    add: true
-                }
-            },
-            {
-                name: 'feed:trend',
-                title: 'Trend',
-                icon: 'eai-stats',
-                count: false,
-                data: {
-                    view: 'nested',
-                    scored: 1,
-                    banned: 0,
-                    type: 'trend'
+                {
+                    name: 'feed:trend',
+                    title: 'Trend',
+                    icon: 'eai-stats',
+                    count: false,
+                    data: {
+                        view: 'nested',
+                        scored: 1,
+                        banned: 0,
+                        type: 'trend'
+                    },
+                    actions: {
+                        pin: true,
+                        ban: true,
+                        add: true
+                    }
                 },
-                actions: {
-                    pin: true,
-                    ban: true,
-                    add: true
+                {
+                    name: 'feed:threads',
+                    title: 'Threads',
+                    icon: 'eai-comments',
+                    count: false,
+                    data: {
+                        view: 'nested',
+                        scored: 1,
+                        joined: 0,
+                        banned: 0
+                    },
+                    actions: {
+                        pin: true,
+                        ban: true,
+                        join: true
+                    }
                 }
-            },
-            {
-                name: 'feed:threads',
-                title: 'Threads',
-                icon: 'eai-comments',
-                count: false,
-                data: {
-                    view: 'nested',
-                    scored: 1,
-                    joined: 0,
-                    banned: 0
-                },
-                actions: {
-                    pin: true,
-                    ban: true,
-                    join: true
-                }
-            }
-        ]
-    }, {
-        $target: this.$('div[data-tabs-placeholder]')
-    });
+            ]
+        }, {
+            $target: App.$('div[data-tabs-placeholder]')
+        });
 
         filtersView = App.View.Ui.Filters.create({}, {
             $target: App.$('div[data-right-flap-placeholder]')
@@ -101,9 +101,8 @@ define([
         listView.onTabsContextChange();
     };
 
-
-    var paperDetailController = function (id) {
-        console.log('paperDetailController(' + id + ')');
+    var detailController = function (modelClass, slug) {
+        console.log('detailController(' + modelClass + '#' + slug + ')');
 
         if (detailView) {
             Detail.close();
@@ -111,17 +110,23 @@ define([
             detailView = null;
         }
 
-        // TODO parse slug
+        var id = null,
+            slugRegex = /([a-z0-9-]+)_(\d+)/;
+        if (slugRegex.test(slug)) {
+            var matches = slug.match(slugRegex);
+            id = matches[2];
+        } else {
+            id = slug;
+        }
         id = parseInt(id);
         if (!id) {
-            throw 'Failed to parse paper slug';
+            throw 'Failed to parse slug';
         }
 
-        var model = App.Model.Paper.find(id);
+        var model = modelClass.find(id);
         if (!model) {
-            model = new App.Model.Paper({id: id});
+            model = new modelClass({id: id});
         }
-
 
         var options = {
                 model: model,
@@ -131,8 +136,16 @@ define([
             options.buttons = tabsView.getActiveTab().actions;
         }
 
+        var modelDetailView;
+        if (modelClass == App.Model.Thread) {
+            modelDetailView = new App.View.Thread.Detail(options);
+        } else if (modelClass == App.Model.Paper) {
+            modelDetailView = new App.View.Paper.Detail(options);
+        } else {
+            throw 'Unexpected model class';
+        }
         var detailModel = new App.Model.Detail({
-            view: new App.View.Paper.Detail(options)
+            view: modelDetailView
         });
         detailModel.setCenterButton({
             icon: 'close',
@@ -179,10 +192,16 @@ define([
     var Router = App.Backbone.Router.extend({
         routes: {
             "my-feeds/": "list",
-            "paper/:id": "paperDetail"
+            "paper/:slug": "paperDetail",
+            "thread/:id": "threadDetail"
         },
         list: listController,
-        paperDetail: paperDetailController
+        paperDetail: function(slug) {
+            detailController(App.Model.Paper, slug);
+        },
+        threadDetail: function(id) {
+            detailController(App.Model.Thread, id);
+        }
     });
 
     router = new Router();
@@ -203,7 +222,4 @@ define([
 
     App.init();
 
-    // TODO
-    // remove App.View.Thread.List.openDetail calls.
-    // remove App.View.Paper.List.openDetail calls.
 });

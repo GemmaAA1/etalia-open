@@ -106,7 +106,8 @@ define([
                 leave_button: this.buttons.leave && is_member,
 
                 members_count: this.model.getMembersCount(),
-                posts_count: this.model.getPostsCount()
+                posts_count: this.model.getPostsCount(),
+                is_third_party: this.model.isThirdParty()
             });
 
             this.$el.html(this.template(attributes));
