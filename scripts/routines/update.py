@@ -250,9 +250,17 @@ def update_relationships():
         fixture.create(NB_RELATIONSHIPS - Relationship.objects.all().count())
 
 
+def get_true_users():
+    us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
+        .exclude(social_count__lt=1)\
+        .exclude(email__endswith='fake.com')\
+        .values_list('id', flat=True)
+    return us_pk
+
+
 def update_streams():
     print('Updating streams...')
-    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
+    us_pk = get_true_users()
     # Update users stream
     for user_pk in us_pk:
         reset_stream(user_pk)
@@ -260,7 +268,7 @@ def update_streams():
 
 def update_trends():
     print('Updating trends...')
-    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
+    us_pk = get_true_users()
     # Update users trend
     for user_pk in us_pk:
         reset_trend(user_pk)
@@ -268,7 +276,7 @@ def update_trends():
 
 def update_threadfeeds():
     print('Updating threadfeeds...')
-    us_pk = User.objects.exclude(email__endswith='fake.com').values_list('pk', flat=True)
+    us_pk = get_true_users()
     # Update users threadfeed
     for user_pk in us_pk:
         update_threadfeed(user_pk)
@@ -476,6 +484,7 @@ if __name__ == '__main__':
     django.setup()
     from django.core.files import File
     from django.contrib.auth import get_user_model
+    from django.db.models import Count, F
     from etalia.consumers.tasks import pubmed_run, arxiv_run, elsevier_run
     from etalia.library.models import Paper
     from etalia.altmetric.tasks import update_altmetric
