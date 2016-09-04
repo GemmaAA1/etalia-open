@@ -25,7 +25,7 @@ class PubmedPaperParser(PaperParser):
         ('PATENTS',         'PAT'),
         ('UNKNOWN',         ''),
     )
-    source = 'PUB'
+    type = 'PUB'
 
     def parse_journal(self, entry):
 
@@ -160,7 +160,7 @@ class PubmedPaperParser(PaperParser):
 class ArxivPaperParser(PaperParser):
     """Arxiv PaperParser"""
 
-    source = 'ARX'
+    type = 'ARX'
 
     def parse_authors(self, entry):
         authors = []
@@ -226,7 +226,7 @@ class ArxivPaperParser(PaperParser):
 class ElsevierPaperParser(PaperParser):
     """Elsevier PaperParser"""
 
-    source = 'ELS'
+    type = 'ELS'
 
     def parse_authors(self, entry):
         authors = []
@@ -314,7 +314,7 @@ class CrossRefPaperParser(PaperParser):
     """CrossRef PaperParser
     """
 
-    source = 'CRO'
+    type = 'CRO'
 
     CROSSREF_PT = (
         ('journal-article',         'JOU'),
