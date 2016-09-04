@@ -183,15 +183,11 @@ define([
             detailView = null;
         }
 
-        var id = null,
-            slugRegex = /([a-z0-9-]+)_(\d+)/;
-        if (slugRegex.test(slug)) {
-            var matches = slug.match(slugRegex);
-            id = matches[2];
-        } else {
-            id = slug;
+        try {
+            var id = parseInt(slug.match(/([a-z0-9-]+)_(\d+)/)[2]);
+        } catch (e) {
+            throw 'Failed to parse slug';
         }
-        id = parseInt(id);
         if (!id) {
             throw 'Failed to parse slug';
         }

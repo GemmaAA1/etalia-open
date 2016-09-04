@@ -5,7 +5,8 @@ define([
     'app/view/list',
     'app/view/ui/modal',
     'app/view/paper/detail',
-    'app/view/paper/thumb'
+    'app/view/paper/thumb',
+    'altmetric'
 ], function (App, template) {
 
     var $window = $(window),
