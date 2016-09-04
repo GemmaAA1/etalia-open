@@ -382,6 +382,7 @@ class ConsumerPubmed(Consumer):
         except Exception:
             cj.status_to('error')
             raise
+        cj.status_to('idle')
         return entries
 
 
@@ -484,6 +485,7 @@ class ConsumerElsevier(Consumer):
         except Exception:
             cj.status_to('error')
             raise
+        cj.status_to('idle')
         return entries
 
 
@@ -554,7 +556,7 @@ class ConsumerArxiv(Consumer):
         except Exception:
             cj.status_to('error')
             raise
-
+        cj.status_to('idle')
         return entries
 
 
