@@ -20,10 +20,10 @@ define([
         },
 
         mode: null,
-        list: null,
+        //list: null,
 
         events: {
-            "click .title a": "onTitleClick",
+            //"click .title a": "onTitleClick",
             "click .thumb-pin": "onPinClick",
             "click .thumb-ban": "onBanClick",
             "click .thumb-join": "onJoinClick",
@@ -32,12 +32,13 @@ define([
 
         initialize: function (options) {
             this.mode = options.mode || App.View.Thread.Thumb.MODE_LIST;
-            if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
+            // TODO remove list parameter at instantiation level
+            /*if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
                 if (!options.list) {
                     throw '"options.list" is mandatory is list mode.';
                 }
                 this.list = options.list;
-            }
+            }*/
 
             if (options.buttons) {
                 this.buttons = App._.extend({}, this.buttons, options.buttons);
@@ -49,14 +50,13 @@ define([
             this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
         },
 
-        onTitleClick: function(e) {
+        /*onTitleClick: function(e) {
+            e.preventDefault();
+
             if (this.mode == App.View.Thread.Thumb.MODE_LIST) {
-                if (!this.model.isThirdParty()) {
-                    e.preventDefault();
-                    this.list.trigger('model:detail', this.model, this);
-                }
+                this.list.trigger('model:detail', this.model, this);
             }
-        },
+        },*/
 
         onPinClick: function(e) {
             e.preventDefault();
@@ -106,7 +106,8 @@ define([
                 leave_button: this.buttons.leave && is_member,
 
                 members_count: this.model.getMembersCount(),
-                posts_count: this.model.getPostsCount()
+                posts_count: this.model.getPostsCount(),
+                is_third_party: this.model.isThirdParty()
             });
 
             this.$el.html(this.template(attributes));

@@ -104,49 +104,60 @@ define(['app', 'app/model/thread/thread', 'select2'], function (App) {
         },
 
         postRender: function() {
+            var that = this;
 
-            function formatResult(state) {
-                //console.log(state);
-                if (!state.id) {
-                    return $('<span>' + state.text + '</span>');
+            function formatResult(paper) {
+                if (!paper.id) {
+                    return $('<span>' + paper.text + '</span>');
                 }
 
-                return $('<span>' + state.title + '</span>');
+                return $('<span>' + paper.title + '</span>');
             }
 
-            App.$('select[name="paper"]').css({width: '100%'}).select2({
-                ajax: {
-                    url: App.config.api_root + "/library/my-papers",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            search: params.term, // search term
-                            added: 1,
-                            page: params.page
-                        };
-                    },
-                    processResults: function (data, params) {
-                        // parse the results into the format expected by Select2
-                        // since we are using custom formatting functions we do not need to
-                        // alter the remote JSON data, except to indicate that infinite
-                        // scrolling can be used
-                        params.page = params.page || 1;
+            App.$('select[name="paper"]')
+                .css({width: '100%'})
+                .select2({
+                    ajax: {
+                        url: App.config.api_root + "/library/my-papers",
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                search: params.term,
+                                added: 1,
+                                page: params.page
+                            };
+                        },
+                        processResults: function (data, params) {
+                            params.page = params.page || 1;
 
-                        return {
-                            results: data.results,
-                            pagination: {
-                                more: (params.page * 30) < data.total_count
-                            }
-                        };
+                            return {
+                                results: data.results,
+                                pagination: {
+                                    more: (params.page * 30) < data.total_count
+                                }
+                            };
+                        },
+                        cache: true
                     },
-                    cache: true
-                },
-                escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-                minimumInputLength: 3,
-                templateResult: formatResult, // omitted for brevity, see the source of this page
-                templateSelection: formatResult // omitted for brevity, see the source of this page
-            });
+                    minimumInputLength: 3,
+                    templateResult: formatResult,
+                    templateSelection: formatResult
+                })
+                .on('select2:select', function(e) {
+                    var model = App.Model.Paper.find(e.params.data.id);
+                    if (!model) {
+                        model = new App.Model.Paper({id: e.params.data.id});
+                        model
+                            .fetch({data: {view: 'nested'}})
+                            .done(function() {
+                                that.fields.paper.editor.setValue(model);
+                            });
+
+                        return;
+                    }
+                    that.fields.paper.editor.setValue(model);
+                });
 
         },
 

@@ -1,13 +1,13 @@
 define([
     'app',
+    'app/view/detail',
     'app/view/ui/controls',
     'app/view/ui/filters',
     'app/view/ui/tabs',
-    'app/view/thread/list',
-    'app/view/thread/form-create'
-], function (App) {
+    'app/view/thread/list'
+], function (App, Detail) {
 
-    var controlsView, filtersView, tabsView;
+    /*var controlsView, filtersView, tabsView;
 
     controlsView = new App.View.Ui.Controls.create({}, {
         $target: App.$('div[data-controls-placeholder]')
@@ -77,6 +77,194 @@ define([
         filtersView: filtersView
     }, {
         $target: App.$('div[data-list-placeholder]')
+    });
+
+    App.Layout.initRightFlap();
+
+    App.init();*/
+
+
+    var listView, detailView,
+        controlsView, filtersView, tabsView,
+        router;
+
+    var redirectToList = function() {
+        router.navigate('my-threads/', true);
+    };
+
+    var listController = function() {
+        console.log('listController()');
+
+        Detail.close();
+
+        if (listView) {
+            return;
+        }
+
+        controlsView = new App.View.Ui.Controls.create({}, {
+            $target: App.$('div[data-controls-placeholder]')
+        });
+        controlsView.cluster.disable();
+        controlsView.timespan.disable();
+        controlsView.pin.disable();
+
+        tabsView = new App.View.Ui.Tabs.create({
+            tabs: [
+                {
+                    name: 'thread:threads',
+                    title: 'Threads',
+                    icon: 'eai-comments',
+                    count: 0,
+                    data: {
+                        view: 'nested',
+                        joined: 1
+                        //banned: "0"
+                    },
+                    actions: {
+                        pin: true,
+                        leave: true
+                    }
+                },
+                {
+                    name: 'thread:pins',
+                    title: 'Pins',
+                    icon: 'eai-pin',
+                    count: 0,
+                    data: {
+                        view: 'nested',
+                        pinned: 1
+                    },
+                    actions: {
+                        pin: true,
+                        join: true
+                    }
+                },
+                {
+                    name: 'thread:left',
+                    title: 'Left',
+                    icon: 'eai-leave',
+                    count: 0,
+                    data: {
+                        view: 'nested',
+                        left: 1
+                    },
+                    actions: {
+                        join: true
+                    }
+                }
+            ]
+        }, {
+            $target: App.$('div[data-tabs-placeholder]')
+        });
+
+        filtersView = App.View.Ui.Filters.create({}, {
+            $target: App.$('div[data-right-flap-placeholder]')
+        });
+
+        listView = App.View.Thread.List.create({
+            newButton: true,
+            invitesButton: true,
+            controlsView: controlsView,
+            tabsView: tabsView,
+            filtersView: filtersView
+        }, {
+            $target: App.$('div[data-list-placeholder]')
+        });
+
+        listView.onTabsContextChange();
+    };
+
+    var detailController = function (modelClass, slug) {
+        console.log('detailController(' + modelClass + '#' + slug + ')');
+
+        if (detailView) {
+            Detail.close();
+            detailView.remove();
+            detailView = null;
+        }
+
+        try {
+            var id = parseInt(slug.match(/([a-z0-9-]+)_(\d+)/)[2]);
+        } catch (e) {
+            throw 'Failed to parse slug';
+        }
+        if (!id) {
+            throw 'Failed to parse slug';
+        }
+
+        var model = modelClass.find(id);
+        if (!model) {
+            model = new modelClass({id: id});
+        }
+
+
+        var options = {
+            model: model,
+            listView: listView.listView // App.Paper.List.View
+        };
+        if (tabsView.getActiveTab().actions) {
+            options.buttons = tabsView.getActiveTab().actions;
+        }
+
+        var modelDetailView;
+        if (modelClass == App.Model.Thread) {
+            modelDetailView = new App.View.Thread.Detail(options);
+        } else if (modelClass == App.Model.Paper) {
+            modelDetailView = new App.View.Paper.Detail(options);
+        } else {
+            throw 'Unexpected model class';
+        }
+        var detailModel = new App.Model.Detail({
+            view: modelDetailView
+        });
+        detailModel.setCenterButton({
+            icon: 'close',
+            title: 'Back to papers list',
+            callback: function() {
+                redirectToList();
+            }
+        });
+
+        model
+            .fetch({data: {view: 'nested'}})
+            .fail(function() {
+                redirectToList();
+            })
+            .done(function() {
+                //console.log('detail fetch done.');
+                Detail.setModel(detailModel);
+            });
+
+    };
+
+
+    var Router = App.Backbone.Router.extend({
+        routes: {
+            "my-threads/": "list",
+            "paper/:id": "paperDetail",
+            "thread/:id": "threadDetail"
+        },
+        list: listController,
+        paperDetail: function(id) {
+            detailController(App.Model.Paper, id);
+        },
+        threadDetail: function(id) {
+            detailController(App.Model.Thread, id);
+        }
+    });
+
+    router = new Router();
+
+    App.$(document).on('click', '[data-router]', function(e) {
+        e.preventDefault();
+
+        router.navigate(App.$(e.currentTarget).attr('href'), true);
+
+        return false;
+    });
+
+    App.Backbone.history.start({
+        pushState: true
     });
 
     App.Layout.initRightFlap();

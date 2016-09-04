@@ -26,7 +26,11 @@
     <div data-user-placeholder></div>
     <p class="title">
         {{#if list_mode}}
+            {{#if is_third_party}}
             <a href="{{thirdparty_url}}" target="_blank">
+            {{else}}
+            <a href="/thread/{{slug}}" data-router>
+            {{/if}}
                 {{thread_not_published_icon}}
                 {{thread_privacy_icon}}
                 {{title}}

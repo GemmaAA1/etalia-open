@@ -64,7 +64,7 @@ define([
                     user: App.getCurrentUser(),
                     paper: this
                 }, {silent: true});
-                this.set({state: state}, {silent: true});
+                this.set({state: state}, {silent: true});// TODO voir si backbone relational ne met pas à jour la relation seul
             }
             return state;
         },

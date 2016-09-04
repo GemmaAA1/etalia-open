@@ -1,14 +1,14 @@
 define([
     'app',
     'text!app/templates/thread/list.hbs',
-    'app/view/detail',
     'app/model/thread/thread',
     'app/view/list',
     'app/view/ui/modal',
     'app/view/thread/detail',
     'app/view/thread/thumb',
-    'app/view/thread/invite/treat'
-], function (App, template, Detail) {
+    'app/view/thread/invite/treat',
+    'app/view/thread/form-create'
+], function (App, template) {
 
     var $window = $(window),
         $document = $(document);
@@ -105,9 +105,6 @@ define([
             this.filtersView = options.filtersView;
             this.listenTo(this.filtersView, "loaded", this.load);
             this.listenTo(this.filtersView, "context-change", this.load);
-
-            // Detail
-            this.listenTo(this, "model:detail", this.openDetail);
 
             App._.bindAll(this,
                 'onThreadPin', 'onThreadUnpin',
@@ -317,7 +314,6 @@ define([
             var tabName = this.tabsView.getActiveTab().name;
             if (0 <= ['feed:threads', 'thread:threads', 'thread:pins'].indexOf(tabName)) {
                 this.onModelRemove(thread);
-                Detail.close();
             }
             this.tabsView.setTabCount('feed:threads', -1, true);
             this.tabsView.setTabCount('paper:threads', -1, true);
@@ -345,7 +341,6 @@ define([
             var tabName = this.tabsView.getActiveTab().name;
             if (0 <= ['thread:threads', 'thread:pins'].indexOf(tabName)) {
                 this.onModelRemove(thread);
-                Detail.close();
             }
             this.tabsView.setTabCount('thread:threads', -1, true);
             //this.tabsView.setTabCount('thread:pins', -1, true);
@@ -385,63 +380,6 @@ define([
             this.listView.hideEmptyMessage().clear();
         },
 
-        openDetail: function (model) {
-            App.log('ThreadListView::onModelDetail');
-
-            var modelIndex = this.collection.fullCollection.indexOf(model);
-            if (0 > modelIndex) {
-                throw 'Unexpected index';
-            }
-
-            var that = this,
-                options = {
-                    model: model,
-                    listView: this
-                };
-            if (this.tabsView.getActiveTab().actions) {
-                options.buttons = this.tabsView.getActiveTab().actions;
-            }
-
-            var detailModel = new App.Model.Detail({
-                view: new App.View.Thread.Detail(options)
-            });
-            detailModel.setCenterButton({
-                icon: 'close',
-                title: 'Back to threads list',
-                callback: function() {
-                    Detail.close();
-                }
-            });
-
-            var prevThread = 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null;
-            if (prevThread) {
-                detailModel.setLeftButton({
-                    title: 'Previous thread',
-                    caption: prevThread.get('title'),
-                    callback: function() {
-                        that.openDetail(prevThread);
-                    }
-                });
-            }
-
-            var nextThread = this.collection.fullCollection.at(modelIndex + 1);
-            if (nextThread) {
-                detailModel.setRightButton({
-                    title: 'Next thread',
-                    caption: nextThread.get('title'),
-                    callback: function() {
-                        that.openDetail(nextThread);
-                    }
-                });
-            }
-
-            model
-                .fetch({data: {view: 'nested'}})
-                .done(function() {
-                    Detail.setModel(detailModel);
-                });
-        },
-
         onModelRemove: function (model) {
             App.log('ThreadListView::onModelRemove');
 
@@ -467,7 +405,8 @@ define([
                     success: function () {
                         that.collection.add(form.model, {at: 0});
                         modal.close();
-                        that.openDetail(form.model);
+                        //that.openDetail(form.model);
+                        // TODO navigate to detail ...
                     },
                     error: function () {
                         // TODO
@@ -533,7 +472,8 @@ define([
                             modal.close();
 
                             // Open detail
-                            that.openDetail(thread);
+                            //that.openDetail(thread);
+                            // TODO navigate to detail ...
                         })
                         .fail(function() {
                             App.log('Errors', 'Failed to fetch invite thread.');
