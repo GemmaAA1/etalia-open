@@ -131,8 +131,8 @@ class ConsolidateManager(object):
             doc_id = self.entry['paper'].get('id_doi')
         query = requests.utils.quote('{title} {authors}'.format(
             title=self.entry['paper'].get('title', ''),
-            authors=concatenate_last_names(self.entry.get('authors', []))))
-        query = requests.utils.quote(query, safe='')
+            authors=concatenate_last_names(self.entry.get('authors', []))),
+            safe='')
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry and (doc_id or self.check_query_match(new_entry)):
             self.update_entry(new_entry, method_name)
