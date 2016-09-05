@@ -196,10 +196,15 @@ class ArxivPaperParser(PaperParser):
         paper['type'] = 'PRE'
         paper['publish_status'] = 'preprint'
 
-        found = re.findall(r'http://arxiv.org/abs/([0-9\.]+)\w+',
-                           entry.get('id', ''))
-        if found:
-            paper['id_arx'] = found[0]
+        patterns = [
+            'http://arxiv.org/abs/(?P<jid>[\w-]+)/(?P<pid>\d+)v\d',
+            'http://arxiv.org/abs/(?P<pid>\d+)v\d'
+        ]
+        for pattern in patterns:
+            res = re.search(pattern, entry.get('id', ''))
+            if res:
+                paper['id_arx'] = res.groupdict().get('pid')
+                break
 
         paper['url'] = entry.get('link', '')
 

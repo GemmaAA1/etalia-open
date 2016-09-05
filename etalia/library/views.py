@@ -55,6 +55,32 @@ class PaperViewPk(RedirectView):
 paper = PaperViewPk.as_view()
 
 
+class PaperRedirectViewPk(RedirectView):
+
+    permanent = True
+    query_string = True
+    pattern_name = 'library:paper-slug'
+
+    def get_redirect_url(self, *args, **kwargs):
+        paper = Paper.objects.get(pk=kwargs['pk'])
+        kwargs['slug'] = slugify(paper.title)
+        return super(PaperRedirectViewPk, self).get_redirect_url(*args, **kwargs)
+
+paper_redirect = PaperRedirectViewPk.as_view()
+
+
+class PaperRedirectSlugViewPk(RedirectView):
+
+    permanent = True
+    query_string = True
+    pattern_name = 'library:paper-slug'
+
+    def get_redirect_url(self, *args, **kwargs):
+        return super(PaperRedirectSlugViewPk, self).get_redirect_url(*args, **kwargs)
+
+paper_redirect_slug = PaperRedirectSlugViewPk.as_view()
+
+
 def papers(request):
     return TemplateResponse(
         request,

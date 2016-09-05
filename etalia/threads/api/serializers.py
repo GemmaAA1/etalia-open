@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
@@ -73,6 +75,7 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
     thirdparty_url = serializers.SerializerMethodField()
     posts_count = serializers.SerializerMethodField()
     members_count = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
 
     class Meta:
         model = Thread
@@ -96,10 +99,11 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
             'created',
             'modified',
             'published_at',
-            'new',
+            'slug',
             'thirdparty_url',
             'posts_count',
             'members_count',
+            'new',
         )
         read_only_fields = (
             'id',
@@ -114,6 +118,7 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
             'thirdparty_url',
             'comments_count',
             'members_count',
+            'slug',
         )
         switch_kwargs = {
             'user': {'serializer': UserSerializer},
@@ -122,6 +127,10 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
                       'allow_null': True,
                       }
         }
+
+    def get_slug(self, obj):
+        return '{slug}_{id}'.format(slug=slugify(obj.title),
+                                    id=obj.id)
 
     def get_thirdparty_url(self, obj):
         for _, third_party_model_name in obj.THIRD_PARTY_TYPES:
