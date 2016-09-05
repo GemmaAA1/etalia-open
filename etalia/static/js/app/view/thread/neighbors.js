@@ -45,33 +45,6 @@ define([
 
             this.collection.on("add", this.onCollectionAdd, this);
             this.collection.on("remove", this.onCollectionRemove, this);
-
-            this.listenTo(this, "model:detail", this.openDetail);
-
-            // Collection
-            //this.listenTo(this.collection, "add", this.onCollectionAdd);
-            //this.listenTo(this.collection, "remove", this.onCollectionRemove);
-        },
-
-        openDetail: function(model) {
-            var options = {
-                model: model,
-                buttons: this.buttons
-            };
-            var detailModel = new App.Model.Detail({
-                view: new App.View.Thread.Detail(options)
-            });
-            detailModel.setCenterButton({
-                icon: 'close',
-                title: 'Back to previous thread',
-                callback: this.returnCallback
-            });
-
-            model
-                .fetch({data: {view: 'nested'}})
-                .done(function() {
-                    Detail.setModel(detailModel);
-                });
         },
 
         render: function () {
