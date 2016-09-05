@@ -91,12 +91,19 @@ class AuthorForm(forms.ModelForm):
                   'email')
 
     def clean_first_name(self):
+        # truncate
+        first_name = self.cleaned_data['first_name']
+        max_length = self.model._meta.get_field('first_name').max_length
+        first_name = first_name[:max_length]
         # capitalize
-        return self.cleaned_data['first_name'].title()
+        return first_name.title()
 
     def clean_last_name(self):
+        last_name = self.cleaned_data['last_name']
+        max_length = self.model._meta.get_field('last_name').max_length
+        last_name = last_name[:max_length]
         # capitalize
-        return self.cleaned_data['last_name'].title()
+        return last_name.title()
 
 
 class CorpAuthorForm(forms.ModelForm):
