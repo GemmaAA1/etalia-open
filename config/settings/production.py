@@ -47,7 +47,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static/compiled')),
 )
-# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 
 # EMAIL backend
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
