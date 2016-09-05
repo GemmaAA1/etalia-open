@@ -35,11 +35,11 @@ def userlib_update_all():
 
 
 @app.task(bind=True)
-def update_lib(self, user_pk):
+def update_lib(self, user_pk, **kwargs):
     """Async task for updating user library"""
     userlib = UserLib.objects.get(user_id=user_pk)
     try:
-        userlib.update()
+        userlib.update(**kwargs)
     except MendeleyApiException as exc:
         if not self.request.retries > 1:
             raise self.retry(exc=exc, countdown=60 * 10)

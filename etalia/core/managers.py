@@ -495,11 +495,14 @@ class PaperManager(object):
                     form = AuthorForm(d)
                     if form.is_valid():
                         author = form.save()
+                    else:
+                        author = None
 
-                AuthorPaper.objects.get_or_create(
-                    paper=paper,
-                    author=author,
-                    position=pos)
+                if author:
+                    AuthorPaper.objects.get_or_create(
+                        paper=paper,
+                        author=author,
+                        position=pos)
 
             # create/get corp author
             for pos, item_corp_author in enumerate(eca):
@@ -609,5 +612,6 @@ class PubPeerManager(object):
                     else:
                         raise ValueError('PubPeerComment form is invalid {0}'
                                          .format(form._errors))
-        thread.pubpeer.update_is_active()
+        if hasattr(thread, 'pubpeer') and thread.pubpeer:
+            thread.pubpeer.update_is_active()
         return thread
