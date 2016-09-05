@@ -3,7 +3,7 @@ Etalia.io
 """
 
 __title__ = 'etalia.io'
-__version__ = '0.3.24'
+__version__ = '0.3.25'
 __copyright__ = 'Copyright 2015-2016 Etalia'
 
 # Version synonym
