@@ -47,7 +47,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static/compiled')),
 )
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 
 # EMAIL backend
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
@@ -73,7 +73,7 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'IGNORE_EXCEPTIONS': True,
         },
-        'TIMEOUT': 600,     # in seconds
+        # 'TIMEOUT': 600,     # in seconds
     },
     'staticfiles': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
