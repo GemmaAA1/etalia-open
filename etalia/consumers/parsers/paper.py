@@ -197,8 +197,8 @@ class ArxivPaperParser(PaperParser):
         paper['publish_status'] = 'preprint'
 
         patterns = [
-            'http://arxiv.org/abs/(?P<jid>[\w-]+)/(?P<pid>\d+)v\d',
-            'http://arxiv.org/abs/(?P<pid>\d+)v\d'
+            'http://arxiv.org/abs/(?P<jid>[\w-]+)/(?P<pid>[\d\.]+)v\d',
+            'http://arxiv.org/abs/(?P<pid>[\d\.]+)v\d'
         ]
         for pattern in patterns:
             res = re.search(pattern, entry.get('id', ''))
