@@ -29,8 +29,6 @@ define([
         template: App.Handlebars.compile(template),
         buttons: buttonsDefaults,
 
-        listView: null,
-
         events: {
             "click .detail-pin": "onPinClick",
             "click .detail-ban": "onBanClick",
@@ -54,9 +52,6 @@ define([
 
 
         initialize: function (options) {
-            if (options.listView) {
-                this.listView = options.listView;
-            }
             if (options.buttons) {
                 this.buttons = App._.extend(buttonsDefaults, options.buttons);
             }
@@ -245,7 +240,7 @@ define([
                 icon: 'close',
                 title: 'Back to previous thread',
                 callback: function() {
-                    that.listView.openDetail(that.model);
+                    App.trigger('etalia.navigate', '/papers/' + model.get('slug') + '/');
                 }
             });
 
@@ -388,20 +383,18 @@ define([
             }
 
             // Neighbors
-            if (this.listView) {
-                var that = this;
-                this.pushSubView(
-                    App.View.Thread.Neighbors.create({
-                        thread_id: this.model.get('id'),
-                        buttons: this.buttons,
-                        return_callback: function() {
-                            that.listView.openDetail(that.model);
-                        }
-                    }, {
-                        $target: this.$('[data-neighbors-placeholder]')
-                    })
-                );
-            }
+            var that = this;
+            this.pushSubView(
+                App.View.Thread.Neighbors.create({
+                    thread_id: this.model.get('id'),
+                    buttons: this.buttons,
+                    return_callback: function() {
+                        App.trigger('etalia.navigate', '/threads/' + that.model.get('slug') + '/');
+                    }
+                }, {
+                    $target: this.$('[data-neighbors-placeholder]')
+                })
+            );
 
             this.trigger('rendered');
 
