@@ -241,8 +241,8 @@ define([
     var Router = App.Backbone.Router.extend({
         routes: {
             "my-threads/": "list",
-            "paper/:id": "paperDetail",
-            "thread/:id": "threadDetail"
+            "papers/:id": "paperDetail",
+            "threads/:id": "threadDetail"
         },
         list: listController,
         paperDetail: function(id) {

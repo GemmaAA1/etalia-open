@@ -188,8 +188,8 @@ define([
     var Router = App.Backbone.Router.extend({
         routes: {
             "my-feeds/": "list",
-            "paper/:slug": "paperDetail",
-            "thread/:id": "threadDetail"
+            "papers/:slug": "paperDetail",
+            "threads/:id": "threadDetail"
         },
         list: listController,
         paperDetail: function(slug) {
