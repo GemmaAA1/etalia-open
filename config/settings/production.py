@@ -44,11 +44,10 @@ NLP_TE_BUCKET_NAME = 'etalia-production-nlp-pe'
 ROOT_DIR_m1 = ROOT_DIR.path() - 1
 STATIC_ROOT = str(ROOT_DIR_m1.path('static'))
 STATIC_URL = '/static/'
-
-
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static/compiled')),
 )
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 
 # EMAIL backend
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
@@ -75,6 +74,10 @@ CACHES = {
             'IGNORE_EXCEPTIONS': True,
         },
         'TIMEOUT': 600,     # in seconds
+    },
+    'staticfiles': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'staticfiles-filehashes'
     },
     'files': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',

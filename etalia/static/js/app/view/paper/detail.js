@@ -23,8 +23,6 @@ define([
         template: App.Handlebars.compile(template),
         buttons: buttonsDefaults,
 
-        listView: null,
-
         events: {
             "click .detail-pin": "onPinClick",
             "click .detail-ban": "onBanClick",
@@ -37,9 +35,6 @@ define([
         },
 
         initialize: function (options) {
-            if (options.listView) {
-                this.listView = options.listView;
-            }
             if (options.buttons) {
                 this.buttons = App._.extend(buttonsDefaults, options.buttons);
             }
@@ -134,34 +129,30 @@ define([
             this.$el.html(this.template(attributes));
 
             // Related Threads
-            if (this.listView) {
-                this.pushSubView(
-                    App.View.Paper.RelatedThreads.create({
-                        paper_id: this.model.get('id'),
-                        buttons: this.buttons,
-                        return_callback: function() {
-                            // TODO that.listView.openDetail(that.model);
-                        }
-                    }, {
-                        $target: this.$('[data-related-threads-placeholder]')
-                    })
-                );
-            }
+            this.pushSubView(
+                App.View.Paper.RelatedThreads.create({
+                    paper_id: this.model.get('id'),
+                    buttons: this.buttons,
+                    return_callback: function() {
+                        App.trigger('etalia.navigate', '/papers/' + that.model.get('slug') + '/');
+                    }
+                }, {
+                    $target: this.$('[data-related-threads-placeholder]')
+                })
+            );
 
             // Neighbors
-            if (this.listView) {
-                this.pushSubView(
-                    App.View.Paper.Neighbors.create({
-                        paper_id: this.model.get('id'),
-                        buttons: this.buttons,
-                        return_callback: function() {
-                            // TODO that.listView.openDetail(that.model);
-                        }
-                    }, {
-                        $target: this.$('[data-neighbors-placeholder]')
-                    })
-                );
-            }
+            this.pushSubView(
+                App.View.Paper.Neighbors.create({
+                    paper_id: this.model.get('id'),
+                    buttons: this.buttons,
+                    return_callback: function() {
+                        App.trigger('etalia.navigate', '/papers/' + that.model.get('slug') + '/');
+                    }
+                }, {
+                    $target: this.$('[data-neighbors-placeholder]')
+                })
+            );
 
             this.trigger('rendered');
 

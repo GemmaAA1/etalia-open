@@ -124,11 +124,8 @@ define([
             model = new modelClass({id: id});
         }
 
-        var options = {
-                model: model,
-                listView: listView.listView // App.Paper.List.View
-            };
-        if (tabsView.getActiveTab().actions) {
+        var options = {model: model};
+        if (tabsView && tabsView.getActiveTab().actions) {
             options.buttons = tabsView.getActiveTab().actions;
         }
 
@@ -188,8 +185,8 @@ define([
     var Router = App.Backbone.Router.extend({
         routes: {
             "my-feeds/": "list",
-            "papers/:slug": "paperDetail",
-            "threads/:id": "threadDetail"
+            "papers/:slug/": "paperDetail",
+            "threads/:id/": "threadDetail"
         },
         list: listController,
         paperDetail: function(slug) {

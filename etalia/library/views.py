@@ -29,7 +29,7 @@ def my_papers(request):
 
 class PaperDetail(DetailView):
 
-    template_name = 'papers/my_list.html'
+    template_name = 'feeds/my_list.html'
     model = Paper
 
     def get_template_names(self):
