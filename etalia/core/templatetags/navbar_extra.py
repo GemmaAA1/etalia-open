@@ -5,6 +5,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.simple_tag
 def active(request, pattern):
     import re
