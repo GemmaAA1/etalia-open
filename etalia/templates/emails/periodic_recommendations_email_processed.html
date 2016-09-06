@@ -285,7 +285,7 @@
                             {% for paper in papers %}
                                 <div class="card" style="margin: 0;padding: 0;font-family: &quot;Lato&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 100%;line-height: 1.6;position: relative;">
                                     <p class="title" style="margin: 0 0 8px 0;padding: 0;font-family: &quot;Lato&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 17px;line-height: 18px;margin-bottom: 10px;font-weight: normal;color: #1e232f;">
-                                        <a href="{{ paper.build_url }}" target="_blank" style="margin: 0;padding: 0;font-family: &quot;Lato&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 100%;line-height: 1.6;color: #1e232f;text-decoration: none;">
+                                        <a href="{{ root_url }}{{ paper.get_absolute_url }}" target="_blank" style="margin: 0;padding: 0;font-family: &quot;Lato&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 100%;line-height: 1.6;color: #1e232f;text-decoration: none;">
                                             {{ paper.title }}
                                         </a>
                                     </p>

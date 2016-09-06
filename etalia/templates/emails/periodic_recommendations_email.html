@@ -289,7 +289,7 @@
                             {% for paper in papers %}
                                 <div class="card">
                                     <p class="title">
-                                        <a href="{{ paper.build_url }}"
+                                        <a href="{{ root_url }}{{ paper.get_absolute_url }}"
                                            target="_blank">
                                             {{ paper.title }}
                                         </a>

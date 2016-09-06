@@ -417,12 +417,7 @@ class Paper(TimeStampedModel):
 
     @property
     def build_url(self):
-        if self.id_doi:
-            return 'http://doi.org/' + self.id_doi
-        elif self.id_arx:
-            return self.url
-        else:
-            return self.url
+        return 'https://etalia.io' + self.get_absolute_url()
 
     def get_ids(self):
         """Return dictionary of paper ids"""

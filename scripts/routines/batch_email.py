@@ -55,5 +55,5 @@ if __name__ == '__main__':
         send_invite_email(
             email_to=email,
             on_behalf=user,
-            root_url='etalia.io'
+            root_url='https://etalia.io'
         )
