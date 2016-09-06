@@ -366,17 +366,15 @@ class PaperStateViewSet(MultiSerializerMixin,
     @list_route(methods=['delete'], url_path='empty-trash')
     def empty_trash(self, request):
         from etalia.users.models import UserLibPaper
-        queryset = PaperUser.objects.raw(
-            "SELECT pu.id,"
-            "       ulp.id AS ulp_id "
-            "FROM library_paperuser pu "
-            "LEFT JOIN users_userlibpaper ulp ON pu.paper_id = ulp.paper_id "
-            "WHERE pu.store = %s "
-            "   AND pu.user_id = %s", (PAPER_TRASHED, request.user.id)
+        pu_qs = PaperUser.objects.filter(
+            user=request.user.id,
+            store=PAPER_TRASHED
         )
-        pu_ids = [d.id for d in queryset]
-        ulp_ids = [d.ulp_id for d in queryset]
-        PaperUser.objects.filter(id__in=pu_ids).delete()
-        UserLibPaper.objects.filter(id__in=ulp_ids).delete()
+        pids = [d.paper_id for d in pu_qs]
+        ulp_qs = UserLibPaper.objects.filter(
+            userlib__user=request.user.id,
+            paper_id__in=pids
+        )
+        pu_qs.delete()
+        ulp_qs.delete()
         return Response('Trash empty', status=status.HTTP_200_OK)
-
