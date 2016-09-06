@@ -62,6 +62,7 @@ class ThreadViewSet(MultiSerializerMixin,
     * **max_date=(str)**: Fetch thread published before max_date
     * **time_span=(str)**: Fetch thread published during last time_span days
     * **search=(str)**: Fetch thread on title, content, author first and last names
+    * **third_party=(str)**: Fetch threads from third party (e.g 'pubpeer') or from etalia only ('false') (default: None)
 
     """
 

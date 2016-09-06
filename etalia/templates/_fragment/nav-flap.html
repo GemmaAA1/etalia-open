@@ -8,7 +8,7 @@
         <div class="flap-inner">
             <ul id="main-nav">
                 {% if user.is_authenticated %}
-                    <li class="{% active request 'my-feeds.+|papers.+' %}">
+                    <li class="{% active request 'my-feeds.+|/papers/.+' %}">
                         <a href="{% url 'feeds:my_feeds' %}">
                             <span class="eai eai-feed"></span>
                             My Feeds
