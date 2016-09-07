@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from time import sleep
 import requests
 import PyPDF2
 import re
@@ -34,63 +35,73 @@ def retrieve(file_name):
             pass
         log_urls = []
     else:
-        with open(LOG_FILE, 'rb') as file:
+        with open(LOG_FILE, 'r') as file:
             log_urls = file.readlines()
+            log_urls = [log_url.rstrip() for log_url in log_urls]
 
     # Open urls.txt
-    with open(file_name) as file:
+    with open(file_name, 'r') as file:
         for url in file:
             url = url.rstrip()
 
             if url not in log_urls:
 
                 print('processing {0}'.format(url))
-                emails_found = []
                 try:
                     # Download pdf
                     pdf_file_name = download_file(url)
 
                     # Read pdf
-                    with open(pdf_file_name, 'rb') as pdf_file:
-                        pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-                        for p in range(min(pdf_reader.numPages, 3)):
-                            page_obj = pdf_reader.getPage(p)
-                            textfile = page_obj.extractText()
-
-                            # Regular expression to find email pattern
-                            mailsrch = re.compile(r'[a-zA-Z0-9+_\-\.]+@[0-9a-zA-Z]+[\.-0-9a-zA-Z]*\.[a-zA-Z]+')
-                            # Search and extract all email adresses from the PDD text files
-                            res = mailsrch.findall(textfile)
-                            if res:
-                                for i in res:
-                                    emails_found.append(i.lower())
-
-                            # Try {xxx, yyy}@domain.zzz format sometimes found in latex
-                            mailsrch2 = re.compile(r'\nf\n[\,a-zA-Z0-9+_\-\.\s]+\ng\n@[0-9a-zA-Z]+[\.-0-9a-zA-Z]*\.[a-zA-Z]+')
-                            res = mailsrch2.findall(textfile)
-                            if res:
-                                for i in res:
-                                    tmp = i.split('@')
-                                    domain = tmp[1]
-                                    names = tmp[0]
-                                    names = names.rstrip('\ng\n')
-                                    names = names.lstrip('\nf\n')
-                                    names = names.split(',')
-                                    names = [name.rstrip().lstrip() for name in names]
-                                    for name in names:
-                                        emails_found.append('{0}@{1}'.format(name, domain).lower())
+                    emails_found = extract_email_from_pdf(pdf_file_name)
 
                     # remove pdf
                     os.remove(pdf_file_name)
                 except Exception:
-                    pass
+                    continue
 
                 # Write emails to file "email_exports/emails.txt"
                 if emails_found:
-                    with open(file_name_emails, 'w+') as file:
+                    with open(file_name_emails, 'a+') as email_file:
                         for email in emails_found:
-                            file.write('{0}\n'.format(email))
+                            email_file.write('{0}\n'.format(email))
 
                 # Log url
-                with open(LOG_FILE, 'w+') as file:
-                    file.write('{0}\n'.format(url))
+                with open(LOG_FILE, 'a+') as log_file:
+                    log_file.write('{0}\n'.format(url))
+
+                sleep(1)
+
+
+def extract_email_from_pdf(pdf_file_name):
+
+    emails_found = []
+    with open(pdf_file_name, 'rb') as pdf_file:
+        pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+        for p in range(min(pdf_reader.numPages, 3)):
+            page_obj = pdf_reader.getPage(p)
+            textfile = page_obj.extractText()
+
+            # Regular expression to find email pattern
+            mailsrch = re.compile(r'[a-zA-Z0-9+_\-\.]+@[0-9a-zA-Z]+[\.-0-9a-zA-Z]*\.[a-zA-Z]+')
+            # Search and extract all email adresses from the PDD text files
+            res = mailsrch.findall(textfile)
+            if res:
+                for i in res:
+                    emails_found.append(i.lower())
+
+            # Try {xxx, yyy}@domain.zzz format sometimes found in latex
+            mailsrch2 = re.compile(r'\nf\n[\,a-zA-Z0-9+_\-\.\s]+\ng\n@[0-9a-zA-Z]+[\.-0-9a-zA-Z]*\.[a-zA-Z]+')
+            res = mailsrch2.findall(textfile)
+            if res:
+                for i in res:
+                    tmp = i.split('@')
+                    domain = tmp[1]
+                    names = tmp[0]
+                    names = names.rstrip('\ng\n')
+                    names = names.lstrip('\nf\n')
+                    names = names.split(',')
+                    names = [name.rstrip().lstrip() for name in names]
+                    for name in names:
+                        emails_found.append('{0}@{1}'.format(name, domain).lower())
+
+    return emails_found

@@ -235,6 +235,8 @@ class MyThreadViewSet(ThreadViewSet,
         users = []
         for u, c in us_count[:self.SIZE_MAX_USER_FILTER]:
             u.count = c
+            if not u.first_name and not u.last_name:
+                u.last_name = 'Anonymous User'
             users.append(u)
 
         kwargs = {'context': self.get_serializer_context()}
