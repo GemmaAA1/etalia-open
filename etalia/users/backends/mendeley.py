@@ -134,7 +134,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             for item in page.items:
 
                 try:
-                    entry = self.parser.parse(item['data'])
+                    entry = self.parser.parse(item)
                 except Exception:
                     logger.exception(sys.exc_info())
                     continue
