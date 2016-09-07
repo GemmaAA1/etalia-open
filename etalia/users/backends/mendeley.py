@@ -136,13 +136,13 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                 try:
                     entry = self.parser.parse(item)
                 except Exception:
-                    logger.exception(sys.exc_info())
+                    logger.exception('Mendeley parser failed')
                     continue
 
                 try:
                     paper, journal = self.add_entry(entry)
                 except Exception:
-                    logger.error(sys.exc_info())
+                    logger.exception('Mendeley adding paper failed')
                     continue
 
                 if paper:

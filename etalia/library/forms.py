@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
+import re
 from django import forms
-
 from .models import Journal, Paper, Author, Publisher, CorpAuthor
 from .constants import SOURCE_TYPE
 
@@ -95,6 +95,8 @@ class AuthorForm(forms.ModelForm):
         first_name = self.cleaned_data['first_name']
         max_length = self._meta.model._meta.get_field('first_name').max_length
         first_name = first_name[:max_length]
+        # remove double spacing
+        first_name = re.sub(' +', ' ', first_name)
         # capitalize
         return first_name.title()
 
@@ -102,6 +104,8 @@ class AuthorForm(forms.ModelForm):
         last_name = self.cleaned_data['last_name']
         max_length = self._meta.model._meta.get_field('last_name').max_length
         last_name = last_name[:max_length]
+        # remove double spacing
+        last_name = re.sub(' +', ' ', last_name)
         # capitalize
         return last_name.title()
 

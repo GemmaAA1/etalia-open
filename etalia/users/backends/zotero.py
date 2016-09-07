@@ -75,14 +75,14 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
                 try:
                     entry = self.parser.parse(item['data'])
-                except Exception as e:
-                    logger.error(sys.exc_info())
+                except Exception:
+                    logger.exception('Zotero parser failed')
                     continue
 
                 try:
                     paper, journal = self.add_entry(entry)
-                except Exception as e:
-                    logger.error(sys.exc_info())
+                except Exception:
+                    logger.exception('Zotero adding paper failed')
                     continue
 
                 if paper:

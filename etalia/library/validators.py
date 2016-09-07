@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import re
 from django.core.exceptions import ValidationError
 from stdnum import issn as issn_checker
 from stdnum.exceptions import InvalidChecksum, InvalidFormat, InvalidLength
@@ -30,7 +31,8 @@ def validate_issn(issn):
 
 
 def validate_author_names(name):
-    # process last name
+    """Process last name"""
+
     if name:
         initials = [name[0] for name in name.split(' ')]
         if any(map(str.islower, initials)):
