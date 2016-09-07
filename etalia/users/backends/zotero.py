@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import sys
 from dateutil.parser import parse
 from social.backends.oauth import BaseOAuth1
 from pyzotero import zotero
@@ -71,12 +72,18 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         while True:
             for item in items:
+
                 try:
                     entry = self.parser.parse(item['data'])
                 except Exception as e:
-                    logger.exception('Zotero parser failed')
+                    logger.error(sys.exc_info())
                     continue
-                paper, journal = self.add_entry(entry)
+
+                try:
+                    paper, journal = self.add_entry(entry)
+                except Exception as e:
+                    logger.error(sys.exc_info())
+                    continue
 
                 if paper:
                     logger.info(

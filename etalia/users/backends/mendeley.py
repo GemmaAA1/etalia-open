@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import sys
 import logging
 from dateutil.parser import parse
 from social.backends.oauth import BaseOAuth2
@@ -131,12 +132,18 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         # loop through documents/page until end or find already registered doc
         while True:
             for item in page.items:
+
                 try:
-                    entry = self.parser.parse(item)
-                except Exception as e:
-                    logger.exception('Mendeley parser failed')
+                    entry = self.parser.parse(item['data'])
+                except Exception:
+                    logger.exception(sys.exc_info())
                     continue
-                paper, journal = self.add_entry(entry)
+
+                try:
+                    paper, journal = self.add_entry(entry)
+                except Exception:
+                    logger.error(sys.exc_info())
+                    continue
 
                 if paper:
                     logger.info(

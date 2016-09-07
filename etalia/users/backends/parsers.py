@@ -280,9 +280,10 @@ class ParserZotero(PaperParserBackend):
         full_authors = entry.get('creators', '')
         for auth in full_authors:
             author = self.author_template.copy()
-            author['first_name'] = auth.get('firstName', '').strip()
-            author['last_name'] = auth.get('lastName', '').strip()
-            authors.append(author)
+            if auth.get('lastName', None):
+                author['first_name'] = auth.get('firstName', '').strip()
+                author['last_name'] = auth.get('lastName', '').strip()
+                authors.append(author)
 
         return authors
 
