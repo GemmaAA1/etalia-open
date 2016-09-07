@@ -99,7 +99,10 @@ class UserBasicInfoSignupView(AjaxableResponseMixin, FormView):
 
     def get_initial(self):
         initial = super(UserBasicInfoSignupView, self).get_initial()
-        details = self.request.session['partial_pipeline']['kwargs']['details']
+        try:
+            details = self.request.session['partial_pipeline']['kwargs']['details']
+        except KeyError:
+            details = {'first_name': '', 'last_name': '', 'email': ''}
         initial['first_name'] = details.get('first_name', '')
         initial['last_name'] = details.get('last_name', '')
         initial['email'] = details.get('email', '')
