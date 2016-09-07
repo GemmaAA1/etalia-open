@@ -9,16 +9,14 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout, login
-from django.views.generic import UpdateView, FormView, DetailView
+from django.views.generic import UpdateView, FormView, DetailView, RedirectView
 from django.views.generic.edit import DeleteView
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 from django.http import JsonResponse
-from django.template.loader import get_template
-from django.core.mail import EmailMultiAlternatives
-from django.template import Context
 from django.db import transaction
-from django.views.decorators.cache import never_cache, cache_page
+from django.views.decorators.cache import never_cache
 
 from braces.views import LoginRequiredMixin
 
@@ -191,6 +189,29 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
         return context
 
 profile = ProfileView.as_view()
+
+
+class UserProfileSlugView(NavFlapMixin, DetailView):
+
+    model = User
+    template_name = 'user/user_profile.html'
+
+user_profile_slug = UserProfileSlugView.as_view()
+
+
+class UserProfilePkView(RedirectView):
+    """Redirect to slug paper url"""
+
+    permanent = False
+    query_string = True
+    pattern_name = 'user:user-profile-slug'
+
+    def get_redirect_url(self, *args, **kwargs):
+        user = User.objects.get(pk=kwargs['pk'])
+        kwargs['slug'] = slugify(' '.join([user.first_name, user.last_name]))
+        return super(UserProfilePkView, self).get_redirect_url(*args, **kwargs)
+
+user_profile_pk = UserProfilePkView.as_view()
 
 
 class SettingsView(LoginRequiredMixin, SettingsModalFormsMixin, NavFlapMixin,

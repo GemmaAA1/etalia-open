@@ -12,6 +12,8 @@ urlpatterns = [
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^signin/$', views.ajax_signin, name='signin'),
     url(r'^profile/$', views.profile, name='profile'),
+    url(r'^profile/(?P<slug>[a-zA-Z0-9-]+)_(?P<pk>[0-9]+)$', views.user_profile_slug, name='user-profile-slug'),
+    url(r'^profile/(?P<pk>[0-9]+)$', views.user_profile_pk, name='user-profile-pk'),
     url(r'^settings/$', views.settings_view, name='settings'),
     url(r'^send-invite$', views.send_invite, name='send-invite'),
     url(r'^avatar/', include('avatar.urls')),

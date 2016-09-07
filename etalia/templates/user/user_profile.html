@@ -1,0 +1,96 @@
+{% extends 'user/base.html' %}
+
+{% load avatar_tags %}
+{% load staticfiles %}
+
+
+{% block content %}
+<div id="profile" class="document">
+    <div class="wrapper">
+        <div class="inner">
+
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <div class="col-md-3">
+                        <div id="avatar-section">
+                            <div class="avatar">
+                                {% avatar user 120 %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div id="names-section">
+                            <h3>
+                                <span class="has-value {% if object.first_name or object.last_name %}{% else %} hidden {% endif %}">
+                                    <span id="first_name">{{ object.first_name }} </span>
+                                    <span id="last_name">{{ object.last_name }}</span>
+                                </span>
+                                <span class="has-no-value {% if object.first_name or object.last_name %} hidden {% endif %}">
+                                    <span class="empty"></span>
+                                </span>
+                            </h3>
+                        </div>
+                        <div id="title-section">
+                            <h5>
+                                <span class="has-value {% if object.title %}{% else %} hidden {% endif %}">
+                                    <span id="title">{{ object.title }}</span>
+                                </span>
+                                <span class="has-no-value {% if object.title %} hidden {% endif %}">
+                                    <span class="empty"></span>
+                                </span>
+                            </h5>
+                        </div>
+                        <div id="position-section">
+                            <h5>
+                                <span class="has-value {% if object.position %}{% else %} hidden {% endif %}">
+                                    <span id="position">{{ object.position }}</span>
+                                </span>
+                                <span class="has-no-value {% if object.position %} hidden {% endif %}">
+                                    <span class="empty"></span>
+                                </span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 affiliation">
+                    <div class="col-md-3 text-right">
+                        <div class="title">
+                            Affiliation
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div id="affiliation-section">
+                            <h5>
+                                <span class="has-value {% if object.affiliation.is_empty %}hidden{% endif %}">
+                                    <span id="print-affiliation">{{ object.affiliation.print_affiliation }}</span>
+                                </span>
+                                <span class="has-no-value {% if not object.affiliation or object.affiliation.is_empty  %}{% else %}hidden{% endif %}">
+                                    <span class="empty"></span>
+                                </span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="divider">
+        </div>
+    </div>
+</div>
+
+{% include 'user/profile_modal.html' %}
+
+{% endblock content %}
+
+
+{% block javascript %}
+<script>
+    requirejs(['{% static "js/config.js" %}'], function() {
+        requirejs(['app/user/profile']);
+    });
+</script>
+{% endblock javascript %}
