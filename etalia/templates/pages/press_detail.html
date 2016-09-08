@@ -1,0 +1,17 @@
+{% extends 'pages/base.html' %}
+
+{% load staticfiles %}
+
+{% block page_content %}
+    {% with brand='<strong>Etalia</strong>' %}
+    <h1>Press Release</h1>
+    <div class="press-item">
+        <p class="location-date">{{ object.location }}. {{ object.date }}</p>
+        <p class="title">{{ object.title }}</p>
+        <p>
+            {{ object.body}}
+        </p>
+    </div>
+    {% endwith %}
+{% endblock page_content %}
+

@@ -76,6 +76,7 @@ LOCAL_APPS = (
     'etalia.popovers',
     'etalia.usersession',
     'etalia.populate',
+    'etalia.press',
     # 'functional_tests',
 )
 

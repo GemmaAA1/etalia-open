@@ -57,6 +57,7 @@ a.btn-provider:hover {
 #hero h1 {
     text-align: center;
     margin: 0;
+    /*padding-top: 10px;*/
 }
 
 #hero h1 img {
@@ -75,8 +76,8 @@ a.btn-provider:hover {
 #hero ul {
     display: inline-block;
     list-style: none;
-    padding-left: 20px;
-    margin-bottom: 30px;
+    padding-left: 40px;
+    margin-bottom: 15px;
     text-align: left;
 }
 
@@ -84,6 +85,7 @@ a.btn-provider:hover {
     color: #1e232f;
     font-size: 16px;
     line-height: 20px;
+    padding-bottom: 5px;
 }
 
 #hero ul li:before {

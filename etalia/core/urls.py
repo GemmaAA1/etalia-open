@@ -10,6 +10,9 @@ urlpatterns = [
     url(r'^terms-of-use/$', views.terms_use, name='terms_use'),
     url(r'^terms-of-privacy/$', views.terms_privacy, name='terms_privacy'),
     url(r'^support/$', views.support, name='support'),
+    url(r'^press/$', views.press, name='press'),
+    url(r'^press/(?P<slug>[a-zA-Z0-9-]+)_(?P<pk>[0-9]+)/$', views.press_slug, name='press-slug'),
+    url(r'^press/(?P<pk>[0-9]+)/$', views.press_pk, name='press-pk'),
     url(r'^contact/$', views.contact, name='contact'),
     url(r'^help/$', views.help, name='help'),
     url(r'^test-failing-task$', views.test_failing_task)

@@ -16,6 +16,7 @@ h2 {
 
 #page-content {
     margin-bottom: 80px;
+    min-height: 490px;
 }
 
 #page-nav {
@@ -90,6 +91,33 @@ h2 {
 #faq p:last-child {
     margin-bottom: 0;
 }
+
+/* PRESS */
+
+.press-item {
+    padding: 10px 0;
+}
+
+.press-item .location-date {
+    font-size: 12px;
+    margin: 0;
+}
+
+.press-item .title {
+    color: #00695c;
+    font-size: 20px;
+}
+
+.press-item .read-more {
+    font-style: italic;
+    font-size: 13px;
+    padding-left: 5px;
+}
+
+.press-item .read-more:before {
+    content: '[read-more]';
+}
+
 
 /* RESPONSIVE */
 

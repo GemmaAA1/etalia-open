@@ -1,0 +1,39 @@
+{% extends 'pages/base.html' %}
+
+{% load staticfiles %}
+
+{% block page_content %}
+    {% with brand='<strong>Etalia</strong>' %}
+        <h1>Press</h1>
+
+{#        {% for p in press %}#}
+{#            <div class="press-item">#}
+{#                <p class="location-date">{{ p.location }}. {{ p.date }}</p>#}
+{#                <p class="title">{{ p.title }}</p>#}
+{#                <p>#}
+{#                    {{ p.body|truncatewords_html:70}}#}
+{#                    <em>#}
+{#                        <a href="{% url 'core:press-pk' p.id %}">read more</a>#}
+{#                    </em>#}
+{#                </p>#}
+{#            </div>#}
+{#        {% endfor %}#}
+
+{#            Use static template for now#}
+            <div class="press-item">
+                <p class="location-date">San Francisco, California, USA – Wednesday 7th September 2016</p>
+                <p class="title">Digital Science Catalyst Grant Awarded To San Francisco Startup, Etalia</p>
+                <p>
+                    Digital Science, a business division of Holtzbrinck Publishing Group and a leading global
+                    technology incubator focused on jumpstarting innovation in the research community,
+                    announced today that early-stage startup Etalia has been awarded a Catalyst Grant.
+                    <a href="https://www.digital-science.com/press-releases/digital-science-catalyst-grant-awarded-san-francisco-startup-etalia/">
+                        <span class="read-more"></span>
+                    </a>
+                </p>
+            </div>
+
+
+    {% endwith %}
+{% endblock page_content %}
+

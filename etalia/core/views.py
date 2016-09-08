@@ -3,6 +3,9 @@ from __future__ import unicode_literals, absolute_import
 
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
+from django.views.generic import DetailView, RedirectView
+from django.utils.text import slugify
+from etalia.press.models import Press
 from .tasks import failing_task
 
 
@@ -42,6 +45,35 @@ def support(request):
 def contact(request):
     context = {}
     return render(request, 'pages/contact.html', context=context)
+
+
+@cache_page(60 * 60)
+def press(request):
+    context = {'press': Press.objects.all()}
+    return render(request, 'pages/press.html', context=context)
+
+
+class PressDetail(DetailView):
+
+    template_name = 'pages/press_detail.html'
+    model = Press
+
+press_slug = PressDetail.as_view()
+
+
+class PressDetailPk(RedirectView):
+    """Redirect to slug press url"""
+
+    permanent = True
+    query_string = True
+    pattern_name = 'core:press-slug'
+
+    def get_redirect_url(self, *args, **kwargs):
+        press = Press.objects.get(pk=kwargs['pk'])
+        kwargs['slug'] = slugify(press.title)
+        return super(PressDetailPk, self).get_redirect_url(*args, **kwargs)
+
+press_pk = PressDetailPk.as_view()
 
 
 @cache_page(60 * 60)
