@@ -83,6 +83,7 @@ config/settings/*.bk
 config/settings/common.py
 etalia/static/compiled
 /scripts/routines/beta_emails_*.txt
+/scripts/emails/log.txt
 # redis
 *.rdb
 
