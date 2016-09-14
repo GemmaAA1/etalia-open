@@ -17,27 +17,52 @@ User = get_user_model()
 def send_invite_email(email_to=None,
                       root_url=None,
                       on_behalf=None):
-    subject = 'An invitation to try Etalia'
-    to = [email_to]
-    from_email = 'nicolas.pannetier@etalia.io'
+    """Send invitation email"""
+
+    email = EmailMultiAlternatives(
+        subject='An invitation to try Etalia',
+        body='',
+        from_email='nicolas.pannetier@etalia.io',
+        to=[email_to],
+        reply_to=['contact@etalia.io'])
+
+    # Get Data
     if on_behalf:
-        user_name= '{first} {last}'.format(
-                first=on_behalf.first_name,
-                last=on_behalf.last_name
-        )
+        user_name = '{first} {last}'.format(first=on_behalf.first_name,
+                                            last=on_behalf.last_name)
     else:
         user_name = None
+
+    # Inline images
+    logo_cid = attach_inline_image_file(
+        email,
+        str(settings.ROOT_DIR.path('etalia/templates/emails/img/beta_etalia_logo.png')))
+    book_cid = attach_inline_image_file(
+        email,
+        str(settings.ROOT_DIR.path('etalia/templates/emails/img/book.png')))
+    engage_cid = attach_inline_image_file(
+        email,
+        str(settings.ROOT_DIR.path('etalia/templates/emails/img/engage.png')))
+    target_cid = attach_inline_image_file(
+        email,
+        str(settings.ROOT_DIR.path('etalia/templates/emails/img/target.png')))
+
+    # Html email
     ctx = {
-        'bucket_url': settings.EMAIL_STATIC_BUCKET,
+        'logo_cid': logo_cid,
+        'book_cid': book_cid,
+        'engage_cid': engage_cid,
+        'target_cid': target_cid,
         'root_url': root_url,
         'on_behalf': user_name,
     }
-    text_content = ''
-    html_content = get_template(settings.INVITE_EMAIL_TEMPLATE)\
-        .render(Context(ctx))
-    email = EmailMultiAlternatives(subject, text_content, to=to, from_email=from_email)
+    html_content = get_template(settings.INVITE_EMAIL_TEMPLATE).render(Context(ctx))
     email.attach_alternative(html_content, "text/html")
-    # email.content_subtype = 'html'
+
+    # Options
+    email.metadata = {"from_user": on_behalf.id}
+    email.tags = ["invite", "peer-to-peer"]
+    email.track_clicks = True
     email.send()
 
     # save to database
@@ -45,7 +70,9 @@ def send_invite_email(email_to=None,
 
 
 def send_periodic_recommendation_email(user_id):
+    """Send etalia digest email"""
 
+    # Get data
     users = User.objects.filter(id=user_id).select_related('settings')
     user = users[0]
     date_7d_before = timezone.now() - datetime.timedelta(days=7)
