@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 import datetime
+from anymail.message import attach_inline_image_file
 from django.conf import settings
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
@@ -18,7 +19,7 @@ def send_invite_email(email_to=None,
                       on_behalf=None):
     subject = 'An invitation to try Etalia'
     to = [email_to]
-    from_email =    'nicolas.pannetier@etalia.io'
+    from_email = 'nicolas.pannetier@etalia.io'
     if on_behalf:
         user_name= '{first} {last}'.format(
                 first=on_behalf.first_name,
@@ -64,24 +65,35 @@ def send_periodic_recommendation_email(user_id):
     papers = list(papers[:settings.PERIODIC_RECOMMENDATION_NUMBER_PAPERS])
 
     if papers:
-        subject = 'Recommendations from Etalia'
-        from_email = 'etalia@etalia.io'
-        to = [user.email]
 
+        email = EmailMultiAlternatives(
+            subject='Recommendations from Etalia',
+            body='',
+            from_email='etalia@etalia.io',
+            to=[user.email],
+            reply_to=['contact@etalia.io'])
+
+        # Include an inline image in the html:
+        rel_path = 'etalia/templates/emails/img/etalia_digest.png'
+        logo_cid = attach_inline_image_file(email, str(settings.ROOT_DIR.path(rel_path)))
+
+        # Html email from template
         ctx = {
-            'bucket_url': settings.EMAIL_STATIC_BUCKET,
+            'logo_cid': logo_cid,
             'papers': papers,
             'root_url': 'http://etalia.io',
         }
-
-        text_content = ''
         html_content = get_template(settings.PERIODIC_RECOMMENDATION_TEMPLATE)\
             .render(Context(ctx))
-        email = EmailMultiAlternatives(subject,
-                                       text_content,
-                                       to=to,
-                                       from_email=from_email)
+
+        # attach
         email.attach_alternative(html_content, "text/html")
+
+        # Options
+        email.metadata = {"user_id": user.id}
+        email.tags = ["digest"]
+        email.track_clicks = True
+
         email.send()
 
 
