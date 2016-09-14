@@ -347,12 +347,18 @@ class CrossRefPaperParser(PaperParser):
 
         # Journal
         j_titles = entry.get('container-title', [])
-        if len(j_titles) > 1:
-            journal['short_title'] = j_titles[1]
-        try:
-            journal['title'] = j_titles[0]
-        except IndexError:
-            journal['title'] = ''
+        if j_titles:
+            if len(j_titles) > 1:
+                journal['short_title'] = j_titles[1]
+            try:
+                journal['title'] = j_titles[0]
+            except IndexError:
+                journal['title'] = ''
+        else:
+            # specific case for bioRxiv based on doi match registrant
+            doi = entry.get('DOI')
+            if re.match(r'10.1101/\d+', doi):
+                journal['id_oth'] = 'biorxiv'
 
         issns = entry.get('ISSN')
         if issns:

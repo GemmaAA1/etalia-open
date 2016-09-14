@@ -127,6 +127,8 @@ class ConsolidateManager(object):
         method = getattr(self, 'get_{name}'.format(name=method_name))
         if method_name == 'arxiv':
             doc_id = self.entry['paper'].get('id_arx')
+        elif method_name == 'pubmed' and self.entry['paper'].get('id_pmi'):
+            doc_id = self.entry['paper'].get('id_pmi')
         else:
             doc_id = self.entry['paper'].get('id_doi')
         query = requests.utils.quote('{title} {authors}'.format(
@@ -150,10 +152,11 @@ class ConsolidateManager(object):
             parser = PubmedPaperParser()
             email = settings.CONSUMER_PUBMED_EMAIL
             Entrez.email = email
-            doi = doc_id
-            if doi:
-                handle = Entrez.esearch(db='pubmed',
-                                        term='{doi}[AID]'.format(doi=doi))
+            if doc_id:
+                handle = Entrez.esearch(
+                    db='pubmed',
+                    term='{doc_id}[AID] OR {doc_id}[PMID]'.format(doc_id=doc_id)
+                )
             else:
                 handle = Entrez.esearch(db='pubmed',
                                         term=query)

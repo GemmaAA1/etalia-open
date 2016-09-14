@@ -70,7 +70,7 @@
     font-style: italic;
 }
 
-.card p.doi {
+.card p.identifiers {
     font-size: 14px;
     line-height: 16px;
     margin-bottom: 8px;
@@ -81,6 +81,10 @@
     text-overflow: ellipsis;
     font-style: italic;
     font-weight: normal;
+}
+
+.card p.identifiers span {
+    padding-right: 10px;
 }
 
 .card .icons {

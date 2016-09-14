@@ -105,3 +105,54 @@ def extract_email_from_pdf(pdf_file_name):
                         emails_found.append('{0}@{1}'.format(name, domain).lower())
 
     return emails_found
+
+
+def clean_up(file_name):
+    """Make unique set and clean up"""
+
+    # load
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+
+    # clean-up
+    pattern = r'[^@]+@[^@]+\.[^@]+'
+    lines = [line.rstrip() for line in lines]
+    lines = [line for line in lines if re.match(pattern, line)]
+
+    # unique
+    lines = list(set(lines))
+
+    # save new list
+    file_name_uniques = '{base}_set.txt'.format(base=os.path.splitext(file_name)[0])
+    with open(file_name_uniques, 'w+') as email_file:
+        for email in lines:
+            email_file.write('{0}\n'.format(email))
+
+
+def group_by_domain(file_name):
+
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+        lines = [line.rstrip() for line in lines]
+
+    # fetch domain
+    domains = []
+    for email in lines:
+        d = email.split('@')[1]
+        if d not in domains:
+            domains.append(d)
+
+    # Group in dict domain
+    dd = dict([(k, []) for k in domains])
+    for email in lines:
+        d = email.split('@')[1]
+        dd[d].append(email)
+
+    # To tuple order by pool size
+    pool_size = []
+    for k in dd.keys():
+        pool_size.append((k, len(dd[k])))
+    pool_size = sorted(pool_size, key=lambda x: x[1], reverse=True)
+
+    return [(p[0], p[1], dd[p[0]]) for p in pool_size]
+
