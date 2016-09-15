@@ -55,7 +55,7 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
         if self.action == 'list':
             if self.request.user.is_authenticated() \
                     and self.request.user.type == USER_INDIVIDUAL:
-                if self.request.user.lib.paper.count() > 0:
+                if self.request.user.lib.papers.count() > 0:
                     return UserPopOver.objects\
                         .filter(user=self.request.user)\
                         .exclude(popover__extra='no_paper')\
