@@ -18,6 +18,7 @@ from etalia.core.api.filters import DisabledHTMLContextualFilterBackend, \
     DisabledHTMLSearchFilterBackend
 from etalia.core.api.permissions import IsOwner, IsSessionAuthenticatedOrReadOnly
 from etalia.threads.api.serializers import ThreadSerializer
+from etalia.users.constants import USER_INDIVIDUAL
 from ..models import Paper, Author, Journal, PaperUser
 from ..constants import PAPER_TRASHED
 from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
@@ -111,7 +112,7 @@ class PaperViewSet(MultiSerializerMixin,
         )
         instance = get_object_or_404(self.queryset, pk=pk)
         self.check_object_permissions(request, instance)
-        threads = instance.get_related_threads(request.user.id, time_span)
+        threads = instance.get_related_threads(time_span)
         serializer = ThreadSerializer(
             threads,
             context=self.get_serializer_context(),
@@ -252,7 +253,7 @@ class MyPaperViewSet(PaperViewSet):
 
         authors = []
         journals = []
-        if data:
+        if data and request.user.is_authenticated() and request.user.type == USER_INDIVIDUAL:
 
             # Get user fingerprint
             f = request.user.fingerprint\
@@ -291,10 +292,14 @@ class MyPaperViewSet(PaperViewSet):
             for i, a in enumerate(authors):
                 if a.id in aids_bumping:
                     authors.insert(0, authors.pop(i))
+        else:
+            authors = []
+            journals = []
 
         kwargs = {'context': self.get_serializer_context()}
         serializer = PaperFilterSerializer({'authors': authors,
                                             'journals': journals}, **kwargs)
+
         return Response(serializer.data,  status=status.HTTP_200_OK)
 
 

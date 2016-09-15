@@ -65,7 +65,7 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
                         .filter(user=self.request.user)\
                         .order_by('-popover__type', 'popover__priority')
             else:
-                return []
+                return UserPopOver.objects.none()
         return UserPopOver.objects.all()
 
 

@@ -1319,6 +1319,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
                 "       tt.published_at,"
                 "       tt.paper_id,"
                 "		tv.vector, "
+                "		pp.id,"
                 "		pp.is_active "
                 "FROM threads_thread tt "
                 "LEFT JOIN threads_pubpeer as pp ON tt.id = pp.thread_id "
@@ -1326,7 +1327,9 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
                 "WHERE tt.published_at >= %s"
                 "    AND tv.model_id = %s"
                 "    AND tv.vector IS NOT NULL "
-                "    AND pp.is_active = 'true' "
+                "    AND 'true' = CASE WHEN pp.id IS NOT NULL THEN pp.is_active "
+                "                      ELSE 'true' "
+                "                      END "
                 "ORDER BY tt.published_at ASC", (some_time_ago, self.model.id)
                 )
 

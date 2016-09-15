@@ -447,7 +447,7 @@ class Paper(TimeStampedModel):
         from .tasks import get_neighbors_papers
         return get_neighbors_papers(self.id, time_span)
 
-    def get_related_threads(self, user_id, time_span=-1):
+    def get_related_threads(self, time_span=-1):
         from .tasks import get_related_threads
         return get_related_threads(self.id, time_span)
 
