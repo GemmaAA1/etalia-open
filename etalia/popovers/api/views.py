@@ -7,7 +7,9 @@ from django.views.decorators.cache import never_cache
 from rest_framework import viewsets, permissions, mixins
 from rest_framework import filters
 
-from etalia.core.api.permissions import IsOwner, IsAdminOrReadOnly, IsSessionAuthenticatedOrReadOnly
+from etalia.core.api.permissions import IsOwner, IsAdminOrReadOnly, \
+    IsSessionAuthenticatedOrReadOnly
+from etalia.users.constants import USER_INDIVIDUAL
 
 from .serializers import UserPopOverSerializer, PopOverSerializer
 from ..models import UserPopOver, PopOver
@@ -51,7 +53,8 @@ class PopOverStateViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         # to raise proper 403 status code on not allowed access
         if self.action == 'list':
-            if self.request.user.lib.papers.count() > 0:
+            if self.request.user.is_authenticated() \
+                    and self.request.user.type == USER_INDIVIDUAL:
                 return UserPopOver.objects\
                     .filter(user=self.request.user)\
                     .exclude(popover__extra='no_paper')\

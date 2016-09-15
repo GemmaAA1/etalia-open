@@ -43,7 +43,6 @@ class PopOverSerializer(serializers.HyperlinkedModelSerializer):
         except TemplateDoesNotExist:
             return 'No template file match'
 
-
     def validate(self, data):
         """Check that anchored is defined is type is Anchored and is empty if type is Modal"""
         if 'type' in data:

@@ -8,10 +8,10 @@ from django.utils.text import slugify
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-from rest_framework.fields import empty
 
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.users.api.serializers import UserSerializer, UserFilterSerializer
+from etalia.users.constants import USER_INDIVIDUAL
 from etalia.library.api.serializers import PaperSerializer, PaperNestedSerializer
 from etalia.feeds.models import ThreadFeedThreads
 from ..mixins import ThreadEagerLoadingMixin
@@ -154,7 +154,11 @@ class ThreadSerializer(ThreadEagerLoadingMixin,
         return obj.members.count()
 
     def get_paper_queryset(self):
-        return self.context['request'].user.lib.papers.all()
+        if self.context['request'].user.is_authenticated() \
+                and self.context['request'].user.type == USER_INDIVIDUAL:
+            return self.context['request'].user.lib.papers.all()
+        else:
+            return []
 
     def get_state(self, obj):
         """Get state based on ThreadUser instance if exists"""
