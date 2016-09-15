@@ -567,7 +567,6 @@ def send_invite(request):
         email_to = request.POST.get('email')
         send_invite_email(
             email_to=email_to,
-            root_url=request.get_host(),
             on_behalf=request.user,
         )
         return JsonResponse(data={'success': True})

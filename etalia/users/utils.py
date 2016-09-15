@@ -1,68 +1,41 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 import datetime
-from anymail.message import attach_inline_image_file
 from django.conf import settings
-from django.template.loader import get_template
-from django.core.mail import EmailMultiAlternatives
-from django.template import Context
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from etalia.core.emails import Email
 from .models import UserInvited
 
 User = get_user_model()
 
 
-def send_invite_email(email_to=None,
-                      root_url=None,
-                      on_behalf=None):
+def send_invite_email(email_to=None, on_behalf=None):
     """Send invitation email"""
 
-    email = EmailMultiAlternatives(
-        subject='An invitation to try Etalia',
-        body='',
-        from_email='nicolas.pannetier@etalia.io',
-        to=[email_to],
-        reply_to=['contact@etalia.io'])
-
-    # Get Data
+    # Get data
     if on_behalf:
         user_name = '{first} {last}'.format(first=on_behalf.first_name,
                                             last=on_behalf.last_name)
     else:
         user_name = None
 
-    # Inline images
-    logo_cid = attach_inline_image_file(
-        email,
-        str(settings.ROOT_DIR.path('etalia/templates/emails/img/beta_etalia_logo.png')))
-    book_cid = attach_inline_image_file(
-        email,
-        str(settings.ROOT_DIR.path('etalia/templates/emails/img/book.png')))
-    engage_cid = attach_inline_image_file(
-        email,
-        str(settings.ROOT_DIR.path('etalia/templates/emails/img/engage.png')))
-    target_cid = attach_inline_image_file(
-        email,
-        str(settings.ROOT_DIR.path('etalia/templates/emails/img/target.png')))
-
-    # Html email
-    ctx = {
-        'logo_cid': logo_cid,
-        'book_cid': book_cid,
-        'engage_cid': engage_cid,
-        'target_cid': target_cid,
-        'root_url': root_url,
-        'on_behalf': user_name,
-    }
-    html_content = get_template(settings.INVITE_EMAIL_TEMPLATE).render(Context(ctx))
-    email.attach_alternative(html_content, "text/html")
-
-    # Options
-    email.metadata = {"from_user": on_behalf.id}
-    email.tags = ["invite", "peer-to-peer"]
-    email.track_clicks = True
+    # Instantiate
+    email = Email(
+        template=settings.INVITE_EMAIL_TEMPLATE,
+        cids={'logo_cid': 'beta_etalia_logo.png',
+              'book_cid': 'book.png',
+              'engage_cid': 'engage.png',
+              'target_cid': 'target.png'},
+        tags=['invite', 'peer-to-peer'],
+        metadata={'from_user': on_behalf.id},
+        subject='An invitation to try Etalia',
+        from_email='nicolas.pannetier@etalia.io',
+        to=[email_to],
+        reply_to=['contact@etalia.io'],
+        extra_ctx={'on_behalf': user_name})
+    # send email
     email.send()
 
     # save to database
@@ -93,33 +66,16 @@ def send_periodic_recommendation_email(user_id):
 
     if papers:
 
-        email = EmailMultiAlternatives(
+        email = Email(
+            template=settings.PERIODIC_RECOMMENDATION_TEMPLATE,
+            cids={'logo_cid': 'etalia_digest.png'},
+            tags=['digest'],
+            metadata={'user': user.id},
             subject='Recommendations from Etalia',
-            body='',
             from_email='etalia@etalia.io',
             to=[user.email],
-            reply_to=['contact@etalia.io'])
-
-        # Include an inline image in the html:
-        rel_path = 'etalia/templates/emails/img/etalia_digest.png'
-        logo_cid = attach_inline_image_file(email, str(settings.ROOT_DIR.path(rel_path)))
-
-        # Html email from template
-        ctx = {
-            'logo_cid': logo_cid,
-            'papers': papers,
-            'root_url': 'http://etalia.io',
-        }
-        html_content = get_template(settings.PERIODIC_RECOMMENDATION_TEMPLATE)\
-            .render(Context(ctx))
-
-        # attach
-        email.attach_alternative(html_content, "text/html")
-
-        # Options
-        email.metadata = {"user_id": user.id}
-        email.tags = ["digest"]
-        email.track_clicks = True
+            reply_to=['contact@etalia.io'],
+            extra_ctx={'papers': papers})
 
         email.send()
 

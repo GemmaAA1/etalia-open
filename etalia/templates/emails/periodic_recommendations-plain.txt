@@ -1,0 +1,15 @@
+Etalia Digest, Your Periodic Recommendations.
+
+{% for paper in papers %}
+{{ paper.title }}
+{{ paper.print_full_authors }}
+{{ paper.print_journal_title|truncatechars:40 }}
+{{ paper.print_date }}
+{{ paper.abstract|capfirst|truncatechars:180 }}
+{{ paper.get_absolute_url }}
+----------------------------
+{% endfor %}
+
+Find more at https://etalia.io
+
+Etalia

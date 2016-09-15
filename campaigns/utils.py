@@ -2,11 +2,40 @@
 from __future__ import unicode_literals, absolute_import
 
 import requests
+
 from django.conf import settings
 
-MAILGUN_API_KEY = settings.MAILGUN_ACCESS_KEY
+MAILGUN_API_KEY = settings.ANYMAIL['MAILGUN_API_KEY']
 MAILGUN_API_URL = 'https://api.mailgun.net/v3/{domain}/campaigns'.format(
-    domain=settings.MAILGUN_SERVER_NAME)
+    domain=settings.ANYMAIL['MAILGUN_SENDER_DOMAIN'])
+
+
+def get_or_create_campaign(name, campaign_id=None):
+
+    # Check campaign based on id
+    if campaign_id:
+        resp = get_campaign(campaign_id)
+        if resp.status_code == 200:
+            if resp.json().name == name:
+                return resp.json()
+            else:
+                raise ValueError('name and campaign_id does not match')
+
+    # Check campaign based on name
+    data = get_campaigns().json()
+    for c in data['items']:
+        if name == c.get('name'):
+            if campaign_id == c.get('id'):
+                return c
+            elif campaign_id is None:
+                return c
+
+    # If not found create
+    resp = create_campaign(name, campaign_id=campaign_id)
+    if resp.status_code == 200:
+        return resp.json().get('campaign')
+
+    return None
 
 
 def get_campaigns():
@@ -30,7 +59,7 @@ def create_campaign(name, campaign_id=None):
     data = {'name': name}
     if campaign_id:
         data['id'] = campaign_id
-    return requests.post(MAILGUN_API_URL, data)
+    return requests.post(MAILGUN_API_URL, data, auth=('api', MAILGUN_API_KEY))
 
 
 def delete_campaign(campaign_id):
