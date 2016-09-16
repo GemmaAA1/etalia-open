@@ -259,6 +259,9 @@ class Paper(TimeStampedModel):
     # date first seen
     date_fs = models.DateField(auto_now_add=True, db_index=True)
 
+    # Consolidate date
+    date_co = models.DateField(null=True, blank=True, db_index=True)
+
     # url where found
     url = models.URLField(blank=True, default='')
     # language
@@ -272,6 +275,11 @@ class Paper(TimeStampedModel):
     # Boolean
     # locked if all field have been verified or paper from 'trusted' source
     is_trusted = models.BooleanField(default=False, db_index=True)
+
+    def save(self, **kwargs):
+        dates = [self.date_ep, self.date_fs, self.date_pp]
+        self.date_co = min([date for date in dates if date is not None])
+        super(Paper, self).save(**kwargs)
 
     def get_absolute_url(self):
         return reverse('library:paper-slug', kwargs={'pk': self.pk,
