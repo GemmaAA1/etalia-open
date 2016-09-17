@@ -20,6 +20,7 @@ from etalia.core.api.permissions import IsThreadMember, IsOwner, \
     ThreadIsPublished, ThreadIsNotYetPublishedIsOwnerIfDeleteMethod, \
     IsToUserOrOwnersReadOnly, IsSessionAuthenticatedOrReadOnly
 from etalia.core.api.mixins import MultiSerializerMixin
+from etalia.users.constants import USER_INDIVIDUAL
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
 from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
@@ -191,13 +192,20 @@ class MyThreadViewSet(ThreadViewSet,
         # Store session control
         self.store_controls(self.request)
         # Defined baseline queryset
-        self.queryset = Thread.objects.filter(
-            ~(Q(published_at=None) & ~Q(user=self.request.user)),
-            ~(Q(privacy=THREAD_PRIVATE) &
-              ~(Q(threaduser__user=self.request.user) &
-                Q(threaduser__participate=THREAD_JOINED))
-              )
-        )
+        if self.request.user.is_authenticated() and \
+            self.request.user.type == USER_INDIVIDUAL:
+            self.queryset = Thread.objects.filter(
+                ~(Q(published_at=None) & ~Q(user=self.request.user)),
+                ~(Q(privacy=THREAD_PRIVATE) &
+                  ~(Q(threaduser__user=self.request.user) &
+                    Q(threaduser__participate=THREAD_JOINED))
+                  )
+            )
+        else:
+            self.queryset = Thread.objects\
+                .all()\
+                .exclude(published_at=None)\
+                .exclude(privacy=THREAD_PRIVATE)
         queryset = super(MyThreadViewSet, self).get_queryset()
         return self.get_serializer_class()\
             .setup_eager_loading(queryset, user=self.request.user)
