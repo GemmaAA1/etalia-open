@@ -54,6 +54,16 @@ define([
             });
         },
 
+        setActiveTab: function(name) {
+            var tab = this._findTabByName(name);
+            if (tab) {
+                App._.each(this.tabs, function(tab) {
+                    tab.active = false;
+                });
+                tab.active = true;
+            }
+        },
+
         _findTabByName: function(name) {
             return App._.find(this.tabs, function(tab) {
                 return tab.name === name;

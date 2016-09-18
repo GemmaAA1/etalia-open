@@ -1,4 +1,4 @@
-define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (App) {
+define(['app', 'app/model/user/user-lib', 'app/model/user/affiliation', 'app/model/user/avatar'], function (App) {
 
     var user_path = '/user/users',
         relationship_path = '/user/relationships';
@@ -17,7 +17,7 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
                 type: App.Backbone.HasOne,
                 key: 'user_lib',
                 relatedModel: App.Model.UserLib,
-                includeInJSON: false, //'link',
+                includeInJSON: false,
                 autoFetch: false,
                 reverseRelation: {
                     key: 'user',
@@ -26,16 +26,18 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
                 }
             },
             {
+                type: App.Backbone.HasOne,
+                key: 'affiliation',
+                relatedModel: App.Model.Affiliation,
+                includeInJSON: false,
+                autoFetch: false
+            },
+            {
                 type: App.Backbone.HasMany,
                 key: 'avatars',
                 relatedModel: App.Model.Avatar,
-                includeInJSON: false, //'link',
-                autoFetch: false/*,
-                reverseRelation: {
-                    key: 'user',
-                    type: App.Backbone.HasOne,
-                    includeInJson: false
-                }*/
+                includeInJSON: false,
+                autoFetch: false
             }
         ],
 
@@ -43,7 +45,6 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
             email: {type: 'Text', validators: ['required']},
             first_name: {type: 'Text', validators: ['required']},
             last_name: {type: 'Text', validators: ['required']}
-            //photo_url: {type: 'Text', validators: ['required']}
         }
     });
 
@@ -96,14 +97,15 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
     /**
      * Returns the current (authenticated) user.
      *
-     * @return UserModel
+     * @return UserModel|false
      * @todo Promise ?
      */
     App.getCurrentUser = function () {
-        if (!currentUser) {
+        if (null === currentUser) {
             var id = parseInt(App.$('body').data('user-id'));
             if (!id) {
-                throw 'Failed to determine user id';
+                currentUser = false;
+                return false;
             }
 
             currentUser = App.Model.User.find(id);
@@ -278,11 +280,13 @@ define(['app', 'app/model/user/user-lib', 'app/model/user/avatar'], function (Ap
     /**
      * Handlebars helpers.
      */
-    App.Handlebars.registerHelper('full_name', function(user) {
+    App.Handlebars.registerHelper('user_full_name', function(user) {
         if (!user) {
             return 'Expected user as first argument';
         }
-        return App.getProperty(user, 'first_name') + " " + App.getProperty(user, 'last_name');
+        return new App.Handlebars.SafeString(
+            App.getProperty(user, 'first_name') + "&nbsp;" + App.getProperty(user, 'last_name')
+        );
     });
 
     return App.Model.User;

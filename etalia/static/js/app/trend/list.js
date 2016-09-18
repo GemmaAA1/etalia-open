@@ -4,18 +4,20 @@ define([
     'app/view/ui/controls',
     'app/view/ui/filters',
     'app/view/ui/tabs',
-    'app/view/thread/list'
+    'app/view/trend/list'
 ], function (App, Detail) {
 
     var listView, detailView,
-        controlsView, filtersView, tabsView,
+        controlsView, tabsView, defaultActiveTab = 'trend:papers',
         router;
 
     var redirectToList = function() {
-        router.navigate('my-threads/', true);
+        router.navigate('trends/', true);
     };
 
     var listController = function() {
+
+        //console.log('list controller');
 
         Detail.close();
 
@@ -27,76 +29,55 @@ define([
             $target: App.$('div[data-controls-placeholder]')
         });
         controlsView.cluster.disable();
-        controlsView.timespan.disable();
         controlsView.pin.disable();
 
         tabsView = new App.View.Ui.Tabs.create({
             tabs: [
                 {
-                    name: 'thread:threads',
+                    name: 'trend:papers',
+                    title: 'Papers',
+                    icon: 'eai-paper',
+                    count: false,
+                    data: {
+                        view: 'nested',
+                        type: 'trend',
+                        ordering: '-altmetric__score'
+                    },
+                    actions: {}
+                },
+                {
+                    name: 'trend:threads',
                     title: 'Threads',
                     icon: 'eai-comments',
-                    count: 0,
+                    count: false,
                     data: {
-                        view: 'nested',
-                        joined: 1
-                        //banned: "0"
+                        view: 'nested'
                     },
-                    actions: {
-                        pin: true,
-                        leave: true
-                    }
-                },
-                {
-                    name: 'thread:pins',
-                    title: 'Pins',
-                    icon: 'eai-pin',
-                    count: 0,
-                    data: {
-                        view: 'nested',
-                        pinned: 1
-                    },
-                    actions: {
-                        pin: true,
-                        join: true
-                    }
-                },
-                {
-                    name: 'thread:left',
-                    title: 'Left',
-                    icon: 'eai-leave',
-                    count: 0,
-                    data: {
-                        view: 'nested',
-                        left: 1
-                    },
-                    actions: {
-                        join: true
-                    }
+                    actions: {}
                 }
             ]
         }, {
             $target: App.$('div[data-tabs-placeholder]')
         });
+        tabsView.setActiveTab(defaultActiveTab);
 
-        filtersView = App.View.Ui.Filters.create({}, {
+        /*filtersView = App.View.Ui.Filters.create({}, {
             $target: App.$('div[data-right-flap-placeholder]')
-        });
+        });*/
 
-        listView = App.View.Thread.List.create({
-            newButton: true,
-            invitesButton: true,
+        listView = App.View.Trend.List.create({
+            el: '#trend-container',
             controlsView: controlsView,
-            tabsView: tabsView,
-            filtersView: filtersView
-        }, {
-            $target: App.$('div[data-list-placeholder]')
+            tabsView: tabsView
+            //filtersView: filtersView
         });
 
         listView.onTabsContextChange();
     };
 
     var detailController = function (modelClass, slug) {
+
+        //console.log('detail controller');
 
         if (detailView) {
             Detail.close();
@@ -125,8 +106,14 @@ define([
 
         var modelDetailView;
         if (modelClass == App.Model.Thread) {
+            if (!listView) {
+                defaultActiveTab = 'trend:threads';
+            }
             modelDetailView = new App.View.Thread.Detail(options);
         } else if (modelClass == App.Model.Paper) {
+            if (!listView) {
+                defaultActiveTab = 'trend:papers';
+            }
             modelDetailView = new App.View.Paper.Detail(options);
         } else {
             throw 'Unexpected model class';
@@ -156,13 +143,13 @@ define([
 
     var Router = App.Backbone.Router.extend({
         routes: {
-            "my-threads/": "list",
-            "papers/:id/": "paperDetail",
+            "trends/": "list",
+            "papers/:slug/": "paperDetail",
             "threads/:id/": "threadDetail"
         },
         list: listController,
-        paperDetail: function(id) {
-            detailController(App.Model.Paper, id);
+        paperDetail: function(slug) {
+            detailController(App.Model.Paper, slug);
         },
         threadDetail: function(id) {
             detailController(App.Model.Thread, id);
@@ -183,7 +170,8 @@ define([
         pushState: true
     });
 
-    App.Layout.initRightFlap();
+    //App.Layout.initRightFlap();
 
     App.init();
+
 });

@@ -8,7 +8,7 @@ define([
 ], function (App, Detail) {
 
     var listView, detailView,
-        controlsView, filtersView, tabsView,
+        controlsView, filtersView, tabsView, defaultActiveTab = 'feed:papers',
         router;
 
     var redirectToList = function() {
@@ -16,7 +16,6 @@ define([
     };
 
     var listController = function() {
-        console.log('listController()');
 
         Detail.close();
 
@@ -86,6 +85,7 @@ define([
         }, {
             $target: App.$('div[data-tabs-placeholder]')
         });
+        tabsView.setActiveTab(defaultActiveTab);
 
         filtersView = App.View.Ui.Filters.create({}, {
             $target: App.$('div[data-right-flap-placeholder]')
@@ -102,7 +102,6 @@ define([
     };
 
     var detailController = function (modelClass, slug) {
-        console.log('detailController(' + modelClass + '#' + slug + ')');
 
         if (detailView) {
             Detail.close();
@@ -131,8 +130,14 @@ define([
 
         var modelDetailView;
         if (modelClass == App.Model.Thread) {
+            if (!listView) {
+                defaultActiveTab = 'feed:threads';
+            }
             modelDetailView = new App.View.Thread.Detail(options);
         } else if (modelClass == App.Model.Paper) {
+            if (!listView) {
+                defaultActiveTab = 'feed:papers';
+            }
             modelDetailView = new App.View.Paper.Detail(options);
         } else {
             throw 'Unexpected model class';
@@ -148,34 +153,12 @@ define([
             }
         });
 
-        /*var prevPaper = 0 < modelIndex ? this.collection.fullCollection.at(modelIndex - 1) : null;
-        if (prevPaper) {
-            detailModel.setLeftButton({
-                title: 'Previous paper',
-                caption: prevPaper.get('title'),
-                callback: function() {
-                    that.openDetail(prevPaper);
-                }
-            });
-        }
-        var nextPaper = this.collection.fullCollection.at(modelIndex + 1);
-        if (nextPaper) {
-            detailModel.setRightButton({
-                title: 'Next paper',
-                caption: nextPaper.get('title'),
-                callback: function() {
-                    that.openDetail(nextPaper);
-                }
-            });
-        }*/
-
         model
-            .fetch({data: {view: 'nested'}})
+            .fetch({data: {view: 'nested'}, silent: true})
             .fail(function() {
                 redirectToList();
             })
             .done(function() {
-                //console.log('detail fetch done.');
                 Detail.setModel(detailModel);
             });
 

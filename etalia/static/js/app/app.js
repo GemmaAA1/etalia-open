@@ -280,12 +280,12 @@ define([
             schema: "html5-strict",
             fix_list_elements: true,
             keep_styles: false,
-            invalid_elements: "span",
+            valid_elements: "h1,h2,h3,h4,h5,h6,p,br,hr,ul,ol,li,blockquote,pre,strong/b,em/i,a[!href|target=_blank]",
             statusbar: false,
             menubar: false,
             height: 160,
             plugins: "lists,paste,link,searchreplace,hr",
-            toolbar: "undo redo | formatselect | bold italic | bullist numlist outdent indent | link hr blockquote",
+            toolbar: "undo redo | formatselect | bold italic | bullist numlist | link hr blockquote",
             skin_url: '/static/css/lib/tinymce',
             body_class: 'element-content',
             content_css: [
@@ -489,7 +489,7 @@ define([
         },
 
         config: {
-            debug: true,
+            debug: false,
             api_root: '/api/v1'
         },
 

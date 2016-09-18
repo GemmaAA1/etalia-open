@@ -56,8 +56,14 @@ define([
                 this.buttons = App._.extend(buttonsDefaults, options.buttons);
             }
 
-            this.listenTo(this.model, "change", this.render);
-            this.listenTo(this.model, "change:state", this.render);
+            this.listenTo(this.model, "change", function() {
+                console.log('model change');
+                this.render();
+            });
+            this.listenTo(this.model, "change:state", function() {
+                console.log('model change:state');
+                this.render();
+            });
             this.listenTo(this.model, "add:posts remove:posts", this.updatePostsCount);
             this.listenTo(this.model, "add:members remove:members", this.updateMembersCount);
         },
@@ -325,17 +331,18 @@ define([
         },
 
         render: function() {
-            App.log('ThreadDetailView::render', this.model.get('id'));
+            App.log('ThreadDetailView::render', this.model);
 
-            var is_owner = this.model.isOwner(App.getCurrentUser()),
-                is_member = this.model.isMember(App.getCurrentUser()),
+            var currentUser = App.getCurrentUser(),
+                is_owner = this.model.isOwner(currentUser),
+                is_member = this.model.isMember(currentUser),
                 is_public = this.model.isPublic();
 
             var attributes = App._.extend({}, this.model.attributes, {
                 is_owner: is_owner,
                 is_member: is_member,
 
-                can_join: is_public && !is_member,
+                can_join: currentUser && is_public && !is_member,
 
                 pin_button: this.buttons.pin,
                 ban_button: this.buttons.ban,

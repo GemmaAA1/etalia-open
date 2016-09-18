@@ -8,7 +8,7 @@
         <div class="flap-inner">
             <ul id="main-nav">
                 {% if user.is_authenticated %}
-                    <li class="{% active request 'my-feeds.+|/papers/.+' %}">
+                    <li class="{% active request 'my-feeds.+|/papers/.+|/threads/.+' %}">
                         <a href="{% url 'feeds:my_feeds' %}">
                             <span class="eai eai-feed"></span>
                             My Feeds
@@ -42,6 +42,16 @@
     {#                        Help#}
     {#                    </a>#}
     {#                </li>#}
+
+                <!-- TODO else-->
+                <!-- TODO /trends -->
+                {% else %} {# Anonymous user #}
+                    <li class="{% active request 'trends.+|/papers/.+|/threads/.+' %}">
+                        <a href="{% url 'library:papers' %}">
+                            <span class="eai eai-stats"></span>
+                            Trends
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
 

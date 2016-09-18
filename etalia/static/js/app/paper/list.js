@@ -89,7 +89,6 @@ define([
     };
 
     var listController = function() {
-        console.log('listController()');
 
         Detail.close();
 
@@ -169,7 +168,6 @@ define([
     };
 
     var detailController = function (modelClass, slug) {
-        console.log('detailController(' + modelClass + '#' + slug + ')');
 
         if (detailView) {
             Detail.close();
@@ -216,12 +214,11 @@ define([
         });
 
         model
-            .fetch({data: {view: 'nested'}})
+            .fetch({data: {view: 'nested'}, silent: true})
             .fail(function() {
                 redirectToList();
             })
             .done(function() {
-                //console.log('detail fetch done.');
                 Detail.setModel(detailModel);
             });
 

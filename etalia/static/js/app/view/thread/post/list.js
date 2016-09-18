@@ -55,7 +55,8 @@ define([
         render: function () {
             App.log('PostListView::render');
 
-            var is_member = this.thread.isMember(App.getCurrentUser());
+            var currentUser = App.getCurrentUser(),
+                is_member = currentUser && this.thread.isMember(currentUser);
 
             // TODO memberOfThread
             this.$el.html(this.template({
@@ -75,17 +76,19 @@ define([
                 );
             });
 
-            this.pushSubView(
-                App.View.User.Thumb.create({
-                    model: App.getCurrentUser()
-                }, {
-                    $target: this.$('.user-placeholder')
-                })
-            );
+            if (currentUser) {
+                this.pushSubView(
+                    App.View.User.Thumb.create({
+                        model: App.getCurrentUser()
+                    }, {
+                        $target: this.$('.user-placeholder')
+                    })
+                );
 
-            if (is_member) {
-                // TODO handle subView
-                this.renderForm();
+                if (is_member) {
+                    // TODO handle subView
+                    this.renderForm();
+                }
             }
 
             return this;

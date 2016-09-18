@@ -49,12 +49,11 @@ define([
             }
 
             // Filters (right flap)
-            if (!options.filtersView) {
-                throw 'options.filtersView is mandatory';
+            if (options.filtersView) {
+                this.filtersView = options.filtersView;
+                this.listenTo(this.filtersView, "loaded", this.load);
+                this.listenTo(this.filtersView, "context-change", this.load);
             }
-            this.filtersView = options.filtersView;
-            this.listenTo(this.filtersView, "loaded", this.load);
-            this.listenTo(this.filtersView, "context-change", this.load);
 
             App._.bindAll(this,
                 'onPaperPin', 'onPaperUnpin',
@@ -119,7 +118,7 @@ define([
                 query: App._.extend({},
                     this.controlsView.getContext(),
                     this.tabsView.getContext(),
-                    this.filtersView.getContext()
+                    this.filtersView ? this.filtersView.getContext() : {}
                 )
             });
 
@@ -200,13 +199,17 @@ define([
         _loadFilters: function() {
             this.listView.clear();
             this.$('#paper-next-page').show();
-            this.filtersView.load(
-                App.config.api_root + '/library/my-papers/filters/',
-                App._.extend({},
-                    this.controlsView.getContext(),
-                    this.tabsView.getContext()
-                )
-            );
+            if (this.filtersView) {
+                this.filtersView.load(
+                    App.config.api_root + '/library/my-papers/filters/',
+                    App._.extend({},
+                        this.controlsView.getContext(),
+                        this.tabsView.getContext()
+                    )
+                );
+            } else {
+                this.load();
+            }
         },
 
         _toggleListHeaderVisibility: function() {
