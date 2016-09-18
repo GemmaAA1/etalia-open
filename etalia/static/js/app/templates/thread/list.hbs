@@ -31,10 +31,12 @@
     </div>
 
     <div class="list-controls right">
+        {{#if publishedFilter}}
         <button id="thread-toggle-not-published" type="button" class="btn btn-default"
                 title="Filter : not published threads">
             <span class="eai eai-exclamation"></span>
         </button>
+        {{/if}}
 
         {{! only in threads tab }}
         <div id="thread-toggle-type" class="btn-group" role="group">
@@ -47,9 +49,11 @@
             </button>
         </div>
 
+        {{#if privacyFilter}}
         <button id="thread-toggle-private" type="button" class="btn btn-default" title="Filter : private threads">
             <span class="eai eai-locked"></span>
         </button>
+        {{/if}}
     </div>
 
 </div>

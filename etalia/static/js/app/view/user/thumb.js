@@ -25,24 +25,34 @@ define([
         render: function() {
             //App.log('UserThumbView::render', this.model.get('id'));
 
-            var that = this;
+            var that = this,
+                currentUser = App.getCurrentUser();
 
-            App.getCurrentUser()
-                .isFollowed(that.model)
-                .then(function (followed) {
-                    var attributes = App._.extend({}, that.model.attributes, {
-                        followed: followed,
-                        current: App.getCurrentUser().get('id') === that.model.get('id')
+            if (currentUser) {
+                currentUser
+                    .isFollowed(that.model)
+                    .then(function (followed) {
+                        var attributes = App._.extend({}, that.model.attributes, {
+                            followed: followed,
+                            current: App.getCurrentUser().get('id') === that.model.get('id')
+                        });
+
+                        that.$el.html(that.template(attributes));
+
+                        if (followed) {
+                            that.$el.addClass('followed');
+                        } else {
+                            that.$el.removeClass('followed');
+                        }
                     });
-
-                    that.$el.html(that.template(attributes));
-
-                    if (followed) {
-                        that.$el.addClass('followed');
-                    } else {
-                        that.$el.removeClass('followed');
-                    }
+            } else {
+                var attributes = App._.extend({}, that.model.attributes, {
+                    followed: false,
+                    current: true
                 });
+
+                that.$el.html(that.template(attributes));
+            }
 
             return this;
         },
