@@ -46,6 +46,13 @@ define([
         }
     });
 
+    var defaults = {
+        newButton: false,
+        invitesButton: false,
+        publishedFilter: true,
+        privacyFilter: true
+    };
+
     App.View.Thread.List = App.Backbone.View.extend({
         tagName: 'div',
 
@@ -53,6 +60,8 @@ define([
 
         newButton: false,
         invitesButton: false,
+        publishedFilter: true,
+        privacyFilter: true,
 
         listControls: null,
         controlsView: null,
@@ -75,8 +84,9 @@ define([
         },
 
         initialize: function (options) {
-            this.newButton = options.newButton ? options.newButton : false;
-            this.invitesButton = options.invitesButton ? options.invitesButton : false;
+            options || (options = {});
+            _.defaults(this, defaults);
+            _.extend(this, _.pick(options, _.keys(defaults)));
 
             // List controls
             this.listControls = new ListControls();
@@ -99,12 +109,12 @@ define([
             }
 
             // Filters (right flap)
-            if (!options.filtersView) {
-                throw 'options.filtersView is mandatory';
+
+            if (options.filtersView) {
+                this.filtersView = options.filtersView;
+                this.listenTo(this.filtersView, "loaded", this.load);
+                this.listenTo(this.filtersView, "context-change", this.load);
             }
-            this.filtersView = options.filtersView;
-            this.listenTo(this.filtersView, "loaded", this.load);
-            this.listenTo(this.filtersView, "context-change", this.load);
 
             App._.bindAll(this,
                 'onThreadPin', 'onThreadUnpin',
@@ -134,11 +144,13 @@ define([
         },
 
         render: function () {
-            App.log('ThreadListView::render');
+            //App.log('ThreadListView::render');
 
             this.$el.html(this.template({
                 newButton: this.newButton,
-                invitesButton: this.invitesButton
+                invitesButton: this.invitesButton,
+                publishedFilter: this.publishedFilter,
+                privacyFilter: this.privacyFilter
             }));
 
             // Thumbs list
@@ -148,7 +160,9 @@ define([
             this.pushSubView(this.listView);
 
             this._updateListControlsVisibility();
-            this._updateInvitesButton();
+            if (this.invitesButton) {
+                this._updateInvitesButton();
+            }
 
             this._loadFilters();
 
@@ -175,7 +189,7 @@ define([
                     this.listControls.getContext(),
                     this.controlsView.getContext(),
                     this.tabsView.getContext(),
-                    this.filtersView.getContext()
+                    this.filtersView ? this.filtersView.getContext() : {}
                 )
             });
 
@@ -235,14 +249,18 @@ define([
         _loadFilters: function() {
             this.listView.clear();
             this.$('#thread-next-page').show();
-            this.filtersView.load(
-                App.config.api_root + '/thread/my-threads/filters/',
-                App._.extend({},
-                    this.listControls.getContext(),
-                    this.controlsView.getContext(),
-                    this.tabsView.getContext()
-                )
-            );
+            if (this.filtersView) {
+                this.filtersView.load(
+                    App.config.api_root + '/thread/my-threads/filters/',
+                    App._.extend({},
+                        this.listControls.getContext(),
+                        this.controlsView.getContext(),
+                        this.tabsView.getContext()
+                    )
+                );
+            } else {
+                this.load();
+            }
         },
 
         _updateListControlsVisibility: function() {

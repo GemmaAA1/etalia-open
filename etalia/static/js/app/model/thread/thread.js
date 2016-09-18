@@ -170,11 +170,11 @@ define([
         },
 
         isOwner: function (user) {
-            return this.get('user').get('id') === user.get('id');
+            return user && this.get('user').get('id') === user.get('id');
         },
 
         isMember: function (user) {
-            return this.get('members').some(function (member) {
+            return user && this.get('members').some(function (member) {
                 return member.get('id') === user.get('id');
             })
         },

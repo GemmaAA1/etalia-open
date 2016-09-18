@@ -16,6 +16,8 @@ define([
 
         template: App.Handlebars.compile(template),
 
+        loading: false,
+
         paperId: null,
         buttons: null,
         returnCallback: null,
@@ -69,6 +71,13 @@ define([
         },
 
         load: function() {
+            //  Prevent multiple loads
+            if (this.loading) {
+                return;
+            }
+
+            this.loading = true;
+
             this.collection.reset();
             this.clearList();
 
@@ -76,7 +85,12 @@ define([
                 'time_span': this.activeTimespan
             });
 
-            this.collection.fetch();
+            var that = this;
+            this.collection
+                .fetch()
+                .always(function() {
+                    that.loading = false;
+                });
         },
 
         onTimespanSelectorClick: function(e) {

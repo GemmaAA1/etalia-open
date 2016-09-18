@@ -3,13 +3,14 @@
 {% load staticfiles %}
 
 {% block title %}{{ block.super }} - My Library{% endblock %}
+
 {% block content %}
 {% spaceless %}
 
 <div id="list" class="document">
     <div class="wrapper">
         <div data-tabs-placeholder></div>
-        <div class="inner">
+        <div class="inner" id="trend-container">
             <div data-list-placeholder></div>
         </div>
     </div>
@@ -23,7 +24,7 @@
 {% block javascript %}
 <script>
     requirejs(['{% static "js/config.js" %}'], function() {
-        requirejs(['app/paper/list']);
+        requirejs(['app/trend/list']);
     });
 </script>
 {% endblock javascript %}
