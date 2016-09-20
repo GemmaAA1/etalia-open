@@ -59,7 +59,7 @@ class PaperViewSet(MultiSerializerMixin,
 
     ** Ordering: **
 
-    * **ordering=[+|-](str) **: order results by field. Choices are: 'date_fs' or 'altmetric__score'
+    * **ordering=[+|-](str) **: order results by field. Choices are: 'date_co' or 'altmetric__score'
 
     """
 
