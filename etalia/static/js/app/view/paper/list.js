@@ -25,6 +25,7 @@ define([
         tabsView: null,
         filtersView: null,
         listView: null,
+        listUrl: null,
 
         events: {
             "click #paper-next-page": "onNextPageClick",
@@ -53,6 +54,11 @@ define([
                 this.filtersView = options.filtersView;
                 this.listenTo(this.filtersView, "loaded", this.load);
                 this.listenTo(this.filtersView, "context-change", this.load);
+            }
+
+            // To change collection api endpoint
+            if (options.listUrl) {
+                this.listUrl = options.listUrl;
             }
 
             App._.bindAll(this,
@@ -114,7 +120,14 @@ define([
                 this.collection.reset();
             }
 
-            this.collection = new App.Model.PageablePapers({
+            var pager = App.Model.PageablePapers;
+            if (this.listUrl) {
+                pager = App.Model.PageablePapers.extend({
+                    url: this.listUrl
+                });
+            }
+
+            this.collection = new pager({
                 query: App._.extend({},
                     this.controlsView.getContext(),
                     this.tabsView.getContext(),

@@ -47,6 +47,7 @@ define([
                 //this.controlsView.cluster.enable();
                 //this.controlsView.timespan.enable();
                 //this.controlsView.pin.enable();
+                viewOptions.listUrl = App.config.api_root + '/library/papers';
                 this.listView = new App.View.Paper.List.create(viewOptions, createOptions);
             } else if (tabName == 'trend:threads') {
                 //this.controlsView.cluster.disable();
