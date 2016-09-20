@@ -59,6 +59,10 @@
         {
             name: 'app/thread/list',
             exclude: ['app/app', 'select2']
+        },
+        {
+            name: 'app/trend/list',
+            exclude: ['app/app', 'select2']
         }
     ]
 })
