@@ -295,8 +295,7 @@ class Paper(TimeStampedModel):
 
     @property
     def date(self):
-        dates = [self.date_ep, self.date_fs, self.date_pp]
-        return min([date for date in dates if date is not None])
+        return self.date_co
 
     @property
     def print_compact_authors(self):
