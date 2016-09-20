@@ -4,7 +4,7 @@
     <p class="user-name">{{user_full_name this}}</p>
     <p class="user-affiliation">{{user_affiliation this}}</p>
     <p class="user-actions">
-        <a href="javascript: void(0)" class="user-profile">View profile</a>
+        <a href="/user/profile/{{id}}" class="user-profile">View profile</a>
         {{#unless current}}
             {{#if followed}}
             <a href="javascript: void(0)" class="user-unfollow">- Followed</a>
