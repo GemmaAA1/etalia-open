@@ -40,7 +40,7 @@ define([
                     count: false,
                     data: {
                         view: 'nested',
-                        type: 'trend',
+                        //type: 'trend',
                         ordering: '-altmetric__score'
                     },
                     actions: {}
