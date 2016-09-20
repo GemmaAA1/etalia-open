@@ -20,7 +20,6 @@ define([
 
         paperId: null,
         buttons: null,
-        returnCallback: null,
 
         thumbPrefix: 'paper-related-threads-thumb-',
         activeTimespan: null,
@@ -39,10 +38,6 @@ define([
                 throw 'options.buttons is mandatory';
             }
             this.buttons = options.buttons;
-            this.returnCallback = options.return_callback;
-            if (!(typeof this.returnCallback == 'function')) {
-                throw 'options.return_callback is mandatory';
-            }
 
             this.collection = new App.Model.Threads();
             this.collection.url = App.config.api_root + '/library/my-papers/' + this.paperId + '/related-threads';

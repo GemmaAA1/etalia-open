@@ -132,10 +132,7 @@ define([
             this.pushSubView(
                 App.View.Paper.RelatedThreads.create({
                     paper_id: this.model.get('id'),
-                    buttons: this.buttons,
-                    return_callback: function() {
-                        App.trigger('etalia.navigate', '/papers/' + that.model.get('slug') + '/');
-                    }
+                    buttons: this.buttons
                 }, {
                     $target: this.$('[data-related-threads-placeholder]')
                 })
@@ -145,10 +142,7 @@ define([
             this.pushSubView(
                 App.View.Paper.Neighbors.create({
                     paper_id: this.model.get('id'),
-                    buttons: this.buttons,
-                    return_callback: function() {
-                        App.trigger('etalia.navigate', '/papers/' + that.model.get('slug') + '/');
-                    }
+                    buttons: this.buttons
                 }, {
                     $target: this.$('[data-neighbors-placeholder]')
                 })

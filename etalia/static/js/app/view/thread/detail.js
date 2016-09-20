@@ -111,12 +111,14 @@ define([
         onDeleteClick: function(e) {
             e.preventDefault();
 
-            var that = this;
-            this.model
-                .destroy()
-                .done(function() {
-                    that.trigger('close');
-                });
+            if (confirm('Are you sure you want to delete this thread ?')) {
+                var that = this;
+                this.model
+                    .destroy()
+                    .done(function () {
+                        that.trigger('close');
+                    });
+            }
         },
 
         onContentEditClick: function(e) {
@@ -326,6 +328,7 @@ define([
         updatePostsCount: function() {
             this.$('.content > .card .icons .comment .count').text(this.model.getPostsCount());
         },
+
         updateMembersCount: function() {
             this.$('.content > .card .icons .member .count').text(this.model.getMembersCount());
         },
@@ -394,10 +397,7 @@ define([
             this.pushSubView(
                 App.View.Thread.Neighbors.create({
                     thread_id: this.model.get('id'),
-                    buttons: this.buttons,
-                    return_callback: function() {
-                        App.trigger('etalia.navigate', '/threads/' + that.model.get('slug') + '/');
-                    }
+                    buttons: this.buttons
                 }, {
                     $target: this.$('[data-neighbors-placeholder]')
                 })
