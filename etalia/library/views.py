@@ -4,12 +4,9 @@ from __future__ import unicode_literals, absolute_import
 import json
 from django.template.response import TemplateResponse
 from django.views.generic import DetailView, RedirectView
-from django_filters.views import FilterMixin, FilterView
 from django.utils.text import slugify
 
 from .models import Paper
-from .filters import PaperFilter, MyPaperFilter
-from .mixins import PaperEagerLoadingMixin
 
 
 def my_papers(request):

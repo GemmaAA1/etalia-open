@@ -76,15 +76,16 @@ class PaperViewSet(MultiSerializerMixin,
         filters.OrderingFilter,
     )
     filter_class = PaperFilter
-    ordering_fields = (
-        ('date_fs', 'Date first seen'),
-        ('altmetric__score', 'Altmetric Score')
-    )
-    ordering = ('date_fs',)
+    ordering_fields = ('date_co',
+                       'altmetric__score')
     search_fields = ('title',
                      'journal__title',
                      'authors__first_name',
                      'authors__last_name')
+
+    @method_decorator(cache_page(3600 * 24))
+    def list(self, request, *args, **kwargs):
+        return super(PaperViewSet, self).list(request, *args, **kwargs)
 
     @detail_route(methods=['get'])
     def neighbors(self, request, pk=None):

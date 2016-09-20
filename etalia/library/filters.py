@@ -6,7 +6,6 @@ from dateutil.parser import parse
 
 from django_filters import CharFilter, MethodFilter, ModelMultipleChoiceFilter
 from django.db.models import Q
-from django.db.models.expressions import RawSQL
 from django.conf import settings
 from rest_framework import filters
 
@@ -41,10 +40,6 @@ class PaperFilter(filters.FilterSet):
             'max_date',
             'time_span',
         ]
-        order_by = (
-            ('date_fs', 'Date first seen'),
-            ('altmetric__score', 'Altmetric Score')
-        )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
