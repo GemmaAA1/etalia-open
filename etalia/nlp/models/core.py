@@ -783,27 +783,27 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
         # query on paper / vector
         q1 = Paper.objects.raw(
-                "SELECT lp.id, "
-                "		lp.journal_id, "
-                "       LEAST(lp.date_ep, lp.date_pp, lp.date_fs) AS date_,"
+                "SELECT lp.id,"
+                "		lp.journal_id,"
+                "       lp.date_co,"
                 "		pv.vector,"
                 "       aa.score "
                 "FROM library_paper lp "
                 "LEFT JOIN nlp_papervectors pv ON lp.id = pv.paper_id "
                 "LEFT JOIN altmetric_altmetricmodel aa ON lp.id = aa.paper_id "
-                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+                "WHERE lp.date_co >= %s"
                 "    AND pv.model_id=%s"
                 "    AND lp.is_trusted=TRUE "
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
-                "ORDER BY date_ ASC", (some_time_ago, self.model.id)
+                "ORDER BY lp.date_co ASC", (some_time_ago, self.model.id)
                 )
 
         current_embedding = []
         for d in q1:
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
-            self.data['date'].append(d.date_)
+            self.data['date'].append(d.date_co)
             self.data['altmetric'].append(d.score)
             current_embedding.append(d.vector[:self.embedding_size])
         self.data['embedding'] = np.array(current_embedding)
@@ -854,7 +854,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         q1 = Paper.objects.raw(
                 "SELECT lp.id, "
                 "		lp.journal_id, "
-                "       LEAST(date_ep, date_pp, date_fs) AS date_,"
+                "       lp.date_co, "
                 "		pv.vector,"
                 "       aa.score "
                 "FROM library_paper lp "
@@ -865,8 +865,8 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
                 "    AND lp.is_trusted=TRUE "
                 "    AND lp.abstract <> ''"
                 "    AND pv.vector IS NOT NULL "
-                "    AND LEAST(date_ep, date_pp, date_fs) >= %s"
-                " ORDER BY date_ ASC", (max_id, self.model.id, some_time_ago, )
+                "    AND lp.date_co >= %s"
+                " ORDER BY lp.date_co ASC", (max_id, self.model.id, some_time_ago, )
                 )
 
         new_ids = []
@@ -875,7 +875,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             new_ids.append(d.id)
             self.data['ids'].append(d.id)
             self.data['journal-ids'].append(d.journal_id)
-            self.data['date'].append(d.date_)
+            self.data['date'].append(d.date_co)
             self.data['altmetric'].append(d.score)
             new_embedding.append(d.vector[:self.embedding_size])
 

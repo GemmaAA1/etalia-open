@@ -277,8 +277,9 @@ class Paper(TimeStampedModel):
     is_trusted = models.BooleanField(default=False, db_index=True)
 
     def save(self, **kwargs):
-        dates = [self.date_ep, self.date_fs, self.date_pp]
-        self.date_co = min([date for date in dates if date is not None])
+        if not self.date_co:
+            dates = [self.date_ep, self.date_fs, self.date_pp]
+            self.date_co = min([date for date in dates if date is not None])
         super(Paper, self).save(**kwargs)
 
     def get_absolute_url(self):
@@ -525,7 +526,7 @@ class Stats(TimeStampedModel):
         # Count matches by time range
         cursor = connection.cursor()
         query = "SELECT COUNT(*) FROM library_paper " \
-                "WHERE LEAST(date_ep, date_pp, date_fs) >= %s"
+                "WHERE date_co >= %s"
 
         d = timezone.now().date() - timezone.timedelta(days=7)
         cursor.execute(query, [d])

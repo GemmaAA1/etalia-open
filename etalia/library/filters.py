@@ -41,10 +41,10 @@ class PaperFilter(filters.FilterSet):
             'max_date',
             'time_span',
         ]
-        # order_by = (
-        #     ('date_fs', 'Date first seen'),
-        #     ('altmetric__score', 'Altmetric Score')
-        # )
+        order_by = (
+            ('date_fs', 'Date first seen'),
+            ('altmetric__score', 'Altmetric Score')
+        )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -58,17 +58,11 @@ class PaperFilter(filters.FilterSet):
 
     def filter_min_date(self, queryset, value):
         date = parse(value).date()
-        return queryset.annotate(date_fp=RawSQL(
-            "LEAST(date_ep, date_pp, date_fs)",
-            ())
-        ).filter(date_fp__gte=date)
+        return queryset.filter(date_co__gte=date)
 
     def filter_max_date(self, queryset, value):
         date = parse(value).date()
-        return queryset.annotate(date_fp=RawSQL(
-            "LEAST(date_ep, date_pp, date_fs)",
-            ())
-        ).filter(date_fp__lte=date)
+        return queryset.filter(date_co__lte=date)
 
     def filter_issn(self, queryset, value):
         return queryset.filter(
@@ -79,10 +73,7 @@ class PaperFilter(filters.FilterSet):
     def filter_time_span(self, queryset, value):
         value = int(value)
         date = (datetime.datetime.now() - datetime.timedelta(days=value)).date()
-        return queryset.annotate(date_fp=RawSQL(
-            "LEAST(date_ep, date_pp, date_fs)",
-            ())
-        ).filter(date_fp__gte=date)
+        return queryset.filter(date_co__gte=date)
 
 
 class MyPaperFilter(PaperFilter):
