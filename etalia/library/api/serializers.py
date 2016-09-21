@@ -345,3 +345,41 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
             return instance
         except MendeleyApiException:
             raise MendeleyRedirectLoginErrorSerializer()
+
+
+class JsonLdSerializer(serializers.BaseSerializer):
+
+    def to_representation(self, instance):
+        return {
+            "@context": "http://schema.org",
+            "@graph": [
+                {
+                "@id": "#issue",
+                "@type": "PublicationIssue",
+                "issueNumber": instance.issue or "",
+                "datePublished": instance.date or "",
+                "isPartOf": {
+                    "@id": "#periodical",
+                    "@type": [
+                        "PublicationVolume",
+                        "Periodical"
+                    ],
+                    "name": instance.journal.title if instance.journal else "",
+                    "issn": [i for i in [instance.journal.id_issn, instance.journal.id_eissn]
+                             if instance.journal and i],
+                    "volumeNumber": instance.volume,
+                    "publisher": instance.print_publisher_name
+                }
+                },
+                {
+                "@type": "ScholarlyArticle",
+                "isPartOf": "#issue",
+                "description": instance.abstract,
+                "sameAs": instance.url,
+                "pageStart": instance.page.split('-')[0],
+                "pageEnd": instance.page.split('-')[1] if len(instance.page.split('-')) > 1 else '',
+                "name": instance.title,
+                "author": instance.print_json_ld_authors
+                }
+            ]
+        }

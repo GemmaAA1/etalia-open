@@ -22,7 +22,8 @@ from etalia.users.constants import USER_INDIVIDUAL
 from ..models import Paper, Author, Journal, PaperUser
 from ..constants import PAPER_TRASHED
 from .serializers import PaperSerializer, JournalSerializer, AuthorSerializer, \
-    PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer
+    PaperNestedSerializer, PaperFilterSerializer, PaperUserSerializer, \
+    JsonLdSerializer
 from ..filters import PaperFilter, MyPaperFilter
 
 
@@ -121,10 +122,19 @@ class PaperViewSet(MultiSerializerMixin,
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @detail_route(methods=['get'], url_path='json-ld')
+    def json_ld(self, request, pk=None):
+        """Provide JSON-LD microdata"""
+        instance = get_object_or_404(self.queryset, pk=pk)
+        self.check_object_permissions(request, instance)
+        serializer = JsonLdSerializer(instance,
+                                      context=self.get_serializer_context())
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         queryset = super(PaperViewSet, self).get_queryset()
 
-        if 'altmetric' in self.request.query_params.get('ordering'):
+        if 'altmetric' in self.request.query_params.get('ordering', ''):
             queryset = queryset.filter(altmetric__isnull=False)
 
         return self.get_serializer_class()\

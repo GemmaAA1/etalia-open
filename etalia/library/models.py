@@ -341,6 +341,15 @@ class Paper(TimeStampedModel):
             return 'Unknown authors'
 
     @property
+    def print_json_ld_authors(self):
+        authors = ['{0}, {1}'.format(a.last_name, a.first_name)
+                   for a in self.authors.all()]
+        if len(authors) > 1:
+            return authors
+        else:
+            return authors[0]
+
+    @property
     def print_date(self):
         if self.date_pp:
             return self.date_pp.strftime('%e %b %Y')
@@ -350,6 +359,13 @@ class Paper(TimeStampedModel):
             return '{date} (first seen)'.format(date=self.date_fs.strftime('%e %b %Y'))
         else:
             return 'Unknown Date'
+
+    @property
+    def print_publisher_name(self):
+        if self.journal and self.journal.publisher:
+            return self.journal.publisher.name
+        else:
+            return ''
 
     @property
     def print_month_year(self):
