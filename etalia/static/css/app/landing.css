@@ -5,6 +5,11 @@
     text-align: center;
 }
 
+.divider-container {
+    padding: 25px 0;
+    text-align: center;
+}
+
 h1, .h1,
 h2, .h2,
 h3, .h3 {

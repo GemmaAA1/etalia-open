@@ -5,22 +5,22 @@
             <a href="{% url 'core:about' %}">About</a>
         </li>
         <li>
-            <a href="http://blog.etalia.io" target="_blank">Blog</a>
+            <a href="{% url 'core:support' %}">Support</a>
         </li>
         <li>
             <a href="{% url 'core:contact' %}">Contact us</a>
         </li>
         <li>
+            <a href="{% url 'core:terms_privacy' %}">Privacy Policy</a>
+        </li>
+        <li>
+            <a href="{% url 'core:terms_use' %}">Terms of Use</a>
+        </li>
+        <li>
+            <a href="http://blog.etalia.io" target="_blank">Blog</a>
+        </li>
+        <li>
             <a href="{% url 'core:press' %}">Press</a>
-        </li>
-        <li>
-            <a href="{% url 'core:terms_privacy' %}">Privacy</a>
-        </li>
-        <li>
-            <a href="{% url 'core:support' %}">Support</a>
-        </li>
-        <li>
-            <a href="{% url 'core:terms_use' %}">Terms</a>
         </li>
     </ul>
 </div>
