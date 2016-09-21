@@ -27,6 +27,12 @@ def check_config(config):
 
 if __name__ == '__main__':
 
+    fetch_path()
+    django.setup()
+    from campaigns.utils import get_or_create_campaign
+    from etalia.core.emails import Email
+    from django.conf import settings
+
     # Input
     parser = argparse.ArgumentParser(description='Launch a mailing campaign\n')
     parser.add_argument("-c",
@@ -35,7 +41,7 @@ if __name__ == '__main__':
                         dest='config',
                         type=str,
                         required=False,
-                        default='campaigns.json')
+                        default=str(settings.ROOT_DIR('campaigns/campaigns.json')))
     parser.add_argument("-n",
                         help="Name of the campaign as defined in the config file",
                         metavar='name',
@@ -45,14 +51,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    fetch_path()
-    django.setup()
-    from campaigns.utils import get_or_create_campaign
-    from etalia.core.emails import Email
-
     # Load config file
-    with open(os.path.join(os.path.dirname(__file__),
-                           args.config), 'r') as config_file:
+    with open(args.config, 'r') as config_file:
         config = json.load(config_file)
 
     # Check integrity of campaign config
@@ -68,14 +68,13 @@ if __name__ == '__main__':
     mg_campaign = get_or_create_campaign(campaign.get('name'))
 
     # Parse emails list
-    with open(os.path.join(os.path.dirname(__file__),
-                           campaign.get('email_list')), 'r') as file:
+    with open(str(settings.ROOT_DIR(campaign.get('email_list'))), 'r') as file:
         emails = file.readlines()
         emails = [email.rstrip() for email in emails]
 
     # Instantiate email class
     email = Email(
-        template=os.path.join(os.path.dirname(__file__), campaign.get('email_template')),
+        template=str(settings.ROOT_DIR(campaign.get('email_template'))),
         cids=campaign.get('cids', {}),
         tags=campaign.get('tags', []),
         metadata=campaign.get('metadata', {}),
