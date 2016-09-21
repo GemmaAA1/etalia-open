@@ -37,6 +37,7 @@ class PaperViewSet(MultiSerializerMixin,
     * **[GET] /papers/<id>**: Detail of paper
     * **[GET] /papers/<id\>/neighbors**: Similar papers
     * **[GET] /papers/<id\>/related-threads**: Related threads
+    * **[GET] /papers/<id\>/json-ld**: JSON-LD based on schema.org ScholarlyArticle item
 
     ### Additional Kwargs ###
 
@@ -154,6 +155,7 @@ class MyPaperViewSet(PaperViewSet):
     * **[GET, PUT, PATCH] /my-papers/<id\>/**: Paper instance
     * **[GET] /my-papers/<id\>/neighbors**: Paper neighbors
     * **[GET] /my-papers/<id\>/related-threads**: Related threads
+    * **[GET] /my-papers/<id\>/json-ld**: JSON-LD based on schema.org ScholarlyArticle item
 
     ### Additional Kwargs ###
 
