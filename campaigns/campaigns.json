@@ -1,0 +1,14 @@
+[
+  {
+    "name": "invite-test",
+    "email_template": "templates/simple_invite_v1-inline.html",
+    "email_list": "email_list/test.txt",
+    "subject": "Invitation to try etalia",
+    "from_email": "nicolas.pannetier@etalia.io",
+    "tags": ["invite-test"],
+    "reply_to": ["contact@etalia.io"],
+    "cids": {},
+    "metadata": {},
+    "extra_ctx": {}
+  }
+]

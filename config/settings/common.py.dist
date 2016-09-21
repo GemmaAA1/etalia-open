@@ -61,6 +61,7 @@ THIRD_PARTY_APPS = (
     'rest_framework.authtoken',
     'crispy_forms',
     'easy_timezones',
+    'anymail',
 )
 
 LOCAL_APPS = (
@@ -134,6 +135,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = (
     str(APPS_DIR.path('templates')),
+    str(ROOT_DIR.path('campaigns/templates')),
 )
 
 TEMPLATE_LOADERS = (
@@ -205,15 +207,14 @@ ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
-INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template_email_processed.html'
+INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template-inline.html'
 
 
 # RECOMMENDATION EMAILS
 # ------------------------------------------------------------------------------
 
 RECOMMENDATIONS_EMAILS_ON = True
-PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email_processed.html'
-# PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations_email.html'
+PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations-inline.html'
 PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
 
 

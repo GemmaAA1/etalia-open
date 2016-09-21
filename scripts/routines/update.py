@@ -427,40 +427,40 @@ if __name__ == '__main__':
         '      update.py (refresh data, update engines)\n',
         formatter_class=RawTextHelpFormatter)
     parser.add_argument("-i", "--init",
-                        help="Populate database with test data",
+                        help="populate database with test data",
                         action="store_true")
     parser.add_argument("-l", "--load",
-                        help="Load database from fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
+                        help="load database from fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
                         metavar='file',
                         nargs='?',
                         const=INIT_DEFAULT_FIXTURE_FILE,
                         type=str)
     parser.add_argument("-p", "--papers",
-                        help="Fetch new papers only",
+                        help="fetch new papers only",
                         action="store_true")
     parser.add_argument("-u", "--users",
-                        help="Populate database with test users",
+                        help="populate database with test users",
                         action="store_true")
     parser.add_argument("-m", "--models",
-                        help="Init NLP models only",
+                        help="init NLP models only",
                         action="store_true")
     parser.add_argument("--user", metavar='email',
-                        help="Populate OAuth user with data only",
+                        help="populate OAuth user with data only",
                         type=str)
     parser.add_argument("-d", "--dump",
-                        help="Dump database to fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
+                        help="dump database to fixture file (default ./{0})".format(INIT_DEFAULT_FIXTURE_FILE),
                         nargs='?',
                         const=INIT_DEFAULT_FIXTURE_FILE,
                         metavar='file',
                         type=str)
     parser.add_argument("-f", "--flush",
-                        help="Flush database",
+                        help="flush database",
                         action="store_true")
     parser.add_argument("-e", "--engines",
-                        help="Update engines",
+                        help="update engines",
                         action="store_true")
     parser.add_argument("--init-production",
-                        help="Init database in production from scratch",
+                        help="init database in production from scratch",
                         action="store_true")
     UNITARY_UPDATE_ARGS = ['papers', 'models', 'user', 'flush', 'dump', 'load']
 
@@ -498,7 +498,7 @@ if __name__ == '__main__':
         THREAD_PAPER, THREAD_QUESTION
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
-    from utils.avatar import AvatarGenerator
+    from scripts.routines.utils.avatar import AvatarGenerator
     from autofixture import AutoFixture
 
     User = get_user_model()

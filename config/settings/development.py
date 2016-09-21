@@ -20,13 +20,18 @@ if DEBUG_TOOLBAR:
     INTERNAL_IPS = ['127.0.0.1']
 
 # APPS
+# ------------------------------------------------------------------------------
 # INSTALLED_APPS += ()
 
 
-GRAPH_MODELS = {
-  'all_applications': True,
-  'group_models': True,
+# EMAIL
+# ------------------------------------------------------------------------------
+# For debug purposes
+ANYMAIL = {
+    "MAILGUN_API_KEY": env.str('MAILGUN_KEY', default=''),
+    "MAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
 }
+DEFAULT_FROM_EMAIL = 'contact@etalia.io'
 
 
 # CONSUMER

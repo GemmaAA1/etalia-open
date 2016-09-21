@@ -1,0 +1,36 @@
+Hi! I am sending you this invite to try Etalia (https://etalia.io).
+Etalia is a new intelligent platform for scholarly
+communications. Etalia is free. Here is more information.
+
+Etalia delivers scientific publications and empowers
+scholarly dialogues that matches your personalized interests.
+Searches are fully automated and ranked by relevance to
+your interests, saving you time and ensuring no relevant
+news is missed.
+
+How it works. Sync/Focus/Engage
+
+Etalia fetches what you are reading by connecting to your
+reference software manager (e.g. Zotero or
+Mendeley). Etalia leverages the content of your library using
+recent advances in natural language processing, machine learning,
+and statistics to understand your interests
+and to build feeds of publications, trending news
+and discussions that match your personal interests.
+
+
+Reading a new paper or extending your research interests?
+Etalia will automatically adapt.
+
+Try it now at {{ root_url }}
+
+Etalia is in Beta Version.
+Your feedback is key for improving the service!
+Tell us what you think at contact@etalia.io
+
+If you like Etalia, please recommend it to your friends and colleagues.
+
+Etalia will not send you marketing messages because you received this invitation.
+To stop receiving invitations, click <%tag_unsubscribe_url%>
+© 2016. Etalia, Inc.
+
