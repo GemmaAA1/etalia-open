@@ -1,0 +1,5 @@
+# The following is a list of tags used in etalia mailings
+
+digest
+invite-peer-to-peer
+invite

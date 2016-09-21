@@ -33,8 +33,11 @@ class Email(object):
 
     def get_context(self):
         ctx = {'root_url': self.root_url}
-        ctx.update(self.get_inline_images())
         ctx.update(self.extra_ctx)
+        return ctx
+
+    def update_context_with_images(self, ctx):
+        ctx.update(self.get_inline_images())
         return ctx
 
     def get_plaintext_template(self):
@@ -43,7 +46,7 @@ class Email(object):
     def get_inline_images(self):
         """Process inline images"""
         inline_images = {}
-        for cid, path in self.cids:
+        for cid, path in self.cids.items():
             inline_images[cid] = attach_inline_image_file(
                 self.email,
                 os.path.join(self.img_dir, path),
@@ -55,7 +58,6 @@ class Email(object):
 
     def build(self):
         ctx = self.get_context()
-        html_content = render_to_string(self.template, ctx)
         body = render_to_string(self.get_plaintext_template(), ctx)
         self.email = EmailMultiAlternatives(subject=self.subject,
                                             body=body,
@@ -64,6 +66,8 @@ class Email(object):
                                             to=self.to,
                                             cc=self.cc,
                                             bcc=self.bcc)
+        ctx = self.update_context_with_images(ctx)
+        html_content = render_to_string(self.template, ctx)
         self.email.attach_alternative(html_content, "text/html")
         self.email.tags = self.tags
         self.email.metadata = self.get_metadata()

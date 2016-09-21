@@ -28,7 +28,7 @@ def send_invite_email(email_to=None, on_behalf=None):
               'book_cid': 'book.png',
               'engage_cid': 'engage.png',
               'target_cid': 'target.png'},
-        tags=['invite', 'peer-to-peer'],
+        tags=['invite-peer-to-peer'],
         metadata={'from_user': on_behalf.id},
         subject='An invitation to try Etalia',
         from_email='nicolas.pannetier@etalia.io',
