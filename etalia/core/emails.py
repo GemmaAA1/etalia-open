@@ -29,6 +29,7 @@ class Email(object):
         self.extra_ctx = kwargs.get('extra_ctw', {})
         self.img_dir = kwargs.get('img_dir', self.IMG_DIR)
         self.root_url = kwargs.get('root_url', self.ROOT_URL)
+        self.campaign_id = kwargs.get('campaign_id')
         self.build()
 
     def get_context(self):
@@ -70,6 +71,7 @@ class Email(object):
         html_content = render_to_string(self.template, ctx)
         self.email.attach_alternative(html_content, "text/html")
         self.email.tags = self.tags
+        self.email.campaign = self.campaign_id
         self.email.metadata = self.get_metadata()
         self.email.track_clicks = True
 

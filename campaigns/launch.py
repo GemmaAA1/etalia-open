@@ -82,7 +82,9 @@ if __name__ == '__main__':
         from_email=campaign.get('from_email'),
         to=[],
         reply_to=campaign.get('reply_to', []),
-        extra_ctx=campaign.get('extra_ctx', {}))
+        extra_ctx=campaign.get('extra_ctx', {}),
+        campaign_id=mg_campaign.get('id')
+    )
 
     # send email
     for add in emails:
