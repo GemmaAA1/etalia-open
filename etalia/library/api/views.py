@@ -63,7 +63,7 @@ class PaperViewSet(MultiSerializerMixin,
 
     """
 
-    queryset = Paper.objects.filter(Q(is_trusted=True))
+    queryset = Paper.objects.filter(is_trusted=True)
     serializer_class = {
         'default': PaperSerializer,
         'nested': PaperNestedSerializer,
@@ -123,6 +123,10 @@ class PaperViewSet(MultiSerializerMixin,
 
     def get_queryset(self):
         queryset = super(PaperViewSet, self).get_queryset()
+
+        if 'altmetric' in self.request.query_params.get('ordering'):
+            queryset = queryset.filter(altmetric__isnull=False)
+
         return self.get_serializer_class()\
             .setup_eager_loading(queryset,
                                  user=self.request.user,
