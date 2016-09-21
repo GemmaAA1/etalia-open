@@ -85,8 +85,7 @@ if __name__ == '__main__':
         extra_ctx=campaign.get('extra_ctx', {}))
 
     # send email
-    for email in emails:
-        email.to = [email]
-        email.send()
+    for add in emails:
+        email.send_to([add])
 
 
