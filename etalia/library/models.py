@@ -279,7 +279,8 @@ class Paper(TimeStampedModel):
     def save(self, **kwargs):
         if not self.date_co:
             dates = [self.date_ep, self.date_fs, self.date_pp]
-            self.date_co = min([date for date in dates if date is not None])
+            if any(dates):
+                self.date_co = min([date for date in dates if date is not None])
         super(Paper, self).save(**kwargs)
 
     def get_absolute_url(self):
