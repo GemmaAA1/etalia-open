@@ -1,8 +1,8 @@
 define([
     'app',
     'text!app/templates/paper/neighbors.hbs',
-    'app/view/detail'
-], function (App, template, Detail) {
+    'app/view/paper/thumb'
+], function (App, template) {
 
     App.View.Paper = App.View.Paper || {};
 
@@ -18,7 +18,6 @@ define([
 
         paperId: null,
         buttons: null,
-        returnCallback: null,
 
         thumbPrefix: 'paper-neighbors-thumb-',
         activeTimespan: null,
@@ -37,10 +36,6 @@ define([
                 throw 'options.buttons is mandatory';
             }
             this.buttons = options.buttons;
-            this.returnCallback = options.return_callback;
-            if (!(typeof this.returnCallback == 'function')) {
-                throw 'options.return_callback is mandatory';
-            }
 
             this.collection = new App.Model.Papers();
             this.collection.url = App.config.api_root + '/library/my-papers/' + this.paperId + '/neighbors';

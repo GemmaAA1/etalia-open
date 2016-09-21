@@ -190,6 +190,10 @@ define([
         return false;
     });
 
+    App.on('etalia.navigate', function(url) {
+        router.navigate(url, true);
+    });
+
     App.Backbone.history.start({
         pushState: true
     });

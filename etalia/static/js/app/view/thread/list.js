@@ -423,8 +423,7 @@ define([
                     success: function () {
                         that.collection.add(form.model, {at: 0});
                         modal.close();
-                        //that.openDetail(form.model);
-                        // TODO navigate to detail ...
+                        App.trigger('etalia.navigate', '/threads/' + form.model.get('slug') + '/');
                     },
                     error: function () {
                         // TODO

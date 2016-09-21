@@ -18,7 +18,6 @@ define([
 
         threadId: null,
         buttons: null,
-        returnCallback: null,
 
         thumbPrefix: 'thread-neighbors-thumb-',
         activeTimespan: null,
@@ -37,10 +36,6 @@ define([
                 throw 'options.buttons is mandatory';
             }
             this.buttons = options.buttons;
-            this.returnCallback = options.return_callback;
-            if (!(typeof this.returnCallback == 'function')) {
-                throw 'options.return_callback is mandatory';
-            }
 
             this.collection = new App.Model.Threads();
             this.collection.url = App.config.api_root + '/thread/my-threads/' + this.threadId + '/neighbors';
