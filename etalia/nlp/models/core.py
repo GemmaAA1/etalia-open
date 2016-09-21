@@ -26,6 +26,7 @@ from etalia.core.models import TimeStampedModel
 
 from etalia.library.models import Paper, Journal, AuthorPaper
 from etalia.threads.models import Thread, ThreadPost
+from etalia.threads.constant import THREAD_PUBLIC
 
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
     JournalVectors, PaperEngineScoringMixin
@@ -1317,6 +1318,7 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
                 "SELECT tt.id,"
                 "       tt.user_id,"
                 "       tt.published_at,"
+                "       tt.privacy,"
                 "       tt.paper_id,"
                 "		tv.vector, "
                 "		pp.id,"
@@ -1324,13 +1326,15 @@ class ThreadEngine(ThreadEngineScoringMixin, S3Mixin, TimeStampedModel):
                 "FROM threads_thread tt "
                 "LEFT JOIN threads_pubpeer as pp ON tt.id = pp.thread_id "
                 "LEFT JOIN nlp_threadvectors as tv ON tt.id = tv.thread_id "
-                "WHERE tt.published_at >= %s"
+                "WHERE tt.published_at IS NOT NULL"
+                "    AND tt.published_at >= %s"
+                "    AND tt.privacy = %s"
                 "    AND tv.model_id = %s"
                 "    AND tv.vector IS NOT NULL "
                 "    AND 'true' = CASE WHEN pp.id IS NOT NULL THEN pp.is_active "
                 "                      ELSE 'true' "
                 "                      END "
-                "ORDER BY tt.published_at ASC", (some_time_ago, self.model.id)
+                "ORDER BY tt.published_at ASC", (some_time_ago, THREAD_PUBLIC, self.model.id)
                 )
 
         for d in q1:
