@@ -3,9 +3,27 @@ from __future__ import unicode_literals, absolute_import
 
 import os
 from anymail.message import attach_inline_image_file
+from anymail.backends.mailgun import MailgunBackend, MailgunPayload
+from anymail.utils import combine
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+
+
+class CustomMailgunBackend(MailgunBackend):
+
+    def build_message_payload(self, message, defaults):
+        return CustomMailgunPayload(message, defaults, self)
+
+
+class CustomMailgunPayload(MailgunPayload):
+
+    esp_message_attrs = (
+        ('campaign', combine, None)
+    )
+
+    def set_campaigns(self, campaign):
+        self.data["o:campaign"] = campaign
 
 
 class Email(object):
@@ -29,7 +47,7 @@ class Email(object):
         self.extra_ctx = kwargs.get('extra_ctw', {})
         self.img_dir = kwargs.get('img_dir', self.IMG_DIR)
         self.root_url = kwargs.get('root_url', self.ROOT_URL)
-        self.campaign_id = kwargs.get('campaign_id')
+        self.campaign = kwargs.get('campaign', [])
         self.build()
 
     def get_context(self):
@@ -42,7 +60,9 @@ class Email(object):
         return ctx
 
     def get_plaintext_template(self):
-        return self.template.split('-')[0] + '-plain.txt'
+        if self.template:
+            return self.template.split('-')[0] + '-plain.txt'
+        return ''
 
     def get_inline_images(self):
         """Process inline images"""
@@ -59,7 +79,10 @@ class Email(object):
 
     def build(self):
         ctx = self.get_context()
-        body = render_to_string(self.get_plaintext_template(), ctx)
+        if self.get_plaintext_template():
+            body = render_to_string(self.get_plaintext_template(), ctx)
+        else:
+            body = ''
         self.email = EmailMultiAlternatives(subject=self.subject,
                                             body=body,
                                             from_email=self.from_email,
@@ -71,7 +94,7 @@ class Email(object):
         html_content = render_to_string(self.template, ctx)
         self.email.attach_alternative(html_content, "text/html")
         self.email.tags = self.tags
-        self.email.campaign = self.campaign_id
+        self.email.campaign = self.campaign
         self.email.metadata = self.get_metadata()
         self.email.track_clicks = True
 

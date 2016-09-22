@@ -80,10 +80,10 @@ if __name__ == '__main__':
         metadata=campaign.get('metadata', {}),
         subject=campaign.get('subject', ''),
         from_email=campaign.get('from_email'),
+        campaign=[mg_campaign.get('id')],
         to=[],
         reply_to=campaign.get('reply_to', []),
         extra_ctx=campaign.get('extra_ctx', {}),
-        campaign_id=mg_campaign.get('id')
     )
 
     # send email
