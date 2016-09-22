@@ -4,9 +4,9 @@ from __future__ import unicode_literals, absolute_import
 from collections import Counter
 
 from django.contrib.auth import get_user_model
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache, cache_page
 from django.utils.decorators import method_decorator
-from django.db.models import Q
+from django.db.models import Q, F, Count
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from rest_framework import viewsets, permissions, mixins, status, filters
@@ -67,22 +67,37 @@ class ThreadViewSet(MultiSerializerMixin,
 
     """
 
-    queryset = Thread.objects.filter(privacy=THREAD_PUBLIC)
+    queryset = Thread.objects\
+        .filter(privacy=THREAD_PUBLIC, published_at__isnull=False)\
+        .annotate(num_posts=Count('posts', distinct=True))\
+        .annotate(num_ppc=Count('pubpeer__comments', distinct=True))\
+        .annotate(total_posts=F('num_ppc') + F('num_posts'))
     serializer_class = {
         'default': ThreadSerializer,
         'nested': ThreadNestedSerializer,
     }
     permission_classes = (permissions.AllowAny,
                           )
-    filter_backends = (DisabledHTMLContextualFilterBackend,
-                       DisabledHTMLSearchFilterBackend,
-                       )
+    filter_backends = (
+        DisabledHTMLContextualFilterBackend,
+        DisabledHTMLSearchFilterBackend,
+        filters.OrderingFilter,
+    )
     filter_class = ThreadFilter
+    ordering_fields = ('total_posts',
+                       'published_at')
     search_fields = ('title',
                      'content',
                      'paper__id_doi',
                      'user__first_name',
                      'user__last_name')
+
+    # @method_decorator(cache_page(3600 * 24))
+    def list(self, request, *args, **kwargs):
+        return super(ThreadViewSet, self).list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return super(ThreadViewSet, self).get_queryset()
 
 
 class MyThreadViewSet(ThreadViewSet,

@@ -12,6 +12,7 @@ TEMPLATE_DEBUG = DEBUG
 
 # DEBUG TOOLBAR
 # ------------------------------------------------------------------------------
+DEBUG_TOOLBAR = False
 if DEBUG_TOOLBAR:
     DEBUG_TOOLBAR_PATCH_SETTINGS = False
     INSTALLED_APPS += ('debug_toolbar', )

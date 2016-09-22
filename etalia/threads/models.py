@@ -49,9 +49,6 @@ class Thread(TimeStampedModel):
     # published at
     published_at = models.DateTimeField(null=True, blank=True)
 
-    class Meta:
-        ordering = ('-published_at', '-modified')
-
     @property
     def short_title(self):
         return self.title[:30]

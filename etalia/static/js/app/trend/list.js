@@ -51,7 +51,8 @@ define([
                     icon: 'eai-comments',
                     count: false,
                     data: {
-                        view: 'nested'
+                        view: 'nested',
+                        ordering: '-total_posts'
                     },
                     actions: {}
                 }

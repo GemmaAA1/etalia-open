@@ -53,6 +53,7 @@ define([
                 //this.controlsView.cluster.disable();
                 //this.controlsView.timespan.disable();
                 //this.controlsView.pin.disable();
+                viewOptions.listUrl = App.config.api_root + '/thread/threads';
                 viewOptions.privacyFilter = false;
                 viewOptions.publishedFilter = false;
                 this.listView = new App.View.Thread.List.create(viewOptions, createOptions);
