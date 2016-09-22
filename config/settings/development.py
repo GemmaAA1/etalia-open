@@ -33,20 +33,17 @@ CONSUMER_PUBPEER_INIT_PAST = 2
 
 # Mail settings
 # ------------------------------------------------------------------------------
-# For debug purposes
-ANYMAIL = {
-    # "MAILGUN_API_KEY": env.str('MAILGUN_KEY', default=''),
-    # "MAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
-    "CUSTOMMAILGUN_API_KEY": env.str('MAILGUN_KEY', default=''),
-    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
-}
 DEFAULT_FROM_EMAIL = 'contact@etalia.io'
-EMAIL_BACKEND = 'etalia.core.emails.CustomMailgunBackend'
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
-# EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
-#                     default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
+                    default='django.core.mail.backends.console.EmailBackend')
+# For debug purposes only
+ANYMAIL = {
+    "CUSTOMMAILGUN_API_KEY": env.str('MAILGUN_KEY', default=''),
+    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+}
 
 # Static asset configuration
 STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))

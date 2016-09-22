@@ -12,7 +12,8 @@
 
 h1, .h1,
 h2, .h2,
-h3, .h3 {
+h3, .h3,
+h4, .h4 {
     font-weight: 700;
     /*text-shadow: -2px 2px 0 rgba(0, 0, 0, .15);*/
     color: #1e232f;
@@ -22,6 +23,12 @@ h3, .h3 {
 h2, .h2, p.h2 {
     font-size: 24px;
     margin-bottom: 30px;
+}
+
+h4, .h4, p.h4 {
+    font-weight: 400;
+    font-size: 16px;
+    font-style: italic;
 }
 
 p {
@@ -58,6 +65,9 @@ a.btn-provider:hover {
 
 
 /* Hero */
+#hero {
+    padding: 20px 0;
+}
 
 #hero h1 {
     text-align: center;
@@ -128,6 +138,10 @@ a.btn-provider:hover {
     text-align: center;
 }
 
+.providers .h4 {
+
+}
+
 .providers p:first-child {
     margin-bottom: 30px;
 }
@@ -136,6 +150,7 @@ a.btn-provider:hover {
 /* What */
 
 #what {
+    padding: 20px 0;
     background-color: #83ebdf;
 }
 
