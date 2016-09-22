@@ -5,9 +5,9 @@ import requests
 
 from django.conf import settings
 
-MAILGUN_API_KEY = settings.ANYMAIL['MAILGUN_API_KEY']
+MAILGUN_API_KEY = settings.ANYMAIL['CUSTOMMAILGUN_API_KEY']
 MAILGUN_API_URL = 'https://api.mailgun.net/v3/{domain}/campaigns'.format(
-    domain=settings.ANYMAIL['MAILGUN_SENDER_DOMAIN'])
+    domain=settings.ANYMAIL['CUSTOMMAILGUN_SENDER_DOMAIN'])
 
 
 def get_or_create_campaign(name, campaign_id=None):

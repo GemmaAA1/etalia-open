@@ -51,10 +51,13 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStora
 
 # EMAIL backend
 ANYMAIL = {
-    "MAILGUN_API_KEY": env.str('MAILGUN_KEY'),
-    "MAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    # "MAILGUN_API_KEY": env.str('MAILGUN_KEY'),
+    # "MAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    "CUSTOMMAILGUN_API_KEY": env.str('MAILGUN_KEY'),
+    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
 }
-EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+# EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+EMAIL_BACKEND = 'etalia.core.emails.CustomMailgunBackend'
 DEFAULT_FROM_EMAIL = 'contact@etalia.io'
 
 

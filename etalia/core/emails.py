@@ -19,11 +19,12 @@ class CustomMailgunBackend(MailgunBackend):
 class CustomMailgunPayload(MailgunPayload):
 
     esp_message_attrs = (
-        ('campaign', combine, None)
+        ('campaign', combine, None),
     )
 
-    def set_campaigns(self, campaign):
-        self.data["o:campaign"] = campaign
+    def set_campaign(self, campaign):
+        if campaign:
+            self.data["o:campaign"] = campaign
 
 
 class Email(object):
@@ -47,7 +48,7 @@ class Email(object):
         self.extra_ctx = kwargs.get('extra_ctw', {})
         self.img_dir = kwargs.get('img_dir', self.IMG_DIR)
         self.root_url = kwargs.get('root_url', self.ROOT_URL)
-        self.campaign = kwargs.get('campaign', [])
+        self.campaign = kwargs.get('campaign', None)
         self.build()
 
     def get_context(self):
