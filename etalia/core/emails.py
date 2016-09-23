@@ -45,7 +45,7 @@ class Email(object):
         self.to = kwargs.get('to', [])
         self.cc = kwargs.get('cc', [])
         self.bcc = kwargs.get('bcc', [])
-        self.extra_ctx = kwargs.get('extra_ctw', {})
+        self.extra_ctx = kwargs.get('extra_ctx', {})
         self.img_dir = kwargs.get('img_dir', self.IMG_DIR)
         self.root_url = kwargs.get('root_url', self.ROOT_URL)
         self.campaign = kwargs.get('campaign', None)
