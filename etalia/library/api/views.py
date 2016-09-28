@@ -135,13 +135,15 @@ class PaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         queryset = super(PaperViewSet, self).get_queryset()
 
+        altmetric_flag = False
         if 'altmetric' in self.request.query_params.get('ordering', ''):
-            queryset = queryset.filter(altmetric__isnull=False)
+            altmetric_flag = True
 
         return self.get_serializer_class()\
             .setup_eager_loading(queryset,
                                  user=self.request.user,
-                                 request=self.request)
+                                 request=self.request,
+                                 altmetric=altmetric_flag)
 
 
 class MyPaperViewSet(PaperViewSet):
@@ -220,6 +222,10 @@ class MyPaperViewSet(PaperViewSet):
     TIME_SPAN_DEFAULT = 30
     AUTHOR_COUNT_BUMPER = 1.  # in percent of all journals in user fingerprint
     JOURNAL_COUNT_BUMPER = 5.  # in percent of all journals in user fingerprint
+
+    @method_decorator(never_cache)
+    def list(self, request, *args, **kwargs):
+        return super(PaperViewSet, self).list(request, *args, **kwargs)
 
     def get_paper_id(self):
         return self.kwargs['pk']

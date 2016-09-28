@@ -65,4 +65,9 @@ class PaperEagerLoadingMixin(object):
                                     trend__name=feed_name)
                             )
                         )
+
+        if kwargs.get('altmetric'):
+            queryset = queryset.filter(altmetric__isnull=False)
+            queryset = queryset.select_related('altmetric__score')
+
         return queryset
