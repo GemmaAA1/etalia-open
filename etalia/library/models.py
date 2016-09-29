@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 from django.conf import settings
+from django.contrib.sites.models import Site
 from model_utils.fields import MonitorField
 
 from etalia.core.models import TimeStampedModel, NullableCharField
@@ -19,8 +20,6 @@ from .constants import LANGUAGES, PUBLISH_PERIODS, PAPER_TYPE, PUBLISH_STATUS, \
 from .utils import langcode_to_langpap
 
 from langdetect import detect
-
-# Source from where Paper are created (tuple(set()) to make unique)
 
 
 class Publisher(TimeStampedModel):
@@ -442,7 +441,7 @@ class Paper(TimeStampedModel):
 
     @property
     def build_url(self):
-        return 'https://etalia.io' + self.get_absolute_url()
+        return 'https://%s%s' % (Site.objects.get_current(), self.get_absolute_url())
 
     def get_ids(self):
         """Return dictionary of paper ids"""
