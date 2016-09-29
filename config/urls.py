@@ -5,17 +5,8 @@ from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.views.generic import TemplateView
 from django.conf import settings
-from django.contrib.sitemaps.views import sitemap
 
 from etalia.core.api.router import api_urls
-
-from django.contrib.sitemaps import GenericSitemap
-from etalia.library.models import Paper
-
-info_dict = {
-    'queryset': Paper.objects.all(),
-    'date_field': 'created',
-}
 
 
 urlpatterns = [
@@ -31,8 +22,6 @@ urlpatterns = [
     url(r'^robots\.txt$', TemplateView.as_view(
         template_name="robots.txt",
         content_type={'mimetype': 'text/plain'})),
-    url(r'^sitemap\.xml$', sitemap, {'sitemaps': {'library': GenericSitemap(info_dict, priority=0.6)}},
-        name='django.contrib.sitemaps.views.sitemap')
 ]
 
 

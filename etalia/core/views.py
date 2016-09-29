@@ -17,14 +17,6 @@ def home(request):
         return render(request, 'landing.html', context=context)
 
 
-def home_test(request):
-    if request.user.is_authenticated():
-        return redirect('feeds:my_feeds')
-    else:
-        context = {}
-        return render(request, 'landing_test.html', context=context)
-
-
 @cache_page(60 * 60)
 def about(request):
     context = {}
