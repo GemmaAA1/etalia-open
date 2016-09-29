@@ -8,6 +8,7 @@ from anymail.utils import combine
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from django.contrib.sites.models import Site
 
 
 class CustomMailgunBackend(MailgunBackend):
@@ -31,7 +32,7 @@ class Email(object):
     """Class that build and send email based on templates"""
 
     IMG_DIR = str(settings.ROOT_DIR.path('etalia/templates/emails/img/'))
-    ROOT_URL = 'https://etalia.io'
+    ROOT_URL = 'https://%s' % Site.objects.get_current()
 
     def __init__(self, *args, **kwargs):
         self.email = None
