@@ -42,6 +42,26 @@ def send_invite_email(email_to=None, on_behalf=None):
     UserInvited.objects.create(from_user=on_behalf, to_email=email_to)
 
 
+def send_welcome_email(user_id):
+    """Send etalia welcome email"""
+    user = User.objects.get(id=user_id)
+
+    # Instantiate
+    email = Email(
+        template=settings.WELCOME_EMAIL_TEMPLATE,
+        cids={},
+        tags=['welcome'],
+        metadata={},
+        subject='Welcome to etalia',
+        from_email='nicolas.pannetier@etalia.io',
+        to=[user.email],
+        reply_to=['contact@etalia.io'],
+        extra_ctx={})
+
+    # send
+    email.send()
+
+
 def send_periodic_recommendation_email(user_id):
     """Send etalia digest email"""
 

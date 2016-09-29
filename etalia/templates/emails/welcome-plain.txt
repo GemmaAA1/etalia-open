@@ -1,0 +1,19 @@
+Welcome to Etalia!
+
+With Etalia you can receive personalized article recommendations and join scholarly
+discussion around subject matters.
+
+Find your papers and discussion recommendations by visiting {{ root_url }}{% url 'feeds:my_feeds' %},
+or check out what is trending at {{ root_url }}{% url 'library:papers' %}. You can
+add publications directly to your library ({{ root_url }}{% url 'library:my_papers'%})
+and engage in scientific discussion by creating a new thread ({{ root_url }}{% url 'threads:my_threads'%}).
+
+We are constantly trying to improve etalia. Let us know what you think at contact@etalia.io
+
+Thanks for signing-up.
+Team Etalia
+
+_______
+
+You received this email because you signed up to Etalia.
+© 2016. Etalia, Inc.
