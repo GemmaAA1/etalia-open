@@ -17,6 +17,7 @@ from django.utils.text import slugify
 from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
+from django.contrib.sites.models import Site
 
 from braces.views import LoginRequiredMixin
 
@@ -587,7 +588,7 @@ def test_template(request):
         settings.PERIODIC_RECOMMENDATION_TEMPLATE,
         {'papers': papers,
          'bucket_url': settings.EMAIL_STATIC_BUCKET,
-         'root_url': 'http://etalia.io',
+         'root_url': 'https://%s' % Site.objects.get_current().domain,
          }
     )
 

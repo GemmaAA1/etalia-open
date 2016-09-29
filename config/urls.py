@@ -9,6 +9,7 @@ from django.conf import settings
 from etalia.core.api.router import api_urls
 
 
+
 urlpatterns = [
     url(r'^', include('etalia.core.urls', namespace='core')),
     url(r'^', include('etalia.library.urls', namespace='library')),
