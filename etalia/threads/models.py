@@ -5,7 +5,9 @@ import json
 from django.db import models
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 
 from etalia.core.models import TimeStampedModel
@@ -61,6 +63,11 @@ class Thread(TimeStampedModel):
         return '{0} | {1} | {2}'.format(self.id,
                                         self.short_title,
                                         self.user)
+
+    def get_absolute_url(self):
+        return reverse('threads:thread-slug',
+                       kwargs={'pk': self.pk,
+                               'slug': slugify(self.title)})
 
     def get_active_members(self):
         User = get_user_model()

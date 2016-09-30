@@ -44,17 +44,17 @@
         ------------------------------------- */
         table.body-wrap {
             width: 100%;
-            padding: 0;
+            padding: 1px;
+        }
+
+        table.body-wrap .container {
+            border: 1px solid #f0f0f0;
         }
 
         @media (min-width: 700px) {
             table.body-wrap {
                 padding: 20px;
             }
-        }
-
-        table.body-wrap .container {
-            border: 1px solid #f0f0f0;
         }
 
         /* -------------------------------------
@@ -152,22 +152,13 @@
                     <tr>
                         <td>
                             <div>
-                                <p>Welcome to Etalia!</p>
+                                <p>Hi {{ to_user }}</p>
                                 <p>
-                                    With Etalia you can receive personalized article recommendations and join scholarly
-                                    discussion around subject matters.
+                                    {{ from_user }} has invited you to join the thread entitled "{{ thread.title }}" on etalia.
+                                    To check out this thread, go to <a href="{{ root_url }}{{ thread.get_absolute_url }}">{{ root_url }}{{ thread.get_absolute_url }}</a>.
                                 </p>
                                 <p>
-                                    Find your papers and discussion recommendations by visiting {{ root_url }}{% url 'feeds:my_feeds' %},
-                                    or check out what is trending at {{ root_url }}{% url 'library:papers' %}. You can
-                                    add publications directly to <a href="{{ root_url }}{% url 'library:my_papers'%}">your library</a>
-                                    and engage in scientific discussion by creating a <a href="{{ root_url }}{% url 'threads:my_threads'%}">new thread</a>.
-                                </p>
-                                <p>
-                                    We are constantly trying to improve etalia. Let us know what you think at <a href="mailto:contact@etalia.io">contact@etalia.io</a>.
-                                </p>
-                                <p>
-                                    Thanks for signing-up.
+                                    Thank you,
                                 </p>
                                 <p>
                                     Team Etalia -
@@ -194,7 +185,6 @@
                 <table>
 					<tr>
 						<td align="center">
-							<p>You received this email because you signed up to Etalia.</p>
 						    <p>© 2016. Etalia, Inc.</p>
                         </td>
 					</tr>

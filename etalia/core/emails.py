@@ -108,3 +108,15 @@ class Email(object):
 
     def send(self):
         self.email.send()
+
+    def test_render_and_save(self):
+        ctx = self.get_context()
+        ctx = self.update_context_with_images(ctx)
+        html_content = render_to_string(self.template, ctx)
+        file_path = os.path.join(
+            str(settings.ROOT_DIR),
+            'dump',
+            'test_{0}'.format(os.path.split(self.template)[1])
+        )
+        with open(file_path, 'w+') as file:
+            file.write(html_content)
