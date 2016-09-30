@@ -10,6 +10,7 @@ from etalia.nlp.models import Model, ThreadEngine
 from config.celery import celery_app as app
 from etalia.nlp.models import ThreadNeighbors
 from .models import Thread
+from .utils import send_invite_thread_email
 
 
 import logging
@@ -80,3 +81,9 @@ def get_neighbors_threads(thread_pk, time_span):
     ordering = 'CASE %s END' % clauses
     return Thread.objects.filter(pk__in=neigh_pk_list).extra(
         select={'ordering': ordering}, order_by=('ordering',))
+
+
+@app.task()
+def async_send_invite_thread_email(from_id, to_id, thread_id):
+    """Send email for thread invite"""
+    send_invite_thread_email(from_id, to_id, thread_id)

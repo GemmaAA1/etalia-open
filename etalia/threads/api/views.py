@@ -31,6 +31,8 @@ from .serializers import \
     ThreadFilterSerializer, ThreadUserInviteSerializer, \
     ThreadUserInviteUpdateSerializer, ThreadUserUpdateSerializer
 from ..filters import ThreadFilter, MyThreadFilter
+from ..tasks import async_send_invite_thread_email
+
 
 User = get_user_model()
 
@@ -465,3 +467,7 @@ class ThreadUserInviteViewSet(MultiSerializerMixin,
 
     def perform_create(self, serializer):
         serializer.save(from_user=self.request.user)
+        # Send invite email
+        async_send_invite_thread_email.delay(self.request.user.id,
+                                             serializer.instance.to_user.id,
+                                             serializer.instance.thread.id)
