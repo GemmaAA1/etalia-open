@@ -10,16 +10,12 @@ from django.core.mail import send_mail
 from django.conf import settings
 from social.pipeline.partial import partial
 from avatar.models import Avatar
-from django.utils import timezone
-
-from etalia.core.utils import get_celery_worker_status
 from etalia.usersession.models import UserSession
 from .models import Affiliation
 from .constants import USERLIB_UNINITIALIZED
 
 from .forms import UserAffiliationForm
-from .tasks import update_lib as async_update_lib
-from .tasks import init_user as async_init_user
+from .tasks import init_user as async_init_user, async_send_welcome_email
 
 
 @partial
@@ -113,6 +109,18 @@ def send_email_of_new_signup(strategy, details, *args, **kwargs):
         # TODO specify exceptions
         except:
             pass
+
+
+@partial
+def send_welcome_email_at_signup(strategy, details, *args, **kwargs):
+    user = kwargs.get('user')
+    if not user.last_login:
+        try:
+            async_send_welcome_email.delay(user.id)
+        # TODO specify exceptions
+        except:
+            pass
+
 
 @partial
 def init_user(social, user, *args, **kwargs):

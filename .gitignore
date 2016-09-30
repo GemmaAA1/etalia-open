@@ -1,5 +1,4 @@
 
-
 .idea
 */__pychache__
 __pycache__
@@ -84,7 +83,9 @@ config/settings/common.py
 etalia/static/compiled
 /scripts/routines/beta_emails_*.txt
 /scripts/emails/log.txt
+/dump
 # redis
 *.rdb
+
 
 

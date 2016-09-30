@@ -152,27 +152,22 @@
                     <tr>
                         <td>
                             <div>
-                                <p>Hi,</p>
+                                <p>Welcome to Etalia!</p>
                                 <p>
-                                    We are two researchers who think that scientific communications and
-                                    scholarly dialogues can be improved. To go beyond traditional limits, we have
-                                    launched Etalia (<a href="https://etalia.io">etalia.io</a>).
+                                    With Etalia you can receive personalized article recommendations and join scholarly
+                                    discussion around subject matters.
                                 </p>
                                 <p>
-                                    With Etalia you can receive personalized article recommendations and join
-                                    scholarly dialogues around subject matters. Specifically, Etalia uses your
-                                    “text-fingerprint” based on your personal reference library.
-                                    Currently we are supporting two library managers: Mendeley and Zotero.
+                                    Find your papers and discussion recommendations by visiting {{ root_url }}{% url 'feeds:my_feeds' %},
+                                    or check out what is trending at {{ root_url }}{% url 'library:papers' %}. You can
+                                    add publications directly to <a href="{{ root_url }}{% url 'library:my_papers'%}">your library</a>
+                                    and engage in scientific discussion by creating a <a href="{{ root_url }}{% url 'threads:my_threads'%}">new thread</a>.
                                 </p>
                                 <p>
-                                    Etalia is free and it saves you time. Check it out at <a href="https://etalia.io">etalia.io</a>.
-                                <p>
-                                <p>
-                                    We would also like hearing from you because your feedback matters to improve Etalia.
-                                    Tell us what you think at <a href="mailto:contact@etalia.io">contact@etalia.io</a> or come chat with us directly on Etalia.
+                                    We are constantly trying to improve etalia. Let us know what you think at <a href="mailto:contact@etalia.io">contact@etalia.io</a>.
                                 </p>
                                 <p>
-                                    We are looking forward seeing you on <a href="https://etalia.io">Etalia</a>,
+                                    Thanks for signing-up.
                                 </p>
                                 <p>
                                     Team Etalia -
@@ -199,8 +194,7 @@
                 <table>
 					<tr>
 						<td align="center">
-							<p>Etalia will not send you marketing messages because you received this invitation.</p>
-                            <p>To stop receiving emails from etalia, click <a href="%unsubscribe_url%">here</a>.</p>
+							<p>You received this email because you signed up to Etalia.</p>
 						    <p>© 2016. Etalia, Inc.</p>
                         </td>
 					</tr>

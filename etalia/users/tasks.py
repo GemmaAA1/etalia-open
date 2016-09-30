@@ -17,7 +17,8 @@ from etalia.popovers.tasks import init_popovers
 from etalia.usersession.models import UserSession
 from .models import UserLib, UserPeriodicEmail
 from .constants import USERLIB_IDLE, USERLIB_NEED_REAUTH
-from .utils import send_periodic_recommendation_email, next_weekday
+from .utils import send_periodic_recommendation_email, next_weekday, \
+    send_welcome_email
 
 logger = logging.getLogger(__name__)
 
@@ -117,12 +118,12 @@ def send_recommendation_emails_on_wed_11am():
             loc_dt = user_timezone.localize(datetime(nm.year, nm.month, nm.day, 11, 0, 0))
             utc_dt = loc_dt.astimezone(utc)
             # fire task
-            send_periodic_email_at_eta.apply_async(args=[user.id, ],
+            async_send_periodic_email_at_eta.apply_async(args=[user.id, ],
                                                    eta=utc_dt)
 
 
 @app.task()
-def send_periodic_email_at_eta(user_id):
+def async_send_periodic_email_at_eta(user_id):
     """Send recommendations email"""
     send_periodic_recommendation_email(user_id)
     # Record email has been sent
@@ -130,3 +131,9 @@ def send_periodic_email_at_eta(user_id):
     utc = timezone('UTC')
     upe.last_sent_on = utc.localize(datetime.now())
     upe.save()
+
+
+@app.task()
+def async_send_welcome_email(user_id):
+    """Send welcoming email"""
+    send_welcome_email(user_id)

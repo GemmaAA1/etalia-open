@@ -44,17 +44,17 @@
         ------------------------------------- */
         table.body-wrap {
             width: 100%;
-            padding: 0;
+            padding: 1px;
+        }
+
+        table.body-wrap .container {
+            border: 1px solid #f0f0f0;
         }
 
         @media (min-width: 700px) {
             table.body-wrap {
                 padding: 20px;
             }
-        }
-
-        table.body-wrap .container {
-            border: 1px solid #f0f0f0;
         }
 
         /* -------------------------------------
@@ -152,27 +152,13 @@
                     <tr>
                         <td>
                             <div>
-                                <p>Hi,</p>
+                                <p>Hi {{ to_user }}</p>
                                 <p>
-                                    We are two researchers who think that scientific communications and
-                                    scholarly dialogues can be improved. To go beyond traditional limits, we have
-                                    launched Etalia (<a href="https://etalia.io">etalia.io</a>).
+                                    {{ from_user }} has invited you to join the thread entitled "{{ thread.title }}" on etalia.
+                                    To check out this thread, go to <a href="{{ root_url }}{{ thread.get_absolute_url }}">{{ root_url }}{{ thread.get_absolute_url }}</a>.
                                 </p>
                                 <p>
-                                    With Etalia you can receive personalized article recommendations and join
-                                    scholarly dialogues around subject matters. Specifically, Etalia uses your
-                                    “text-fingerprint” based on your personal reference library.
-                                    Currently we are supporting two library managers: Mendeley and Zotero.
-                                </p>
-                                <p>
-                                    Etalia is free and it saves you time. Check it out at <a href="https://etalia.io">etalia.io</a>.
-                                <p>
-                                <p>
-                                    We would also like hearing from you because your feedback matters to improve Etalia.
-                                    Tell us what you think at <a href="mailto:contact@etalia.io">contact@etalia.io</a> or come chat with us directly on Etalia.
-                                </p>
-                                <p>
-                                    We are looking forward seeing you on <a href="https://etalia.io">Etalia</a>,
+                                    Thank you,
                                 </p>
                                 <p>
                                     Team Etalia -
@@ -199,8 +185,6 @@
                 <table>
 					<tr>
 						<td align="center">
-							<p>Etalia will not send you marketing messages because you received this invitation.</p>
-                            <p>To stop receiving emails from etalia, click <a href="%unsubscribe_url%">here</a>.</p>
 						    <p>© 2016. Etalia, Inc.</p>
                         </td>
 					</tr>

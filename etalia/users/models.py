@@ -189,8 +189,11 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 first_name.append(f)
         first = ' '.join(first_name)
-
-        return '{0} {1}'.format(first, self.last_name)
+        res = '{0} {1}'.format(first, self.last_name)
+        if res.strip():
+            return res
+        else:
+            return self.email
 
     def get_absolute_url(self):
         return '/users/{0}'.format(self.pk)

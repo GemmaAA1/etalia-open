@@ -209,6 +209,7 @@ ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
 INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template-inline.html'
+WELCOME_EMAIL_TEMPLATE = 'emails/welcome-inline.html'
 
 
 # RECOMMENDATION EMAILS
@@ -268,6 +269,7 @@ SOCIAL_AUTH_PIPELINE = (
     'etalia.users.pipeline.update_usersession',
     'etalia.users.pipeline.send_email_of_new_signup',
     'etalia.users.pipeline.init_user',
+    'etalia.users.pipeline.send_welcome_email_at_signup',
 
 
     # 'etalia.users.pipeline.require_affiliation',

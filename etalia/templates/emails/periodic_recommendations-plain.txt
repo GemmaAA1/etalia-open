@@ -6,10 +6,10 @@ Etalia Digest, Your Periodic Recommendations.
 {{ paper.print_journal_title|truncatechars:40 }}
 {{ paper.print_date }}
 {{ paper.abstract|capfirst|truncatechars:180 }}
-{{ paper.get_absolute_url }}
+{{ root_url }}{{ paper.get_absolute_url }}
 ----------------------------
 {% endfor %}
 
 Find more at https://etalia.io
-To stop receiving periodic digest email, click <{% url 'user:settings' %}>
+To stop receiving periodic digest email, click <{{ root_url }}{% url 'user:settings' %}>
 Etalia

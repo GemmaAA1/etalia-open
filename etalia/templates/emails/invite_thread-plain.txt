@@ -1,0 +1,10 @@
+Hi {{ to_user }},
+
+{{ from_user }} has invited you to join the thread entitled "{{ thread.title }}"" on etalia.
+To join this thread, visit <{{ root_url }}{{ paper.get_absolute_url }}>.
+
+Thank you,
+Team Etalia
+
+_______
+© 2016. Etalia, Inc.
