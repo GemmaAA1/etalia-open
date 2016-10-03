@@ -70,7 +70,10 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             out['photo'] = ''
         return out
 
-    def get_session(self, social, user, *args, **kwargs):
+    def get_session(self, user):
+
+        # Get social instance
+        social = user.social_auth.get(provider=self.name)
 
         client_id, client_secret = self.get_key_and_secret()
         tokens = {
@@ -105,7 +108,7 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
 
         return session
 
-    def _update_lib(self, user, session, full=False):
+    def _update_lib(self, user, full=False):
         """Update User Lib
 
         Args:
@@ -118,9 +121,11 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             (int): Number of matches added
         """
         # Init
-        new = True
         count = 0
         not_new_stack_count = 0
+
+        # Get Mendeley session
+        session = self.get_session(user)
 
         # retrieve list of documents per page
         page = session.documents.list(
@@ -160,12 +165,6 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
                         not_new_stack_count = 0
                     else:
                         not_new_stack_count += 1
-                else:
-                    logger.info(
-                        '- Item: {type_} from {user} / {backend}'.format(
-                            type_=item.type,
-                            user=user.email,
-                            backend=self.name))
 
             if not full:
                 if not_new_stack_count > 50:
@@ -193,7 +192,9 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
             identifiers['issn'] = paper.journal.id_issn or paper.journal.id_eissn
         return identifiers
 
-    def add_paper(self, session, paper):
+    def add_paper(self, user, paper):
+
+        session = self.get_session(user)
 
         mend_doc_type = dict([(doctype[1], doctype[0])
                               for doctype in self.parser.MENDELEY_PT])
@@ -231,7 +232,10 @@ class CustomMendeleyOAuth2(MendeleyMixin, BackendLibMixin, BaseOAuth2):
         return None, resp.id, {'created': parse(str(resp.created) or 'Nothing'),
                                'last_modified': parse(str(resp.last_modified) or 'Nothing')}
 
-    def trash_paper(self, session, paper_provider_id):
+    def trash_paper(self, user, paper_provider_id):
+
+        session = self.get_session(user)
+
         try:
             doc = session.documents.get(id=paper_provider_id)
             if doc:

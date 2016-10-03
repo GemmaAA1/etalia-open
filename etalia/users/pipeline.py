@@ -20,8 +20,7 @@ from .tasks import init_user as async_init_user, async_send_welcome_email
 
 @partial
 def require_primary(strategy, details, *args, user=None, **kwargs):
-    """ Redirect to primary info form for user to check them
-    """
+    """ Redirect to primary info form for user to check them"""
     if user and user.email and user.first_name and user.last_name:
         return
     else:
@@ -34,7 +33,6 @@ def require_primary(strategy, details, *args, user=None, **kwargs):
         return redirect('user:require-basic-info')
 
 
-@partial
 def create_details(strategy, details, *args, user=None, **kwargs):
     # link affiliation
     affiliation_kwargs = details.get('tmp_affiliation')
@@ -70,6 +68,7 @@ def create_details(strategy, details, *args, user=None, **kwargs):
 
 @partial
 def require_affiliation(strategy, details, *args, user=None, **kwargs):
+    """Redirect to affiliation info form for user to check them"""
     if getattr(user, 'affiliation'):
         return
     else:
@@ -86,7 +85,6 @@ def require_affiliation(strategy, details, *args, user=None, **kwargs):
         return redirect('user:require-affiliation')
 
 
-@partial
 def update_usersession(strategy, details, *args, **kwargs):
     user = kwargs.get('user')
     UserSession.objects.get_or_create(
@@ -95,7 +93,6 @@ def update_usersession(strategy, details, *args, **kwargs):
     return {}
 
 
-@partial
 def send_email_of_new_signup(strategy, details, *args, **kwargs):
     emails = [u[1] for u in settings.ADMINS]
     user = kwargs.get('user')
@@ -111,7 +108,6 @@ def send_email_of_new_signup(strategy, details, *args, **kwargs):
             pass
 
 
-@partial
 def send_welcome_email_at_signup(strategy, details, *args, **kwargs):
     user = kwargs.get('user')
     if not user.last_login:
@@ -122,7 +118,6 @@ def send_welcome_email_at_signup(strategy, details, *args, **kwargs):
             pass
 
 
-@partial
 def init_user(social, user, *args, **kwargs):
     if user.lib.state == USERLIB_UNINITIALIZED:  # user non-initialized yet
         async_init_user(user.pk)

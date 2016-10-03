@@ -11,6 +11,7 @@ from ..constants import USERLIB_SYNCING, USERLIB_IDLE
 class BackendLibMixin(object):
     """Mixin for provider backend"""
 
+    REFERENCE_MANAGER = True
     CHUNK_SIZE = 10
     _type = None
     parser = None
@@ -33,15 +34,15 @@ class BackendLibMixin(object):
             pu.add(provider_id, info)
         return new
 
-    def get_session(self, social, user, *args, **kwargs):
+    def get_session(self, user):
         raise NotImplementedError('Implement in subclass')
 
-    def update_lib(self, user, session, full=False):
+    def update_lib(self, user, full=False):
         # update db state
         user.lib.set_state(USERLIB_SYNCING)
         user.stats.log_lib_starts_sync(user)
         # really update
-        count = self._update_lib(user, session, full=full)
+        count = self._update_lib(user, full=full)
         # retrieve first paper added
         if user.lib.papers.count() > 0:
             user.lib.set_d_oldest()
@@ -50,7 +51,7 @@ class BackendLibMixin(object):
         user.lib.set_state(USERLIB_IDLE)
         return count
 
-    def _update_lib(self, session, user, full=None):
+    def _update_lib(self, user, full=None):
         raise NotImplementedError('Implement in subclass')
 
     def is_journal_has_id(self, item_journal):

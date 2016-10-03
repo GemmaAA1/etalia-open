@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import re
 import string
 import random
+from nameparser import HumanName
 from dateutil.parser import parse
 import datetime
 from etalia.core.parsers import PaperParser
@@ -35,6 +36,89 @@ class PaperParserBackend(PaperParser):
     def id_oth_generator(size=10, chars=string.ascii_uppercase + string.digits):
         """Return a random ID"""
         return ''.join(random.choice(chars) for _ in range(size))
+
+
+class ParserOrcid(PaperParser):
+
+    ORCID_PT = (
+        ('JOURNAL_ARTICLE',         'JOU'),
+        ('REPORT',                  'JOU'),
+        ('BOOK',                    'BOO'),
+        ('BOOK_CHAPTER',            'BOS'),
+        ('RESEARCH_TOOL',           'JOU'),
+        ('CONFERENCE_ABSTRACT',     'PRO'),
+        ('CONFERENCE_PAPER',        'PRO'),
+        ('PATENT',                  'PAT'),
+        ('DISSERTATION',            'THE'),
+        ('UNKNOWN',                 ''),
+        ('',                        ''),
+    )
+
+    type = 'ORC'
+
+    def parse_authors(self, entry):
+
+        authors = []
+
+        contributors = entry.get('work-contributors')
+        if contributors:
+            auths = contributors.get('contributor')
+            if auths:
+                for auth in auths:
+                    author = self.author_template.copy()
+                    try:
+                        name = auth.get('credit-name', {}).get('value', '')
+                        hn = HumanName(name)
+                        author['first_name'] = (hn.first + ' ' + hn.middle).strip()
+                        author['last_name'] = hn.last
+                        authors.append(author)
+                    except AttributeError:
+                        pass
+
+        return authors
+
+    def parse_journal(self, entry):
+        journal = self.journal_template.copy()
+
+        ids = entry.get('work-external-identifiers').get('work-external-identifier')
+        for id_ in ids:
+            if id_.get('work-external-identifier-type') == 'ISSN':
+                journal['id_issn'] = id_.get('work-external-identifier-id', {}).get('value', '')
+
+        return journal
+
+    def parse_paper(self, entry):
+
+        paper = self.paper_template.copy()
+
+        paper['type'] = dict(self.ORCID_PT).get(entry.get('work-type', ''))
+
+        ids = entry.get('work-external-identifiers').get('work-external-identifier')
+        for id_ in ids:
+            if id_.get('work-external-identifier-type') == 'DOI':
+                paper['id_doi'] = id_.get('work-external-identifier-id', {}).get('value', '')
+
+        paper['title'] = entry.get('work-title', {}).get('title', {}).get('value', '')
+
+        try:
+            publication_date = entry.get('publication-date')
+            year, month, day = None, 1, 1
+            if publication_date.get('year'):
+                year = int(publication_date.get('year').get('value'))
+            if publication_date.get('month'):
+                month = int(publication_date.get('month').get('value'))
+            if publication_date.get('day'):
+                day = int(publication_date.get('day').get('value'))
+            if year:
+                paper['date_pp'] = datetime.date(year, month, day)
+        except TypeError:
+            pass
+
+        return paper
+
+    def parse_corp_authors(self, entry):
+        corp_authors = []
+        return corp_authors
 
 
 class ParserMendeley(PaperParserBackend):
