@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from etalia.core.models import TimeStampedModel
 from etalia.library.models import Paper
 from etalia.core.mixins import ModelDiffMixin
-from .constant import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
+from .constants import THREAD_TYPES, THREADFEED_STATUS_CHOICES, \
     THREAD_TIME_LAPSE_CHOICES, THREAD_INVITE_STATUSES, THREAD_INVITE_PENDING, \
     THREAD_QUESTION, THIRD_PARTY_TYPES, \
     THREAD_PRIVACIES, THREAD_PUBLIC, THREAD_PARTICIPATE, THREAD_WATCH, \
@@ -243,6 +243,10 @@ class PubPeer(TimeStampedModel):
         return self.link
 
     def update_is_active(self):
+        """Activate or deactivate pubpeer thread depending on what is in there
+
+        Currently, deactivating all comments created by bots.
+        """
         c = self.comments.first()
         if c.body.startswith('Using the R package statcheck'):
             self.is_active = False

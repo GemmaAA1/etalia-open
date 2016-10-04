@@ -13,7 +13,7 @@ from django.contrib.postgres.fields import ArrayField
 from etalia.users.models import UserLibPaper
 from etalia.library.models import AuthorPaper
 from etalia.threads.models import ThreadUser, Thread
-from etalia.threads.constant import THREAD_JOINED
+from etalia.threads.constants import THREAD_JOINED
 from etalia.core.models import TimeStampedModel
 from etalia.core.utils import pad_or_trim_vector
 
