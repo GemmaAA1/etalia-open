@@ -7,7 +7,7 @@ from django_filters import CharFilter, MethodFilter, DateFilter, ChoiceFilter, \
 from django.db.models import Q
 from rest_framework import filters
 from .models import Thread
-from .constant import THREAD_TYPES, THREAD_PRIVACIES, THREAD_BANNED, \
+from .constants import THREAD_TYPES, THREAD_PRIVACIES, THREAD_BANNED, \
     THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_INVITE_PENDING, \
     THREAD_INVITE_ACCEPTED, THREAD_PRIVATE
 
