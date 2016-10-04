@@ -33,6 +33,7 @@ CELERY_QUEUES = (
     Queue('consumers', routing_key='consumers.#'),
     Queue('altmetric', routing_key='altmetric.#'),
     Queue('library', routing_key='library.#'),
+    Queue('beat', routing_key='beat.#'),
     Queue('test', routing_key='test.#'),
 )
 CELERY_DEFAULT_EXCHANGE = 'tasks'
@@ -45,53 +46,66 @@ CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
         'task': 'etalia.altmetric.tasks.update_altmetric_periodic',
         'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0
+        'options': {'queue': 'beat'}
     },
     'update-userlib-all': {
         'task': 'etalia.users.tasks.userlib_update_all',
         'schedule': crontab(minute=0, hour=1),  # every day at UTC+1
+        'options': {'queue': 'beat'}
     },
     'update-pe-all': {
         'task': 'etalia.nlp.tasks.paperengine_update_all',
         'schedule': crontab(minute=0, hour=2),  # every day at UTC+2
+        'options': {'queue': 'beat'}
     },
     'update-te-all': {
         'task': 'etalia.nlp.tasks.threadengine_update_all',
         'schedule': crontab(minute=0, hour=3),  # every day at UTC+3
+        'options': {'queue': 'beat'}
     },
     'update-all-userfingerprints': {
         'task': 'etalia.nlp.tasks.userfingerprints_update_all',
         'schedule': crontab(minute=0, hour=4, day_of_week='*/2'),  # every 2 days at UTC+4
+        'options': {'queue': 'beat'}
     },
     'update-all-main-streams': {
         'task': 'etalia.feeds.tasks.update_all_main_streams',
         'schedule': crontab(minute=0, hour=5),  # every day at UTC+5
+        'options': {'queue': 'beat'}
     },
     'update-all-main-trends': {
         'task': 'etalia.feeds.tasks.update_all_main_trends',
         'schedule': crontab(minute=0, hour=6),  # every day at UTC+6
+        'options': {'queue': 'beat'}
     },
     'pubmed-once-a-day': {
         'task': 'etalia.consumers.tasks.pubmed_run_all',
         'schedule': crontab(minute=0, hour=7),  # daily at UTC+6
+        'options': {'queue': 'beat'}
     },
     'arxiv-once-a-day': {
         'task': 'etalia.consumers.tasks.arxiv_run_all',
         'schedule': crontab(minute=0, hour=12),  # daily at UTC+12
+        'options': {'queue': 'beat'}
     },
     'elsevier-once-a-day': {
         'task': 'etalia.consumers.tasks.elsevier_run_all',
         'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
+        'options': {'queue': 'beat'}
     },
     'popluate-pubpeer': {
         'task': 'etalia.consumers.tasks.populate_pubpeer',
         'schedule': crontab(minute=0, hour=19),  # daily at UTC+19
+        'options': {'queue': 'beat'}
     },
     'consolidate-library': {
         'task': 'etalia.consumers.tasks.consolidate_library',
         'schedule': crontab(minute=0, hour=20),  # daily at UTC-4
+        'options': {'queue': 'beat'}
     },
     'emails-recommendations': {
         'task': 'etalia.users.tasks.send_recommendation_emails_on_wed_11am',
         'schedule': crontab(minute=0, hour=0, day_of_week='mon'),
+        'options': {'queue': 'beat'}
     },
 }
