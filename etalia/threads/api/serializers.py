@@ -16,7 +16,7 @@ from etalia.library.api.serializers import PaperSerializer, PaperNestedSerialize
 from etalia.feeds.models import ThreadFeedThreads
 from ..mixins import ThreadEagerLoadingMixin
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
-from ..constant import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
+from ..constants import THREAD_PRIVACIES, THREAD_TYPES, THREAD_PRIVATE, \
     THREAD_JOINED, THREAD_LEFT, THREAD_INVITE_PENDING, THREAD_INVITE_ACCEPTED, \
     THREAD_BANNED
 
