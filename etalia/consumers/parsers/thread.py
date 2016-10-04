@@ -5,7 +5,7 @@ import datetime
 from django.utils import timezone
 from etalia.threads.models import PubPeerComment, PubPeer
 from etalia.threads.forms import PubPeerForm, PubPeerCommentForm
-from etalia.threads.constant import THREAD_PAPER, THREAD_PUBLIC
+from etalia.threads.constants import THREAD_PAPER, THREAD_PUBLIC
 
 
 class PubPeerThreadParser(object):

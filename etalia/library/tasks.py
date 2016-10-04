@@ -10,7 +10,7 @@ from django.db.models import Case, When
 
 from etalia.threads.models import Thread
 from etalia.nlp.models import PaperEngine, PaperNeighbors
-from etalia.threads.constant import THREAD_PRIVATE
+from etalia.threads.constants import THREAD_PRIVATE
 from .models import Stats, Paper
 
 

@@ -25,7 +25,6 @@ from etalia.threads.forms import PubPeerCommentForm, PubPeerForm, ThreadForm
 from etalia.threads.models import Thread, PubPeer, PubPeerComment
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -615,6 +614,14 @@ class PubPeerManager(object):
                     else:
                         raise ValueError('PubPeerComment form is invalid {0}'
                                          .format(form._errors))
+            # Copy all PubPeer thread comments body to thread content
+            # (practical way to deal with the embedding, pubpeer content should
+            # not be exposed)
+            thread.content = ' '.join(thread.pubpeer.comments.all()
+                                      .values_list('body', flat=True))
+            thread.save(update_fields=('content',))
+            # embed thread
+            thread.embed()
         if hasattr(thread, 'pubpeer') and thread.pubpeer:
             thread.pubpeer.update_is_active()
         return thread

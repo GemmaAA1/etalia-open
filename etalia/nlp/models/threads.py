@@ -14,7 +14,7 @@ from etalia.core.models import TimeStampedModel
 from etalia.core.utils import pad_or_trim_vector, pad_neighbors
 
 from etalia.threads.models import Thread
-from etalia.threads.constant import THREAD_TIME_LAPSE_CHOICES
+from etalia.threads.constants import THREAD_TIME_LAPSE_CHOICES
 from etalia.library.models import PaperUser
 from etalia.library.constants import PAPER_ADDED, PAPER_PINNED
 from etalia.users.models import UserSettings
@@ -110,7 +110,8 @@ class ModelThreadMixin(object):
         return thread_pk
 
     def infer_threads(self, thread_pks, **kwargs):
-        """Infer vector for model and all thread in thread_pks list
+        """
+        Infer vector for model and all thread in thread_pks list
         """
         # Check inputs
         if isinstance(thread_pks, models.QuerySet):
@@ -194,11 +195,13 @@ class ThreadEngineScoringMixin(object):
                 ubdic = dict([(k, ub[i]) for i, k in enumerate(f.threads_users_ids)])
 
                 # Compute
+                # compute user based boost
                 uboost = np.zeros((self.data['embedding'].shape[0], ))
                 for i, uid in enumerate(self.data['users-ids']):
                     if uid in list(ubdic.keys()):
                         uboost[i] = ubdic[uid]
 
+                # compute paper based boost
                 user_pids = PaperUser.objects.filter(
                     Q(user_id=user_id) & (Q(store=PAPER_ADDED) | Q(watch=PAPER_PINNED))) \
                     .values_list('paper_id', flat=True)

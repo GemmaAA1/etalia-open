@@ -26,7 +26,7 @@ from etalia.core.models import TimeStampedModel
 
 from etalia.library.models import Paper, Journal, AuthorPaper
 from etalia.threads.models import Thread, ThreadPost
-from etalia.threads.constant import THREAD_PUBLIC
+from etalia.threads.constants import THREAD_PUBLIC
 
 from .library import ModelLibraryMixin, PaperVectors, PaperNeighbors, \
     JournalVectors, PaperEngineScoringMixin

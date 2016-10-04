@@ -494,7 +494,7 @@ if __name__ == '__main__':
     from etalia.nlp.models import ThreadEngine, PaperEngine, Model
     from etalia.threads.models import Thread, ThreadPost, ThreadComment, \
         ThreadUser, ThreadUserInvite
-    from etalia.threads.constant import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED, \
+    from etalia.threads.constants import THREAD_PRIVATE, THREAD_INVITE_ACCEPTED, \
         THREAD_PAPER, THREAD_QUESTION
     from etalia.users.models import UserLibPaper, Relationship
     from avatar.models import Avatar
