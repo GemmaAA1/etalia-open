@@ -18,9 +18,15 @@
             <span class="icon-bar"></span>
         </button>
 
-        <a id="brand" href="{% url 'library:papers' %}" title="Et al.">
-            <img src="{% static 'img/logo_beta.svg' %}" alt="Et al." height="38">
-        </a>
+        {% if user.is_anonymous %}
+            <a id="brand" href="{% url 'library:papers' %}" title="Etalia">
+                <img src="{% static 'img/logo_beta.svg' %}" alt="Etalia" height="38">
+            </a>
+        {% else %}
+            <a id="brand" href="{% url 'feeds:my_feeds' %}" title="Etalia">
+                <img src="{% static 'img/logo_beta.svg' %}" alt="Etalia" height="38">
+            </a>
+        (% end %}
 
         <!-- start top-bar-profile -->
         {% if user.is_authenticated %}
