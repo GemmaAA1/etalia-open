@@ -22,7 +22,7 @@ from etalia.core.api.permissions import IsThreadMember, IsOwner, \
 from etalia.core.api.mixins import MultiSerializerMixin
 from etalia.users.constants import USER_INDIVIDUAL
 from ..models import Thread, ThreadPost, ThreadComment, ThreadUser, ThreadUserInvite
-from ..constant import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
+from ..constants import THREAD_JOINED, THREAD_LEFT, THREAD_PINNED, THREAD_BANNED, \
     THREAD_PUBLIC, THREAD_PRIVATE, THREAD_INVITE_PENDING, \
     THREAD_INVITE_ACCEPTED
 from .serializers import \
