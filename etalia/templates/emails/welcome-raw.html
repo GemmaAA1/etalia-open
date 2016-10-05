@@ -4,16 +4,13 @@
 <head>
     <meta name="viewport" content="width=device-width"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <title>etalia.io | Invitation</title>
-    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,600"
-          rel="stylesheet" type="text/css">
-    <link href='https://fonts.googleapis.com/css?family=Shadows+Into+Light'
-          rel='stylesheet' type='text/css'>
-    <style>
+    <title>etalia.io | Welcome</title>
+    <style type="text/css">
         /* -------------------------------------
                 GLOBAL
         ------------------------------------- */
-        * {
+
+        html {
             margin: 0;
             padding: 0;
             font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -26,8 +23,6 @@
         }
 
         body {
-            -webkit-font-smoothing: antialiased;
-            -webkit-text-size-adjust: none;
             width: 100% !important;
             height: 100%;
         }
@@ -45,12 +40,6 @@
         table.body-wrap {
             width: 100%;
             padding: 0;
-        }
-
-        @media (min-width: 700px) {
-            table.body-wrap {
-                padding: 20px;
-            }
         }
 
         table.body-wrap .container {
@@ -133,6 +122,7 @@
         /* Let's make sure tables in the content area are 100% wide */
         .content table {
             width: 100%;
+            line-height: 1.6;
         }
 
 
@@ -158,13 +148,13 @@
                                     discussion around subject matters.
                                 </p>
                                 <p>
-                                    Find your papers and discussion recommendations by visiting {{ root_url }}{% url 'feeds:my_feeds' %},
-                                    or check out what is trending at {{ root_url }}{% url 'library:papers' %}. You can
+                                    Find your papers and discussion recommendations by visiting your <a href="{{ root_url }}{% url 'feeds:my_feeds' %}">feeds</a>,
+                                    or check out what is <a href="{{ root_url }}{% url 'library:papers' %}">trending</a>. You can
                                     add publications directly to <a href="{{ root_url }}{% url 'library:my_papers'%}">your library</a>
                                     and engage in scientific discussion by creating a <a href="{{ root_url }}{% url 'threads:my_threads'%}">new thread</a>.
                                 </p>
                                 <p>
-                                    We are constantly trying to improve etalia. Let us know what you think at <a href="mailto:contact@etalia.io">contact@etalia.io</a>.
+                                    We are constantly trying to improve etalia. Let us know what you need at <a href="mailto:contact@etalia.io">contact@etalia.io</a>.
                                 </p>
                                 <p>
                                     Thanks for signing-up.

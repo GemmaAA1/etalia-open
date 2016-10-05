@@ -208,16 +208,16 @@ ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
 # EMAIL TEMPLATES
 # ------------------------------------------------------------------------------
 EMAIL_STATIC_BUCKET = 'https://s3-us-west-2.amazonaws.com/etalia-email-static/'
-INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template-inline.html'
-WELCOME_EMAIL_TEMPLATE = 'emails/welcome-inline.html'
-INVITE_THREAD_EMAIL_TEMPLATE = 'emails/invite_thread-inline.html'
+INVITE_EMAIL_TEMPLATE = 'emails/beta_invite_template-raw.html'
+WELCOME_EMAIL_TEMPLATE = 'emails/welcome-raw.html'
+INVITE_THREAD_EMAIL_TEMPLATE = 'emails/invite_thread-raw.html'
 
 
 # RECOMMENDATION EMAILS
 # ------------------------------------------------------------------------------
 
 RECOMMENDATIONS_EMAILS_ON = True
-PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations-inline.html'
+PERIODIC_RECOMMENDATION_TEMPLATE = 'emails/periodic_recommendations-raw.html'
 PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
 
 

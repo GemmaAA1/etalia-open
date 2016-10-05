@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import os
+from premailer import transform
 from anymail.message import attach_inline_image_file
 from anymail.backends.mailgun import MailgunBackend, MailgunPayload
 from anymail.utils import combine
@@ -94,7 +95,8 @@ class Email(object):
                                             bcc=self.bcc)
         ctx = self.update_context_with_images(ctx)
         html_content = render_to_string(self.template, ctx)
-        self.email.attach_alternative(html_content, "text/html")
+
+        self.email.attach_alternative(transform(html_content), "text/html")
         self.email.tags = self.tags
         self.email.campaign = self.campaign
         self.email.metadata = self.get_metadata()
