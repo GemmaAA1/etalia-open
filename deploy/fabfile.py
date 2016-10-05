@@ -226,6 +226,7 @@ def update_and_require_libraries():
                                    'libpq-dev',
                                    'supervisor',
                                    'libjpeg-dev',
+                                   'libxslt1-dev',
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper'], use_sudo=True)
