@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>etalia.io | Digest</title>
-    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,600"
-          rel="stylesheet" type="text/css">
-    <link href='https://fonts.googleapis.com/css?family=Shadows+Into+Light'
-          rel='stylesheet' type='text/css'>
-    <style>
+    <style type="text/css">
         /* -------------------------------------
                 GLOBAL
         ------------------------------------- */
-        * {
+
+        html {
             margin: 0;
             padding: 0;
             font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -26,8 +23,8 @@
         }
 
         body {
-            -webkit-font-smoothing: antialiased;
-            -webkit-text-size-adjust: none;
+{#            -webkit-font-smoothing: antialiased;#}
+{#            -webkit-text-size-adjust: none;#}
             width: 100% !important;
             height: 100%;
         }
@@ -58,12 +55,6 @@
         table.body-wrap {
             width: 100%;
             padding: 0;
-        }
-
-        @media (min-width: 700px) {
-            table.body-wrap {
-                padding: 20px;
-            }
         }
 
         table.body-wrap .container {
@@ -176,17 +167,18 @@
         ------------------------------------- */
         .card {
             position: relative;
+            margin-bottom: 15px;
         }
 
         .card p {
-            margin: 0;
+            margin: 0 0 8px 0;
         }
 
         .card .title {
             font-size: 17px;
-            line-height: 18px;
+            font-weight: 300;
+            line-height: 1.2;
             color: #1e232f;
-            margin: 0 0 8px 0;
         }
 
         .card .title a {
@@ -210,11 +202,16 @@
             font-size: 15px;
             line-height: 18px;
             color: #6b6d70;
-            margin-bottom: 8px;
         }
 
         .card .authors strong {
             color: #00695c;
+        }
+
+        .card .infos {
+            position: relative;
+            margin: 0 0 8px 0;
+            padding: 0 136px 0 0;
         }
 
         .card .infos p:first-child {
@@ -236,18 +233,13 @@
             font-style: italic;
         }
 
-        .card .infos {
-            position: relative;
-            padding: 0 136px 4px 0;
-        }
-
         .card .infos p.truncate {
             margin-bottom: 0;
         }
 
         .card .icons {
             position: absolute;
-            right: 20px;
+            right: 40px;
             top: -10px;
             height: 36px;
             width: 36px;
@@ -304,24 +296,22 @@
                                     <p class="authors">
                                         {{ paper.print_full_authors }}
                                     </p>
-
                                     <div class="infos">
                                         <p class="truncate">
                                             {{ paper.print_journal_title|truncatechars:40 }}
                                             <em>{{ paper.print_date }}</em>
                                         </p>
-                                        {% if paper.altmetric.score > 0 %}
+                                        {% if paper.altmetric.score %}
                                         <p class="icons">
                                         <span>
-                                            <img src="{{ paper.altmetric.print_badge }}"
-                                                 alt="Altmetric score"/>
+                                            <img src="{{ paper.altmetric.print_badge }}" alt="Altmetric score"/>
                                         </span>
                                         </p>
                                         {% endif %}
                                     </div>
-                                    <div class="abstract">
+                                    <p class="abstract">
                                         {{ paper.abstract|capfirst|truncatechars:250 }}
-                                    </div>
+                                    </p>
                                 </div>
                                 <hr class="divider">
                             {% endfor %}

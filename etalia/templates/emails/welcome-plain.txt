@@ -8,7 +8,7 @@ or check out what is trending at {{ root_url }}{% url 'library:papers' %}. You c
 add publications directly to your library ({{ root_url }}{% url 'library:my_papers'%})
 and engage in scientific discussion by creating a new thread ({{ root_url }}{% url 'threads:my_threads'%}).
 
-We are constantly trying to improve etalia. Let us know what you think at contact@etalia.io
+We are constantly trying to improve etalia. Let us know what you need at contact@etalia.io
 
 Thanks for signing-up.
 Team Etalia

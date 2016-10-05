@@ -45,6 +45,7 @@ nltk==3.0.3
 numpy==1.8.2
 oauthlib==0.7.2
 Pillow==3.0.0
+premailer==3.0.1
 progressbar2==2.7.3
 psycopg2==2.6
 python-dateutil==2.4.2
