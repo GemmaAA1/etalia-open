@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import re
 import datetime
+from bs4 import BeautifulSoup
 from dateutil.parser import parse
 from nameparser import HumanName
 
@@ -428,3 +429,77 @@ class CrossRefPaperParser(PaperParser):
         return []
 
 
+class BiorxivPaperParser(PaperParser):
+    """Parse HTML detail page of a paper as found for ex at
+    http://biorxiv.org/content/early/2016/10/04/050245
+    """
+    type = 'BIO'
+
+    def pre_process(self, entry):
+        return BeautifulSoup(entry, 'html.parser')
+
+    def parse_journal(self, entry):
+
+        journal = self.journal_template.copy()
+        journal['short_title'] = 'BioRxiv'
+        journal['title'] = 'BioRxiv'
+        journal['id_oth'] = 'biorxiv'
+
+        return journal
+
+    def parse_paper(self, entry):
+
+        paper = self.paper_template.copy()
+
+        paper['type'] = 'PRE'
+        if entry.h1:
+            paper['title'] = entry.h1.text
+
+        # id
+        doi_block = entry.find('span', {'class': 'highwire-cite-metadata-doi'})
+        if doi_block:
+            res = re.match(r'.+http://dx.doi.org/([\.\w\d\/]+)', doi_block.text)
+            if res:
+                paper['id_doi'] = res.groups()[0]
+
+        # Published date
+        date_block = entry.find('li', {'class': 'published'})
+        if date_block:
+            res = re.match(r'Posted ([\d\w\s,]+)', date_block.text)
+            if res:
+                paper['date_ep'] = parse(res.groups()[0])
+
+        # Abstract
+        abstract_block = entry.find('p', {'id': 'p-2'})
+        if abstract_block:
+            paper['abstract'] = abstract_block.text
+
+        # Url
+        if paper['date_ep'] and paper['id_doi']:
+            paper['url'] = 'http://biorxiv.org/content/early/{y}/{m}/{d}/{id}'.format(
+                y=paper['date_ep'].year,
+                m=paper['date_ep'].month,
+                d=paper['date_ep'].day,
+                id=paper['id_doi'].split('/')[-1]
+            )
+        elif paper['id_doi']:
+            paper['url'] = 'http://dx.doi.org/{doi}'.format(doi=paper['id_doi'])
+
+        return paper
+
+    def parse_authors(self, entry):
+
+        author_block = entry\
+            .find('div', {'class': 'pane-highwire-article-citation'})\
+            .findAll('span', {'class': 'highwire-citation-author', })
+
+        authors = []
+        for auth in author_block:
+            author = self.author_template.copy()
+            author['last_name'] = auth.find('span', {'class': 'nlm-given-names'}).text
+            author['first_name'] = auth.find('span', {'class': 'nlm-surname'}).text
+            authors.append(author)
+        return authors
+
+    def parse_corp_authors(self, entry):
+        return []

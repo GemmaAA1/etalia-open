@@ -52,6 +52,12 @@ class PaperParser(object):
     def parse_corp_authors(self, entry):
         return NotImplementedError
 
+    def pre_process(self, entry):
+        """Preprocess entry before parsing
+        ex use case: converting raw html entry to bs4 object
+        """
+        return entry
+
     def parse(self, entry):
         """Parse entry
 
@@ -63,6 +69,7 @@ class PaperParser(object):
                 'corp_authors' and values as defined by class attributes
                 (*_template)
         """
+        entry = self.pre_process(entry)
         journal = self.parse_journal(entry)
         paper = self.parse_paper(entry)
         authors = self.parse_authors(entry)
