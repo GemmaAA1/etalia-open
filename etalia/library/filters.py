@@ -47,8 +47,8 @@ class PaperFilter(filters.FilterSet):
 
     def filter_journal(self, queryset, value):
         return queryset.filter(
-            Q(journal__title__icontaines=value) |
-            Q(journal__short_title__icontaines=value)
+            Q(journal__title__icontains=value) |
+            Q(journal__short_title__icontains=value)
         )
 
     def filter_min_date(self, queryset, value):
