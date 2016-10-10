@@ -26,7 +26,7 @@ class PubmedPaperParser(PaperParser):
         ('PATENTS',         'PAT'),
         ('UNKNOWN',         ''),
     )
-    type = 'PUB'
+    TYPE = 'PUB'
 
     def parse_journal(self, entry):
 
@@ -161,7 +161,7 @@ class PubmedPaperParser(PaperParser):
 class ArxivPaperParser(PaperParser):
     """Arxiv PaperParser"""
 
-    type = 'ARX'
+    TYPE = 'ARX'
 
     def parse_authors(self, entry):
         authors = []
@@ -234,7 +234,7 @@ class ArxivPaperParser(PaperParser):
 class ElsevierPaperParser(PaperParser):
     """Elsevier PaperParser"""
 
-    type = 'ELS'
+    TYPE = 'ELS'
 
     def parse_authors(self, entry):
         authors = []
@@ -322,7 +322,7 @@ class CrossRefPaperParser(PaperParser):
     """CrossRef PaperParser
     """
 
-    type = 'CRO'
+    TYPE = 'CRO'
 
     CROSSREF_PT = (
         ('journal-article',         'JOU'),
@@ -433,7 +433,8 @@ class BiorxivPaperParser(PaperParser):
     """Parse HTML detail page of a paper as found for ex at
     http://biorxiv.org/content/early/2016/10/04/050245
     """
-    type = 'BIO'
+
+    TYPE = 'BIO'
 
     def pre_process(self, entry):
         return BeautifulSoup(entry, 'html.parser')

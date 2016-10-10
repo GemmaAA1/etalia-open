@@ -21,20 +21,24 @@ class PaperParser(object):
         author_template: Template for Author
         corp_author_tempalte: Template for CorpAuthor
     """
-    type = None
 
-    paper_template = dict([(field, Paper._meta.get_field(field).default)
-                           for field in PaperForm.Meta.fields])
+    TYPE = None
 
-    journal_template = dict([(field, Journal._meta.get_field(field).default)
-                             for field in JournalForm.Meta.fields])
+    def __init__(self):
+        self.type = self.TYPE
 
-    author_template = dict([(field, Author._meta.get_field(field).default)
-                           for field in AuthorForm.Meta.fields])
-
-    corp_author_template = \
-        dict([(field, CorpAuthor._meta.get_field(field).default)
-             for field in CorpAuthorForm.Meta.fields])
+        self.paper_template = \
+            dict([(field, Paper._meta.get_field(field).default)
+                  for field in PaperForm.Meta.fields])
+        self.journal_template = \
+            dict([(field, Journal._meta.get_field(field).default)
+                  for field in JournalForm.Meta.fields])
+        self.author_template = \
+            dict([(field, Author._meta.get_field(field).default)
+                  for field in AuthorForm.Meta.fields])
+        self.corp_author_template = \
+            dict([(field, CorpAuthor._meta.get_field(field).default)
+                  for field in CorpAuthorForm.Meta.fields])
 
     @abstractmethod
     def parse_journal(self, entry):

@@ -27,9 +27,10 @@ from etalia.threads.models import Thread, PubPeer, PubPeerComment
 from etalia.core.models import TimeStampedModel
 
 from .parsers import PubmedPaperParser, ArxivPaperParser, ElsevierPaperParser, \
-    PubPeerThreadParser
+    PubPeerThreadParser, BiorxivPaperParser
 from etalia.core.managers import PaperManager, PubPeerManager
 from .constants import CONSUMER_TYPE
+from .mixins import SimpleCrawlerListMixin
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +56,18 @@ class Consumer(TimeStampedModel):
     # Journal associated with consumer
     journals = models.ManyToManyField(Journal, through='ConsumerJournal')
 
+    TYPE = None
     parser = None
 
     # Class canNot be abstract because through need to be child dependent.
     # See Ticket #11760 (https://code.djangoproject.com/ticket/11760#no1)
     # class Meta:
     #     abstract = True
+
+    def __init__(self, *args, **kwargs):
+        super(Consumer, self).__init__(*args, **kwargs)
+        if not self.type:
+            self.type = self.TYPE
 
     def __str__(self):
         return self.name
@@ -305,13 +312,8 @@ class Consumer(TimeStampedModel):
 class ConsumerPubmed(Consumer):
     """Pubmed Consumer"""
 
-    def __init__(self, *args, **kwargs):
-        super(ConsumerPubmed, self).__init__(*args, **kwargs)
-        self.type = 'PUB'
-
+    TYPE = 'PUB'
     parser = PubmedPaperParser()
-
-    # email
     email = settings.CONSUMER_PUBMED_EMAIL
 
     def journal_is_valid(self, journal):
@@ -389,17 +391,10 @@ class ConsumerPubmed(Consumer):
 class ConsumerElsevier(Consumer):
     """Pubmed Consumer"""
 
+    TYPE = 'ELS'
     parser = ElsevierPaperParser()
-
-    # API key
     API_KEY = settings.CONSUMER_ELSEVIER_API_KEY
-
-    # URL
     URL_QUERY = 'http://api.elsevier.com/content/search/index:SCIDIR?query='
-
-    def __init__(self, *args, **kwargs):
-        super(ConsumerElsevier, self).__init__(*args, **kwargs)
-        self.type = 'ELS'
 
     def journal_is_valid(self, journal):
         if super(ConsumerElsevier, self).journal_is_valid(journal):
@@ -491,12 +486,9 @@ class ConsumerElsevier(Consumer):
 
 class ConsumerArxiv(Consumer):
     """Arxiv Consumer"""
-    def __init__(self, *args, **kwargs):
-        super(ConsumerArxiv, self).__init__(*args, **kwargs)
-        self.type = 'ARX'
 
+    TYPE = 'ARX'
     parser = ArxivPaperParser()
-
     URL_QUERY = 'http://export.arxiv.org/api/query?search_query='
 
     def journal_is_valid(self, journal):
@@ -558,6 +550,38 @@ class ConsumerArxiv(Consumer):
             raise
         cj.status_to('idle')
         return entries
+
+
+class ConsumerBiorxiv(SimpleCrawlerListMixin, Consumer):
+    """BioRxiv Consumer"""
+
+    TYPE = 'BIO'
+    parser = BiorxivPaperParser()
+    DOMAIN = 'http://biorxiv.org'
+    LIST_PATTERN = '{domain}/archive?field_highwire_a_epubdate_value[value]&page={page}'
+    DETAIL_PATTERN = {
+        'name': 'a',
+        'class': 'highwire-cite-linked-title',
+    }
+
+    def journal_is_valid(self, journal):
+        if super(ConsumerBiorxiv, self).journal_is_valid(journal):
+            if journal.id_oth == 'biorxiv':
+                return True
+        return False
+
+    def consume_journal(self, journal):
+        """Consume BioRxiv 'journal'"""
+        # Update consumer_journal status
+        cj = self.consumerjournal_set.get(journal=journal)
+        cj.status_to('consuming')
+        try:
+            start_date = self.get_start_date(cj)
+            cj.status_to('idle')
+            return self.crawl_to_date(start_date)
+        except Exception:
+            cj.status_to('error')
+            raise
 
 
 class ConsumerJournal(TimeStampedModel):
