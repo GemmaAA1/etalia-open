@@ -2,5 +2,5 @@
 from __future__ import unicode_literals, absolute_import
 
 from .paper import PubmedPaperParser, ElsevierPaperParser, ArxivPaperParser, \
-    CrossRefPaperParser
+    CrossRefPaperParser, BiorxivPaperParser
 from .thread import PubPeerThreadParser
