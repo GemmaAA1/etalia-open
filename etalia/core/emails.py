@@ -74,6 +74,7 @@ class Email(object):
             inline_images[cid] = attach_inline_image_file(
                 self.email,
                 os.path.join(self.img_dir, path),
+                domain='etalia.io'
             )
         return inline_images
 

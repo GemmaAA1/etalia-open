@@ -211,7 +211,7 @@
         .card .infos {
             position: relative;
             margin: 0 0 8px 0;
-            padding: 0 136px 0 0;
+{#            padding: 0 136px 0 0;#}
         }
 
         .card .infos p:first-child {
@@ -246,7 +246,7 @@
             text-align: right;
         }
 
-        .card .icons > span {
+        .card .icons > img {
             display: block;
             width: 32px;
             height: 32px;
@@ -301,13 +301,11 @@
                                             {{ paper.print_journal_title|truncatechars:40 }}
                                             <em>{{ paper.print_date }}</em>
                                         </p>
-                                        {% if paper.altmetric.score %}
-                                        <p class="icons">
-                                        <span>
-                                            <img src="{{ paper.altmetric.print_badge }}" alt="Altmetric score"/>
-                                        </span>
-                                        </p>
-                                        {% endif %}
+{#                                        {% if paper.altmetric.score %}#}
+{#                                        <div class="icons">#}
+{#                                            <img src="{{ paper.altmetric.print_badge }}" alt="Altmetric score"/>#}
+{#                                        </div>#}
+{#                                        {% endif %}#}
                                     </div>
                                     <p class="abstract">
                                         {{ paper.abstract|capfirst|truncatechars:250 }}
