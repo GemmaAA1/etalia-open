@@ -63,6 +63,12 @@ class PaperViewSet(MultiSerializerMixin,
 
     * **ordering=[+|-](str) **: order results by field. Choices are: 'date_co' or 'altmetric__score'
 
+    ** Sub-routes: **
+
+    * **[GET] /papers/<id\>/neighbors**: Paper neighbors
+    * **[GET] /papers/<id\>/related-threads**: Related threads
+        * **time_span=(int)**: Fetch neighbors papers/threads published in the past time_span days (default=60)
+
     """
 
     queryset = Paper.objects.filter(is_trusted=True)
@@ -135,6 +141,11 @@ class PaperViewSet(MultiSerializerMixin,
     def get_queryset(self):
         queryset = super(PaperViewSet, self).get_queryset()
 
+        # Disabling fetch of entire library with no arguments
+        if self.action == 'list' and not self.request.query_params:
+            return Paper.objects.none()
+
+        # Altmetric flag to prefetch altmetric score for ordering
         altmetric_flag = False
         if 'altmetric' in self.request.query_params.get('ordering', ''):
             altmetric_flag = True
@@ -187,13 +198,6 @@ class MyPaperViewSet(PaperViewSet):
     * **journal_id=(int)**: Filter papers by journal_id
     * **author_id=(int)**: Filter papers by author_id
     * **search=(str)**: Filter papers on title, journal, authors first and last names
-
-    ** Sub-routes: **
-
-    * **[GET] /papers/<id\>/neighbors**: Paper neighbors
-    * **[GET] /papers/<id\>/related-threads**: Related threads
-
-        * **time_span=(int)**: Fetch neighbors papers published in the past time_span days (default=60)
     """
 
     queryset = Paper.objects.all()
