@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import sys
+import inspect
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
-    ConsumerJournal, PubPeerConsumer
+    ConsumerJournal, PubPeerConsumer, ConsumerBiorxiv, Consumer
 from etalia.library.models import Paper
 from etalia.core.managers import PaperManager
 
@@ -33,6 +35,14 @@ def elsevier_run_all():
 
 
 @app.task()
+def biorxiv_run_all():
+    cps = ConsumerBiorxiv.objects.all()
+    names = [cp.name for cp in cps]
+    for name in names:
+        biorxiv_run(name)
+
+
+@app.task()
 def pubmed_run(name):
     pubmed_consumer = ConsumerPubmed.objects.get(name=name)
     pubmed_consumer.run_once_per_period()
@@ -50,18 +60,29 @@ def elsevier_run(name):
     elsevier_consumer.run_once_per_period()
 
 
+@app.task()
+def biorxiv_run(name):
+    biorxiv_consumer = ConsumerBiorxiv.objects.get(name=name)
+    biorxiv_consumer.run_once_per_period()
+
+
 @app.task(bind=True)
-def populate_journal(self, consumer_id, type, journal_pk):
+def populate_journal(self, consumer_id, journal_pk):
+
+    # Find all consumer classes with their type as key
+    ConsumerClasses = Consumer.__subclasses__()
+    ConsumerClassesType = {}
+    for cc in ConsumerClasses:
+        ConsumerClassesType[cc.TYPE] = cc
+
+    # Find corresponding Consumer
     try:
-        if type == 'PUB':
-            ConsumerClass = ConsumerPubmed
-        elif type == 'ELS':
-            ConsumerClass = ConsumerElsevier
-        elif type == 'ARX':
-            ConsumerClass = ConsumerArxiv
-        else:
-            raise ValueError('Consumer type unknown {0}'.format(type))
-        consumer = ConsumerClass.objects.get(id=consumer_id)
+        type_ = Consumer.objects.get(id=consumer_id).type
+        consumer = ConsumerClassesType[type_].objects.get(id=consumer_id)
+    except Consumer.DoesNotExist:
+        raise
+
+    try:
         consumer.populate_journal(journal_pk)
     except Exception as exc:
         cj = ConsumerJournal.objects.get(consumer=consumer,

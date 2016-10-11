@@ -93,6 +93,11 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=18),  # daily at UTC+18
         'options': {'queue': 'beat'}
     },
+    'biorxiv-once-a-day': {
+        'task': 'etalia.consumers.tasks.biorxiv_run_all',
+        'schedule': crontab(minute=0, hour=18),  # daily at UTC+19
+        'options': {'queue': 'beat'}
+    },
     'popluate-pubpeer': {
         'task': 'etalia.consumers.tasks.populate_pubpeer',
         'schedule': crontab(minute=0, hour=19),  # daily at UTC+19
