@@ -29,7 +29,7 @@ fi
 ../manage.py migrate
 
 # POPULATE DATABASE
-../manage.py shell < routines/update.py --init-production
+./routines/update.py --init-production
 
 # RUN TEST
 #py.test
