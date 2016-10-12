@@ -45,7 +45,7 @@ fi
 : "${ALTMETRIC_API_KEY?Error: Need to set env var ALTMETRIC_API_KEY}"
 
 # init database with papers, nlp models and altmetric data
-../manage.py shell < routines/update.py --init
+./routines/update.py --init
 
 # RUN TEST
 # py.test

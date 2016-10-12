@@ -82,6 +82,7 @@ def populate_journal(self, consumer_id, journal_pk):
     except Consumer.DoesNotExist:
         raise
 
+    # Populate journal
     try:
         consumer.populate_journal(journal_pk)
     except Exception as exc:

@@ -536,7 +536,7 @@ class PubPeerManager(object):
         try:
             paper = Paper.objects.get(id_doi=doi)
         except Paper.DoesNotExist:
-            paper_template = PaperParser.paper_template.copy()
+            paper_template = PaperParser().paper_template.copy()
             paper_template['id_doi'] = doi
             entry = {'paper': paper_template}
             new_entry = ConsolidateManager(entry).consolidate()
