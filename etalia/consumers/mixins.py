@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import re
 from django.utils import timezone
 import requests
+from requests import adapters
 from time import sleep
 from bs4 import BeautifulSoup
 
@@ -15,11 +16,17 @@ class SimpleCrawlerListMixin(object):
     DETAIL_PATTERN = {'name': '', 'class': ''}
     TIMEOUT = 1
 
+    def __init__(self, *args, **kwargs):
+        self.session = requests.Session()
+        adapter = adapters.HTTPAdapter(max_retries=3)
+        self.session.mount('http://', adapter)
+        super(SimpleCrawlerListMixin, self).__init__(*args, **kwargs)
+
     def get_urls_list(self, page):
         # build list url and parse details link
         url = self.LIST_PATTERN.format(domain=self.DOMAIN, page=page)
         sleep(self.TIMEOUT)
-        doc = requests.get(url).text
+        doc = self.session.get(url).text
         soup = BeautifulSoup(doc, 'html.parser')
 
         # Get list of paper detail
@@ -37,7 +44,7 @@ class SimpleCrawlerListMixin(object):
     def crawl_links(self, links):
         details = []
         for url in links:
-            details.append(requests.get(url).text)
+            details.append(self.session.get(url).text)
             sleep(self.TIMEOUT)
         return details
 
