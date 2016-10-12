@@ -305,7 +305,7 @@ class Consumer(TimeStampedModel):
         # a 1/s request.
         for sec, consumerjournal in enumerate(consumerjournals_go_to_queue):
             populate_journal_async.apply_async(
-                args=[self.id, self.type, consumerjournal.journal.pk, ],
+                args=[self.id, consumerjournal.journal.pk, ],
                 countdown=sec * 1.1)
 
 

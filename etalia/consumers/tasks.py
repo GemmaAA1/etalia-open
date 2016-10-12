@@ -66,7 +66,7 @@ def biorxiv_run(name):
     biorxiv_consumer.run_once_per_period()
 
 
-@app.task(bind=True)
+@app.task(bind=True, max_retries=3, default_retry_delay=10 * 60)
 def populate_journal(self, consumer_id, journal_pk):
 
     # Find all consumer classes with their type as key
