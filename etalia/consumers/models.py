@@ -68,6 +68,10 @@ class Consumer(TimeStampedModel):
         super(Consumer, self).__init__(*args, **kwargs)
         if not self.type:
             self.type = self.TYPE
+        # attach session
+        self.session = requests.Session()
+        adapter = adapters.HTTPAdapter(max_retries=3)
+        self.session.mount('http://', adapter)
 
     def __str__(self):
         return self.name
@@ -452,7 +456,7 @@ class ConsumerElsevier(Consumer):
                         'start': str(count),
                         }
 
-                resp = requests.post(query, data=data, headers=headers)
+                resp = self.session.post(query, data=data, headers=headers)
                 if 'search-results' in resp.json().keys():
                     entries += resp.json().get('search-results').get('entry')
                     count += self.ret_max
@@ -531,14 +535,14 @@ class ConsumerArxiv(Consumer):
                             end=end_date_q,
                             count=count,
                             ret_max=self.ret_max)
-                resp = requests.get(query)
+                resp = self.session.get(query)
                 time.sleep(1)  # for politeness
                 data = feedparser.parse(resp.text)
                 total_entries = int(data['feed']['opensearch_totalresults'])
                 if len(data.entries) < 25 and \
                                 count < (total_entries - self.ret_max):
                     # retry once
-                    resp = requests.get(query)
+                    resp = self.session.get(query)
                     time.sleep(1)  # for politeness
                     data = feedparser.parse(resp.text)
                 count += self.ret_max
@@ -560,12 +564,6 @@ class ConsumerSpringer(Consumer):
                 'p={p}&' \
                 'api_key={key}'
     ITEMS_PER_PAGE = 20
-
-    def __init__(self, *args, **kwargs):
-        self.session = requests.Session()
-        adapter = adapters.HTTPAdapter(max_retries=3)
-        self.session.mount('http://', adapter)
-        super(ConsumerSpringer, self).__init__(*args, **kwargs)
 
     def journal_is_valid(self, journal):
         if super(ConsumerSpringer, self).journal_is_valid(journal):
@@ -822,7 +820,7 @@ class ConsumerJournalStat(TimeStampedModel):
         ordering = ['datetime']
 
 
-class PubPeerConsumer(TimeStampedModel):
+class ConsumerPubPeer(TimeStampedModel):
 
     last_consume_at = models.DateTimeField(null=True, blank=True)
 
@@ -832,6 +830,13 @@ class PubPeerConsumer(TimeStampedModel):
 
     # API key
     API_KEY = settings.CONSUMER_PUBPEER_API_KEY
+
+    def __init__(self, *args, **kwargs):
+        super(ConsumerPubPeer, self).__init__(*args, **kwargs)
+        # attach session
+        self.session = requests.Session()
+        adapter = adapters.HTTPAdapter(max_retries=3)
+        self.session.mount('http://', adapter)
 
     def consume(self):
         """Retrieve PubPeer comments from API"""
@@ -849,7 +854,7 @@ class PubPeerConsumer(TimeStampedModel):
                 page=page,
                 key=self.API_KEY
             )
-            resp = requests.get(query)
+            resp = self.session.get(query)
             entries += json.loads(resp.text)['publications']
 
             ds = min([float(c['date']) for d in entries for c in d['comments']])

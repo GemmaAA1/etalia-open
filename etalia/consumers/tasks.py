@@ -5,7 +5,7 @@ import sys
 import inspect
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
-    ConsumerJournal, PubPeerConsumer, ConsumerBiorxiv, Consumer
+    ConsumerJournal, ConsumerPubPeer, ConsumerBiorxiv, Consumer
 from etalia.library.models import Paper
 from etalia.core.managers import PaperManager
 
@@ -95,7 +95,7 @@ def populate_journal(self, consumer_id, journal_pk):
 
 @app.task()
 def populate_pubpeer():
-    ppc = PubPeerConsumer.objects.first()
+    ppc = ConsumerPubPeer.objects.first()
     ppc.populate()
 
 
