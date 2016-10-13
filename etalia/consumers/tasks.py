@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import sys
-import inspect
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
-    ConsumerJournal, ConsumerPubPeer, ConsumerBiorxiv, Consumer
+    ConsumerJournal, ConsumerPubPeer, ConsumerBiorxiv, ConsumerSpringer, \
+    Consumer
 from etalia.library.models import Paper
 from etalia.core.managers import PaperManager
 
@@ -35,6 +34,14 @@ def elsevier_run_all():
 
 
 @app.task()
+def springer_run_all():
+    cps = ConsumerSpringer.objects.all()
+    names = [cp.name for cp in cps]
+    for name in names:
+        springer_run(name)
+
+
+@app.task()
 def biorxiv_run_all():
     cps = ConsumerBiorxiv.objects.all()
     names = [cp.name for cp in cps]
@@ -59,6 +66,10 @@ def elsevier_run(name):
     elsevier_consumer = ConsumerElsevier.objects.get(name=name)
     elsevier_consumer.run_once_per_period()
 
+@app.task()
+def springer_run(name):
+    springer_consumer = ConsumerSpringer.objects.get(name=name)
+    springer_consumer.run_once_per_period()
 
 @app.task()
 def biorxiv_run(name):
@@ -75,7 +86,7 @@ def populate_journal(self, consumer_id, journal_pk):
     for cc in ConsumerClasses:
         ConsumerClassesType[cc.TYPE] = cc
 
-    # Find corresponding Consumer
+    # Find corresponding Consumer class
     try:
         type_ = Consumer.objects.get(id=consumer_id).type
         consumer = ConsumerClassesType[type_].objects.get(id=consumer_id)
