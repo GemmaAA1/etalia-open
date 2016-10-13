@@ -69,7 +69,7 @@ class SimpleCrawlerListMixin(object):
                 current_date = timezone.datetime(int(res.groups()[0]),
                                                  int(res.groups()[1]),
                                                  int(res.groups()[2])).date()
-                if current_date < date.date():
+                if current_date < date:
                     return True
             else:
                 raise ValueError('regexp failed: {url}'.format(url=last_link))

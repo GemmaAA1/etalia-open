@@ -429,6 +429,80 @@ class CrossRefPaperParser(PaperParser):
         return []
 
 
+class SpringerPaperParser(PaperParser):
+    """Parse JSON entry from Springer API"""
+
+    TYPE = 'SPR'
+    SPRINGER_PT = (
+        ('OriginalPaper',    'JOU'),
+        ('ReviewPaper',      'JOU'),
+        ('EditorialNotes',   'EDI'),
+        ('Erratum',          ''),
+        ('',                 '')
+    )
+
+    def parse_journal(self, entry):
+
+        journal = self.journal_template.copy()
+
+        journal['title'] = entry.get('publicationName')
+
+        journal['id_issn'] = entry.get('issn')
+
+        return journal
+
+    def parse_paper(self, entry):
+
+        paper = self.paper_template.copy()
+
+        # type
+        type_ = entry.get('genre', '')
+        paper['type'] = dict(self.SPRINGER_PT).get(type_)
+
+        # title
+        if entry.get('title'):
+            paper['title'] = entry.get('title')[0]
+
+        # publisher
+        publisher = entry.get('publisher')
+
+        # id
+        paper['id_doi'] = entry.get('doi')
+
+        # Published date
+        paper['date_pp'] = parse(entry.get('publicationDate')).date()
+
+        # Volume, issue, page
+        paper['volume'] = entry.get('volume', '')
+        paper['issue'] = entry.get('number', '')
+        paper['page'] = '{0}-{1}'.format(entry.get('startingPage', ''),
+                                         entry.get('endingPage', ''))
+        paper['page'].strip('-')
+
+        paper['abstract'] = entry.get('abstract', '')
+
+        return paper
+
+    def parse_authors(self, entry):
+        authors = []
+
+        if entry.get('creators'):
+            for auth in entry.get('creators'):
+                author = self.author_template.copy()
+                try:
+                    hn = HumanName(auth.get('creator', ''))
+                    author['first_name'] = '{0} {1}'.format(hn.first, hn.middle).strip()
+                    author['last_name'] = hn.last
+                    authors.append(author)
+                except AttributeError:
+                    pass
+
+        return authors
+
+    def parse_corp_authors(self, entry):
+        return []
+
+
 class BiorxivPaperParser(PaperParser):
     """Parse HTML detail page of a paper as found for ex at
     http://biorxiv.org/content/early/2016/10/04/050245

@@ -12,6 +12,7 @@ CONSUMER_TYPE = (
     ('ELS', 'Elsevier'),
     ('ARX', 'Arxiv'),
     ('IEE', 'IEEE'),
+    ('SPR', 'Springer'),
     ('BIO', 'BioRxiv'),
     ('CRO', 'Cross Ref'),
 )
