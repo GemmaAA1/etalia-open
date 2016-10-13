@@ -461,10 +461,7 @@ class SpringerPaperParser(PaperParser):
 
         # title
         if entry.get('title'):
-            paper['title'] = entry.get('title')[0]
-
-        # publisher
-        publisher = entry.get('publisher')
+            paper['title'] = entry.get('title')
 
         # id
         paper['id_doi'] = entry.get('doi')
