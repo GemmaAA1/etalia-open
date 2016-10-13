@@ -5,9 +5,10 @@ import re
 import logging
 import time
 import requests
+from requests import adapters
 import json
 import feedparser
-import datetime
+from dateutil.parser import parse
 from dateutil import parser
 from django.db import models
 from django.conf import settings
@@ -22,12 +23,11 @@ from celery.contrib.methods import task_method
 
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
-from etalia.core.parsers import PaperParser
 from etalia.threads.models import Thread, PubPeer, PubPeerComment
 from etalia.core.models import TimeStampedModel
 
 from .parsers import PubmedPaperParser, ArxivPaperParser, ElsevierPaperParser, \
-    PubPeerThreadParser, BiorxivPaperParser
+    PubPeerThreadParser, BiorxivPaperParser, SpringerPaperParser
 from etalia.core.managers import PaperManager, PubPeerManager
 from .constants import CONSUMER_TYPE
 from .mixins import SimpleCrawlerListMixin
@@ -68,6 +68,10 @@ class Consumer(TimeStampedModel):
         super(Consumer, self).__init__(*args, **kwargs)
         if not self.type:
             self.type = self.TYPE
+        # attach session
+        self.session = requests.Session()
+        adapter = adapters.HTTPAdapter(max_retries=3)
+        self.session.mount('http://', adapter)
 
     def __str__(self):
         return self.name
@@ -217,7 +221,7 @@ class Consumer(TimeStampedModel):
             start_date = cj.last_date_cons - timezone.timedelta(days=1)
         else:  # journal has never been scanned
             start_date = timezone.now() - timezone.timedelta(self.day0)
-        return start_date
+        return start_date.date()
 
     def populate_journal(self, journal_pk):
         """Consume data from journal
@@ -452,7 +456,7 @@ class ConsumerElsevier(Consumer):
                         'start': str(count),
                         }
 
-                resp = requests.post(query, data=data, headers=headers)
+                resp = self.session.post(query, data=data, headers=headers)
                 if 'search-results' in resp.json().keys():
                     entries += resp.json().get('search-results').get('entry')
                     count += self.ret_max
@@ -467,9 +471,7 @@ class ConsumerElsevier(Consumer):
                         current_start_date = re.sub(r'Available online', '',
                                                     current_start_date).strip()
                         current_start_date = parser.parse(current_start_date)
-                        current_start_date = current_start_date.replace(
-                            tzinfo=timezone.pytz.timezone('UTC'))
-                        if current_start_date < start_date:
+                        if current_start_date.date() < start_date:
                             break
                         else:
                             count += self.ret_max
@@ -533,14 +535,14 @@ class ConsumerArxiv(Consumer):
                             end=end_date_q,
                             count=count,
                             ret_max=self.ret_max)
-                resp = requests.get(query)
+                resp = self.session.get(query)
                 time.sleep(1)  # for politeness
                 data = feedparser.parse(resp.text)
                 total_entries = int(data['feed']['opensearch_totalresults'])
                 if len(data.entries) < 25 and \
                                 count < (total_entries - self.ret_max):
                     # retry once
-                    resp = requests.get(query)
+                    resp = self.session.get(query)
                     time.sleep(1)  # for politeness
                     data = feedparser.parse(resp.text)
                 count += self.ret_max
@@ -550,6 +552,67 @@ class ConsumerArxiv(Consumer):
             raise
         cj.status_to('idle')
         return entries
+
+
+class ConsumerSpringer(Consumer):
+
+    TYPE = 'SPR'
+    parser = SpringerPaperParser()
+    URL_QUERY = 'http://api.springer.com/metadata/json?' \
+                'q=issn:{issn} sort:date&' \
+                's={s}&' \
+                'p={p}&' \
+                'api_key={key}'
+    ITEMS_PER_PAGE = 20
+
+    def journal_is_valid(self, journal):
+        if super(ConsumerSpringer, self).journal_is_valid(journal):
+            if journal.id_issn or journal.id_eissn:
+                return True
+
+        return False
+
+    def consume_journal(self, journal):
+
+        entries = []
+
+        # Update consumer_journal status
+        cj = self.consumerjournal_set.get(journal=journal)
+        cj.status_to('consuming')
+
+        start_date = self.get_start_date(cj)
+
+        issn = journal.id_issn or journal.id_eissn
+        s = 1
+        if issn:
+            try:
+                while True:
+                    query = self.URL_QUERY.format(issn=issn,
+                                                  key=settings.CONSUMER_SPRINGER_KEY,
+                                                  s=s,
+                                                  p=self.ITEMS_PER_PAGE)
+
+                    res = self.session.get(query).json()
+
+                    min_date = min(list(map(self.get_publication_date,
+                                            res.get('records'))))
+                    if min_date < start_date:
+                        entries += res.get('records')
+                        break
+                    else:
+                        entries += res.get('records')
+                        s += self.ITEMS_PER_PAGE
+
+            except Exception:
+                cj.status_to('error')
+                raise
+
+        cj.status_to('idle')
+
+        return entries
+
+    def get_publication_date(self, entry):
+        return parse(entry.get('publicationDate')).date()
 
 
 class ConsumerBiorxiv(SimpleCrawlerListMixin, Consumer):
@@ -577,11 +640,14 @@ class ConsumerBiorxiv(SimpleCrawlerListMixin, Consumer):
         cj.status_to('consuming')
         try:
             start_date = self.get_start_date(cj)
-            cj.status_to('idle')
-            return self.crawl_to_date(start_date)
+            entries = self.crawl_to_date(start_date)
         except Exception:
             cj.status_to('error')
             raise
+
+        cj.status_to('idle')
+
+        return entries
 
 
 class ConsumerJournal(TimeStampedModel):
@@ -754,7 +820,7 @@ class ConsumerJournalStat(TimeStampedModel):
         ordering = ['datetime']
 
 
-class PubPeerConsumer(TimeStampedModel):
+class ConsumerPubPeer(TimeStampedModel):
 
     last_consume_at = models.DateTimeField(null=True, blank=True)
 
@@ -764,6 +830,13 @@ class PubPeerConsumer(TimeStampedModel):
 
     # API key
     API_KEY = settings.CONSUMER_PUBPEER_API_KEY
+
+    def __init__(self, *args, **kwargs):
+        super(ConsumerPubPeer, self).__init__(*args, **kwargs)
+        # attach session
+        self.session = requests.Session()
+        adapter = adapters.HTTPAdapter(max_retries=3)
+        self.session.mount('http://', adapter)
 
     def consume(self):
         """Retrieve PubPeer comments from API"""
@@ -781,7 +854,7 @@ class PubPeerConsumer(TimeStampedModel):
                 page=page,
                 key=self.API_KEY
             )
-            resp = requests.get(query)
+            resp = self.session.get(query)
             entries += json.loads(resp.text)['publications']
 
             ds = min([float(c['date']) for d in entries for c in d['comments']])
