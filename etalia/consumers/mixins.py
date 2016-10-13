@@ -2,11 +2,14 @@
 from __future__ import unicode_literals, absolute_import
 
 import re
+import logging
 from django.utils import timezone
 import requests
 from requests import adapters
 from time import sleep
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 class SimpleCrawlerListMixin(object):

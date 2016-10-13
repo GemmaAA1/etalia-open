@@ -497,8 +497,12 @@ class BiorxivPaperParser(PaperParser):
         authors = []
         for auth in author_block:
             author = self.author_template.copy()
-            author['last_name'] = auth.find('span', {'class': 'nlm-given-names'}).text
-            author['first_name'] = auth.find('span', {'class': 'nlm-surname'}).text
+            ln_block = auth.find('span', {'class': 'nlm-given-names'})
+            if ln_block:
+                author['last_name'] = ln_block.text
+            fn_block = auth.find('span', {'class': 'nlm-surname'})
+            if fn_block:
+                author['first_name'] = fn_block.text
             authors.append(author)
         return authors
 
