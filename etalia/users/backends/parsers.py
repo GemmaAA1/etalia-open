@@ -54,7 +54,7 @@ class ParserOrcid(PaperParser):
         ('',                        ''),
     )
 
-    type = 'ORC'
+    TYPE = 'ORC'
 
     def parse_authors(self, entry):
 
