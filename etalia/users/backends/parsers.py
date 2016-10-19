@@ -51,7 +51,7 @@ class ParserMendeley(PaperParserBackend):
         ('UNKNOWN',                 ''),
     )
 
-    type = 'MEN'
+    TYPE = 'MEN'
 
     def parse_journal(self, entry):
 
@@ -185,7 +185,7 @@ class ParserMendeley(PaperParserBackend):
 class ParserZotero(PaperParserBackend):
     """Zotero PaperParser"""
 
-    type = 'ZOT'
+    TYPE = 'ZOT'
 
     ZOTERO_PT = (
         ('journalArticle',  'JOU'),
