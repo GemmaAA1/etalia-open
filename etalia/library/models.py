@@ -295,7 +295,12 @@ class Paper(TimeStampedModel):
 
     @property
     def date(self):
-        return self.date_co
+        if self.date_ep:
+            return self.date_ep
+        elif self.date_pp:
+            return self.date_pp
+        else:
+            return self.date_fs
 
     @property
     def print_compact_authors(self):

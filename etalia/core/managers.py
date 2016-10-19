@@ -83,7 +83,7 @@ class ConsolidateManager(object):
         else:
             seq = ['crossref', 'pubmed', 'elsevier', 'arxiv']
             count = 0
-            while (self.entry.get('is_trusted') == False
+            while (self.entry.get('is_trusted') in [False, None]
                 or self.entry.get('abstract') == '') and count < len(seq):
                 self.consolidate_with(seq[count])
                 count += 1
