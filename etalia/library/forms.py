@@ -165,10 +165,27 @@ class PaperForm(forms.ModelForm):
         title = self.cleaned_data['title']
         if (title[0], title[-1]) == ('[', ']'):
             title = title[1:-1]
+
         # clean trailing dot
         title = title.strip('.')
 
+        # if all upper, make title
+        if title.isupper():
+            title = title.title()
+
         return title
+
+    def clean_id_doi(self):
+        return self.cleaned_data['id_doi'].lower()
+
+    def clean_id_arx(self):
+        return self.cleaned_data['id_arx'].lower()
+
+    def clean_id_pmi(self):
+        return self.cleaned_data['id_pmi'].lower()
+
+    def clean_id_pii(self):
+        return self.cleaned_data['id_pii'].lower()
 
     def clean_abstract(self):
         abstract = self.cleaned_data['abstract']

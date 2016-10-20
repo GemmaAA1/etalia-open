@@ -65,11 +65,16 @@
     <div class="card">
         {{! TODO altmetric ids }}
         <p class="title">
-            <a href="{{url}}" target="_blank">
+            {{#if url }}
+                <a href="{{url}}" target="_blank">
+                    {{paper_new_icon}}
+                    {{title}}
+                    <span class="eai eai-pdf"></span>
+                </a>
+            {{else}}
                 {{paper_new_icon}}
                 {{title}}
-                <span class="eai eai-pdf"></span>
-            </a>
+            {{/if}}
         </p>
         <p class="identifiers">
             {{#if id_doi }}
