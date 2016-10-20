@@ -42,19 +42,19 @@ class PaperParser(object):
 
     @abstractmethod
     def parse_journal(self, entry):
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractmethod
     def parse_paper(self, entry):
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractmethod
     def parse_authors(self, entry):
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractmethod
     def parse_corp_authors(self, entry):
-        return NotImplementedError
+        raise NotImplementedError
 
     def pre_process(self, entry):
         """Preprocess entry before parsing
@@ -84,7 +84,13 @@ class PaperParser(object):
             paper['id_oth'] = 'gen' + self.generated_hash_id(paper,
                                                              journal,
                                                              authors)
+        # Attached source
         paper['source'] = self.type
+        # lower down ids
+        ids = [field.name for field in Paper._meta.fields if field.name.startswith('id_')]
+        for k in ids:
+            paper[k] = paper[k].lower()
+
         return {'journal': journal, 'authors': authors, 'paper': paper,
                 'corp_authors': corp_authors}
 
