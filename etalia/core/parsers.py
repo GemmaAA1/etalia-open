@@ -86,6 +86,7 @@ class PaperParser(object):
                                                              authors)
         # Attached source
         paper['source'] = self.type
+
         # lower down ids
         ids = [field.name for field in Paper._meta.fields if field.name.startswith('id_')]
         for k in ids:

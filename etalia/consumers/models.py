@@ -457,6 +457,17 @@ class ConsumerElsevier(Consumer):
                         }
 
                 resp = self.session.post(query, data=data, headers=headers)
+
+                if resp.status_code == 429:
+                    # circulate api key
+                    keys = [s for s in dir(settings)
+                            if s.startswith('CONSUMER_ELSEVIER_API_KEY')]
+                    for key in keys:
+                        headers = {'X-ELS-APIKey': key}
+                        resp = requests.post(query, data=data, headers=headers)
+                        if resp.status_code == 200:
+                            break
+
                 if 'search-results' in resp.json().keys():
                     entries += resp.json().get('search-results').get('entry')
                     count += self.ret_max

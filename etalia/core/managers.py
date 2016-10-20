@@ -246,6 +246,17 @@ class ConsolidateManager(object):
             else:
                 q = '{base}{query}'.format(base=url_query, query=query)
             resp = requests.post(q, data=data, headers=headers)
+            if not resp.status_code == 200:
+                if resp.status_code == 429:
+                    # circulate api key
+                    keys = [s for s in dir(settings)
+                            if s.startswith('CONSUMER_ELSEVIER_API_KEY')]
+                    for key in keys:
+                        headers = {'X-ELS-APIKey': key}
+                        resp = requests.post(q, data=data, headers=headers)
+                        if resp.status_code == 200:
+                            break
+
             if 'search-results' in resp.json().keys():
                 entries = resp.json().get('search-results').get('entry')
                 parser = ElsevierPaperParser()
