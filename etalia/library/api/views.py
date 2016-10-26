@@ -263,8 +263,7 @@ class MyPaperViewSet(PaperViewSet):
         # Store session control
         self.store_controls(self.request)
 
-        queryset = super(PaperViewSet, self)\
-            .get_queryset()
+        queryset = super(PaperViewSet, self).get_queryset()
         return self.get_serializer_class()\
             .setup_eager_loading(queryset,
                                  user=self.request.user,
@@ -276,7 +275,11 @@ class MyPaperViewSet(PaperViewSet):
         queryset = super(PaperViewSet, self).get_queryset()
         queryset = queryset.select_related('journal')
         queryset = queryset.prefetch_related('authors')
-        data = list(self.filter_queryset(queryset)[:settings.FEED_N_FIRST_PAPERS_ONLY])
+
+        if self.request.query_params.get('scored') == 1:
+            data = list(self.filter_queryset(queryset)[:settings.FEED_N_FIRST_PAPERS_ONLY])
+        else:
+            data = list(self.filter_queryset(queryset))
 
         authors = []
         journals = []
