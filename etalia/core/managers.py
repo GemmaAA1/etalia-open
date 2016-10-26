@@ -123,17 +123,22 @@ class ConsolidateManager(object):
     def consolidate_with(self, method_name):
         """ConsolidateManager method dispatcher"""
 
+        # Get methods
         method = getattr(self, 'get_{name}'.format(name=method_name))
-        if method_name == 'arxiv':
-            doc_id = self.entry['paper'].get('id_arx')
-        elif method_name == 'pubmed' and self.entry['paper'].get('id_pmi'):
-            doc_id = self.entry['paper'].get('id_pmi')
-        else:
-            doc_id = self.entry['paper'].get('id_doi')
-        query = requests.utils.quote('{title} {authors}'.format(
-            title=self.entry['paper'].get('title', ''),
-            authors=concatenate_last_names(self.entry.get('authors', []))),
-            safe='')
+        try:
+            query_method = getattr(self, 'get_query_{name}'.format(name=method_name))
+        except AttributeError:
+            query_method = getattr(self, 'get_query_default')
+        try:
+            id_method = getattr(self, 'get_id_{name}'.format(name=method_name))
+        except AttributeError:
+            id_method = getattr(self, 'get_id_default')
+
+        # Get query terms and doc_id
+        doc_id = id_method()
+        query = query_method()
+
+        # Run query
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry and (doc_id or self.check_query_match(new_entry)):
             self.update_entry(new_entry, method_name)
@@ -142,6 +147,34 @@ class ConsolidateManager(object):
         else:
             self.entry['is_trusted'] = False
         return self.entry
+
+    def get_id_default(self):
+        return self.entry['paper'].get('id_doi')
+
+    def get_query_default(self):
+        query = requests.utils.quote('{title} {authors}'.format(
+                title=self.entry['paper'].get('title', ''),
+                authors=concatenate_last_names(self.entry.get('authors', []))),
+                safe='')
+        return query
+
+    def get_id_pubmed(self):
+        """Return pubmed id"""
+        if self.entry['paper'].get('id_pmi'):
+            return self.entry['paper'].get('id_pmi')
+        return self.entry['paper'].get('id_doi')
+
+    def get_query_pubmed(self):
+        """Return pubmed formating query"""
+        authors = []
+        for a in self.entry.get('authors', []):
+            authors.append('{0}[author]'.format(a.get('last_name')))
+        authors_terms = requests.utils.quote(' '.join(authors), safe=' []')
+        title_terms = requests.utils.quote(self.entry['paper'].get('title', ''), safe=' ')
+        query = '{title}[title] {authors}'.format(
+                title=title_terms,
+                authors=authors_terms)
+        return query
 
     @staticmethod
     def get_pubmed(doc_id='', query=''):
@@ -198,6 +231,9 @@ class ConsolidateManager(object):
             pass
 
         return None
+
+    def get_id_arxiv(self):
+        return self.entry['paper'].get('id_arx')
 
     @staticmethod
     def get_arxiv(doc_id='', query=''):
