@@ -225,6 +225,7 @@ PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
 AUTHENTICATION_BACKENDS = (
     'etalia.users.backends.mendeley.CustomMendeleyOAuth2',
     'etalia.users.backends.zotero.CustomZoteroOAuth',
+    'etalia.users.backends.orcid.OrcidOAuth2',
     'social.backends.email.EmailAuth',
     'django.contrib.auth.backends.ModelBackend',
     # 'allauth.account.auth_backends.AuthenticationBackend',
@@ -285,8 +286,8 @@ SOCIAL_AUTH_ZOTERO_SECRET = env('SOCIAL_AUTH_ZOTERO_SECRET')
 SOCIAL_AUTH_ZOTERO_AUTH_EXTRA_ARGUMENTS = {'write_access': '1'}
 
 # ORCiD Keys
-SOCIAL_AUTH_ORCID_KEY = 'APP-I1UK3Q6RZERWVTU8'
-SOCIAL_AUTH_ORCID_SECRET = '7898c892-16ae-4b1b-942b-6961ae774479'
+SOCIAL_AUTH_ORCID_KEY = 'APP-3S58TQE379Y00NXR'
+SOCIAL_AUTH_ORCID_SECRET = '19826d6d-1648-4420-b101-11919a6cfce9'
 
 # SESSION
 # ------------------------------------------------------------------------------

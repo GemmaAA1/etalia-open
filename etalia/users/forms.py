@@ -17,7 +17,6 @@ User = get_user_model()
 
 
 class UserAuthenticationForm(AuthenticationForm):
-
     error_messages = {
         'invalid_login': "Please enter a correct %(username)s and password.",
         'inactive': "This account is inactive.",
@@ -25,7 +24,6 @@ class UserAuthenticationForm(AuthenticationForm):
 
 
 class UserBasicForm(forms.ModelForm):
-
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name')
@@ -33,17 +31,24 @@ class UserBasicForm(forms.ModelForm):
         widgets = {
             'email':
                 forms.TextInput(attrs={'class': 'form-control input-lg ',
-                                                'placeholder': 'Email'}),
+                                       'placeholder': 'Email'}),
             'first_name':
                 forms.TextInput(attrs={'class': 'form-control input-lg ',
-                                                'placeholder': 'First Name'}),
+                                       'placeholder': 'First Name'}),
             'last_name':
                 forms.TextInput(attrs={'class': 'form-control input-lg ',
-                                                'placeholder': 'Last Name'})
+                                       'placeholder': 'Last Name'})
         }
 
     def __init__(self, *args, **kwargs):
         super(UserBasicForm, self).__init__(*args, **kwargs)
+        self.fields['email'].error_messages.update({
+            'unique': 'A user with this email already exists. If this email is '
+                      'yours, you likely signed-up with a different provider in'
+                      ' the past. You must sign-up with this provider and link '
+                      'any new authentication providers directly from your '
+                      'profile'
+        })
         self.fields['first_name'].validators.append(validate_first_name)
         self.fields['last_name'].validators.append(validate_last_name)
 
@@ -57,7 +62,6 @@ class UserBasicForm(forms.ModelForm):
 
 
 class UpdateUserNameForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(UpdateUserNameForm, self).__init__(*args, **kwargs)
         self.fields['first_name'].validators.append(validate_first_name)
@@ -77,79 +81,81 @@ class UpdateUserNameForm(forms.ModelForm):
         widgets = {
             'first_name':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'First Name'}),
+                                       'placeholder': 'First Name'}),
             'last_name':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Last Name'}),
+                                       'placeholder': 'Last Name'}),
         }
 
 
 class UpdateUserTitleForm(forms.ModelForm):
-
     class Meta:
         model = User
-        fields = ('title', )
+        fields = ('title',)
         widgets = {
             'title':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Title'}),
+                                       'placeholder': 'Title'}),
         }
 
 
 class UpdateUserPositionForm(forms.ModelForm):
-
     class Meta:
         model = User
-        fields = ('position', )
+        fields = ('position',)
         widgets = {
             'position':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Position'}),
+                                       'placeholder': 'Position'}),
         }
 
 
 class UserAffiliationForm(forms.ModelForm):
-
     class Meta:
         model = Affiliation
         fields = ('department', 'institution', 'city', 'state', 'country')
         widgets = {
             'department':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Department'}),
+                                       'placeholder': 'Department'}),
             'institution':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Institution'}),
+                                       'placeholder': 'Institution'}),
             'city':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'City'}),
+                                       'placeholder': 'City'}),
             'state':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'State'}),
+                                       'placeholder': 'State'}),
             'country':
                 forms.TextInput(attrs={'class': 'form-control input-md ',
-                                                'placeholder': 'Country'}),
+                                       'placeholder': 'Country'}),
         }
 
 
 class UserFingerprintSettingsForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(UserFingerprintSettingsForm, self).__init__(*args, **kwargs)
         if 'instance' in kwargs:
             if kwargs['instance'].fingerprint_roll_back_deltatime:
-                self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-value'] = \
-                    '{0:.2f}'.format(kwargs['instance'].fingerprint_roll_back_deltatime)
-                delta_month = int((timezone.now().date() - kwargs['instance'].user.lib.d_oldest).days / 30) + 1
-                self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-max'] = delta_month
-            self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-max'] = 0
-            self.fields['fingerprint_roll_back_deltatime'].widget.attrs['data-slider-value'] = 0
+                self.fields['fingerprint_roll_back_deltatime'].widget.attrs[
+                    'data-slider-value'] = \
+                    '{0:.2f}'.format(
+                        kwargs['instance'].fingerprint_roll_back_deltatime)
+                delta_month = int((timezone.now().date() - kwargs[
+                    'instance'].user.lib.d_oldest).days / 30) + 1
+                self.fields['fingerprint_roll_back_deltatime'].widget.attrs[
+                    'data-slider-max'] = delta_month
+            self.fields['fingerprint_roll_back_deltatime'].widget.attrs[
+                'data-slider-max'] = 0
+            self.fields['fingerprint_roll_back_deltatime'].widget.attrs[
+                'data-slider-value'] = 0
 
     class Meta:
         model = UserSettings
         fields = (
-                  'fingerprint_roll_back_deltatime',
-                  )
+            'fingerprint_roll_back_deltatime',
+        )
         widgets = {
             'fingerprint_roll_back_deltatime': forms.TextInput(attrs={
                 'data-slider-id': 'fingerprint_roll_back_deltatime_slider',
@@ -162,27 +168,30 @@ class UserFingerprintSettingsForm(forms.ModelForm):
 
 
 class UserStreamSettingsForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(UserStreamSettingsForm, self).__init__(*args, **kwargs)
         if 'instance' in kwargs:
-            self.fields['stream_vector_weight'].widget.attrs['data-slider-value'] = \
+            self.fields['stream_vector_weight'].widget.attrs[
+                'data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_vector_weight)
-            self.fields['stream_author_weight'].widget.attrs['data-slider-value'] = \
+            self.fields['stream_author_weight'].widget.attrs[
+                'data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_author_weight)
-            self.fields['stream_journal_weight'].widget.attrs['data-slider-value'] = \
+            self.fields['stream_journal_weight'].widget.attrs[
+                'data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_journal_weight)
-            self.fields['stream_score_threshold'].widget.attrs['data-slider-value'] = \
+            self.fields['stream_score_threshold'].widget.attrs[
+                'data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].stream_score_threshold)
 
     class Meta:
         model = UserSettings
         fields = (
-                  'stream_score_threshold',
-                  'stream_vector_weight',
-                  'stream_author_weight',
-                  'stream_journal_weight',
-                  )
+            'stream_score_threshold',
+            'stream_vector_weight',
+            'stream_author_weight',
+            'stream_journal_weight',
+        )
         widgets = {
             'stream_score_threshold': forms.TextInput(attrs={
                 'data-slider-id': 'stream_score_threshold_slider',
@@ -216,15 +225,16 @@ class UserStreamSettingsForm(forms.ModelForm):
 
 
 class UserTrendSettingsForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(UserTrendSettingsForm, self).__init__(*args, **kwargs)
         if 'instance' in kwargs:
             self.fields['trend_doc_weight'].widget.attrs['data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].trend_doc_weight)
-            self.fields['trend_altmetric_weight'].widget.attrs['data-slider-value'] = \
+            self.fields['trend_altmetric_weight'].widget.attrs[
+                'data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].trend_altmetric_weight)
-            self.fields['trend_score_threshold'].widget.attrs['data-slider-value'] = \
+            self.fields['trend_score_threshold'].widget.attrs[
+                'data-slider-value'] = \
                 '{0:.2f}'.format(kwargs['instance'].trend_score_threshold)
 
     class Meta:
@@ -260,11 +270,11 @@ class UserTrendSettingsForm(forms.ModelForm):
 
 
 class UserEmailDigestSettingsForm(forms.ModelForm):
-
     class Meta:
         model = UserSettings
         fields = ('email_digest_frequency',
                   )
         widgets = {
-            'email_digest_frequency': forms.Select(attrs={'class': 'form-control'}),
+            'email_digest_frequency': forms.Select(
+                attrs={'class': 'form-control'}),
         }

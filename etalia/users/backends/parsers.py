@@ -103,14 +103,15 @@ class ParserOrcid(PaperParser):
         try:
             publication_date = entry.get('publication-date')
             year, month, day = None, 1, 1
-            if publication_date.get('year'):
-                year = int(publication_date.get('year').get('value'))
-            if publication_date.get('month'):
-                month = int(publication_date.get('month').get('value'))
-            if publication_date.get('day'):
-                day = int(publication_date.get('day').get('value'))
-            if year:
-                paper['date_pp'] = datetime.date(year, month, day)
+            if publication_date:
+                if publication_date.get('year'):
+                    year = int(publication_date.get('year').get('value'))
+                if publication_date.get('month'):
+                    month = int(publication_date.get('month').get('value'))
+                if publication_date.get('day'):
+                    day = int(publication_date.get('day').get('value'))
+                if year:
+                    paper['date_pp'] = datetime.date(year, month, day)
         except TypeError:
             pass
 
