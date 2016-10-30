@@ -506,7 +506,6 @@ if __name__ == '__main__':
     # Load init_data.json
     if args.load:
         load(args.load)
-        update()
 
     # Dump to init_data.json
     if args.dump:
@@ -527,14 +526,4 @@ if __name__ == '__main__':
 
     # Update
     if args.update:
-        if not Paper.objects.count():
-            default_fixture = os.path.join(root_path, "setup",
-                                           INIT_DEFAULT_FIXTURE_FILE)
-            if os.path.isfile(default_fixture):
-                try:
-                    load(INIT_DEFAULT_FIXTURE_FILE)
-                except Exception:
-                    init()
-            else:
-                init()
         update()

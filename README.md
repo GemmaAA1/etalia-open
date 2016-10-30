@@ -5,7 +5,7 @@ text-driven technology
 
 ### Setting things up for development:
 
-Etalia stack is composed of: Django, Postgres, RabbitMQ, Redis and Celery workers. 
+Etalia stack: Django, Postgres, RabbitMQ, Redis and Celery. 
 To setup etalia locally you need [Docker](https://www.docker.com/).   
 
 1. Clone Etalia repository:
