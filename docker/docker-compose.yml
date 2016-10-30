@@ -1,5 +1,10 @@
 version: '2'
 
+networks:
+  default:
+    external:
+      name: etalia-network
+
 volumes:
   data:
     external:
@@ -37,9 +42,7 @@ services:
 
   # Django web server
   web:
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
+    image: etalia/python-dev
     command: ./docker/run_web.sh
     env_file: .envs
     volumes:
@@ -59,9 +62,7 @@ services:
 
   # Celery worker
   worker:
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
+    image: etalia/python-dev
     command: ./docker/run_celery.sh
     env_file: .envs
     volumes:
@@ -75,38 +76,3 @@ services:
       - rabbit:rabbit
       - redis:redis
     container_name: etalia_worker
-
-  # Container for basic db management
-  simple:
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
-    env_file: .envs
-    command: /bin/true
-    volumes:
-      - ../.:/code
-    depends_on:
-      - db
-    links:
-      - db:db
-    container_name: etalia_simple
-
-  # Container for full management
-  full:
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
-    env_file: .envs
-    command: /bin/true
-    volumes:
-      - ../.:/code
-    depends_on:
-      - db
-      - rabbit
-      - redis
-      - worker
-    links:
-      - db:db
-      - rabbit:rabbit
-      - redis:redis
-    container_name: etalia_full
