@@ -12,22 +12,17 @@ To setup etalia locally you need [Docker](https://www.docker.com/).
         
         git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
 
-2. Run install.sh
+2. Build the docker image (must be done each time the python dependencies changes):
+
+        $ ./build.sh
+
+3. Run install.sh (this will build, run and initialize the Etalia stack):
 
         $ ./install.sh
 
-3. Launch containers:        
+4. Visit _127.0.0.1:8000_
 
-        $ docker-compose up
-
-4. visit 127.0.0.1:8000
-
-
-### Updating Etalia database and engines:
-
-To update etalia database and engines run:
-
-        $ docker-compose run full ./docker/update.sh
+5. Read more in [docker doc](./docs/docker.md).
 
 ### Frontend dev ###
 

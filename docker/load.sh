@@ -1,3 +1,12 @@
 #!/bin/sh
-# load from fixture
-python setup/manager.py --load
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+OPTIONS="-i --rm \
+    --volumes-from etalia_web \
+    --network etalia-network \
+    --link etalia_db:db \
+    --env-file $DIR/.envs \
+    etalia/python-dev"
+
+docker run $OPTIONS python setup/manager.py --load

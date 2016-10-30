@@ -1,5 +1,13 @@
 #!/bin/sh
-# prepare init migration
-python manage.py makemigrations
-# migrate db, so we have the latest db schema
-python manage.py migrate
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+OPTIONS="-i --rm \
+    --volumes-from etalia_web \
+    --network etalia-network \
+    --link etalia_db:db \
+    --env-file $DIR/.envs \
+    etalia/python-dev"
+
+docker run $OPTIONS python manage.py makemigrations
+docker run $OPTIONS python manage.py migrate

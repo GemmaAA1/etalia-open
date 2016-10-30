@@ -1,8 +1,13 @@
 #!/bin/sh
+
+docker network create etalia-network
 docker volume create --name=etalia-data-volume
-cd docker
-docker-compose build
-docker-compose run simple ./docker/migrate.sh
-docker-compose run simple ./docker/load.sh
+
+docker-compose -f ./docker/docker-compose.yml up -d
+
+./docker/migrate.sh
+./docker/load.sh
+
 docker restart etalia_worker
-docker-compose run full ./docker/update.sh
+
+./docker/update.sh
