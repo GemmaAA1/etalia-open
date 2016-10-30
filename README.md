@@ -5,23 +5,21 @@ text-driven technology
 
 ### Setting things up for development:
 
-For development, Etalia requires:
+Etalia stack is composed of: Django, Postgres, RabbitMQ, Redis and Celery workers. 
+To setup etalia locally you need [Docker](https://www.docker.com/).   
 
-* Python 3.4+
-* pip (the python package manager)
-* virtualenv
-* PostgreSQL
-* RabbitMQ
-
-Once you get the requirements installed, follow these steps to get started:
-
-1. Create you virtual environment with Python 3.4 onboard. Export the environment variables for Etalia (Request them if you don't have them). 
-
-2. Clone Etalia repository:
+1. Clone Etalia repository:
         
         git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
 
-3. Create a local Postgres database (e.g. `CREATE DATABASE etalia;` from psql on mac)
+2. Create a etalia volume:
+
+        $ docker volume create --name=etalia_db_vol
+
+3. Go to _./docker_ directory and run docker-compose up:
+
+        $ cd [project-path]/docker
+        $ docker-compose up -d
 
 4. Copy etalia/config/settings/common.py.dist to etalia/config/settings/common.py
 

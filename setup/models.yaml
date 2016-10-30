@@ -1,0 +1,49 @@
+- name: dbow-128-with-words
+  dm: 0
+  size: 128
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 1
+  min_count: 2
+
+- name: dbow-128
+  dm: 0
+  size: 128
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
+  min_count: 2
+
+- name: dm-128
+  dm: 1
+  size: 128
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
+  min_count: 2
+
+- name: dbow-64-mc-5
+  dm: 0
+  size: 64
+  window: 8
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
+  min_count: 5
+
+- name: test
+  dm: 0
+  size: 32
+  window: 4
+  alpha: 0.025
+  hs: 1
+  negative: 0
+  dbow_words: 0
+  min_count: 2

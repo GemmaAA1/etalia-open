@@ -1,9 +1,9 @@
 Docker
 ======
 
-First of all, create a volume container to store the database:
+First of all, create a volume to store the database:
 
-    $ docker volume create --name=etalia_db_data
+    $ docker volume create --name=etalia_db_vol
 
 To build and run the containers, go to _./docker_ directory and run docker compose up:
 
@@ -18,7 +18,6 @@ To remove the containers, go to _./docker_ directory and run docker compose down
 
 https://docs.docker.com/engine/reference/commandline/
 https://docs.docker.com/compose/compose-file/
-
 
 https://github.com/andrecp/django-tutorial-docker-nginx-postgres
 https://realpython.com/blog/python/django-development-with-docker-compose-and-machine/

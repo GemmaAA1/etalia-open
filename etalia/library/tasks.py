@@ -121,3 +121,10 @@ def get_related_threads(paper_id, time_span):
         pass
 
     return threads
+
+
+@app.task()
+def add_library(x, y):
+    """dummy task"""
+    logger.info("--> Processing task add")
+    return x + y

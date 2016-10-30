@@ -267,7 +267,7 @@ def create_directory_structure_if_necessary():
 
 @task
 def copy_common_py():
-    run('cp {0}/source/config/settings/common.py.dist '
+    run('cp {0}/source/config/settings/common.py '
         '{0}/source/config/settings/common.py'.format(env.stack_dir))
 
 

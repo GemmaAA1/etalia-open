@@ -10,6 +10,19 @@ CONFIG_FILE = __file__
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATE_DEBUG = DEBUG
 
+# DATABASE
+# ------------------------------------------------------------------------------
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('POSTGRES_DB', ''),
+        'USER': os.environ.get('POSTGRES_USER', ''),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+        'HOST': 'db',
+        'PORT': 5432,
+    },
+}
+
 # DEBUG TOOLBAR
 # ------------------------------------------------------------------------------
 DEBUG_TOOLBAR = False
@@ -28,8 +41,7 @@ if DEBUG_TOOLBAR:
 # CONSUMER
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database
-CONSUMER_INIT_PAST = 30
-# for pubstream
+CONSUMER_INIT_PAST = 7
 CONSUMER_PUBPEER_INIT_PAST = 2
 
 # Mail settings

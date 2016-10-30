@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleCrawlerListMixin(object):
-
+    """Simple MixIn useful for crawling simple list->detail pages"""
     DOMAIN = ''
     LIST_PATTERN = ''
     DETAIL_PATTERN = {'name': '', 'class': ''}
