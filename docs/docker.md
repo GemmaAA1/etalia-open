@@ -3,12 +3,30 @@ Docker
 
 First of all, create a volume to store the database:
 
-    $ docker volume create --name=etalia_db_vol
+    $ docker volume create --name=etalia-data-volume
 
-To build and run the containers, go to _./docker_ directory and run docker compose up:
+To build the containers, go to _./docker_ directory and run docker compose build:
 
     $ cd [project-path]/docker
-    $ docker-compose up -d
+    $ docker-compose build
+
+To run migrations of etalia database:
+
+    $ docker-compose run simple ./docker/migrate.sh
+
+To update etalia data and engines
+
+    $ docker-compose run full ./docker/update.sh
+
+To launch containers run:
+
+    $ cd [project-path]/docker
+    $ docker-compose up
+
+To stop the containers, go to _./docker_ directory and run docker compose stop:
+
+    $ cd [project-path]/docker
+    $ docker-compose stop
 
 To remove the containers, go to _./docker_ directory and run docker compose down:
 

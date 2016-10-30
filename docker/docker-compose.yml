@@ -1,5 +1,10 @@
 version: '2'
 
+volumes:
+  data:
+    external:
+      name: etalia-data-volume
+
 services:
   db:
     image: postgres
@@ -8,11 +13,15 @@ services:
       - POSTGRES_DB=etalia
       - POSTGRES_USER=etalia
       - POSTGRES_PASSWORD=mypass
+    volumes:
+      - data:/var/lib/postgresql/data
+    container_name: etalia_db
 
   # Redis
   redis:
     image: redis:2.8.19
     hostname: redis
+    container_name: etalia_redis
 
   # RabbitMQ
   rabbit:
@@ -24,6 +33,7 @@ services:
     ports:
       - "5672"  # we forward this port because it's useful for debugging
       - "15672"  # here, we can access rabbitmq management plugin
+    container_name: etalia_rabbit
 
   # Django web server
   web:
@@ -45,6 +55,7 @@ services:
       - db:db
       - rabbit:rabbit
       - redis:redis
+    container_name: etalia_web
 
   # Celery worker
   worker:
@@ -63,77 +74,39 @@ services:
       - db:db
       - rabbit:rabbit
       - redis:redis
+    container_name: etalia_worker
 
-## Listes des volumes: à créer avec '$ docker volume create ...'
-#volumes:
-#    db_data:
-#        external:
-#            name: etalia_db_data
-#
-## Listes des containers à créer
-#services:
-#
-#    # Le conteneur NGinx
-#    front:
-#        # Normalement utilisé pour spécifier quelle image utiliser pour créer le conteneur,
-#        # on se sert ici de cette option pour nommer l'image qui va être créée à partir
-#        # du fichier Dockerfile
-#        image: etalia_front
-#        # Les instruction pour créer l'image du conteneur
-#        build:
-#            # Permet de copier des fichiers à partir de la racine du projet dans le Dockerfile (COPY and ADD)
-#            context: ../
-#            # Le chemin relatif au fichier docker-compose.yml vers le fichier Dockerfile
-#            dockerfile: ./docker/front/Dockerfile
-#        # Les volumes à lier :
-#        # Ici, le répertoire hôte {project_root}/etalia/static sera monté dans
-#        # le répertoire guest (docker machine) /usr/src/app en read-only
-#        volumes:
-#            - ../etalia/static:/usr/src/app:ro
-#        # Les conteneurs liés :
-#        # Ici, le conteneur 'engine' sera accessible par le conteneur 'front'
-#        links:
-#            - engine
-#        # Spécifie les conteneurs dont le contenu 'front' dépends.
-#        # Le conteneur 'engine' sera donc construit avant le conteneur 'front'
-#        depends_on:
-#            - engine
-#        # Le mapping des ports :
-#        # Ici le port 80 de l'hôte sera mappé sur le port 8000 de la docker machine
-#        ports:
-#            - "80:8000"
-#        # Le nom du conteneur (juste pour le côté pratique)
-#        container_name: etalia_front
-#
-#    # Le conteneur Django
-#    engine:
-#        image: etalia_engine
-#        build:
-#            context: ../
-#            dockerfile: ./docker/engine/Dockerfile
-#        # :rw == read/write
-#        volumes:
-#            - ../.:/etalia:rw
-#        # Le contenur 'engine' pour accéder au conteneur 'db' via le hostname 'postgres'
-#        links:
-#            - db:postgres
-#        depends_on:
-#            - db
-#        # Permet de charger des variables d'environnement
-#        env_file: ./engine/.env
-#        # L'entrypoint est le script que doit lancer le conteneur (pas sur que ce soit utile, cf Dockerfile)
-#        entrypoint: /entrypoint.sh
-#        container_name: etalia_engine
-#
-#    db:
-#        image: postgres
-##        ports:
-##            - "5432:5432"
-#        volumes:
-#            - db_data:/var/lib/postgresql/data/etalia:rw
-#        environment:
-#            POSTGRES_PASSWORD: etalia
-#            POSTGRES_USER: etalia
-#            POSTGRES_DB: etalia
-#            PGDATA: /var/lib/postgresql/data/etalia
-#        container_name: etalia_db
+  # Container for basic db management
+  simple:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    env_file: .envs
+    command: /bin/true
+    volumes:
+      - ../.:/code
+    depends_on:
+      - db
+    links:
+      - db:db
+    container_name: etalia_simple
+
+  # Container for full management
+  full:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    env_file: .envs
+    command: /bin/true
+    volumes:
+      - ../.:/code
+    depends_on:
+      - db
+      - rabbit
+      - redis
+      - worker
+    links:
+      - db:db
+      - rabbit:rabbit
+      - redis:redis
+    container_name: etalia_full

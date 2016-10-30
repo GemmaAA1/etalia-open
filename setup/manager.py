@@ -127,12 +127,9 @@ def update_papers():
             paper.date_fs = random_date(start_date, end_date)
             paper.date_pp = random_date(start_date, end_date)
             paper.save()
-
-    # Altmetric score
-    for paper in papers:
-        altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper.pk)
-        altmetric.score = float(random.randrange(1, 1000))
-        altmetric.save()
+            altmetric, _ = AltmetricModel.objects.get_or_create(paper_id=paper.pk)
+            altmetric.score = float(random.randrange(1, 1000))
+            altmetric.save()
 
 
 def update_users():
@@ -534,7 +531,10 @@ if __name__ == '__main__':
             default_fixture = os.path.join(root_path, "setup",
                                            INIT_DEFAULT_FIXTURE_FILE)
             if os.path.isfile(default_fixture):
-                load(INIT_DEFAULT_FIXTURE_FILE)
+                try:
+                    load(INIT_DEFAULT_FIXTURE_FILE)
+                except Exception:
+                    init()
             else:
                 init()
         update()

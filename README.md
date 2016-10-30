@@ -12,49 +12,22 @@ To setup etalia locally you need [Docker](https://www.docker.com/).
         
         git clone https://[your_bitbucket_username]@bitbucket.org/NPann/etalia.git
 
-2. Create a etalia volume:
+2. Run install.sh
 
-        $ docker volume create --name=etalia_db_vol
+        $ ./install.sh
 
-3. Go to _./docker_ directory and run docker-compose up:
+3. Launch containers:        
 
-        $ cd [project-path]/docker
-        $ docker-compose up -d
+        $ docker-compose up
 
-4. Copy etalia/config/settings/common.py.dist to etalia/config/settings/common.py
+4. visit 127.0.0.1:8000
 
-5. Update database settings in etalia/config/settings/common.py with your username and database name. Example:
-    
-        DATABASES = {
-            'default': {
-                ...
-                'NAME': 'database_name',
-                'USER': 'your_username',
-                'PASSWORD': '',
-                ...
-            }
-        }
 
-6. Go to scripts directory and run the install_local script:
+### Updating Etalia database and engines:
 
-        cd scripts/
-        ./install_local.sh
+To update etalia database and engines run:
 
-### Launching the app:
-
-`
-./manage.py runserver
-`
-
-and visit 127.0.0.1:8000
-
-### Updating Etalia:
-
-An update script is provided to update database and related objects.
-See help menu for usage:
-`
-./scripts/routines/update.py -h
-`
+        $ docker-compose run full ./docker/update.sh
 
 ### Frontend dev ###
 
@@ -67,5 +40,5 @@ New librairies must be configured in *static/js/*
 ### Etalia team ###
 
 * Etienne Dauvergne
-* Nicolas Pannetier (nicolas.pannetier@gmail.com)
+* Nicolas Pannetier
 * Norbert Schuff

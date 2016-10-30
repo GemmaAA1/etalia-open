@@ -332,10 +332,6 @@ class ThreadFeed(TimeStampedModel):
         from .tasks import update_threadfeed
         update_threadfeed.delay(self.user.id, name=self.name)
 
-    def reset_async(self):
-        from .tasks import reset_threadfeed
-        reset_threadfeed.delay(self.user.id, name=self.name)
-
     def update(self):
         from etalia.nlp.tasks import te_dispatcher
         logger.info('Updating thread feed {id}'.format(id=self.id))
