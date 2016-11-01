@@ -57,26 +57,22 @@
 
             {% if user.is_anonymous %}
                 <div id="flap-blurb">
-{#                    <p>#}
-{#                        You landed on the public page of etalia.#}
-{#                    </p>#}
                     <p>
-                        Etalia is an intelligent platform for scholars that empowers
-                        personalized literature searches and enables valuable scholarly
-                        dialogues based on your reference library.
+                        Etalia is an intelligent platform for scholars that
+                        empowers personalized literature and enables valuable
+                        scholarly dialogues based on the content in your
+                        reference manager
                     </p>
                     <p>
-                        To start using etalia, sign-up with:
-                        <p>
-                            <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider small">
-                                <span class="eai eai-mendeley"></span>
-                                Mendeley
-                            </a>
-                            <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
-                                <span class="eai eai-zotero"></span>
-                                Zotero
-                            </a>
-                        </p>
+                        Sign-up with:
+                        <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider small">
+                            <span class="eai eai-mendeley"></span>
+                            Mendeley
+                        </a>
+                        <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                            <span class="eai eai-zotero"></span>
+                            Zotero
+                        </a>
                     </p>
                 </div>
             {% endif %}

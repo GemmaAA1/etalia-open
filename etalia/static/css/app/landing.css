@@ -124,6 +124,20 @@ a.btn-provider:hover {
 
 /* Providers */
 
+#orcid {
+    padding-bottom: 10px;
+    font-style: normal;
+}
+
+#orcid img {
+    margin: 0 1px 4px 1px;
+    max-height: 30px;
+}
+
+#glimpse {
+    font-style: normal;
+}
+
 .providers {
     background-color: #e1faf7;
     text-align: center;
@@ -150,7 +164,7 @@ a.btn-provider:hover {
 /* What */
 
 #what {
-    padding: 20px 0;
+    padding: 30px 0;
     background-color: #83ebdf;
 }
 
