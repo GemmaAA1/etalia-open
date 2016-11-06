@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import logging
 from nameparser import HumanName
 from social.apps.django_app.default.models import UserSocialAuth
 
@@ -25,6 +26,8 @@ from .validators import validate_first_name, validate_last_name
 from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
     RELATIONSHIP_STATUSES, USERLIB_STATE_CHOICES, USERLIB_UNINITIALIZED, \
     USERLIB_NEED_REAUTH, USER_TYPES, USER_INDIVIDUAL
+
+logger = logging.getLogger(__name__)
 
 
 class Affiliation(TimeStampedModel):
@@ -329,7 +332,7 @@ class UserLib(TimeStampedModel):
         try:
             social = self.user.social_auth.get(provider='orcid')
             return social.get_backend_instance()
-        except UserSocialAuth.DoesNotExists:
+        except UserSocialAuth.DoesNotExist:
             raise OrcidInstanceError(self.user, 'None found')
 
     def add_paper_on_provider(self, paper):
@@ -553,9 +556,9 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Title/Abstract weight')
 
     # vector weight
-    stream_score_threshold = models.FloatField(default=0.2,
-                                               verbose_name='Specificity')
-
+    stream_score_threshold = models.FloatField(
+        default=settings.FEED_STREAM_SCORE_THRESHOLD_DEFAULT,
+        verbose_name='Specificity')
 
     # Trend settings
 
@@ -572,8 +575,14 @@ class UserSettings(TimeStampedModel):
                                                verbose_name='Altmetric weight')
 
     # vector weight
-    trend_score_threshold = models.FloatField(default=0.1,
-                                              verbose_name='Specificity')
+    trend_score_threshold = models.FloatField(
+        default=settings.FEED_TREND_SCORE_THRESHOLD_DEFAULT,
+        verbose_name='Specificity')
+
+    # ThreadFeed settings
+    threadfeed_score_threshold = models.FloatField(
+        default=settings.FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT,
+        verbose_name='Specificity')
 
     # Email digest
     email_digest_frequency = models.IntegerField(

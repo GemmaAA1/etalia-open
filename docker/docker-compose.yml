@@ -76,3 +76,23 @@ services:
       - rabbit:rabbit
       - redis:redis
     container_name: etalia_worker
+
+  # flower
+  flower:
+    image: etalia/python-dev
+    command: ./docker/run_flower.sh
+    env_file: .envs
+    volumes:
+      - ../.:/code
+    ports:
+      - "5555:5555"
+    depends_on:
+      - db
+      - rabbit
+      - redis
+      - worker
+    links:
+      - db:db
+      - rabbit:rabbit
+      - redis:redis
+    container_name: etalia_flower

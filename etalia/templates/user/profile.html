@@ -104,6 +104,7 @@
             </div>
 
             {% if authored_papers %}
+            <hr class="divider">
             <div class="row">
                 <div class="col-md-8 col-md-offset-2">
                     <div class="col-md-4 text-right">
@@ -113,8 +114,17 @@
                     </div>
                     <div class="col-md-8">
                         {% for paper in authored_papers %}
-                            <div class="paper-compact">
-                                {{  paper.print_compact }}
+{#                            <div class="paper-compact">#}
+{#                                {{  paper.print_compact }}#}
+{#                            </div>#}
+                            <div class="paper">
+                                <a href="{% url 'library:paper-redirect' paper.id %}">
+                                    <span class="paper-authors">{{  paper.print_compact_authors }} </span>
+                                    <span class="paper-title">{{  paper.title }}. </span>
+                                    <span class="paper-journal">{{  paper.journal.short_title }}, </span>
+                                    <span class="paper-year">{{  paper.date.year }}, </span>
+                                    <span class="paper-volume">{{  paper.print_volume_issue_page }}</span>
+                                </a>
                             </div>
                         {% endfor %}
                     </div>

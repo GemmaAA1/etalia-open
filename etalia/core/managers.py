@@ -6,8 +6,6 @@ import requests
 from requests.exceptions import HTTPError, ConnectionError, Timeout
 import feedparser
 from habanero import Crossref
-from habanero.exceptions import RequestError
-from config.celery_settings.development import CELERY_ALWAYS_EAGER
 from Bio import Entrez, Medline
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -70,7 +68,7 @@ class ConsolidateManager(object):
                      'title', 'date_ep', 'date_pp', 'abstract', 'type']
     }
 
-    def __init__(self, entry):
+    def __init__(self, entry=None):
         self.entry = entry
 
     def consolidate(self):
@@ -83,8 +81,9 @@ class ConsolidateManager(object):
         else:
             seq = ['crossref', 'pubmed', 'elsevier', 'arxiv']
             count = 0
-            while (self.entry.get('is_trusted') in [False, None]
-                or self.entry.get('abstract') == '') and count < len(seq):
+            while (self.entry.get('is_trusted') in [False, None] or
+                   self.entry.get('paper').get('abstract') in ['', None]) and \
+                    count < len(seq):
                 self.consolidate_with(seq[count])
                 count += 1
 
@@ -179,7 +178,6 @@ class ConsolidateManager(object):
     @staticmethod
     def get_pubmed(doc_id='', query=''):
         """Return data from pubmed api"""
-        logger.info('Starting new HTTP connection (1): pubmed')
         try:
             parser = PubmedPaperParser()
             email = settings.CONSUMER_PUBMED_EMAIL
@@ -206,7 +204,7 @@ class ConsolidateManager(object):
                 entry = entries[0]
                 return parser.parse(entry)
         except IOError:
-            pass
+            raise
 
         return None
 
@@ -332,10 +330,10 @@ class PaperManager(object):
                     # consolidate async
                     # NB: This task if run as eager true conflict with
                     # update_lib pipeline because it modifies paper id.
-                    if self.consolidate and not CELERY_ALWAYS_EAGER:
+                    if self.consolidate:
                         from etalia.consumers.tasks import consolidate_paper
-                        consolidate_paper.apply_async(args=(paper.id, ),
-                                                      countdown=30)
+                        consolidate_paper.apply_async(args=[paper.id, ],
+                                                      ignore_result=True)
 
                     # Embed async
                     paper.embed()
@@ -363,11 +361,11 @@ class PaperManager(object):
                 entry['journal'][k] = ''
 
         # consolidate entry
-        new_entry = ConsolidateManager(entry).consolidate()
+        cm = ConsolidateManager(entry=entry)
+        new_entry = cm.consolidate()
         ep = new_entry['paper']
 
-        # check for uniqueness
-        # maybe the new_entry is already in DB, let's check
+        # check if new_entry already in database
         qs = Paper.objects\
             .filter(
                 Q(id_doi=ep['id_doi']) |
@@ -379,7 +377,7 @@ class PaperManager(object):
             .exclude(id=paper.id)
 
         if qs.count() > 0:
-            # if so relink related objects to same_paper
+            # if there is a match, link related paper to paper found
             self.update_related_paper_fk(paper.id, qs[0].id)
             # delete current paper
             paper.delete()
@@ -398,7 +396,6 @@ class PaperManager(object):
 
             # send embedding
             paper.embed()
-
         return paper
 
     def update_paper_from_entry(self, entry, paper):

@@ -14,6 +14,7 @@ from etalia.core.utils import pad_or_trim_vector, pad_neighbors
 
 from etalia.library.constants import PAPER_TIME_LAPSE_CHOICES
 from etalia.library.models import Paper, Journal
+from etalia.feeds.models import Stream, Trend
 from etalia.users.models import UserSettings
 
 from .users import UserFingerprint
@@ -150,7 +151,7 @@ class JournalNeighbors(TimeStampedModel):
 
 
 class ModelLibraryMixin(object):
-    """Mixin to Model to add Thread support"""
+    """Mixin to Model to add Paper support"""
 
     PAPER_TOKENIZED_FIELDS = ['title', 'abstract']
 
@@ -245,10 +246,12 @@ class PaperEngineScoringMixin(object):
 
         return f
 
-    def score_stream(self, user_id, name='main'):
+    def score_stream(self, stream_id, fname='main'):
+
+        stream = Stream.objects.get(id=stream_id)
 
         # Gather user fingerprint
-        f = self.get_user_fingerprint(user_id, name=name)
+        f = self.get_user_fingerprint(stream.user_id, name=fname)
 
         if f.embedding:     # fingerprint is defined (library is not empty)
             # Convert user data
@@ -259,7 +262,7 @@ class PaperEngineScoringMixin(object):
             abdic = dict([(k, ab[i]) for i, k in enumerate(f.authors_ids)])
 
             # Get user settings
-            us = UserSettings.objects.get(user_id=user_id)
+            us = UserSettings.objects.get(user_id=stream.user_id)
 
             # Compute
             jboost = np.zeros((self.data['embedding'].shape[0], ))
@@ -284,17 +287,19 @@ class PaperEngineScoringMixin(object):
             return results
         return []
 
-    def score_trend(self, user_id, name='main'):
+    def score_trend(self, trend_id, fname='main'):
+
+        trend = Trend.objects.get(id=trend_id)
 
         # Gather user fingerprint
-        f = self.get_user_fingerprint(user_id, name=name)
+        f = self.get_user_fingerprint(trend.user_id, name=fname)
 
         if f.embedding:     # fingerprint is defined (library is not empty)
             # Convert user data
             seed = np.array(f.embedding[:self.embedding_size])
 
             # Get user settings
-            us = UserSettings.objects.get(user_id=user_id)
+            us = UserSettings.objects.get(user_id=trend.user_id)
 
             # Convert altmetric
             altmetric_boost = np.array(self.convert_to_boost(

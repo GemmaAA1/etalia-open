@@ -78,13 +78,17 @@
         </p>
         <p class="identifiers">
             {{#if id_doi }}
-                <span>DOI: {{id_doi}}</span>
+                <a href="{{url}}" target="_blank">
+                    <span>DOI: {{id_doi}}</span>
+                </a>
             {{/if}}
             {{#if id_arx }}
                 <span>arXiv: {{id_arx}}</span>
             {{/if}}
             {{#if id_pmi }}
-                <span>PMID: {{id_pmi}}</span>
+                <a href="https://www.ncbi.nlm.nih.gov/pubmed/{{id_arx}}" target="_blank">
+                    <span>PMID: {{id_pmi}}</span>
+                </a>
             {{/if}}
         </p>
         <p class="authors">

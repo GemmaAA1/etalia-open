@@ -414,6 +414,9 @@ class CrossRefPaperParser(PaperParser):
         paper['issue'] = entry.get('issue', '')
         paper['page'] = entry.get('page', '')
 
+        # CrossRef does not provide abstract
+        paper['abstract'] = ''
+
         return paper
 
     def parse_authors(self, entry):

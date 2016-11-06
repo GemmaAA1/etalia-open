@@ -271,8 +271,6 @@ SOCIAL_AUTH_PIPELINE = (
     'etalia.users.pipeline.send_email_of_new_signup',
     'etalia.users.pipeline.init_user',
     'etalia.users.pipeline.send_welcome_email_at_signup',
-
-
     # 'etalia.users.pipeline.require_affiliation',
 )
 
@@ -371,6 +369,10 @@ HIDE_CLUSTER_ICON = True
 FEED_TIME_SPAN_DEFAULT = 30
 
 FEED_N_FIRST_PAPERS_ONLY = 1000
+
+FEED_STREAM_SCORE_THRESHOLD_DEFAULT = 0.3
+FEED_TREND_SCORE_THRESHOLD_DEFAULT = 0.1
+FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT = 0.3
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------

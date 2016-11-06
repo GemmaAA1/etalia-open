@@ -18,10 +18,8 @@ celery_app = Celery('etalia')
 
 # If celery_app.conf  has a broker it has been configured at launch, otherwise
 # load development settings
-if not celery_app.conf['BROKER_URL']:
-    if 'staging' in os.environ.get('DJANGO_SETTINGS_MODULE'):
-        celery_app.config_from_object('config.celery_settings.staging.base')
-    elif 'production' in os.environ.get('DJANGO_SETTINGS_MODULE'):
+if not celery_app.conf.get('CELERY_BROKER_URL'):
+    if 'production' in os.environ.get('DJANGO_SETTINGS_MODULE'):
         celery_app.config_from_object('config.celery_settings.production.base')
     elif 'development' in os.environ.get('DJANGO_SETTINGS_MODULE'):
         celery_app.config_from_object('config.celery_settings.development')

@@ -762,7 +762,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             self.data['date'].pop(idx)
             self.data['altmetric'].pop(idx)
             self.data['embedding'] = np.delete(self.data['embedding'], idx, 0)
-            self.save()
+            # self.save()
 
     def full_update(self):
         """Full update of data structure"""

@@ -11,11 +11,15 @@ from etalia.threads.models import Thread
 def remove_entry_in_paperengine(sender, instance, using, **kwargs):
     """Remove entry from PaperEngine data structure"""
     from .tasks import pe_dispatcher
-    pe_dispatcher.delay('remove_entry_id', instance.id)
+    # Broadcast task to all PaperEngine
+    pe_dispatcher.apply_async(args=['remove_entry_id', instance.id],
+                              queue='broadcast_pe_tasks')
 
 
 @receiver(post_delete, sender=Thread)
 def remove_entry_in_threadengine(sender, instance, using, **kwargs):
     """Remove entry from ThreadEngine data structure"""
     from .tasks import te_dispatcher
-    te_dispatcher.delay('remove_entry_id', instance.id)
+    # Broadcast task to all ThreadEngine
+    te_dispatcher.apply_async(args=['remove_entry_id', instance.id],
+                              queue='broadcast_te_tasks')
