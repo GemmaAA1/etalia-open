@@ -190,7 +190,8 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
         providers = [sa.provider for sa in self.request.user.social_auth.all()]
         context['providers'] = ', '.join(providers)
         context['authored_papers'] = \
-            self.request.user.lib.papers.filter(userlib_paper__authored=True)
+            self.request.user.lib.papers.filter(userlib_paper__authored=True)\
+                .order_by('-date_co')
 
         return context
 

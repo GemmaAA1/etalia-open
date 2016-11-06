@@ -114,9 +114,6 @@
                     </div>
                     <div class="col-md-8">
                         {% for paper in authored_papers %}
-{#                            <div class="paper-compact">#}
-{#                                {{  paper.print_compact }}#}
-{#                            </div>#}
                             <div class="paper">
                                 <a href="{% url 'library:paper-redirect' paper.id %}">
                                     <span class="paper-authors">{{  paper.print_compact_authors }} </span>
