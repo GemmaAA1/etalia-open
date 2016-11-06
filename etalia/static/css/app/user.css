@@ -112,6 +112,11 @@
     outline: 0;
 }
 
+#profile .providers-logo {
+    padding-bottom: 0;
+    font-size: 20px; !important;
+}
+
 #profile .paper {
     padding-bottom: 10px;
 }

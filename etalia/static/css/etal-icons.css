@@ -141,5 +141,8 @@
 .eai-feed:before {
     content: "\e924";
 }
-
+.eai-orcid:before {
+    content: "\e925";
+    color: #76b200;
+}
 
