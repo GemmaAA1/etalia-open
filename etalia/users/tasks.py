@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-@app.task()
+@app.task(ignore_result=True)
 def userlib_update_all():
     us_pk = User.objects.annotate(social_count=Count(F('social_auth')))\
         .exclude(social_count__lt=1)\
@@ -82,7 +82,7 @@ def init_user(user_pk):
     return user_pk
 
 
-@app.task()
+@app.task(ignore_result=True)
 def send_recommendation_emails_on_wed_11am():
     """Task that send batch of emails recommdation.
 
@@ -122,7 +122,7 @@ def send_recommendation_emails_on_wed_11am():
                                                    eta=utc_dt)
 
 
-@app.task()
+@app.task(ignore_result=True)
 def async_send_periodic_email_at_eta(user_id):
     """Send recommendations email"""
     send_periodic_recommendation_email(user_id)
@@ -133,7 +133,7 @@ def async_send_periodic_email_at_eta(user_id):
     upe.save()
 
 
-@app.task()
+@app.task(ignore_result=True)
 def async_send_welcome_email(user_id):
     """Send welcoming email"""
     send_welcome_email(user_id)

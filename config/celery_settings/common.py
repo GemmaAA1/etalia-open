@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import environ
 from kombu import Queue, Exchange
+from kombu.common import Broadcast
 from celery.schedules import crontab
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
@@ -35,6 +36,8 @@ CELERY_QUEUES = (
     Queue('library', routing_key='library.#'),
     Queue('beat', routing_key='beat.#'),
     Queue('test', routing_key='test.#'),
+    Broadcast('broadcast_pe_tasks'),
+    Broadcast('broadcast_te_tasks'),
 )
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'

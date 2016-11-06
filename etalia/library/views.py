@@ -3,12 +3,14 @@ from __future__ import unicode_literals, absolute_import
 
 import json
 from django.template.response import TemplateResponse
+from django.contrib.auth.decorators import login_required
 from django.views.generic import DetailView, RedirectView
 from django.utils.text import slugify
 
 from .models import Paper
 
 
+@login_required()
 def my_papers(request):
     return TemplateResponse(
         request,

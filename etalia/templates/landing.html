@@ -18,18 +18,12 @@
                 </h1>
             </div>
             <div class="col-md-6">
-{#                <h2>Bring your knowlewdge to life</h2>#}
-{#                <h2>Your Portal to Scholarly Discovery</h2>#}
                 <h2>Scholarly Discovery Made Easy</h2>
                 <ul>
-                    <li>Browse relevant publications</li>
-{#                    <li>Connect with scholars</li>#}
-                    <li>Join personalized discussions</li>
-{#                    <li>Expand your knowledge</li>#}
+                    <li>Receive personalized literature</li>
+                    <li>Join scholarly dialogues</li>
                     <li>Connect with your peers</li>
-{#                    <li>Based on your reference library</li>#}
                 </ul>
-{#                <p class="alt">No search queries. No journal browsing. No alert setup.</p>#}
             </div>
         </div>
     </div>
@@ -39,7 +33,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <p class="h3">Sign-in with</p>
+                <p class="h3">Sign-in with your reference manager</p>
                 <p>
                     <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
                         <span class="eai eai-mendeley"></span>
@@ -50,7 +44,14 @@
                         Zotero
                     </a>
                 </p>
-                <p class="h4">
+                <p id="orcid" class="h4">
+                    Not a Zotero/Mendeley user? Sign-in with
+                    <a href="{% url 'social:begin' backend='orcid' %}">
+                        ORCID
+                        <img src="{% static 'img/orcid-logo.png' %}" alt="ORCID logo">
+                    </a>
+                </p>
+                <p id="glimpse" class="h4">
                     or have a glimpse into what is <a href="{% url 'library:papers' %}">trending</a>
                 </p>
             </div>
@@ -62,11 +63,11 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6 col-md-push-6">
-                <p class="h2">In short</p>
+{#                <p class="h2">In short</p>#}
                 <p>
-                    etalia is an intelligent platform for scholars that empowers
-                    personalized literature searches and enables valuable scholarly dialogues
-                    based on your reference library.
+                    An intelligent platform for scholars that empowers
+                    personalized literature and enables valuable scholarly dialogues
+                    based on the content in your reference manager
                 </p>
             </div>
         </div>

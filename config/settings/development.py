@@ -44,6 +44,12 @@ if DEBUG_TOOLBAR:
 CONSUMER_INIT_PAST = 7
 CONSUMER_PUBPEER_INIT_PAST = 2
 
+# FEEDS
+# ------------------------------------------------------------------------------
+FEED_STREAM_SCORE_THRESHOLD_DEFAULT = -1
+FEED_TREND_SCORE_THRESHOLD_DEFAULT = -1
+FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT = -1
+
 # Mail settings
 # ------------------------------------------------------------------------------
 DEFAULT_FROM_EMAIL = 'contact@etalia.io'
@@ -92,6 +98,51 @@ CACHES = {
         'TIMEOUT': 60 * 60,         # 1 h
     }
 }
+
+
+# LOGGERS
+LOGGING['loggers'] = \
+    {
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'etalia': {
+            'handlers': ['console', 'file'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'etalia.populate': {
+            'handlers': ['console', 'populate'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.consumers': {
+            'handlers': ['console', 'consumers'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.nlp': {
+            'handlers': ['console', 'nlp'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.feeds': {
+            'handlers': ['console', 'feeds'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.users': {
+            'handlers': ['console', 'users'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    }
 
 
 # Local redis cache for debug (redis-server must be on)

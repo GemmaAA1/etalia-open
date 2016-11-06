@@ -42,8 +42,12 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
             'userID': access_token.get('userID', '')
         }
 
-    def get_session(self, social, user, *args, **kwargs):
+    def get_session(self, user):
         """Return OAuth session"""
+
+        # Get social instance
+        social = user.social_auth.get(provider=self.name)
+
         # Authenticate to zotero
         uid = social.tokens['userID']
         token = social.tokens['oauth_token']
@@ -51,7 +55,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return session
 
-    def _update_lib(self, user, session, full=False):
+    def _update_lib(self, user, full=False):
         """Update User Lib
 
         Args:
@@ -67,6 +71,9 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
         new = True
         count = 0
         not_new_stack_count = 0
+
+        # Get session
+        session = self.get_session(user)
 
         items = session.top(limit=self.CHUNK_SIZE)
 
@@ -101,12 +108,7 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
                         not_new_stack_count = 0
                     else:
                         not_new_stack_count += 1
-                else:
-                    logger.info(
-                        '- Item: {type_} from {user} / {backend}'.format(
-                            type_=item['data']['itemType'],
-                            user=user.email,
-                            backend=self.name))
+
             if not full:
                 if not_new_stack_count > 50:
                     break  # exit when reaching a stack of 10 already uploaded references
@@ -117,7 +119,9 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
 
         return count
 
-    def add_paper(self, session, paper):
+    def add_paper(self, user, paper):
+
+        session = self.get_session(user)
 
         zot_doc_type = dict([(doctype[1], doctype[0])
                              for doctype in self.parser.ZOTERO_PT])
@@ -166,8 +170,11 @@ class CustomZoteroOAuth(BackendLibMixin, BaseOAuth1):
             logger.warning(resp['failed'])
             return None, None, None
 
-    def trash_paper(self, session, paper_provider_id):
+    def trash_paper(self, user, paper_provider_id):
         """Trash item from zotero library"""
+
+        session = self.get_session(user)
+
         try:  # retrieve item by id
             item = session.item(paper_provider_id)
             if session.delete_item(item):

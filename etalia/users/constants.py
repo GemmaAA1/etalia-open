@@ -14,6 +14,7 @@ USER_TYPES = (
 PROVIDER_TYPE = (
     ('ZOT', 'Zotero'),
     ('MEN', 'Mendeley'),
+    ('ORC', 'Orcid'),
     ('', 'Unknown')
 )
 

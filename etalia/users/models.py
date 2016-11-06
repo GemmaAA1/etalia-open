@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import logging
 from nameparser import HumanName
+from social.apps.django_app.default.models import UserSocialAuth
 
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, \
@@ -19,10 +21,13 @@ from etalia.core.constants import EMAIL_DIGEST_FREQUENCY_CHOICES
 from etalia.core.models import TimeStampedModel
 from etalia.usersession.models import UserSession
 
+from .backends.exceptions import ReferenceManagerInstanceError, OrcidInstanceError
 from .validators import validate_first_name, validate_last_name
 from .constants import INIT_STEPS, RELATIONSHIP_FOLLOWING, RELATIONSHIP_BLOCKED, \
     RELATIONSHIP_STATUSES, USERLIB_STATE_CHOICES, USERLIB_UNINITIALIZED, \
     USERLIB_NEED_REAUTH, USER_TYPES, USER_INDIVIDUAL
+
+logger = logging.getLogger(__name__)
 
 
 class Affiliation(TimeStampedModel):
@@ -312,20 +317,28 @@ class UserLib(TimeStampedModel):
         self.d_oldest = self.get_d_oldest()
         self.save()
 
-    def get_session_backend(self):
-        provider_name = self.user.social_auth.first().provider
-        # get social
-        social = self.user.social_auth.get(provider=provider_name)
-        # get backend
-        backend = social.get_backend_instance()
-        # build session
-        session = backend.get_session(social, self.user)
-        return session, backend
+    def get_reference_manager_backend(self):
+        socials = self.user.social_auth.all()
+        # Get reference manager social auth
+        socials = [social for social in socials if social.get_backend().REFERENCE_MANAGER]
+        if len(socials) > 1:
+            raise ReferenceManagerInstanceError(self.user, 'More than one found')
+        elif not socials:
+            raise ReferenceManagerInstanceError(self.user, 'None found')
+        social = socials[0]
+        return social.get_backend_instance()
+
+    def get_orcid_backend(self):
+        try:
+            social = self.user.social_auth.get(provider='orcid')
+            return social.get_backend_instance()
+        except UserSocialAuth.DoesNotExist:
+            raise OrcidInstanceError(self.user, 'None found')
 
     def add_paper_on_provider(self, paper):
-        session, backend = self.get_session_backend()
+        backend = self.get_reference_manager_backend()
         # add paper to provider
-        err, id, info = backend.add_paper(session, paper)
+        err, id, info = backend.add_paper(self.user, paper)
         return id, info
 
     def add_paper_on_etalia(self, paper, provider_id, info=None):
@@ -341,19 +354,37 @@ class UserLib(TimeStampedModel):
         ulp.save()
 
     def trash_paper_on_provider(self, provider_id):
-        session, backend = self.get_session_backend()
+        backend = self.get_reference_manager_backend()
         # remove paper from provider
-        err = backend.trash_paper(session, provider_id)
+        err = backend.trash_paper(self.user, provider_id)
         return err
 
     def update(self, full=False):
-        session, backend = self.get_session_backend()
-        # update lib
-        backend.update_lib(self.user, session, full=full)
+        """Update user library either through reference manager or OrcID
+        """
+        update_fingerprint = False
+        # reference manager
+        try:
+            reference_backend = self.get_reference_manager_backend()
+            # update lib
+            reference_backend.update_lib(self.user, full=full)
+            update_fingerprint = True
+        except ReferenceManagerInstanceError:
+            pass
+
+        # orcid
+        try:
+            orcid_backend = self.get_orcid_backend()
+            orcid_backend.update_lib(self.user, full=full)
+            update_fingerprint = True
+        except OrcidInstanceError:
+            pass
+
         # update fingerprint
-        fs = self.user.fingerprint.all()
-        for f in fs:
-            f.update()
+        if update_fingerprint:
+            fs = self.user.fingerprint.all()
+            for f in fs:
+                f.update()
 
     def clear(self):
         ulps = UserLibPaper.objects.filter(userlib=self)
@@ -525,9 +556,9 @@ class UserSettings(TimeStampedModel):
                                              verbose_name='Title/Abstract weight')
 
     # vector weight
-    stream_score_threshold = models.FloatField(default=0.2,
-                                               verbose_name='Specificity')
-
+    stream_score_threshold = models.FloatField(
+        default=settings.FEED_STREAM_SCORE_THRESHOLD_DEFAULT,
+        verbose_name='Specificity')
 
     # Trend settings
 
@@ -544,8 +575,14 @@ class UserSettings(TimeStampedModel):
                                                verbose_name='Altmetric weight')
 
     # vector weight
-    trend_score_threshold = models.FloatField(default=0.1,
-                                              verbose_name='Specificity')
+    trend_score_threshold = models.FloatField(
+        default=settings.FEED_TREND_SCORE_THRESHOLD_DEFAULT,
+        verbose_name='Specificity')
+
+    # ThreadFeed settings
+    threadfeed_score_threshold = models.FloatField(
+        default=settings.FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT,
+        verbose_name='Specificity')
 
     # Email digest
     email_digest_frequency = models.IntegerField(

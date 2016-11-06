@@ -58,7 +58,7 @@ CELERY_RESULT_BACKEND = 'redis://%s:%d/%d' % (REDIS_HOST, REDIS_PORT, REDIS_DB)
 CELERY_REDIS_MAX_CONNECTIONS = 1
 
 # Don't use pickle as serializer, json is much safer
-CELERY_TASK_SERIALIZER = "json"
+CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['json', 'pickle']
 
 CELERYD_HIJACK_ROOT_LOGGER = False

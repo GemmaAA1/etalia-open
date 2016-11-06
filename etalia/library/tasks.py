@@ -19,7 +19,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@app.task()
+@app.task(ignore_result=True)
 def update_stats():
     """Create a new line of stats for the library"""
     stats = Stats.objects.create()
@@ -31,7 +31,8 @@ def embed_paper(paper_pk):
     """
     from etalia.nlp.tasks import nlp_dispatcher
     try:
-        nlp_dispatcher.delay('infer_paper', paper_pk)
+        nlp_dispatcher.apply_async(args=['infer_paper', paper_pk],
+                                   ignore_result=True)
     except ImportError:
         pass
 
@@ -45,7 +46,7 @@ def embed_papers(pks, model_name, batch_size=1000):
     pks_batched.append(pks[nb_batches * batch_size:])
 
     for i, batch in enumerate(pks_batched):
-        nlp_dispatcher.delay('infer_papers', batch)
+        nlp_dispatcher.delay(args=['infer_papers', batch], ignore_result=True)
 
 
 def get_neighbors_papers(paper_pk, time_span):

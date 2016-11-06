@@ -225,6 +225,7 @@ PERIODIC_RECOMMENDATION_NUMBER_PAPERS = 6
 AUTHENTICATION_BACKENDS = (
     'etalia.users.backends.mendeley.CustomMendeleyOAuth2',
     'etalia.users.backends.zotero.CustomZoteroOAuth',
+    'etalia.users.backends.orcid.OrcidOAuth2',
     'social.backends.email.EmailAuth',
     'django.contrib.auth.backends.ModelBackend',
     # 'allauth.account.auth_backends.AuthenticationBackend',
@@ -270,23 +271,21 @@ SOCIAL_AUTH_PIPELINE = (
     'etalia.users.pipeline.send_email_of_new_signup',
     'etalia.users.pipeline.init_user',
     'etalia.users.pipeline.send_welcome_email_at_signup',
-
-
     # 'etalia.users.pipeline.require_affiliation',
 )
 
 # Mendeley Keys
-SOCIAL_AUTH_MENDELEY_KEY = \
-    env('SOCIAL_AUTH_MENDELEY_KEY')
-SOCIAL_AUTH_MENDELEY_SECRET = \
-    env('SOCIAL_AUTH_MENDELEY_SECRET')
+SOCIAL_AUTH_MENDELEY_KEY = env('SOCIAL_AUTH_MENDELEY_KEY')
+SOCIAL_AUTH_MENDELEY_SECRET = env('SOCIAL_AUTH_MENDELEY_SECRET')
 
 # Zotero Keys
 SOCIAL_AUTH_ZOTERO_KEY = env('SOCIAL_AUTH_ZOTERO_KEY')
 SOCIAL_AUTH_ZOTERO_SECRET = env('SOCIAL_AUTH_ZOTERO_SECRET')
-
 SOCIAL_AUTH_ZOTERO_AUTH_EXTRA_ARGUMENTS = {'write_access': '1'}
 
+# ORCiD Keys
+SOCIAL_AUTH_ORCID_KEY = 'APP-3S58TQE379Y00NXR'
+SOCIAL_AUTH_ORCID_SECRET = '19826d6d-1648-4420-b101-11919a6cfce9'
 
 # SESSION
 # ------------------------------------------------------------------------------
@@ -370,6 +369,10 @@ HIDE_CLUSTER_ICON = True
 FEED_TIME_SPAN_DEFAULT = 30
 
 FEED_N_FIRST_PAPERS_ONLY = 1000
+
+FEED_STREAM_SCORE_THRESHOLD_DEFAULT = 0.3
+FEED_TREND_SCORE_THRESHOLD_DEFAULT = 0.1
+FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT = 0.3
 
 # ALTMETRIC APP
 # ------------------------------------------------------------------------------
