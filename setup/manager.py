@@ -9,6 +9,7 @@ import sys
 import yaml
 import random
 import argparse
+import json
 from argparse import RawTextHelpFormatter
 import names
 from subprocess import call
@@ -47,6 +48,7 @@ def update():
     update_streams()
     update_trends()
     update_threadfeeds()
+    update_popovers()
 
 
 def update_oauth_user(email):
@@ -288,6 +290,18 @@ def update_engines():
     threadengine_update_all()
 
 
+def update_popovers():
+    file = os.path.join(root_path, 'etalia/popovers/popovers.json')
+    with open(file, 'r') as fip:
+        popover_data = json.load(fip).get('popovers')
+    for pop in popover_data:
+        if PopOver.objects.filter(id=pop.get('id')).exists():
+            p = PopOver.objects.filter(id=pop.get('id'))
+            p.update(**pop)
+        else:
+            PopOver.objects.create(**pop)
+
+
 def fetch_path():
     # search for config/ is parent tree directory and setup django
     cpath = os.path.abspath(__file__)
@@ -426,6 +440,7 @@ if __name__ == '__main__':
         ConsumerBiorxiv
     from etalia.users.models import UserLibPaper, Relationship
     from etalia.users.constants import USER_INDIVIDUAL
+    from etalia.popovers.models import PopOver
     from avatar.models import Avatar
     from setup.utils.avatar import AvatarGenerator
 

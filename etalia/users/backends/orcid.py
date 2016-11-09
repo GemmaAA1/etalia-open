@@ -83,10 +83,14 @@ class OrcidOAuth2(BaseOAuth2):
     def get_public_papers(self, user):
 
         data = self.get_user_public_profile(user)
-        return data.get('orcid-profile')\
-            .get('orcid-activities')\
-            .get('orcid-works')\
-            .get('orcid-work')
+        logger.info(data)
+        if data.get('orcid-profile').get('orcid-activities'):
+            return data.get('orcid-profile')\
+                .get('orcid-activities')\
+                .get('orcid-works')\
+                .get('orcid-work')
+        else:
+            return []
 
     def update_lib(self, user, full=False):
 
