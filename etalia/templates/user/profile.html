@@ -96,9 +96,35 @@
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <h5>Your library is in sync with {{ providers }} </h5>
-                        <h5>{{ library_counter }} publications in Etalia</h5>
-                        <h5>{{ likes_counter }} publications liked</h5>
+                        <div>Your library is in sync with</div>
+                        <div class="providers-logo">
+                            {% if 'zotero' in providers  %}
+                                <span class="eai eai-zotero" title="Zotero"></span>
+                            {% elif 'mendelery' in providers %}
+                                <span class="eai eai-zotero" title="Mendeley"></span>
+                            {% elif 'orcid' in providers %}
+                                <span class="eai eai-orcid" title="OrcID"></span>
+                            {% endif %}
+                        </div>
+                        <div>{{ library_counter }} publications in Etalia</div>
+                        <div>{{ likes_counter }} publications liked</div>
+                        {% if 'orcid' in providers %}
+                            {% if 'zotero' not in providers or 'mendeley' not in providers %}
+                            <div>
+                                <p>Connect your reference manager to fully empower etalia</p>
+                                <p>
+                                    <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                                        <span class="eai eai-mendeley"></span>
+                                        Mendeley
+                                    </a>
+                                    <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                                        <span class="eai eai-zotero"></span>
+                                        Zotero
+                                    </a>
+                                </p>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
