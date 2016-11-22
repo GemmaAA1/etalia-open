@@ -63,6 +63,7 @@ coverage.xml
 
 #Docker
 ssh_keys
+docker/dev/ssh_keys
 
 # Django stuff:
 # Sphinx documentation

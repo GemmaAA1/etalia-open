@@ -1,3 +1,7 @@
+# Docker
+#
+#
+
 version: '2'
 
 networks:
@@ -40,27 +44,26 @@ services:
       - "15672"  # here, we can access rabbitmq management plugin
     container_name: etalia_rabbit
 
-#  # Django web server
-#  web:
-#    image: etalia/python-dev-ssh
-#    command: ./docker/run_web.sh
-#    env_file: .envs
-#    volumes:
-#      - ../.:/code
-#      - ~/.pycharm_helpers:/root/.pycharm_helpers
-#    ports:
-#      - "8000:8000"
-#      - "2222:22"
-#    depends_on:
-#      - db
-#      - rabbit
-#      - redis
-#      - worker
-#    links:
-#      - db:db
-#      - rabbit:rabbit
-#      - redis:redis
-#    container_name: etalia_web
+  # Django web server
+  web:
+    image: etalia/python-dev-ssh
+    env_file: .envs
+    volumes:
+      - ../.:/code
+      - ~/.pycharm_helpers:/home/docker/.pycharm_helpers
+    ports:
+      - "8000:8000"
+      - "2222:22"
+    depends_on:
+      - db
+      - rabbit
+      - redis
+      - worker
+    links:
+      - db:db
+      - rabbit:rabbit
+      - redis:redis
+    container_name: etalia_web
 
   # Celery worker
   worker:
@@ -70,6 +73,8 @@ services:
     volumes:
       - ../.:/code
       - ~/.pycharm_helpers:/home/docker/.pycharm_helpers
+    ports:
+      - "2223:22"
     depends_on:
       - db
       - rabbit
