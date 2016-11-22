@@ -188,7 +188,7 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
             .filter(user=self.request.user, watch=PAPER_PINNED)\
             .count()
         providers = [sa.provider for sa in self.request.user.social_auth.all()]
-        context['providers'] = ', '.join(providers)
+        context['providers'] = ' '.join(providers)
         context['authored_papers'] = \
             self.request.user.lib.papers.filter(userlib_paper__authored=True)\
                 .order_by('-date_co')

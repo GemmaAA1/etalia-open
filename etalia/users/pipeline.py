@@ -50,7 +50,6 @@ def create_details(strategy, details, *args, user=None, **kwargs):
     if photo_url:
         url_parsed = urlparse(photo_url)
         photo_filename = os.path.basename(url_parsed.path)
-        # if photo not in [settings.AVATAR_DEFAULT_MENDELEY, settings.AVATAR_DEFAULT_ZOTERO]:
         local_filename, headers = urllib.request.urlretrieve(photo_url)
         f = open(local_filename, 'rb')
         avatar = Avatar(user=user, primary=True)

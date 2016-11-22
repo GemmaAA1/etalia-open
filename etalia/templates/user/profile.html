@@ -100,16 +100,18 @@
                         <div class="providers-logo">
                             {% if 'zotero' in providers  %}
                                 <span class="eai eai-zotero" title="Zotero"></span>
-                            {% elif 'mendelery' in providers %}
-                                <span class="eai eai-zotero" title="Mendeley"></span>
-                            {% elif 'orcid' in providers %}
+                            {% endif %}
+                            {% if 'mendeley' in providers %}
+                                <span class="eai eai-mendeley" title="Mendeley"></span>
+                            {% endif %}
+                            {% if 'orcid' in providers %}
                                 <span class="eai eai-orcid" title="OrcID"></span>
                             {% endif %}
                         </div>
                         <div>{{ library_counter }} publications in Etalia</div>
                         <div>{{ likes_counter }} publications liked</div>
                         {% if 'orcid' in providers %}
-                            {% if 'zotero' not in providers or 'mendeley' not in providers %}
+                            {% if 'zotero' not in providers and 'mendeley' not in providers %}
                             <div>
                                 <p>Connect your reference manager to fully empower etalia</p>
                                 <p>

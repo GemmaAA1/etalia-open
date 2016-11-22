@@ -61,8 +61,10 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
+#Docker
+ssh_keys
 
+# Django stuff:
 # Sphinx documentation
 docs/_build/
 
