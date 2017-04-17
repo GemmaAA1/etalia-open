@@ -380,9 +380,12 @@ def init_consumers():
 
 def init_journals():
     print('Init journals...')
-    call([os.path.join(root_path, "manage.py"), "populate", "journal", "thomson_local"])
-    call([os.path.join(root_path, "manage.py"), "populate", "journal", "pubmed_local"])
-    call([os.path.join(root_path, "manage.py"), "populate", "journal", "arxiv_local"])
+    # call([os.path.join(root_path, "manage.py"), "populate", "journal", "thomson_local"])
+    # call([os.path.join(root_path, "manage.py"), "populate", "journal", "pubmed_local"])
+    # call([os.path.join(root_path, "manage.py"), "populate", "journal", "arxiv_local"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "thomson"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "pubmed"])
+    call([os.path.join(root_path, "manage.py"), "populate", "journal", "arxiv"])
     Journal.objects.get_or_create(title='BioRxiv', id_oth='biorxiv')
 
 
