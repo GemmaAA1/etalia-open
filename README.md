@@ -14,7 +14,7 @@ To setup etalia locally you need [Docker](https://www.docker.com/).
 
 2. Build the docker image (must be done each time the python dependencies changes):
 
-        $ ./build.sh
+        $ ./docker/build.sh
 
 3. Run install.sh (this will build, run and initialize the Etalia stack):
 

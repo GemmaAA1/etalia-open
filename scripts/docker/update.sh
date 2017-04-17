@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DOCKER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../docker" && pwd )"
 
 OPTIONS="-i --rm \
     --volumes-from etalia_web \
@@ -8,8 +8,7 @@ OPTIONS="-i --rm \
     --link etalia_db:etalia_db \
     --link etalia_rabbit:etalia_rabbit \
     --link etalia_redis:etalia_redis \
-    --env-file $DIR/.envs \
-    etalia/python-dev"
+    --env-file $DOCKER_DIR/.envs \
+    etalia/dev"
 
-docker-compose -f ./docker/docker-compose.yml up -d
 docker run $OPTIONS python setup/manager.py --update

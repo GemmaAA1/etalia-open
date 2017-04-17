@@ -1,8 +1,8 @@
-# SETUP PYCHARM WITH DOCKER #
+# SETUP DOCKER with ssh #
 
 1. Build the docker image with ssh client:
 
-        $ ./dev/build-dev.sh
+        $ ./ssh/build-dev.sh
 
 2. Run docker-compose for pycharm version
 
@@ -17,4 +17,4 @@
 Note:
 You can ssh to container based on python-dev-ssh running:
 
-        ssh -i ./docker/dev/ssh_keys/myuser-sshd -p 2222 myuser@localhost
+        ssh -i ./docker/ssh/ssh_keys/myuser-sshd -p 2222 myuser@localhost

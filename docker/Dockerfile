@@ -1,7 +1,5 @@
 FROM python:3.4
 
-ENV PYTHONUNBUFFERED 1
-
 COPY requirements /requirements
 
 RUN pip install -r /requirements/development.txt \
@@ -14,3 +12,5 @@ RUN pip install -r /requirements/development.txt \
     && chown -R myuser:myuser /root
 
 WORKDIR /code
+
+CMD python manage.py runserver 0.0.0.0:8000

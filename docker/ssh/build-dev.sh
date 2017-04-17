@@ -23,6 +23,6 @@ cp -R /Applications/PyCharm.app/Contents/helpers ~/.pycharm_helpers
 
 # Now build the sshd server image, which should be based on the main image.
 cd $ROOT_DIR
-docker build --force-rm=true -f docker/dev/Dockerfile-ssh --tag etalia/python-dev-ssh .
+docker build --force-rm=true -f docker/ssh/Dockerfile --tag etalia/dev-ssh .
 
 cd $CUR_DIR

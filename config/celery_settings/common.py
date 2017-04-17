@@ -48,7 +48,7 @@ CELERY_ROUTES = ('config.routers.MyRouter', )
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
         'task': 'etalia.altmetric.tasks.update_altmetric_periodic',
-        'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0
+        'schedule': crontab(minute=0, hour=0, day_of_week='mon,wed,fri'),
         'options': {'queue': 'beat'}
     },
     'update-userlib-all': {
@@ -68,7 +68,7 @@ CELERYBEAT_SCHEDULE = {
     },
     'update-all-userfingerprints': {
         'task': 'etalia.nlp.tasks.userfingerprints_update_all',
-        'schedule': crontab(minute=0, hour=4, day_of_week='*/2'),  # every 2 days at UTC+4
+        'schedule': crontab(minute=0, hour=4, day_of_week='tue,thu,sat'),
         'options': {'queue': 'beat'}
     },
     'update-all-main-streams': {

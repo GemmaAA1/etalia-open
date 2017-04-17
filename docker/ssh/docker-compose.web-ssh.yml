@@ -1,7 +1,4 @@
 # Docker
-#
-#
-
 version: '2'
 
 networks:
@@ -46,14 +43,13 @@ services:
 
   # Django web server
   web:
-    image: etalia/python-dev-ssh
-    env_file: .envs
+    image: etalia/dev-ssh
+    env_file: ../.envs
     volumes:
-      - ../.:/code
-      - ~/.pycharm_helpers:/home/docker/.pycharm_helpers
+      - ../../.:/code
     ports:
       - "8000:8000"
-      - "2222:22"
+      - "2223:22"
     depends_on:
       - db
       - rabbit
@@ -63,18 +59,15 @@ services:
       - db:db
       - rabbit:rabbit
       - redis:redis
-    container_name: etalia_web
+    container_name: etalia_web_ssh
 
   # Celery worker
   worker:
-    image: etalia/python-dev-ssh
-    command: ./docker/run_celery.sh
-    env_file: .envs
+    image: etalia/dev
+    command: celery worker -A config -Q default,nlp,pe,te,udpate_engines,feed,consumers,altmetric,library,beat,broadcast_pe_tasks,broadcast_te_tasks,test --config config.celery_settings.development -n default@%h --loglevel=INFO
+    env_file: ../.envs
     volumes:
-      - ../.:/code
-      - ~/.pycharm_helpers:/home/docker/.pycharm_helpers
-    ports:
-      - "2223:22"
+      - ../../.:/code
     depends_on:
       - db
       - rabbit
@@ -87,11 +80,11 @@ services:
 
   # flower
   flower:
-    image: etalia/python-dev
-    command: ./docker/run_flower.sh
-    env_file: .envs
+    image: etalia/dev
+    command: celery flower -A config --config config.celery_settings.development --basic_auth=admin:admin
+    env_file: ../.envs
     volumes:
-      - ../.:/code
+      - ../../.:/code
     ports:
       - "5555:5555"
     depends_on:

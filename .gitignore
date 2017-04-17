@@ -63,7 +63,7 @@ coverage.xml
 
 #Docker
 ssh_keys
-docker/dev/ssh_keys
+docker/ssh/ssh_keys
 
 # Django stuff:
 # Sphinx documentation
@@ -88,3 +88,4 @@ etalia/static/compiled
 
 
 
+/docker/ssh/old/

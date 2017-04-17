@@ -1,9 +1,9 @@
-FROM etalia/python-dev
+FROM etalia/dev
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install openssh-server sudo
-ADD docker/dev/set_root_pw.sh /set_root_pw.sh
-ADD docker/dev/run.sh /run.sh
-ADD docker/dev/ssh_keys/myuser-sshd.pub /myuser-sshd.pub
+ADD docker/ssh/set_root_pw.sh /set_root_pw.sh
+ADD docker/ssh/run.sh /run.sh
+ADD docker/ssh/ssh_keys/myuser-sshd.pub /myuser-sshd.pub
 RUN chmod +x /*.sh
 RUN mkdir -p /var/run/sshd && sed -i "s/UsePrivilegeSeparation.*/UsePrivilegeSeparation no/g" /etc/ssh/sshd_config \
   && touch /root/.Xauthority \
