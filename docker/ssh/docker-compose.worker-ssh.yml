@@ -67,7 +67,7 @@ services:
     env_file: ../.envs
     volumes:
       - ../../.:/code
-      - ~/.pycharm_helpers:/home/docker/.pycharm_helpers
+      - ~/.pycharm_helpers:/home/myuser/.pycharm_helpers
     ports:
       - "2223:22"
     depends_on:

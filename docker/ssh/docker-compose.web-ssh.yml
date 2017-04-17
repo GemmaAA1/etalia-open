@@ -47,6 +47,7 @@ services:
     env_file: ../.envs
     volumes:
       - ../../.:/code
+      - ~/.pycharm_helpers:/home/myuser/.pycharm_helpers
     ports:
       - "8000:8000"
       - "2223:22"
