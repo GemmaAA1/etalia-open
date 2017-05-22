@@ -50,17 +50,18 @@ def create_details(strategy, details, *args, user=None, **kwargs):
                 affiliation = form.save()
                 user.affiliation = affiliation
     # link avatar
-    photo_url = details.get('photo')
-    if not photo_url:
-        photo_url = settings.AVATAR_DEFAULT_URL
-    url_parsed = urlparse(photo_url)
-    photo_filename = os.path.basename(url_parsed.path)
-    local_filename, headers = urllib.request.urlretrieve(photo_url)
-    avatar = Avatar(user=user, primary=True)
-    with open(local_filename, 'rb') as f:
-        avatar.avatar.save(photo_filename, File(f))
-    avatar.save()
-
+    if user and not user.avatar_set.exists():
+        photo_url = details.get('photo')
+        if not photo_url:
+            photo_url = settings.AVATAR_DEFAULT_URL
+        url_parsed = urlparse(photo_url)
+        photo_filename = os.path.basename(url_parsed.path)
+        local_filename, headers = urllib.request.urlretrieve(photo_url)
+        avatar = Avatar(user=user, primary=True)
+        with open(local_filename, 'rb') as f:
+            avatar.avatar.save(photo_filename, File(f))
+        avatar.save()
+        
     # link title
     user.title = details.get('title', '')
     # link position

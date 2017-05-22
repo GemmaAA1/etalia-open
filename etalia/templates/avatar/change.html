@@ -10,18 +10,17 @@
     <div class="wrapper">
         <div class="inner">
             <div class="row">
-                <div class="col-md-8 col-md-offset-2">
+                <div class="col-md-12 col-md-offset-2">
                     <div class="col-md-3">
                         <div class="avatar">
                             {% avatar user 120 %}
                         </div>
                         <div class="change-avatar text-center">
-                            Your current photo
                         </div>
                     </div>
                     <div class="col-md-9">
                         <div class="avatar-upload-form">
-                            <h4>Edit your photo</h4>
+                            <h4>Change your photo</h4>
                             <form enctype="multipart/form-data" method="POST" action="{% url 'user:avatar_add' %}">
                                 {% csrf_token %}
                                 <div class="btn-file-section">
