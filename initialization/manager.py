@@ -430,7 +430,7 @@ if __name__ == '__main__':
     django.setup()
     from django.contrib.auth import get_user_model
     from etalia.library.models import Paper, Journal
-    from etalia.altmetric.models import AltmetricModel
+    from etalia.altmetric_app.models import AltmetricModel
     from etalia.feeds.tasks import reset_stream, reset_trend, update_threadfeed
     from etalia.nlp.tasks import paperengine_full_update_all, \
         threadengine_update_all

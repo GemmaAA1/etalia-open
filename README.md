@@ -18,15 +18,19 @@ To setup etalia locally you need [Docker](https://www.docker.com/).
 
 3. Run install.sh (this will build, run and initialize the Etalia stack):
 
-        $ ./install.sh
+        $ ./setup.sh
 
 4. Visit _127.0.0.1:8000_
 
 5. Read more in [docker doc](./docs/docker.md).
 
+NB: If you get S3Forbidden errors, likely your docker images clock went off sync. Run ./docker/sync_clock.sh to sync
+ them back. If you are still having a S3Forbidden error, it is something else...
+
+
 ### Frontend dev ###
 
-During development, use ```gulp``` to copy librairies from *nodes_modules/* and *bower_components/* to *static/js/lib/*.
+During development, use ```gulp``` to copy libraries from *nodes_modules/* and *bower_components/* to *static/js/lib/*.
 
 For production, use ```gulp prod``` to build compiled assets. 
 
