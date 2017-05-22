@@ -72,7 +72,7 @@ LOCAL_APPS = (
     'etalia.nlp',
     'etalia.consumers',
     'etalia.feeds',
-    'etalia.altmetric',
+    'etalia.altmetric_app',
     'etalia.last_seen',
     'etalia.popovers',
     'etalia.usersession',
@@ -385,7 +385,7 @@ ALTMETRIC_MAX_PAPERS_PER_PERIOD = 20 * 3600
 # ------------------------------------------------------------------------------
 AVATAR_AUTO_GENERATE_SIZES = (80,)
 AVATAR_CACHE_ENABLED = True
-AVATAR_DEFAULT_URL = 'img/avatar.jpg'
+AVATAR_DEFAULT_URL = 'https://s3-us-west-2.amazonaws.com/etalia-production-static/avatar.jpg'
 AVATAR_DEFAULT_SIZE = 80
 AVATAR_EXPOSE_USERNAMES = False
 AVATAR_GRAVATAR_DEFAULT = None
