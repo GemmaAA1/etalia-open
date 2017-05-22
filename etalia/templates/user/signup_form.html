@@ -15,7 +15,7 @@
                     {% if has_email %}
                         Is that you ?
                     {% else %}
-                        Please, fill up this short form
+                        We just need a few info:
                     {% endif %}
                 </h3>
 
@@ -45,12 +45,8 @@
                 </form>
 
                 <div class="form-footer">
-                    By signing-in, your are allowing Etalia to access the data
-                    that you store in your reference manager.
-                    This information will not be shared with any other entity
-                    without your consent. Your are also accepting
-                    the <a href="{% url 'core:terms_use' %}">Terms of Use</a>
-                    for using Etalia.
+                    By signing-in, you are accepting
+                    our <a href="{% url 'core:terms_use' %}">Terms of Use</a>.
                 </div>
             </div>
         </div>

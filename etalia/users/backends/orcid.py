@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class OrcidOAuth2(BaseOAuth2):
-    """Github OAuth authentication backend"""
+    """Orcid OAuth authentication backend"""
 
     _type = 'ORC'
     parser = ParserOrcid()

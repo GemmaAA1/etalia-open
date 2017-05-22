@@ -8,6 +8,7 @@ from django.core.files import File
 from django.shortcuts import redirect
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from social.pipeline.partial import partial
 from avatar.models import Avatar
 from etalia.usersession.models import UserSession
@@ -47,14 +48,16 @@ def create_details(strategy, details, *args, user=None, **kwargs):
                 user.affiliation = affiliation
     # link avatar
     photo_url = details.get('photo')
-    if photo_url:
-        url_parsed = urlparse(photo_url)
-        photo_filename = os.path.basename(url_parsed.path)
-        local_filename, headers = urllib.request.urlretrieve(photo_url)
-        f = open(local_filename, 'rb')
-        avatar = Avatar(user=user, primary=True)
+    if not photo_url:
+        photo_url = settings.AVATAR_DEFAULT_URL
+    url_parsed = urlparse(photo_url)
+    photo_filename = os.path.basename(url_parsed.path)
+    local_filename, headers = urllib.request.urlretrieve(photo_url)
+    avatar = Avatar(user=user, primary=True)
+    with open(local_filename, 'rb') as f:
         avatar.avatar.save(photo_filename, File(f))
-        avatar.save()
+    avatar.save()
+
     # link title
     user.title = details.get('title', '')
     # link position

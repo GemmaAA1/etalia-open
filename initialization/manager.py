@@ -445,7 +445,7 @@ if __name__ == '__main__':
     from etalia.users.constants import USER_INDIVIDUAL
     from etalia.popovers.models import PopOver
     from avatar.models import Avatar
-    from setup.utils.avatar import AvatarGenerator
+    from initialization.utils.avatar import AvatarGenerator
 
     # Input parser
     parser = argparse.ArgumentParser(

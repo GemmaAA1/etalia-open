@@ -30,7 +30,7 @@
 
         <!-- start top-bar-profile -->
         {% if user.is_authenticated %}
-        <button id="toggle-profile" class="btn-circle" type="button" title="etalia account: {{ user.first_name }} {{ user.last_name }}
+        <button id="toggle-profile" class="btn-circle" type="button" title="{{ user.first_name }} {{ user.last_name }}
 ({{ user.email }})">
             {% if user.avatar_set.all %}
                 {% avatar user 38 %}

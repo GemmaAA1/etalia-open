@@ -108,12 +108,10 @@
                                 <span class="eai eai-orcid" title="OrcID"></span>
                             {% endif %}
                         </div>
-                        <div>{{ library_counter }} publications in Etalia</div>
-                        <div>{{ likes_counter }} publications liked</div>
                         {% if 'orcid' in providers %}
                             {% if 'zotero' not in providers and 'mendeley' not in providers %}
-                            <div>
-                                <p>Connect with your reference manager to feed better</p>
+                            <div class="providers">
+                                <p>Want the full etalia experience? Link your reference manager:</p>
                                 <p>
                                     <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
                                         <span class="eai eai-mendeley"></span>
@@ -142,7 +140,10 @@
                     </div>
                     <div class="col-md-8">
                         {% for paper in authored_papers %}
-                            <div class="paper">
+                            <div class="col-md-1">
+                                {{ forloop.counter }}.
+                            </div>
+                            <div class="col-md-11 paper">
                                 <a href="{% url 'library:paper-redirect' paper.id %}">
                                     <span class="paper-authors">{{  paper.print_compact_authors }} </span>
                                     <span class="paper-title">{{  paper.title }}. </span>
@@ -172,3 +173,14 @@
     });
 </script>
 {% endblock javascript %}
+
+{% block stylesheets %}
+{% spaceless %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/profile.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/profile.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
+{% endspaceless %}
+{% endblock stylesheets %}
