@@ -62,7 +62,14 @@ def init_step(user_pk, step):
 
 
 def init_user(user_pk):
-    """Task init user / Chain user library update, and feed initialization
+    """Task: Initialization user 
+    
+    Chain:
+     - update user library
+     - update stream
+     - update trend
+     - update thread feed
+     - update popovers
     """
     task = chain(
         init_step.s(user_pk, 'LIB'),
@@ -75,6 +82,31 @@ def init_user(user_pk):
         update_threadfeed.s(),
         init_step.s('POP'),
         init_popovers.s(),
+        init_step.s('IDL'),
+    )
+
+    task()
+    return user_pk
+
+
+def update_user(user_pk):
+    """Task: update user
+         
+    Chain:
+     - update user library
+     - update stream
+     - update trend
+     - update thread feed
+    """
+    task = chain(
+        init_step.s(user_pk, 'LIB'),
+        update_lib.s(),
+        init_step.s('STR'),
+        update_stream.s(),
+        init_step.s('TRE'),
+        update_trend.s(),
+        init_step.s('THR'),
+        update_threadfeed.s(),
         init_step.s('IDL'),
     )
 

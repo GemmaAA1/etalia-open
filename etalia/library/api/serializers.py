@@ -207,7 +207,10 @@ class JournalFilterSerializer(serializers.ModelSerializer):
         )
 
     def get_label(self, obj):
-        return '{0}'.format(obj.title)
+        if obj.short_title and (len(obj.short_title) > 1 or len(obj.title) == 1):
+            return '{0}'.format(obj.short_title)
+        else:
+            return '{0}'.format(obj.title)
 
 
 class AuthorFilterSerializer(serializers.ModelSerializer):

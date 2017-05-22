@@ -24,6 +24,10 @@ class UserAuthenticationForm(AuthenticationForm):
 
 
 class UserBasicForm(forms.ModelForm):
+
+    terms_use_checkbox = forms.BooleanField(required=True,
+                                            error_messages={'required': 'You must accept the terms to sign-in'})
+
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name')
@@ -37,7 +41,9 @@ class UserBasicForm(forms.ModelForm):
                                        'placeholder': 'First Name'}),
             'last_name':
                 forms.TextInput(attrs={'class': 'form-control input-lg ',
-                                       'placeholder': 'Last Name'})
+                                       'placeholder': 'Last Name'}),
+            'terms_use_checkbox':
+                forms.TextInput(attrs={'class': 'check'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -142,6 +148,8 @@ class UserFingerprintSettingsForm(forms.ModelForm):
                     'data-slider-value'] = \
                     '{0:.2f}'.format(
                         kwargs['instance'].fingerprint_roll_back_deltatime)
+                if not kwargs['instance'].user.lib.d_oldest:
+                    kwargs['instance'].user.lib.set_d_oldest()
                 delta_month = int((timezone.now().date() - kwargs[
                     'instance'].user.lib.d_oldest).days / 30) + 1
                 self.fields['fingerprint_roll_back_deltatime'].widget.attrs[

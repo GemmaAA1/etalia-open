@@ -9,29 +9,7 @@
     <div class="wrapper">
         <div class="inner">
             <div class="row">
-
-                <div id="fingerprint-settings-section" class="col-md-8 col-md-offset-2">
-                    <div class="col-md-4 text-right">
-                        <div class="title">
-                            Fingerprint
-                            <br>
-                            <a class="edit" href="javascript:" data-toggle="modal" data-target="#fingerprint-settings-modal">Edit</a>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="row">
-                            <div class="col-md-9">
-                                <h5>Roll-back: <span id="fingerprint_roll_back_deltatime">{{ user.settings.fingerprint_roll_back_deltatime|floatformat:0 }}</span> months
-                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Past period of references inclusion"></span>
-                                </h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <hr class="divider">
-            <div class="row">
-                <div id="stream-settings-section" class="col-md-8 col-md-offset-2">
+                <div id="stream-settings-section" class="col-md-10 col-md-offset-2">
                     <div class="col-md-4 text-right">
                         <div class="title">
                             Papers Feed
@@ -64,7 +42,7 @@
             </div>
             <hr class="divider">
             <div class="row">
-                <div id="trend-settings-section" class="col-md-8 col-md-offset-2">
+                <div id="trend-settings-section" class="col-md-10 col-md-offset-2">
                     <div class="col-md-4 text-right">
                         <div class="title">
                             Trend Feed
@@ -95,7 +73,28 @@
             </div>
             <hr class="divider">
             <div class="row">
-                <div id="email-digest-settings-section" class="col-md-8 col-md-offset-2 affiliation">
+                <div id="fingerprint-settings-section" class="col-md-10 col-md-offset-2">
+                    <div class="col-md-4 text-right">
+                        <div class="title">
+                            Fingerprint
+                            <br>
+                            <a class="edit" href="javascript:" data-toggle="modal" data-target="#fingerprint-settings-modal">Edit</a>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5>Include papers added in the last <span id="fingerprint_roll_back_deltatime">{{ user.settings.fingerprint_roll_back_deltatime|floatformat:0 }}</span> months
+                                    <span class="glyphicon glyphicon-info-sign" style="float: right; padding: 0 10px 0 10px;" data-toggle="tooltip" data-placement="bottom" title="Past period of references inclusion"></span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="divider">
+            <div class="row">
+                <div id="email-digest-settings-section" class="col-md-10 col-md-offset-2 affiliation">
                     <div class="col-md-4 text-right">
                         <div class="title">
                             Email digest
@@ -140,10 +139,10 @@
             {% endif %}
             <hr class="divider">
             <div class="row">
-                <div class="col-md-8 col-md-offset-2">
+                <div class="col-md-10 col-md-offset-2">
                     <div class="col-md-4 text-right">
                         <div class="title">
-                            Etalia account
+                            Account
                         </div>
                     </div>
                     <div class="col-md-8">

@@ -26,9 +26,18 @@
 
                     <div class="form-inner">
                         {% for field in form %}
-                            <div class="form-group">
-                                {{ field }}
-                            </div>
+                            {% if field.html_name == 'terms_use_checkbox' %}
+                                <div class="check">
+                                    {{ field }}
+                                    I have read and agree to the <a target="_blank" href="{% url 'core:terms_use' %}">Terms</a> and
+                                    <a target="_blank" href="{% url 'core:terms_privacy' %}">Privacy Policy</a>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    {{ field }}
+                                </div>
+                            {% endif %}
+
                         {% endfor %}
                     </div>
 
@@ -43,11 +52,6 @@
                         </button>
                     </div>
                 </form>
-
-                <div class="form-footer">
-                    By signing-in, you are accepting
-                    our <a href="{% url 'core:terms_use' %}">Terms of Use</a>.
-                </div>
             </div>
         </div>
     {% endspaceless %}

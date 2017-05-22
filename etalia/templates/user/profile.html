@@ -96,7 +96,7 @@
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <div>Your library is in sync with</div>
+                        <div>Your library is sync with</div>
                         <div class="providers-logo">
                             {% if 'zotero' in providers  %}
                                 <span class="eai eai-zotero" title="Zotero"></span>
@@ -111,7 +111,7 @@
                         {% if 'orcid' in providers %}
                             {% if 'zotero' not in providers and 'mendeley' not in providers %}
                             <div class="providers">
-                                <p>Want the full etalia experience? Link your reference manager:</p>
+                                <p>Want the full etalia experience? Link your reference manager</p>
                                 <p>
                                     <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
                                         <span class="eai eai-mendeley"></span>
@@ -129,7 +129,6 @@
                 </div>
             </div>
 
-            {% if authored_papers %}
             <hr class="divider">
             <div class="row">
                 <div class="col-md-8 col-md-offset-2">
@@ -139,24 +138,34 @@
                         </div>
                     </div>
                     <div class="col-md-8">
-                        {% for paper in authored_papers %}
-                            <div class="col-md-1">
-                                {{ forloop.counter }}.
+                        {% if 'orcid' in providers %}
+                            {% for paper in authored_papers %}
+                                <div class="col-md-1">
+                                    {{ forloop.counter }}.
+                                </div>
+                                <div class="col-md-11 paper">
+                                    <a href="{% url 'library:paper-redirect' paper.id %}">
+                                        <span class="paper-authors">{{  paper.print_compact_authors }} </span>
+                                        <span class="paper-title">{{  paper.title }}. </span>
+                                        <span class="paper-journal">{{  paper.journal.short_title }}, </span>
+                                        <span class="paper-year">{{  paper.date.year }}, </span>
+                                        <span class="paper-volume">{{  paper.print_volume_issue_page }}</span>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="providers">
+                                <p>Link your account to
+                                    <a href="{% url 'social:begin' backend='orcid' %}">
+                                        ORCID
+                                        <span class="eai eai-orcid"></span>
+                                    </a>
+                                </p>
                             </div>
-                            <div class="col-md-11 paper">
-                                <a href="{% url 'library:paper-redirect' paper.id %}">
-                                    <span class="paper-authors">{{  paper.print_compact_authors }} </span>
-                                    <span class="paper-title">{{  paper.title }}. </span>
-                                    <span class="paper-journal">{{  paper.journal.short_title }}, </span>
-                                    <span class="paper-year">{{  paper.date.year }}, </span>
-                                    <span class="paper-volume">{{  paper.print_volume_issue_page }}</span>
-                                </a>
-                            </div>
-                        {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            {% endif %}
 {#        </div>#}
 {#    </div>#}
 </div>

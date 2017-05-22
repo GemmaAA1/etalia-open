@@ -21,11 +21,11 @@ PROVIDER_TYPE = (
 
 INIT_STEPS = (
     ('NON', 'uninitialized'),
-    ('LIB', 'Syncing library'),
-    ('STR', 'Syncing feed Papers'),
-    ('TRE', 'Syncing feed Trend'),
-    ('THR', 'Syncing feed Thread'),
-    ('POP', 'Syncing popovers'),
+    ('LIB', 'Syncing Papers'),
+    ('STR', 'Syncing Feed'),
+    ('TRE', 'Syncing Trend'),
+    ('THR', 'Syncing Thread'),
+    ('POP', 'Finalizing'),
     ('IDL', 'done'),
 )
 

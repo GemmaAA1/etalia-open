@@ -164,7 +164,7 @@ class MyPaperViewSet(PaperViewSet):
     ### Routes ###
 
     * **[GET, POST] /my-papers/**: List of papers
-    * **[GET] /my-papers/filters**: Filter list for request papers list
+    * **[GET] /my-papers/filters**: List of available filters for papers
     * **[GET, PUT, PATCH] /my-papers/<id\>/**: Paper instance
     * **[GET] /my-papers/<id\>/neighbors**: Paper neighbors
     * **[GET] /my-papers/<id\>/related-threads**: Related threads

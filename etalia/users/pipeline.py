@@ -16,7 +16,10 @@ from .models import Affiliation
 from .constants import USERLIB_UNINITIALIZED
 
 from .forms import UserAffiliationForm
-from .tasks import init_user as async_init_user, async_send_welcome_email
+from .tasks import init_user as async_init_user
+from .tasks import update_user as async_update_user
+from .tasks import async_send_welcome_email
+
 
 
 @partial
@@ -120,11 +123,12 @@ def send_welcome_email_at_signup(strategy, details, *args, **kwargs):
             pass
 
 
-def init_user(social, user, *args, **kwargs):
+def update_user(social, user, *args, **kwargs):
     if user.lib.state == USERLIB_UNINITIALIZED:  # user non-initialized yet
         async_init_user(user.pk)
+    else:
+        async_update_user(user.pk)
     return {}
-
 
 
 
