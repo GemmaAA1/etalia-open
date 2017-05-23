@@ -405,7 +405,7 @@ class PaperManager(object):
             paper = form.save()
 
         if entry['journal']:
-            journal = self.get_journal_from_entry(entry['journal'])
+            journal = self.get_journal_from_entry(entry['journal'], is_trusted=entry.get('is_trusted', False))
             paper.journal = journal
             paper.save(update_fields=['journal'])
 
@@ -474,7 +474,7 @@ class PaperManager(object):
             return paper, None
         return None, None
 
-    def get_journal_from_entry(self, ej):
+    def get_journal_from_entry(self, ej, is_trusted=False):
         """Retrieve Journal. Either with ID or exact title"""
         if self.journal_has_id(ej):
             try:
@@ -487,7 +487,13 @@ class PaperManager(object):
                     Q(id_arx=ej['id_arx']) |
                     Q(id_oth=ej['id_oth']))
             except Journal.DoesNotExist:
-                journal = None
+                # if trusted, create new journal
+                if is_trusted and ((ej['id_issn'] or ej['id_issn']) and ej['title']):
+                    form = JournalForm(ej)
+                    if form.is_valid():
+                        journal = form.save()
+                else:
+                    journal = None
             except Journal.MultipleObjectsReturned:
                 # clean up journals
                 journals = Journal.objects.filter(
