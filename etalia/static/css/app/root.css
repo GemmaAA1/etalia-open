@@ -173,7 +173,8 @@ span.count {
     height: 20px;
     font-size: 20px;
     line-height: 20px;
-    color: #cbced1;
+    /*color: #cbced1;*/
+    color: #adb0b3;
     margin-bottom: 20px;
 }
 
