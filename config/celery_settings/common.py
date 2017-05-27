@@ -106,7 +106,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=20),  # daily at UTC+20
         'options': {'queue': 'beat'}
     },
-    'popluate-pubpeer': {
+    'populate-pubpeer': {
         'task': 'etalia.consumers.tasks.populate_pubpeer',
         'schedule': crontab(minute=0, hour=21),  # daily at UTC+21
         'options': {'queue': 'beat'}

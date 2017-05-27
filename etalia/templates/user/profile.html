@@ -99,14 +99,20 @@
                         <div>Your library is sync with</div>
                         <div class="providers-logo">
                             {% if 'zotero' in providers  %}
-                                <span class="eai eai-zotero" title="Zotero"></span>
+                                <a href="https://www.zotero.org/">
+                                    <span class="eai eai-zotero" title="Zotero"></span>
+                                </a>
                             {% endif %}
                             {% if 'mendeley' in providers %}
-                                <span class="eai eai-mendeley" title="Mendeley"></span>
+                                <a href="https://www.mendeley.com/newsfeed/">
+                                    <span class="eai eai-mendeley" title="Mendeley"></span>
+                                </a>
                             {% endif %}
                             {% if 'orcid' in providers %}
-                                <span class="eai eai-orcid" title="OrcID"></span>
-                            {% endif %}
+                                <a href="http://orcid.org/my-orcid">
+                                    <span class="eai eai-orcid" title="OrcID"></span>
+                                </a>
+                                {% endif %}
                         </div>
                         {% if 'orcid' in providers %}
                             {% if 'zotero' not in providers and 'mendeley' not in providers %}
@@ -155,7 +161,7 @@
                             {% endfor %}
                         {% else %}
                             <div class="providers">
-                                <p>Link your account to
+                                <p>Connect with
                                     <a href="{% url 'social:begin' backend='orcid' %}">
                                         ORCID
                                         <span class="eai eai-orcid"></span>
