@@ -6,8 +6,10 @@
 }
 
 .divider-container {
-    padding: 25px 0;
-    text-align: center;
+    height: 5px;
+    /*background-color: #faefe1;*/
+    /*background-color: rgba(255, 107, 7, 0.51);*/
+    background-color: #00b290;
 }
 
 h1, .h1,
@@ -165,7 +167,7 @@ a.btn-provider:hover {
 
 #what {
     padding: 30px 0;
-    background-color: #83ebdf;
+    /*background-color: #83ebdf;*/
 }
 
 #what .h2 {
@@ -174,15 +176,6 @@ a.btn-provider:hover {
 
 
 /* How */
-
-#how {
-    background-color: #faefe1;
-    background-color: rgba(255, 107, 7, 0.51);
-}
-
-#how .h2 {
-    text-align: center;
-}
 
 .how h2 {
     padding-top: 20px;
@@ -197,6 +190,16 @@ a.btn-provider:hover {
     background-color: #e1faf7;
 }
 
+/* Supported-by */
+
+#supported-by {
+    /*background-color: #83ebdf;*/
+    background-color: #e1faf7;
+}
+
+#supported-by img {
+    height: 100px;
+}
 
 /* Focus */
 
@@ -300,6 +303,7 @@ a.btn-provider:hover {
     }
 
     #what {
+        /*background: #ffffff url('/static/img/paper_mosaic.png') no-repeat left center scroll;*/
         background: #83ebdf url('/static/img/paper_mosaic.png') no-repeat left center scroll;
         background-size: 45% auto;
     }

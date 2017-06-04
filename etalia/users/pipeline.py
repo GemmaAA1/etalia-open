@@ -106,7 +106,7 @@ def send_email_of_new_signup(strategy, details, *args, **kwargs):
         try:
             send_mail('New Signup ({0})'.format(user.email),
                        '{0} just signed-up'.format(user.email),
-                       'etalia@etalia.io',
+                       'etalia@etalia.org',
                         emails,
                        fail_silently=False)
         # TODO specify exceptions

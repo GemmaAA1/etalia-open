@@ -13,7 +13,7 @@ env = environ.Env()
 
 # EMAIl
 CELERY_SEND_TASK_ERROR_EMAILS = True
-SERVER_EMAIL = 'no-reply@etalia.io'
+SERVER_EMAIL = 'no-reply@etalia.org'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
           ]

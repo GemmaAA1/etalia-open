@@ -64,25 +64,27 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6 col-md-push-6">
-{#                <p class="h2">In short</p>#}
                 <p>
-                    A platform for scholars that simplifies literature searches
+                    A platform for scholars that enables literature searches
                     and enables scholarly dialogues based on the content of your reference manager
+                    and the papers you write.
                 </p>
             </div>
         </div>
     </div>
 </div>
 
-<div id="how" class="wrap-container">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <p class="h2">How does it work?</p>
-            </div>
-        </div>
-    </div>
-</div>
+
+<div class="divider-container"></div>
+<!--<div id="how" class="wrap-container">-->
+    <!--<div class="container">-->
+        <!--<div class="row">-->
+            <!--<div class="col-md-12">-->
+                <!--&lt;!&ndash;<p class="h2">How does it work?</p>&ndash;&gt;-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+<!--</div>-->
 
 <div class="wrap-container how">
     <div class="container">
@@ -95,7 +97,7 @@
                 </p>
                 <p class="alt">
                     <a href="https://www.zotero.org/">Zotero</a> or
-                    <a href="https://www.mendeley.com/">Mendeley</a> are currently supported. <br>They are free and support <a href="https://en.wikipedia.org/wiki/OAuth">Oauth</a>.
+                    <a href="https://www.mendeley.com/">Mendeley</a> are currently supported. <br>Both are free and support <a href="https://en.wikipedia.org/wiki/OAuth">3<sup>rd</sup>-party authentication</a>.
                 </p>
             </div>
             <div class="col-md-6">
@@ -130,7 +132,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <h2>...leverages multiple tools...</h2>
+                <h2>...leverages text-mining tools...</h2>
                 <p>
                     etalia text-mining technology is based on
                     natural language processing and machine learning.
@@ -153,7 +155,7 @@
                     who share your interests.
                 </p>
                 <p class="alt">
-                    Stuck in your research or in need of insights? Post your issue and etalia finds researchers with the right expertise.
+                    Stuck in your research or in need of insights? Post your question and etalia will find researchers with the right expertise.
                 </p>
             </div>
             <div class="col-md-6 col-md-pull-6">
@@ -184,7 +186,26 @@
     </div>
 </div>
 
-<div id="how" class="divider-container"></div>
+<div class="divider-container"></div>
+
+<div id="supported-by" class="wrap-container how">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>
+                    Supported by
+                </h2>
+            </div>
+            <div class="col-md-6">
+                <a href="https://www.digital-science.com/">
+                <img class="img-responsive supported-img" src="{% static 'img/catalyst_grant.png' %}" alt="Catalyst Grant">
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="divider-container"></div>
 
 <div id="focus" class="wrap-container">
     <div class="container">
@@ -212,7 +233,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <p class="h3">Supporting</p>
+                <p class="h3">Sign-up</p>
             </div>
             <p>
                 <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
@@ -228,6 +249,7 @@
     </div>
 </div>
 
+
 <div id="footer" class="wrap-container">
     <div class="container">
         <ul>
@@ -238,7 +260,7 @@
                 <a href="{% url 'library:papers' %}">Trending Now</a>
             </li>
             <li>
-                <a href="http://blog.etalia.io">Blog</a>
+                <a href="http://blog.etalia.org">Blog</a>
             </li>
             <li>
                 <a href="{% url 'core:contact' %}">Contact</a>
@@ -260,9 +282,9 @@
             <a href="https://twitter.com/etaliaio" target="_blank" class="twitter">
                 <span class="eai eai-twitter"></span>
             </a>
-            <a href="https://www.facebook.com/etalia.io" target="_blank" class="facebook">
-                <span class="eai eai-facebook"></span>
-            </a>
+            <!--<a href="https://www.facebook.com/etalia.org" target="_blank" class="facebook">-->
+                <!--<span class="eai eai-facebook"></span>-->
+            <!--</a>-->
             <a href="https://plus.google.com/+EtaliaIo" target="_blank" class="google-plus">
                 <span class="eai eai-google-plus"></span>
             </a>

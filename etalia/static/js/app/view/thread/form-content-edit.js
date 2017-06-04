@@ -18,7 +18,7 @@ define(['app', 'app/model/thread/thread'], function (App) {
                 <div data-fieldsets></div>\
                 <div class="form-footer buttons">\
                     <button type="submit" class="btn btn-primary form-submit">\
-                        Update\
+                        Save\
                     </button>\
                     <button type="button" class="btn btn-default form-cancel">\
                         Cancel\

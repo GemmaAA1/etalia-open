@@ -215,8 +215,11 @@ class UserProfilePkView(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         user = User.objects.get(pk=kwargs['pk'])
-        kwargs['slug'] = slugify(' '.join([user.first_name, user.last_name]))
-        return super(UserProfilePkView, self).get_redirect_url(*args, **kwargs)
+        if not user.pk == self.request.user.pk:
+            kwargs['slug'] = slugify(' '.join([user.first_name, user.last_name]))
+            return super(UserProfilePkView, self).get_redirect_url(*args, **kwargs)
+        else:
+            return redirect('user:profile').url
 
 user_profile_pk = UserProfilePkView.as_view()
 

@@ -66,9 +66,12 @@
         <div class="infos">
             <p>
                 <strong>{{user_full_name user}}</strong>
-                - <em>{{formatDate published_at}}</em>
+                {{#if published_at}}
+                -
+                <em>{{formatDate published_at}}</em>
+                {{/if}}
                 {{#if is_owner}}
-                - <a href="javascript: void(0)" class="thread-edit">edit</a>
+                - <a href="javascript: void(0)" class="thread-edit">edit title</a>
                 {{/if}}
                 {{#ifCond is_owner 'andNot' published_at}}
                 - <a href="javascript: void(0)" class="thread-delete">delete</a>
@@ -106,7 +109,7 @@
                 {{#if is_owner}}
                 <p style="padding:50px 0;text-align:center">
                     <button type="button" class="btn btn-primary btn-lg thread-content-edit">
-                        Start writing !
+                        Start writing!
                     </button>
                 </p>
                 {{/if}}
@@ -127,10 +130,10 @@
         {{#ifCond content 'andNot' published_at}}
         <div class="alert alert-info thread-info">
             <button type="button" class="btn btn-primary thread-publish" style="float:right; margin: 0 0 0 15px;">
-                Publish
+                Post
             </button>
             <p style="line-height: 34px">
-                When you will be ready, don't forget to publish your thread !
+                Done? Post your thread and targeted scholars will have look!
             </p>
         </div>
         {{/ifCond}}

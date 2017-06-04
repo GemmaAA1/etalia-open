@@ -52,7 +52,7 @@ FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT = -1
 
 # Mail settings
 # ------------------------------------------------------------------------------
-DEFAULT_FROM_EMAIL = 'contact@etalia.io'
+DEFAULT_FROM_EMAIL = 'contact@etalia.org'
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
@@ -61,7 +61,7 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
 # For debug purposes only
 ANYMAIL = {
     "CUSTOMMAILGUN_API_KEY": env.str('MAILGUN_KEY', default=''),
-    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.org'
 }
 
 # Static asset configuration

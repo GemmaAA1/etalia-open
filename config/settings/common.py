@@ -251,7 +251,7 @@ SOCIAL_AUTH_EMAIL_VALIDATION_URL = 'user:validation-sent'
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 
-EMAIL_FROM = 'noreply@etalia.io'
+EMAIL_FROM = 'noreply@etalia.org'
 
 SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.social_details',

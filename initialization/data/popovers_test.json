@@ -28,7 +28,7 @@
 {
     "fields": {
         "priority": 9,
-        "body": "<p>Etalia is in early Beta stage. </p>\r\n<p>Your feedback is key for us to build a platform that best serves you</p>\r\n<p>Feel free to email us at <a href=\"mailto:contact@etalia.io\">contact@etalia.io</a> or chat with us now</p>",
+        "body": "<p>Etalia is in early Beta stage. </p>\r\n<p>Your feedback is key for us to build a platform that best serves you</p>\r\n<p>Feel free to email us at <a href=\"mailto:contact@etalia.org\">contact@etalia.org</a> or chat with us now</p>",
         "type": 2,
         "anchor": "",
         "created": "2016-07-12T09:55:45.355Z",

@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--behalf",
                         help="register user email",
                         type=str,
-                        default="etalia@etalia.io")
+                        default="etalia@etalia.org")
 
     args = parser.parse_args()
 

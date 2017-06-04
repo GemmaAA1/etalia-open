@@ -57,23 +57,24 @@
 
             {% if user.is_anonymous %}
                 <div id="flap-blurb">
-                    <p>
-                        Etalia is an intelligent platform for scholars that
-                        empowers personalized literature and enables valuable
-                        scholarly dialogues based on the content in your
-                        reference manager
-                    </p>
-                    <p>
-                        Sign-up with:
-                        <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider small">
-                            <span class="eai eai-mendeley"></span>
-                            Mendeley
-                        </a>
+                    Sign-up with:
+                    <div class="providers">
                         <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
                             <span class="eai eai-zotero"></span>
                             Zotero
                         </a>
-                    </p>
+                        <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                            <span class="eai eai-mendeley"></span>
+                            Mendeley
+                        </a>
+                    </div>
+                    <div>
+                        Don't have a Zotero or Mendeley account? Join with
+                        <a href="{% url 'social:begin' backend='orcid' %}">
+                            ORCID
+                            <span class="eai eai-orcid" title="OrcID"></span>
+                        </a>
+                    </div>
                 </div>
             {% endif %}
 
@@ -82,9 +83,9 @@
                     <a href="https://plus.google.com/+EtaliaIo" target="_blank" class="google-plus">
                         <span class="eai eai-google-plus"></span>
                     </a>
-                    <a href="https://www.facebook.com/etalia.io" target="_blank" class="facebook">
-                        <span class="eai eai-facebook"></span>
-                    </a>
+                    <!--<a href="https://www.facebook.com/etalia.org" target="_blank" class="facebook">-->
+                        <!--<span class="eai eai-facebook"></span>-->
+                    <!--</a>-->
                     <a href="https://twitter.com/etaliaio" target="_blank" class="twitter">
                         <span class="eai eai-twitter"></span>
                     </a>
@@ -112,7 +113,7 @@
                         <a href="{% url 'core:support' %}">Support</a>
                     </li>
                     <li>
-                        <a href="http://blog.etalia.io" target="_blank">Blog</a>
+                        <a href="http://blog.etalia.org" target="_blank">Blog</a>
                     </li>
 {#                    <li>#}
 {#                        <a href="{% url 'core:terms_privacy' %}">Privacy</a>#}

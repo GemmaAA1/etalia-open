@@ -12,6 +12,8 @@ from django.db import transaction
 from django.utils import timezone
 from etalia.core.managers import PaperManager
 from etalia.library.models import PaperUser
+from .exceptions import OrcidInstanceError
+from requests.exceptions import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +96,10 @@ class OrcidOAuth2(BaseOAuth2):
 
     def update_lib(self, user, full=False):
 
-        papers = self.get_public_papers(user)
+        try:
+            papers = self.get_public_papers(user)
+        except HTTPError as exc:
+            raise OrcidInstanceError(user, exc.response)
         count = 0
         not_new_stack_count = 0
 
