@@ -11,4 +11,4 @@ OPTIONS="-i --rm \
 
 
 
-docker run $OPTIONS python setup/manager.py --load
+docker run $OPTIONS python control/manager.py --load

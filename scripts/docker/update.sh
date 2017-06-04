@@ -11,4 +11,4 @@ OPTIONS="-i --rm \
     --env-file $DOCKER_DIR/.envs \
     etalia/dev"
 
-docker run $OPTIONS python setup/manager.py --update
+docker run $OPTIONS python control/manager.py --update

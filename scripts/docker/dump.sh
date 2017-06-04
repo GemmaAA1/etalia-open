@@ -9,4 +9,4 @@ OPTIONS="-i --rm \
     --env-file $DOCKER_DIR/.envs \
     etalia/dev"
 
-docker run $OPTIONS python setup/manager.py --dump
+docker run $OPTIONS python control/manager.py --dump
