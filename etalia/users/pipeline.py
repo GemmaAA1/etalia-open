@@ -8,6 +8,7 @@ from django.core.files import File
 from django.shortcuts import redirect
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from social.pipeline.partial import partial
 from avatar.models import Avatar
 from etalia.usersession.models import UserSession
@@ -15,13 +16,15 @@ from .models import Affiliation
 from .constants import USERLIB_UNINITIALIZED
 
 from .forms import UserAffiliationForm
-from .tasks import init_user as async_init_user, async_send_welcome_email
+from .tasks import init_user as async_init_user
+from .tasks import update_user as async_update_user
+from .tasks import async_send_welcome_email
+
 
 
 @partial
 def require_primary(strategy, details, *args, user=None, **kwargs):
-    """ Redirect to primary info form for user to check them
-    """
+    """ Redirect to primary info form for user to check them"""
     if user and user.email and user.first_name and user.last_name:
         return
     else:
@@ -34,7 +37,6 @@ def require_primary(strategy, details, *args, user=None, **kwargs):
         return redirect('user:require-basic-info')
 
 
-@partial
 def create_details(strategy, details, *args, user=None, **kwargs):
     # link affiliation
     affiliation_kwargs = details.get('tmp_affiliation')
@@ -48,16 +50,18 @@ def create_details(strategy, details, *args, user=None, **kwargs):
                 affiliation = form.save()
                 user.affiliation = affiliation
     # link avatar
-    photo_url = details.get('photo')
-    if photo_url:
+    if user and not user.avatar_set.exists():
+        photo_url = details.get('photo')
+        if not photo_url:
+            photo_url = settings.AVATAR_DEFAULT_URL
         url_parsed = urlparse(photo_url)
         photo_filename = os.path.basename(url_parsed.path)
-        # if photo not in [settings.AVATAR_DEFAULT_MENDELEY, settings.AVATAR_DEFAULT_ZOTERO]:
         local_filename, headers = urllib.request.urlretrieve(photo_url)
-        f = open(local_filename, 'rb')
         avatar = Avatar(user=user, primary=True)
-        avatar.avatar.save(photo_filename, File(f))
+        with open(local_filename, 'rb') as f:
+            avatar.avatar.save(photo_filename, File(f))
         avatar.save()
+        
     # link title
     user.title = details.get('title', '')
     # link position
@@ -70,6 +74,7 @@ def create_details(strategy, details, *args, user=None, **kwargs):
 
 @partial
 def require_affiliation(strategy, details, *args, user=None, **kwargs):
+    """Redirect to affiliation info form for user to check them"""
     if getattr(user, 'affiliation'):
         return
     else:
@@ -86,7 +91,6 @@ def require_affiliation(strategy, details, *args, user=None, **kwargs):
         return redirect('user:require-affiliation')
 
 
-@partial
 def update_usersession(strategy, details, *args, **kwargs):
     user = kwargs.get('user')
     UserSession.objects.get_or_create(
@@ -95,7 +99,6 @@ def update_usersession(strategy, details, *args, **kwargs):
     return {}
 
 
-@partial
 def send_email_of_new_signup(strategy, details, *args, **kwargs):
     emails = [u[1] for u in settings.ADMINS]
     user = kwargs.get('user')
@@ -103,7 +106,7 @@ def send_email_of_new_signup(strategy, details, *args, **kwargs):
         try:
             send_mail('New Signup ({0})'.format(user.email),
                        '{0} just signed-up'.format(user.email),
-                       'etalia@etalia.io',
+                       'etalia@etalia.org',
                         emails,
                        fail_silently=False)
         # TODO specify exceptions
@@ -111,7 +114,6 @@ def send_email_of_new_signup(strategy, details, *args, **kwargs):
             pass
 
 
-@partial
 def send_welcome_email_at_signup(strategy, details, *args, **kwargs):
     user = kwargs.get('user')
     if not user.last_login:
@@ -122,12 +124,12 @@ def send_welcome_email_at_signup(strategy, details, *args, **kwargs):
             pass
 
 
-@partial
-def init_user(social, user, *args, **kwargs):
+def update_user(social, user, *args, **kwargs):
     if user.lib.state == USERLIB_UNINITIALIZED:  # user non-initialized yet
         async_init_user(user.pk)
+    else:
+        async_update_user(user.pk)
     return {}
-
 
 
 

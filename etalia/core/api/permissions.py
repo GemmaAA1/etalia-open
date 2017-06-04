@@ -36,12 +36,6 @@ class IsPutRequest(permissions.BasePermission):
         return request.method == "PUT"
 
 
-class IsPutRequest(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        return request.method == "PUT"
-
-
 class IsDeleteRequest(permissions.BasePermission):
 
     def has_permission(self, request, view):

@@ -10,6 +10,6 @@ Etalia Digest, Your Periodic Recommendations.
 ----------------------------
 {% endfor %}
 
-Find more at https://etalia.io
+Find more at https://etalia.org
 To stop receiving periodic digest email, click <{{ root_url }}{% url 'user:settings' %}>
 Etalia

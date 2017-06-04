@@ -187,6 +187,12 @@ class ProfileView(LoginRequiredMixin, ProfileModalFormsMixin, NavFlapMixin,
         context['likes_counter'] = PaperUser.objects\
             .filter(user=self.request.user, watch=PAPER_PINNED)\
             .count()
+        providers = [sa.provider for sa in self.request.user.social_auth.all()]
+        context['providers'] = ' '.join(providers)
+        context['authored_papers'] = \
+            self.request.user.lib.papers.filter(userlib_paper__authored=True)\
+                .order_by('-date_co')
+
         return context
 
 profile = ProfileView.as_view()
@@ -209,8 +215,11 @@ class UserProfilePkView(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         user = User.objects.get(pk=kwargs['pk'])
-        kwargs['slug'] = slugify(' '.join([user.first_name, user.last_name]))
-        return super(UserProfilePkView, self).get_redirect_url(*args, **kwargs)
+        if not user.pk == self.request.user.pk:
+            kwargs['slug'] = slugify(' '.join([user.first_name, user.last_name]))
+            return super(UserProfilePkView, self).get_redirect_url(*args, **kwargs)
+        else:
+            return redirect('user:profile').url
 
 user_profile_pk = UserProfilePkView.as_view()
 

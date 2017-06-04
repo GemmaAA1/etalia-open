@@ -10,6 +10,19 @@ CONFIG_FILE = __file__
 DEBUG = env.bool('DJANGO_DEBUG', default=True)
 TEMPLATE_DEBUG = DEBUG
 
+# DATABASE
+# ------------------------------------------------------------------------------
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('POSTGRES_DB', ''),
+        'USER': os.environ.get('POSTGRES_USER', ''),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+        'HOST': 'db',
+        'PORT': 5432,
+    },
+}
+
 # DEBUG TOOLBAR
 # ------------------------------------------------------------------------------
 DEBUG_TOOLBAR = False
@@ -28,13 +41,18 @@ if DEBUG_TOOLBAR:
 # CONSUMER
 # ------------------------------------------------------------------------------
 # In days, how many day in the past to look at when initializing database
-CONSUMER_INIT_PAST = 30
-# for pubstream
+CONSUMER_INIT_PAST = 7
 CONSUMER_PUBPEER_INIT_PAST = 2
+
+# FEEDS
+# ------------------------------------------------------------------------------
+FEED_STREAM_SCORE_THRESHOLD_DEFAULT = -1
+FEED_TREND_SCORE_THRESHOLD_DEFAULT = -1
+FEED_THREADFEED_SCORE_THRESHOLD_DEFAULT = -1
 
 # Mail settings
 # ------------------------------------------------------------------------------
-DEFAULT_FROM_EMAIL = 'contact@etalia.io'
+DEFAULT_FROM_EMAIL = 'contact@etalia.org'
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
@@ -43,7 +61,7 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
 # For debug purposes only
 ANYMAIL = {
     "CUSTOMMAILGUN_API_KEY": env.str('MAILGUN_KEY', default=''),
-    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.org'
 }
 
 # Static asset configuration
@@ -80,6 +98,51 @@ CACHES = {
         'TIMEOUT': 60 * 60,         # 1 h
     }
 }
+
+
+# LOGGERS
+LOGGING['loggers'] = \
+    {
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'etalia': {
+            'handlers': ['console', 'file'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'etalia.populate': {
+            'handlers': ['console', 'populate'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.consumers': {
+            'handlers': ['console', 'consumers'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.nlp': {
+            'handlers': ['console', 'nlp'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.feeds': {
+            'handlers': ['console', 'feeds'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'etalia.users': {
+            'handlers': ['console', 'users'],
+            'level': env.str('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    }
 
 
 # Local redis cache for debug (redis-server must be on)

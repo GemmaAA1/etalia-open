@@ -170,7 +170,7 @@ define([
     };
 
     Layout.prototype.setBusy = function(content) {
-        content = content || 'Please wait&hellip;';
+        content = content || '';
 
         $('#busy-content').html(content);
 

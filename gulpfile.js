@@ -262,6 +262,12 @@ gulp.task('styles', function() {
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(gulp.dest(config.dest + '/css'));
 
+    var profile = gulp
+        .src(config.src + '/css/app/profile.css')
+        .pipe(minify({compatibility: 'ie8'}))
+        .pipe(gulp.dest(config.dest + '/css'));
+
+
     var elements = gulp
         .src([
             config.src + '/css/app/list.css',
@@ -282,7 +288,7 @@ gulp.task('styles', function() {
         .src(config.src + '/css/lib/tinymce/**')
         .pipe(gulp.dest(config.dest + '/css/lib/tinymce'));
 
-    return merge(main, content, page, landing, elements, user, tinymce);
+    return merge(main, content, page, landing, profile, elements, user, tinymce);
 });
 
 

@@ -6,7 +6,8 @@ CONFIG_FILE = __file__
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['www.etalia.io', 'etalia.io', 'alpha.etalia.io']
+ALLOWED_HOSTS = ['www.etalia.io', 'etalia.io', 'alpha.etalia.io',
+                 'www.etalia.org', 'etalia.org']
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
@@ -52,13 +53,13 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStora
 # EMAIL backend
 ANYMAIL = {
     # "MAILGUN_API_KEY": env.str('MAILGUN_KEY'),
-    # "MAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    # "MAILGUN_SENDER_DOMAIN": 'mg.etalia.org'
     "CUSTOMMAILGUN_API_KEY": env.str('MAILGUN_KEY'),
-    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    "CUSTOMMAILGUN_SENDER_DOMAIN": 'mg.etalia.org'
 }
 # EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
 EMAIL_BACKEND = 'etalia.core.emails.CustomMailgunBackend'
-DEFAULT_FROM_EMAIL = 'contact@etalia.io'
+DEFAULT_FROM_EMAIL = 'contact@etalia.org'
 
 
 # CACHE

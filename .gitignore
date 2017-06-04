@@ -61,8 +61,11 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
+#Docker
+ssh_keys
+docker/ssh/ssh_keys
 
+# Django stuff:
 # Sphinx documentation
 docs/_build/
 
@@ -70,8 +73,6 @@ docs/_build/
 target/
 
 # etalia
-nlp_data/
-nlp_data_test/
 etalia/trash
 fabfile/
 staticfiles/
@@ -79,13 +80,12 @@ deploy/.*
 deploy/notes.txt
 scripts/tmp
 config/settings/*.bk
-config/settings/common.py
 etalia/static/compiled
 /scripts/routines/beta_emails_*.txt
-/scripts/emails/log.txt
 /dump
 # redis
 *.rdb
 
 
 
+/docker/ssh/old/

@@ -3,7 +3,10 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
+from celery.canvas import chain
+
 from django.db import models
+
 
 from django.contrib.auth.models import BaseUserManager
 from django.db import transaction
@@ -13,8 +16,6 @@ from django.utils import timezone
 from etalia.core.models import TimeStampedModel
 from etalia.last_seen.models import LastSeen
 from .constants import FEED_STATUS_CHOICES
-from etalia.nlp.models import PaperEngine
-from etalia.nlp.models import ThreadEngine
 from etalia.threads.models import Thread
 from etalia.library.models import Paper
 
@@ -81,72 +82,14 @@ class Stream(TimeStampedModel):
             .exclude(paper_id__in=paper_ids)\
             .delete()
 
-    def update_async(self):
-        from .tasks import update_stream
-        update_stream.delay(self.user.id, name=self.name)
-
-    def reset_async(self):
-        from .tasks import reset_stream
-        reset_stream.delay(self.user.id, name=self.name)
-
     def update(self):
-        from etalia.nlp.tasks import pe_dispatcher
-
         """Update Stream"""
+        from etalia.nlp.tasks import pe_dispatcher
+        from .tasks import populate_stream
 
-        logger.info('Updating stream {id}'.format(id=self.id))
-        self.set_state('ING')
-
-        # update score threshold
-        self.score_threshold = self.user.settings.stream_score_threshold
-
-        # Score
-        task = pe_dispatcher.delay('score_stream', self.user.id)
-        res = task.get()
-        if res:     # res can be empty is user library is empty
-            # reformat
-            res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                            for r in res if r['score'] > self.score_threshold])
-            pids = list(res_dic.keys())
-
-            # clean stream
-            self.clean_not_in(pids)
-
-            # Update existing StreamPapers
-            with transaction.atomic():
-                sp_update = StreamPapers.objects.select_for_update()\
-                    .filter(stream=self, paper_id__in=pids)
-                update_pids = []
-                for sp in sp_update:
-                    sp.score = res_dic[sp.paper_id]['score']
-                    sp.save()
-                    update_pids.append(sp.paper_id)
-
-            # Create new StreamPapers
-            create_objs = []
-            create_pids = set(pids).difference(set(update_pids))
-            for id_ in create_pids:
-                create_objs.append(StreamPapers(
-                    stream=self,
-                    paper_id=id_,
-                    score=res_dic[id_]['score'],
-                    date=res_dic[id_]['date'],
-                    new=True))
-            StreamPapers.objects.bulk_create(create_objs)
-
-            # Get last user visit. use for the tagging matched with 'new'
-            try:
-                last_seen = LastSeen.objects.when(user=self.user)
-                StreamPapers.objects.filter(created__lt=last_seen).update(new=False)
-            except LastSeen.DoesNotExist:
-                pass
-
-        self.updated_at = timezone.now()
-        self.save(update_fields=('updated_at', ))
-
-        self.set_state('IDL')
-
-        logger.info('Updating stream {id} done'.format(id=self.id))
+        # Chain tasks
+        chain(pe_dispatcher.s('score_stream', self.id),
+              populate_stream.s(self.id))()
 
 
 class StreamPapers(TimeStampedModel):
@@ -210,69 +153,14 @@ class Trend(TimeStampedModel):
             .exclude(paper_id__in=paper_ids)\
             .delete()
 
-    def update_async(self):
-        from .tasks import update_trend
-        update_trend.delay(self.user.id, name=self.name)
-
-    def reset_async(self):
-        from .tasks import reset_trend
-        reset_trend.delay(self.user.id, name=self.name)
-
     def update(self):
+        """Update Trend"""
         from etalia.nlp.tasks import pe_dispatcher
+        from .tasks import populate_trend
 
-        logger.info('Updating trend {id}'.format(id=self.id))
-        self.set_state('ING')
-
-        # update score threshold
-        self.score_threshold = self.user.settings.stream_score_threshold
-
-        # Score
-        task = pe_dispatcher.delay('score_trend', self.user.id)
-        res = task.get()
-        if res:     # res can be empty is user library is empty
-            # reformat
-            res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                            for r in res if r['score'] > self.score_threshold])
-            pids = list(res_dic.keys())
-
-            # clean trend
-            self.clean_not_in(pids)
-
-            # Update existing TrendPapers
-            with transaction.atomic():
-                tp_update = TrendPapers.objects.select_for_update()\
-                    .filter(trend=self, paper_id__in=pids)
-                update_pids = []
-                for tp in tp_update:
-                    tp.score = res_dic[tp.paper_id]['score']
-                    tp.save()
-                    update_pids.append(tp.paper_id)
-
-            # Create new TrendPapers
-            create_objs = []
-            create_pids = set(pids).difference(set(update_pids))
-            for id_ in create_pids:
-                create_objs.append(TrendPapers(
-                    trend=self,
-                    paper_id=id_,
-                    score=res_dic[id_]['score'],
-                    date=res_dic[id_]['date'],
-                    new=True))
-            TrendPapers.objects.bulk_create(create_objs)
-
-            # Get last user visit. use for the tagging matched with 'new'
-            try:
-                last_seen = LastSeen.objects.when(user=self.user)
-                TrendPapers.objects.filter(created__lt=last_seen).update(new=False)
-            except LastSeen.DoesNotExist:
-                pass
-
-        self.updated_at = timezone.now()
-        self.save(update_fields=('updated_at', ))
-
-        self.set_state('IDL')
-        logger.info('Updating trend {id} done'.format(id=self.id))
+        # Chain tasks
+        chain(pe_dispatcher.s('score_trend', self.id),
+              populate_trend.s(self.id))()
 
 
 class TrendPapers(TimeStampedModel):
@@ -328,68 +216,13 @@ class ThreadFeed(TimeStampedModel):
             .exclude(thread_id__in=thread_ids)\
             .delete()
 
-    def update_async(self):
-        from .tasks import update_threadfeed
-        update_threadfeed.delay(self.user.id, name=self.name)
-
-    def reset_async(self):
-        from .tasks import reset_threadfeed
-        reset_threadfeed.delay(self.user.id, name=self.name)
-
     def update(self):
         from etalia.nlp.tasks import te_dispatcher
-        logger.info('Updating thread feed {id}'.format(id=self.id))
-        self.set_state('ING')
+        from .tasks import populate_threadfeed
 
-        # update score threshold
-        self.score_threshold = self.user.settings.trend_score_threshold
-
-        # Score
-        task = te_dispatcher.delay('score_threadfeed', self.user.id)
-        res = task.get()
-        if res:     # res can be empty is user library is empty
-            # reformat
-            res_dic = dict([(r['id'], {'score': r['score'], 'date': r['date']})
-                            for r in res if r['score'] > self.score_threshold])
-            tids = list(res_dic.keys())
-
-            # clean threadfeed
-            self.clean_not_in(tids)
-
-            # Update existing TrendFeedThreads
-            with transaction.atomic():
-                tfp_update = ThreadFeedThreads.objects.select_for_update()\
-                    .filter(threadfeed=self, thread_id__in=tids)
-                update_tids = []
-                for tfp in tfp_update:
-                    tfp.score = res_dic[tfp.thread_id]['score']
-                    tfp.save()
-                    update_tids.append(tfp.thread_id)
-
-            # Create new TrendFeedThreads
-            create_objs = []
-            create_pids = set(tids).difference(set(update_tids))
-            for id_ in create_pids:
-                create_objs.append(ThreadFeedThreads(
-                    threadfeed=self,
-                    thread_id=id_,
-                    score=res_dic[id_]['score'],
-                    date=res_dic[id_]['date'],
-                    new=True))
-            ThreadFeedThreads.objects.bulk_create(create_objs)
-
-            # Get last user visit. use for the tagging matched with 'new'
-            try:
-                last_seen = LastSeen.objects.when(user=self.user)
-                ThreadFeedThreads.objects.filter(created__lt=last_seen).update(new=False)
-            except LastSeen.DoesNotExist:
-                pass
-
-        self.updated_at = timezone.now()
-        self.save(update_fields=('updated_at', ))
-
-        self.set_state('IDL')
-        logger.info('Updating thread feed {id} done'.format(id=self.id))
+        # Chain tasks
+        chain(te_dispatcher.s('score_threadfeed', self.id),
+              populate_threadfeed.s(self.id))()
 
 
 class ThreadFeedThreads(TimeStampedModel):

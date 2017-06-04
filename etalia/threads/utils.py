@@ -22,9 +22,9 @@ def send_invite_thread_email(from_id, to_id, thread_id):
         metadata={'from_user': from_user.id,
                   'to_user': to_user.id},
         subject='{0} invites you to join a thread'.format(from_user.get_full_name()),
-        from_email='etalia@etalia.io',
+        from_email='etalia@etalia.org',
         to=[to_user.email],
-        reply_to=['contact@etalia.io'],
+        reply_to=['contact@etalia.org'],
         extra_ctx={'thread': thread,
                    'from_user': from_user.get_full_name(),
                    'to_user': to_user.get_full_name()})

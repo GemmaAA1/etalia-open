@@ -18,6 +18,7 @@ from etalia.threads.constants import THREAD_TIME_LAPSE_CHOICES
 from etalia.library.models import PaperUser
 from etalia.library.constants import PAPER_ADDED, PAPER_PINNED
 from etalia.users.models import UserSettings
+from etalia.feeds.models import ThreadFeed
 
 from .users import UserFingerprint
 
@@ -177,15 +178,17 @@ class ThreadEngineScoringMixin(object):
 
         return f
 
-    def score_threadfeed(self, user_id, name='main'):
+    def score_threadfeed(self, threadfeed_id, fname='main'):
+
+        threadfeed = ThreadFeed.objects.get(id=threadfeed_id)
 
         if self.data['ids']:
             # Gather user fingerprint
-            f = self.get_user_fingerprint(user_id, name=name)
+            f = self.get_user_fingerprint(threadfeed.user_id, name=fname)
 
             if f.embedding:     # fingerprint is defined (library is not empty)
                 # Get user settings
-                us = UserSettings.objects.get(user_id=user_id)
+                us = UserSettings.objects.get(user_id=threadfeed.user_id)
 
                 # Convert user data
                 seed = np.array(f.thread_embedding[:self.embedding_size]) \
@@ -202,8 +205,9 @@ class ThreadEngineScoringMixin(object):
                         uboost[i] = ubdic[uid]
 
                 # compute paper based boost
-                user_pids = PaperUser.objects.filter(
-                    Q(user_id=user_id) & (Q(store=PAPER_ADDED) | Q(watch=PAPER_PINNED))) \
+                user_pids = PaperUser.objects\
+                    .filter(Q(user_id=threadfeed.user_id) &
+                            (Q(store=PAPER_ADDED) | Q(watch=PAPER_PINNED))) \
                     .values_list('paper_id', flat=True)
                 pboost = np.zeros((self.data['embedding'].shape[0], ))
                 for i, pid in enumerate(self.data['paper-ids']):

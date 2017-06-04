@@ -23,7 +23,8 @@ def embed_thread(thread_pk):
     """
     try:
         from etalia.nlp.tasks import nlp_dispatcher
-        nlp_dispatcher.delay('infer_thread', thread_pk)
+        nlp_dispatcher.apply_async(args=['infer_thread', thread_pk],
+                                   ignore_result=True)
     except ImportError:
         pass
 
@@ -38,7 +39,8 @@ def embed_threads(pks, batch_size=1000):
     pks_batched.append(pks[nb_batches * batch_size:])
 
     for batch in pks_batched:
-        nlp_dispatcher.delay('infer_threads', batch)
+        nlp_dispatcher.apply_async(args=['infer_threads', batch],
+                                   ignore_results=True)
 
 
 def get_neighbors_threads(thread_pk, time_span):
@@ -63,10 +65,10 @@ def get_neighbors_threads(thread_pk, time_span):
     except ThreadNeighbors.DoesNotExist:  # refresh
         try:
             res = te_dispatcher.apply_async(args=('populate_neighbors',
-                                            thread_pk,
-                                            time_span),
-                                      timeout=10,
-                                      soft_timeout=5)
+                                                  thread_pk,
+                                                  time_span),
+                                            timeout=10,
+                                            soft_timeout=5)
             neighbors = res.get()
         except SoftTimeLimitExceeded:
             neighbors = []
@@ -83,7 +85,7 @@ def get_neighbors_threads(thread_pk, time_span):
         select={'ordering': ordering}, order_by=('ordering',))
 
 
-@app.task()
+@app.task(ignore_result=True)
 def async_send_invite_thread_email(from_id, to_id, thread_id):
     """Send email for thread invite"""
     send_invite_thread_email(from_id, to_id, thread_id)

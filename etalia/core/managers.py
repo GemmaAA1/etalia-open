@@ -6,8 +6,6 @@ import requests
 from requests.exceptions import HTTPError, ConnectionError, Timeout
 import feedparser
 from habanero import Crossref
-from habanero.exceptions import RequestError
-from config.celery_settings.development import CELERY_ALWAYS_EAGER
 from Bio import Entrez, Medline
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -70,7 +68,7 @@ class ConsolidateManager(object):
                      'title', 'date_ep', 'date_pp', 'abstract', 'type']
     }
 
-    def __init__(self, entry):
+    def __init__(self, entry=None):
         self.entry = entry
 
     def consolidate(self):
@@ -83,8 +81,9 @@ class ConsolidateManager(object):
         else:
             seq = ['crossref', 'pubmed', 'elsevier', 'arxiv']
             count = 0
-            while (self.entry.get('is_trusted') in [False, None]
-                or self.entry.get('abstract') == '') and count < len(seq):
+            while (self.entry.get('is_trusted') in [False, None] or
+                   self.entry.get('paper').get('abstract') in ['', None]) and \
+                    count < len(seq):
                 self.consolidate_with(seq[count])
                 count += 1
 
@@ -123,17 +122,22 @@ class ConsolidateManager(object):
     def consolidate_with(self, method_name):
         """ConsolidateManager method dispatcher"""
 
+        # Get methods
         method = getattr(self, 'get_{name}'.format(name=method_name))
-        if method_name == 'arxiv':
-            doc_id = self.entry['paper'].get('id_arx')
-        elif method_name == 'pubmed' and self.entry['paper'].get('id_pmi'):
-            doc_id = self.entry['paper'].get('id_pmi')
-        else:
-            doc_id = self.entry['paper'].get('id_doi')
-        query = requests.utils.quote('{title} {authors}'.format(
-            title=self.entry['paper'].get('title', ''),
-            authors=concatenate_last_names(self.entry.get('authors', []))),
-            safe='')
+        try:
+            query_method = getattr(self, 'get_query_{name}'.format(name=method_name))
+        except AttributeError:
+            query_method = getattr(self, 'get_query_default')
+        try:
+            id_method = getattr(self, 'get_id_{name}'.format(name=method_name))
+        except AttributeError:
+            id_method = getattr(self, 'get_id_default')
+
+        # Get query terms and doc_id
+        doc_id = id_method()
+        query = query_method()
+
+        # Run query
         new_entry = method(doc_id=doc_id, query=query)
         if new_entry and (doc_id or self.check_query_match(new_entry)):
             self.update_entry(new_entry, method_name)
@@ -143,10 +147,37 @@ class ConsolidateManager(object):
             self.entry['is_trusted'] = False
         return self.entry
 
+    def get_id_default(self):
+        return self.entry['paper'].get('id_doi')
+
+    def get_query_default(self):
+        query = requests.utils.quote('{title} {authors}'.format(
+                title=self.entry['paper'].get('title', ''),
+                authors=concatenate_last_names(self.entry.get('authors', []))),
+                safe='')
+        return query
+
+    def get_id_pubmed(self):
+        """Return pubmed id"""
+        if self.entry['paper'].get('id_pmi'):
+            return self.entry['paper'].get('id_pmi')
+        return self.entry['paper'].get('id_doi')
+
+    def get_query_pubmed(self):
+        """Return pubmed formating query"""
+        authors = []
+        for a in self.entry.get('authors', []):
+            authors.append('{0}[author]'.format(a.get('last_name')))
+        authors_terms = requests.utils.quote(' '.join(authors), safe=' []')
+        title_terms = requests.utils.quote(self.entry['paper'].get('title', ''), safe=' ')
+        query = '{title}[title] {authors}'.format(
+                title=title_terms,
+                authors=authors_terms)
+        return query
+
     @staticmethod
     def get_pubmed(doc_id='', query=''):
         """Return data from pubmed api"""
-        logger.info('Starting new HTTP connection (1): pubmed')
         try:
             parser = PubmedPaperParser()
             email = settings.CONSUMER_PUBMED_EMAIL
@@ -173,7 +204,7 @@ class ConsolidateManager(object):
                 entry = entries[0]
                 return parser.parse(entry)
         except IOError:
-            pass
+            raise
 
         return None
 
@@ -198,6 +229,9 @@ class ConsolidateManager(object):
             pass
 
         return None
+
+    def get_id_arxiv(self):
+        return self.entry['paper'].get('id_arx')
 
     @staticmethod
     def get_arxiv(doc_id='', query=''):
@@ -296,10 +330,10 @@ class PaperManager(object):
                     # consolidate async
                     # NB: This task if run as eager true conflict with
                     # update_lib pipeline because it modifies paper id.
-                    if self.consolidate and not CELERY_ALWAYS_EAGER:
+                    if self.consolidate:
                         from etalia.consumers.tasks import consolidate_paper
-                        consolidate_paper.apply_async(args=(paper.id, ),
-                                                      countdown=30)
+                        consolidate_paper.apply_async(args=[paper.id, ],
+                                                      ignore_result=True)
 
                     # Embed async
                     paper.embed()
@@ -327,11 +361,11 @@ class PaperManager(object):
                 entry['journal'][k] = ''
 
         # consolidate entry
-        new_entry = ConsolidateManager(entry).consolidate()
+        cm = ConsolidateManager(entry=entry)
+        new_entry = cm.consolidate()
         ep = new_entry['paper']
 
-        # check for uniqueness
-        # maybe the new_entry is already in DB, let's check
+        # check if new_entry already in database
         qs = Paper.objects\
             .filter(
                 Q(id_doi=ep['id_doi']) |
@@ -343,7 +377,7 @@ class PaperManager(object):
             .exclude(id=paper.id)
 
         if qs.count() > 0:
-            # if so relink related objects to same_paper
+            # if there is a match, link related paper to paper found
             self.update_related_paper_fk(paper.id, qs[0].id)
             # delete current paper
             paper.delete()
@@ -362,7 +396,6 @@ class PaperManager(object):
 
             # send embedding
             paper.embed()
-
         return paper
 
     def update_paper_from_entry(self, entry, paper):
@@ -372,7 +405,7 @@ class PaperManager(object):
             paper = form.save()
 
         if entry['journal']:
-            journal = self.get_journal_from_entry(entry['journal'])
+            journal = self.get_journal_from_entry(entry['journal'], is_trusted=entry.get('is_trusted', False))
             paper.journal = journal
             paper.save(update_fields=['journal'])
 
@@ -441,7 +474,7 @@ class PaperManager(object):
             return paper, None
         return None, None
 
-    def get_journal_from_entry(self, ej):
+    def get_journal_from_entry(self, ej, is_trusted=False):
         """Retrieve Journal. Either with ID or exact title"""
         if self.journal_has_id(ej):
             try:
@@ -454,7 +487,15 @@ class PaperManager(object):
                     Q(id_arx=ej['id_arx']) |
                     Q(id_oth=ej['id_oth']))
             except Journal.DoesNotExist:
-                journal = None
+                # if trusted, create new journal
+                if is_trusted and ((ej['id_issn'] or ej['id_issn']) and ej['title']):
+                    form = JournalForm(ej)
+                    if form.is_valid():
+                        journal = form.save()
+                        journal.is_in_fixture = False
+                        journal.save()
+                else:
+                    journal = None
             except Journal.MultipleObjectsReturned:
                 # clean up journals
                 journals = Journal.objects.filter(

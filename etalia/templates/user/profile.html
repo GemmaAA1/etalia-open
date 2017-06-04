@@ -6,12 +6,11 @@
 
 {% block content %}
 <div id="profile" class="document">
-    <div class="wrapper">
-        <div class="inner">
-
+{#    <div class="wrapper">#}
+{#        <div class="inner">#}
             <div class="row">
                 <div class="col-md-8 col-md-offset-2">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div id="avatar-section">
                             <div class="avatar">
                                 {% avatar user 120 %}
@@ -21,7 +20,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div id="names-section">
                             <h3>
                                 <span class="has-value {% if object.first_name or object.last_name %}{% else %} hidden {% endif %}">
@@ -66,12 +65,12 @@
 
             <div class="row">
                 <div class="col-md-8 col-md-offset-2 affiliation">
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
                             Affiliation
                         </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div id="affiliation-section">
                             <h5>
                                 <span class="has-value {% if object.affiliation.is_empty %}hidden{% endif %}">
@@ -91,21 +90,90 @@
 
             <div class="row">
                 <div class="col-md-8 col-md-offset-2">
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-4 text-right">
                         <div class="title">
-                            Library
+                            My Library
                         </div>
                     </div>
-                    <div class="col-md-9">
-                        <h5>Your library is in sync with {{ user.social_auth.first.provider|capfirst }} </h5>
-                        <h5>{{ library_counter }} publications in Etalia</h5>
-                        <h5>{{ likes_counter }} publications liked</h5>
+                    <div class="col-md-8">
+                        <div>Your library is sync with</div>
+                        <div class="providers-logo">
+                            {% if 'zotero' in providers  %}
+                                <a href="https://www.zotero.org/">
+                                    <span class="eai eai-zotero" title="Zotero"></span>
+                                </a>
+                            {% endif %}
+                            {% if 'mendeley' in providers %}
+                                <a href="https://www.mendeley.com/newsfeed/">
+                                    <span class="eai eai-mendeley" title="Mendeley"></span>
+                                </a>
+                            {% endif %}
+                            {% if 'orcid' in providers %}
+                                <a href="http://orcid.org/my-orcid">
+                                    <span class="eai eai-orcid" title="OrcID"></span>
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% if 'orcid' in providers %}
+                            {% if 'zotero' not in providers and 'mendeley' not in providers %}
+                            <div class="providers">
+                                <p>Want the full etalia experience? Link your reference manager</p>
+                                <p>
+                                    <a href="{% url 'social:begin' backend='mendeley' %}" class="btn-provider">
+                                        <span class="eai eai-mendeley"></span>
+                                        Mendeley
+                                    </a>
+                                    <a href="{% url 'social:begin' backend='zotero' %}" class="btn-provider">
+                                        <span class="eai eai-zotero"></span>
+                                        Zotero
+                                    </a>
+                                </p>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-        </div>
-    </div>
+            <hr class="divider">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <div class="col-md-4 text-right">
+                        <div class="title">
+                            My Works
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        {% if 'orcid' in providers %}
+                            {% for paper in authored_papers %}
+                                <div class="col-md-1">
+                                    {{ forloop.counter }}.
+                                </div>
+                                <div class="col-md-11 paper">
+                                    <a href="{% url 'library:paper-redirect' paper.id %}">
+                                        <span class="paper-authors">{{  paper.print_compact_authors }} </span>
+                                        <span class="paper-title">{{  paper.title }}. </span>
+                                        <span class="paper-journal">{{  paper.journal.short_title }}, </span>
+                                        <span class="paper-year">{{  paper.date.year }}, </span>
+                                        <span class="paper-volume">{{  paper.print_volume_issue_page }}</span>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="providers">
+                                <p>Connect with
+                                    <a href="{% url 'social:begin' backend='orcid' %}">
+                                        ORCID
+                                        <span class="eai eai-orcid"></span>
+                                    </a>
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+{#        </div>#}
+{#    </div>#}
 </div>
 
 {% include 'user/profile_modal.html' %}
@@ -120,3 +188,14 @@
     });
 </script>
 {% endblock javascript %}
+
+{% block stylesheets %}
+{% spaceless %}
+{{ block.super }}
+{% if environment == 'production' %}
+<link href="{% static 'css/profile.css' %}" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{% static 'css/app/profile.css' %}" rel="stylesheet" type="text/css">
+{% endif %}
+{% endspaceless %}
+{% endblock stylesheets %}

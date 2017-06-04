@@ -65,14 +65,14 @@ def test_shape(self, *args, **kwargs):
 
 # Update tasks
 # ------------
-@app.task()
+@app.task(ignore_result=True)
 def paperengine_update_all():
     pe = PaperEngine.objects.load(is_active=True)
     pe.update()
     # pe_dispatcher.delay('update')
 
 
-@app.task()
+@app.task(ignore_result=True)
 def paperengine_full_update_all():
     pe = PaperEngine.objects.load(is_active=True)
     pe.full_update()

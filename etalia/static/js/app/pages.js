@@ -2,8 +2,6 @@ define(['jquery', 'app/ui/layout', 'bootstrap'], function($) {
 
     $(function() {
 
-        $('#page-nav').affix();
-
         // FAQ
         var $faq = $('#faq');
         if ($faq.length) {

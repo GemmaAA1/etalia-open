@@ -77,6 +77,9 @@ class Journal(TimeStampedModel):
     # is flag
     is_trusted = models.BooleanField(default=False)
 
+    # is known from fixture
+    is_in_fixture = models.BooleanField(default=True)
+
     # number of papers in journal
     lib_size = models.IntegerField(default=0)
 
@@ -301,6 +304,35 @@ class Paper(TimeStampedModel):
             return self.date_pp
         else:
             return self.date_fs
+
+    @property
+    def print_compact(self):
+        terms = [self.print_compact_authors,
+                 self.title,
+                 self.journal.print_short_title if self.journal else '',
+                 str(self.date.year),
+                 self.print_volume_issue_page]
+        terms = [t for t in terms if t]
+        return '. '.join(terms)
+
+    @property
+    def print_volume_issue_page(self):
+        vol = str(self.volume)
+        iss = str(self.issue)
+        page = self.page
+        if iss and vol and page:
+            return '{vol}({iss}):{page}'.format(vol=vol, iss=iss, page=page)
+        if self.issue and self.volume:
+            return '{vol}({iss})'.format(vol=vol, iss=iss)
+        if self.volume and self.page:
+            return '{vol}:{page}'.format(vol=vol, page=page)
+        if self.page:
+            return self.page
+        return ''
+
+    @property
+    def print_authors(self):
+        return self.print_compact_authors()
 
     @property
     def print_compact_authors(self):

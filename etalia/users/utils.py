@@ -31,9 +31,9 @@ def send_invite_email(email_to=None, on_behalf=None):
         tags=['invite-peer-to-peer'],
         metadata={'from_user': on_behalf.id},
         subject='An invitation to try Etalia',
-        from_email='nicolas.pannetier@etalia.io',
+        from_email='nicolas.pannetier@etalia.org',
         to=[email_to],
-        reply_to=['contact@etalia.io'],
+        reply_to=['contact@etalia.org'],
         extra_ctx={'on_behalf': user_name})
     # send email
     email.send()
@@ -53,9 +53,9 @@ def send_welcome_email(user_id):
         tags=['welcome'],
         metadata={},
         subject='Welcome to etalia',
-        from_email='nicolas.pannetier@etalia.io',
+        from_email='nicolas.pannetier@etalia.org',
         to=[user.email],
-        reply_to=['contact@etalia.io'],
+        reply_to=['contact@etalia.org'],
         extra_ctx={})
 
     # send
@@ -92,9 +92,9 @@ def send_periodic_recommendation_email(user_id):
             tags=['digest'],
             metadata={'user': user.id},
             subject='Recommendations from Etalia',
-            from_email='etalia@etalia.io',
+            from_email='etalia@etalia.org',
             to=[user.email],
-            reply_to=['contact@etalia.io'],
+            reply_to=['contact@etalia.org'],
             extra_ctx={'papers': papers})
 
         email.send()

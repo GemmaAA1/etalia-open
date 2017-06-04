@@ -7,10 +7,10 @@ from config.utils import get_private_ip_based_on_role
 
 ANYMAIL = {
     "MAILGUN_API_KEY": env.str('MAILGUN_KEY'),
-    "MAILGUN_SENDER_DOMAIN": 'mg.etalia.io'
+    "MAILGUN_SENDER_DOMAIN": 'mg.etalia.org'
 }
 EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
-DEFAULT_FROM_EMAIL = 'contact@etalia.io'
+DEFAULT_FROM_EMAIL = 'contact@etalia.org'
 
 # Celery
 BROKER_URL = 'amqp://{username}:{password}@{host}:5672//'.format(

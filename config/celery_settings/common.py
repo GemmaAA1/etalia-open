@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import environ
 from kombu import Queue, Exchange
+from kombu.common import Broadcast
 from celery.schedules import crontab
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
@@ -12,7 +13,7 @@ env = environ.Env()
 
 # EMAIl
 CELERY_SEND_TASK_ERROR_EMAILS = True
-SERVER_EMAIL = 'no-reply@etalia.io'
+SERVER_EMAIL = 'no-reply@etalia.org'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
           ]
@@ -35,6 +36,8 @@ CELERY_QUEUES = (
     Queue('library', routing_key='library.#'),
     Queue('beat', routing_key='beat.#'),
     Queue('test', routing_key='test.#'),
+    Broadcast('broadcast_pe_tasks'),
+    Broadcast('broadcast_te_tasks'),
 )
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
@@ -45,7 +48,7 @@ CELERY_ROUTES = ('config.routers.MyRouter', )
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
         'task': 'etalia.altmetric.tasks.update_altmetric_periodic',
-        'schedule': crontab(minute=0, hour=0, day_of_week='*/2'),  # every 2 days at UTC+0
+        'schedule': crontab(minute=0, hour=0, day_of_week='mon,wed,fri'),
         'options': {'queue': 'beat'}
     },
     'update-userlib-all': {
@@ -65,7 +68,7 @@ CELERYBEAT_SCHEDULE = {
     },
     'update-all-userfingerprints': {
         'task': 'etalia.nlp.tasks.userfingerprints_update_all',
-        'schedule': crontab(minute=0, hour=4, day_of_week='*/2'),  # every 2 days at UTC+4
+        'schedule': crontab(minute=0, hour=4, day_of_week='tue,thu,sat'),
         'options': {'queue': 'beat'}
     },
     'update-all-main-streams': {
@@ -103,7 +106,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=20),  # daily at UTC+20
         'options': {'queue': 'beat'}
     },
-    'popluate-pubpeer': {
+    'populate-pubpeer': {
         'task': 'etalia.consumers.tasks.populate_pubpeer',
         'schedule': crontab(minute=0, hour=21),  # daily at UTC+21
         'options': {'queue': 'beat'}

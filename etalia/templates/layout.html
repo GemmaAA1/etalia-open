@@ -19,7 +19,7 @@
         </button>
 
         {% if user.is_anonymous %}
-            <a id="brand" href="{% url 'library:papers' %}" title="Etalia">
+            <a id="brand" href="{% url 'core:home' %}" title="Etalia">
                 <img src="{% static 'img/logo_beta.svg' %}" alt="Etalia" height="38">
             </a>
         {% else %}
@@ -30,7 +30,7 @@
 
         <!-- start top-bar-profile -->
         {% if user.is_authenticated %}
-        <button id="toggle-profile" class="btn-circle" type="button" title="etalia account: {{ user.first_name }} {{ user.last_name }}
+        <button id="toggle-profile" class="btn-circle" type="button" title="{{ user.first_name }} {{ user.last_name }}
 ({{ user.email }})">
             {% if user.avatar_set.all %}
                 {% avatar user 38 %}

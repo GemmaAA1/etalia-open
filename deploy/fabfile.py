@@ -55,7 +55,8 @@ ROLES = ['web', 'master', 'base', 'nlp', 'pe', 'te', 'feed', 'redis']
 
 STACK_SITE_MAPPING = {
     # 'production': 'alpha.etalia.io',
-    'production': 'etalia.io'
+    'production': 'etalia.io',
+    'prod': 'etalia.org'
 }
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
@@ -267,7 +268,7 @@ def create_directory_structure_if_necessary():
 
 @task
 def copy_common_py():
-    run('cp {0}/source/config/settings/common.py.dist '
+    run('cp {0}/source/config/settings/common.py '
         '{0}/source/config/settings/common.py'.format(env.stack_dir))
 
 

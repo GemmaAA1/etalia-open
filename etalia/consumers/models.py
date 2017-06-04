@@ -19,7 +19,6 @@ from Bio import Medline
 from model_utils import Choices, fields
 
 from config.celery import celery_app as app
-from celery.contrib.methods import task_method
 
 from etalia.library.models import Journal, AuthorPaper, Paper, Author, \
     CorpAuthor, CorpAuthorPaper
@@ -886,7 +885,7 @@ class ConsumerPubPeer(TimeStampedModel):
             item = self.parser.parse(entry)
             if item['pubpeer']['doi']:
                 try:
-                    thread = self.add_or_update_entry.delay(item)
+                    thread = self.add_or_update_entry(item)
                 except RuntimeError:
                     thread = None
                     pass
@@ -896,7 +895,6 @@ class ConsumerPubPeer(TimeStampedModel):
         self.save()
         return count
 
-    @app.task(filter=task_method)
     def add_or_update_entry(self, entry):
 
         ppm = PubPeerManager()
