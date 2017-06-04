@@ -3,10 +3,12 @@
 DOCKER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../docker" && pwd )"
 
 OPTIONS="-i --rm \
-    --volumes-from etalia_web \
+    -v $DOCKER_DIR/../.:/code
     --network etalia-network \
     --link etalia_db:db \
     --env-file $DOCKER_DIR/.envs \
     etalia/dev"
+
+
 
 docker run $OPTIONS python setup/manager.py --init

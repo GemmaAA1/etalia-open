@@ -492,6 +492,8 @@ class PaperManager(object):
                     form = JournalForm(ej)
                     if form.is_valid():
                         journal = form.save()
+                        journal.is_in_fixture = False
+                        journal.save()
                 else:
                     journal = None
             except Journal.MultipleObjectsReturned:

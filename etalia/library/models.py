@@ -77,6 +77,9 @@ class Journal(TimeStampedModel):
     # is flag
     is_trusted = models.BooleanField(default=False)
 
+    # is known from fixture
+    is_in_fixture = models.BooleanField(default=True)
+
     # number of papers in journal
     lib_size = models.IntegerField(default=0)
 
