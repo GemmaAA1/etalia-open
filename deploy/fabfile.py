@@ -55,8 +55,8 @@ ROLES = ['web', 'master', 'base', 'nlp', 'pe', 'te', 'feed', 'redis']
 
 STACK_SITE_MAPPING = {
     # 'production': 'alpha.etalia.io',
-    'production': 'etalia.io',
-    'prod': 'etalia.org'
+    # 'production': 'etalia.io',
+    'production': 'etalia.org'
 }
 SSH_EMAIL = 'nicolas.pannetier@gmail.com'
 REPO_URL = 'git@bitbucket.org:NPann/etalia.git'
@@ -410,7 +410,6 @@ def compiles_assets():
         run('npm install gulp --save-dev')
         run_as_root('npm install -g bower')
     run_as_root('cd {0} && sudo gulp prod'.format(env.source_dir))
-
 
 @task
 @roles('apps')
@@ -808,7 +807,7 @@ def deploy():
     create_directory_structure_if_necessary()
     pull_latest_source()
     pip_install()
-    copy_common_py()
+    # copy_common_py()
     copy_aws_config()
 
     # only once (WARNING: only effective when not in parallel)

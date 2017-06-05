@@ -189,4 +189,4 @@ def get_fleet_request_id_from_instance_id(instance_id):
     # Get all active fleet requests
     resp = ec2.meta.client.describe_spot_fleet_requests()
     fleet_configs = resp['SpotFleetRequestConfigs']
-        
+
