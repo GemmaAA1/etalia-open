@@ -47,7 +47,7 @@ CELERY_ROUTES = ('config.routers.MyRouter', )
 
 CELERYBEAT_SCHEDULE = {
     'update-altmetric': {
-        'task': 'etalia.altmetric.tasks.update_altmetric_periodic',
+        'task': 'etalia.altmetric_app.tasks.update_altmetric_periodic',
         'schedule': crontab(minute=0, hour=0, day_of_week='mon,wed,fri'),
         'options': {'queue': 'beat'}
     },
