@@ -21,6 +21,7 @@ from etalia.consumers.parsers import CrossRefPaperParser, ArxivPaperParser, \
 from etalia.core.parsers import PaperParser
 from etalia.threads.forms import PubPeerCommentForm, PubPeerForm, ThreadForm
 from etalia.threads.models import Thread, PubPeer, PubPeerComment
+from etalia.altmetric_app.models import AltmetricModel
 import logging
 
 logger = logging.getLogger(__name__)
@@ -438,6 +439,10 @@ class PaperManager(object):
             pass
         try:
             Thread.objects.filter(paper_id=from_id).update(paper_id=to_id)
+        except IntegrityError:
+            pass
+        try:
+            AltmetricModel.objects.filter(paper_id=from_id).update(paper_id=to_id)
         except IntegrityError:
             pass
 
