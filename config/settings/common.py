@@ -201,7 +201,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Admin
 # ------------------------------------------------------------------------------
 # Admins received email of the full exception information when DEGUB=False
-ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
+ADMINS = [('Nicolas', 'webmaster@etalia.or'),
           ]
 
 # EMAIL TEMPLATES

@@ -15,7 +15,7 @@ env = environ.Env()
 CELERY_SEND_TASK_ERROR_EMAILS = True
 SERVER_EMAIL = 'no-reply@etalia.org'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-ADMINS = [('Nicolas', 'nicolas.pannetier@gmail.com'),
+ADMINS = [('Nicolas', 'webmaster@etalia.org'),
           ]
 # BROKER
 BROKER_URL = 'amqp://'
