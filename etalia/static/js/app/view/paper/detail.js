@@ -93,7 +93,7 @@ define([
                         'https://twitter.com/intent/tweet/'
                         + '?text=' + title
                         + '&url=' + encodeURI(data.id)
-                        + '&via=etaliaio'
+                        + '&via=etalia_org'
                         //+ '&hashtags=web,development';
                         , 'share-popup',
                         520, 377

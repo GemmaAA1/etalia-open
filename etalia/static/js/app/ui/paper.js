@@ -203,7 +203,7 @@ define([
                             'https://twitter.com/intent/tweet/'
                                 + '?text=' + $actions.data('paper-title') + '. ' + $actions.data('short-author')
                                 + '&url=' + encodeURI(data.id)
-                                + '&via=etaliaio'
+                                + '&via=etalia_org'
                             //+ '&hashtags=web,development';
                             , 'share-popup'
                         );
