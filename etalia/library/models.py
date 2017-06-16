@@ -259,7 +259,7 @@ class Paper(TimeStampedModel):
     date_lr = models.DateField(null=True, blank=True, default=None)
 
     # date first seen
-    date_fs = models.DateField(auto_now_add=True, db_index=True)
+    date_fs = models.DateField(null=True, blank=True, db_index=True)
 
     # Consolidate date
     date_co = models.DateField(null=True, blank=True, db_index=True)
@@ -279,6 +279,8 @@ class Paper(TimeStampedModel):
     is_trusted = models.BooleanField(default=False, db_index=True)
 
     def save(self, **kwargs):
+        if not self.date_fs:
+            self.date_fs = timezone.now().date()
         if not self.date_co:
             dates = [self.date_ep, self.date_fs, self.date_pp]
             if any(dates):
