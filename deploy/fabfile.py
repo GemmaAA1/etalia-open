@@ -228,6 +228,8 @@ def update_and_require_libraries():
                                    'supervisor',
                                    'libjpeg-dev',
                                    'libxslt1-dev',
+                                   'libssl1.0.0',
+                                   'openssl'
                                    ], update=True)
     # Require some pip packages
     fabtools.require.python.packages(['virtualenvwrapper'], use_sudo=True)
