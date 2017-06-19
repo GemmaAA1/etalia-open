@@ -605,6 +605,9 @@ class PaperEngineManager(models.Manager):
                     obj.pull_from_s3()
 
             obj.data = joblib.load(pe_pkl_file)
+            # convert embedding to float32 if not already
+            if not obj.data.get('embedding', np.array([0], dtype=np.float32)).dtype == np.float32:
+                obj.data['embedding'] = obj.data.get('embedding').astype(np.float32)
         except EnvironmentError:  # OSError or IOError...
             raise
 
@@ -652,7 +655,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             'journal-ids': [],
             'authors-ids': [],
             'date': [],
-            'embedding': np.empty(0),
+            'embedding': np.empty(0, dtype=np.float32),
             'altmetric': [],
             }
 
@@ -807,7 +810,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             self.data['date'].append(d.date_co)
             self.data['altmetric'].append(d.score)
             current_embedding.append(d.vector[:self.embedding_size])
-        self.data['embedding'] = np.array(current_embedding)
+        self.data['embedding'] = np.array(current_embedding, dtype=np.float32)
 
         # query on authors
         if self.data['ids']:
@@ -883,7 +886,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         if new_ids:
             # concatenate embedding array
             self.data['embedding'] = np.vstack((self.data['embedding'],
-                                                np.array(new_embedding)))
+                                                np.array(new_embedding, dtype=np.float32)))
 
             # query on authors
             values = ', '.join(['({0})'.format(i) for i in new_ids])
@@ -971,7 +974,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
             k += 1
 
         res_search = dict(self.knn_search(
-            np.array(pv['vector'][:self.embedding_size]),
+            np.array(pv['vector'][:self.embedding_size], dtype=np.float32),
             time_lapse=time_lapse,
             top_n=k,
             journal_id=pv['paper__journal_id']))
@@ -992,7 +995,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
         # check seed
         if isinstance(seed, list):
-            seed = np.array(seed).squeeze()
+            seed = np.array(seed, dtype=np.float32).squeeze()
         if seed.ndim == 1:
             assert len(seed) == self.embedding_size
         else:
@@ -1034,7 +1037,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         for pv in pvs:
             mat.append(pv['vector'][:self.embedding_size])
             journal_ids.append(pv['paper__journal_id'])
-        mat = np.array(mat)
+        mat_np = np.array(mat, dtype=np.float32)
 
         # find clip
         clip_start = self.get_clip_start(time_lapse)
@@ -1044,7 +1047,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
         k += k_correction
 
         # get partition
-        res_search = self.partition_search(mat,
+        res_search = self.partition_search(mat_np,
                                            clip_start=clip_start,
                                            top_n=k,
                                            journal_ids=journal_ids)
@@ -1066,7 +1069,7 @@ class PaperEngine(PaperEngineScoringMixin, S3Mixin, TimeStampedModel):
 
         # check seeds shape / type
         if isinstance(seeds, list) and any(isinstance(i, list) for i in seeds):
-            seeds = np.array(seeds)
+            seeds = np.array(seeds, dtype=np.float32)
         assert seeds.shape[1] == self.embedding_size
 
         # Reverse clip_start if flagged

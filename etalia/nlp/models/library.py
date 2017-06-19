@@ -255,7 +255,7 @@ class PaperEngineScoringMixin(object):
 
         if f.embedding:     # fingerprint is defined (library is not empty)
             # Convert user data
-            seed = np.array(f.embedding[:self.embedding_size])
+            seed = np.array(f.embedding[:self.embedding_size], dtype=np.float32)
             jb = self.convert_to_journal_boost(f.journals_counts)
             ab = self.convert_to_author_boost(f.authors_counts)
             jbdic = dict([(k, jb[i]) for i, k in enumerate(f.journals_ids)])
@@ -296,7 +296,7 @@ class PaperEngineScoringMixin(object):
 
         if f.embedding:     # fingerprint is defined (library is not empty)
             # Convert user data
-            seed = np.array(f.embedding[:self.embedding_size])
+            seed = np.array(f.embedding[:self.embedding_size], dtype=np.float32)
 
             # Get user settings
             us = UserSettings.objects.get(user_id=trend.user_id)
