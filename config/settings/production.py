@@ -14,7 +14,7 @@ CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Admins received email of the full exception information when DEGUB=False
-ADMINS = [('Nicolas', 'webmaster@etalia.or'),
+ADMINS = [('Nicolas', 'webmaster@etalia.org'),
           ]
 
 DATABASES = {
