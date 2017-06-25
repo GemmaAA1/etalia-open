@@ -174,7 +174,7 @@ define([
     });
     App.Handlebars.registerHelper('paper_is_orcid_icon', function() {
         var is_orcid = this.hasOwnProperty('is_orcid') ? this.is_orcid : this.get('is_orcid');
-        return is_orcid ? new App.Handlebars.SafeString('<span class="eai eai-orcid"></span>') : '';
+        return is_orcid ? new App.Handlebars.SafeString('<span class="orcid eai eai-orcid"></span>') : '';
     });
 
     App.Handlebars.registerHelper('paper_altmetric_icon', function() {

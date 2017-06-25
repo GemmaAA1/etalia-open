@@ -38,6 +38,11 @@
     vertical-align: 40%;
 }
 
+.card .title span.orcid {
+    font-size: 100%;
+    vertical-align: -10%;
+}
+
 .card .authors {
     font-size: 15px;
     line-height: 18px;

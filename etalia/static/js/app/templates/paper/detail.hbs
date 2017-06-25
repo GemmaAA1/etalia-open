@@ -67,11 +67,13 @@
         <p class="title">
             {{#if url }}
                 <a href="{{url}}" target="_blank">
+                    {{paper_is_orcid_icon}}
                     {{paper_new_icon}}
                     {{title}}
                     <span class="eai eai-pdf"></span>
                 </a>
             {{else}}
+                {{paper_is_orcid_icon}}
                 {{paper_new_icon}}
                 {{title}}
             {{/if}}
