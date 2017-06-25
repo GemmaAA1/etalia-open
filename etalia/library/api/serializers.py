@@ -55,11 +55,12 @@ class PaperSerializer(PaperEagerLoadingMixin,
     """Paper serializer"""
 
     state = serializers.SerializerMethodField()
-    new = serializers.SerializerMethodField()
     linked_threads_count = serializers.SerializerMethodField()
     authors = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
     slug = serializers.SerializerMethodField()
+    new = serializers.SerializerMethodField()
+    is_orcid = serializers.SerializerMethodField()
 
     class Meta:
         model = Paper
@@ -89,6 +90,7 @@ class PaperSerializer(PaperEagerLoadingMixin,
             'linked_threads_count',
             'state',
             'new',
+            'is_orcid',
         )
         read_only_fields = (
             '__all__',
@@ -161,6 +163,10 @@ class PaperSerializer(PaperEagerLoadingMixin,
             pass
 
         return None
+
+    def get_is_orcid(self, obj):
+        request = self.context['request']
+        return request.user.lib.userlib_paper.get(paper=obj.id).is_orcid
 
     def get_linked_threads_count(self, obj):
         if hasattr(obj, 'threads'):
@@ -265,6 +271,8 @@ class PaperFilterSerializer(serializers.BaseSerializer):
 class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
                           serializers.HyperlinkedModelSerializer):
 
+    is_orcid = serializers.SerializerMethodField()
+
     class Meta:
         model = PaperUser
         extra_kwargs = {
@@ -278,7 +286,9 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
             'user',
             'paper',
             'watch',
-            'store'
+            'store',
+            'is_orcid'
+
         )
         read_only_fields = (
             'id',
@@ -290,6 +300,9 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
             # 'paper': {'serializer': PaperSerializer,
             #           'one2one_nested': False},
         }
+
+    def get_is_orcid(self, obj):
+        return obj.user.lib.userlib_paper.get(paper_id=obj.paper.id).is_orcid
 
     def validate_user(self, value):
         """User passed is same as user login"""

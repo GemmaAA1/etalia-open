@@ -26,10 +26,12 @@
     <p class="title">
         {{#if list_mode}}
             <a href="/papers/{{slug}}/" data-router>
+                {{paper_is_orcid_icon}}
                 {{paper_new_icon}}
                 {{title}}
             </a>
         {{else}}
+            {{paper_is_orcid_icon}}
             {{paper_new_icon}}
             {{title}}
         {{/if}}

@@ -341,7 +341,7 @@ class UserLib(TimeStampedModel):
         err, id, info = backend.add_paper(self.user, paper)
         return id, info
 
-    def add_paper_on_etalia(self, paper, provider_id, info=None):
+    def add_paper_on_etalia(self, paper, provider_id, info=None, orcid=False):
         ulp, new = UserLibPaper.objects.get_or_create(userlib=self,
                                                       paper=paper)
         if info:
@@ -351,6 +351,7 @@ class UserLib(TimeStampedModel):
             ulp.starred = info.get('starred', None)
             ulp.scored = info.get('scored', 0.)
         ulp.paper_provider_id = provider_id
+        ulp.is_orcid = orcid
         ulp.save()
 
     def trash_paper_on_provider(self, provider_id):
@@ -415,6 +416,8 @@ class UserLibPaper(TimeStampedModel):
     scored = models.FloatField(default=0.)
 
     paper_provider_id = models.CharField(max_length=64, default='')
+
+    is_orcid = models.BooleanField(default=False)
 
     # is_trashed = models.BooleanField(default=False)
 

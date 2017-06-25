@@ -150,7 +150,7 @@ class OrcidOAuth2(BaseOAuth2):
         """Update PaperUser and UserLibPaper table"""
         with transaction.atomic():
             pu, new = PaperUser.objects.get_or_create(user=user, paper=paper)
-            pu.add(provider_id, info)
+            pu.add(provider_id=provider_id, info=info, orcid=True)
         return new
 
     def add_entry(self, entry):

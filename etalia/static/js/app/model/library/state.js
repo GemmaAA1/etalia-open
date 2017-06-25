@@ -12,7 +12,8 @@ define([
 
         defaults: {
             watch: null,
-            store: null
+            store: null,
+            is_orcid: null
         },
 
         relations: [

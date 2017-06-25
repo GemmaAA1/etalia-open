@@ -648,12 +648,12 @@ class PaperUser(ModelDiffMixin, TimeStampedModel):
         self.watch = PAPER_BANNED
         self.save()
 
-    def add(self, provider_id=None, info=None):
+    def add(self, provider_id=None, info=None, orcid=False):
         """Add paper"""
         with transaction.atomic():
             if not provider_id:
                 provider_id, info = self.user.lib.add_paper_on_provider(self.paper)
-            self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info)
+            self.user.lib.add_paper_on_etalia(self.paper, provider_id, info=info, orcid=orcid)
             self.store = PAPER_ADDED
             self.save()
 

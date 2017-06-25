@@ -85,6 +85,10 @@ define([
             return this.getState().get('store') === App.Model.PaperState.STORE_TRASHED;
         },
 
+        isOrcid: function() {
+            return this.getState().get('is_orcid');
+        },
+
         isInLibrary: function() {
             return this.isAdded() || !this.isTrashed();
         }
@@ -168,6 +172,11 @@ define([
         var is_new = this.hasOwnProperty('new') ? this.new : this.get('is_new');
         return is_new ? new App.Handlebars.SafeString('<span class="new">new</span>') : '';
     });
+    App.Handlebars.registerHelper('paper_is_orcid_icon', function() {
+        var is_orcid = this.hasOwnProperty('is_orcid') ? this.is_orcid : this.get('is_orcid');
+        return is_orcid ? new App.Handlebars.SafeString('<span class="eai eai-orcid"></span>') : '';
+    });
+
     App.Handlebars.registerHelper('paper_altmetric_icon', function() {
         var id_doi = this.hasOwnProperty('id_doi') ? this.id_doi : this.get('id_doi'),
             id_arx = this.hasOwnProperty('id_arx') ? this.id_arx : this.get('id_arx'),
