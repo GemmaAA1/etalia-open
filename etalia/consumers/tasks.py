@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+from requests.exceptions import ConnectionError
 from config.celery import celery_app as app
 from .models import ConsumerPubmed, ConsumerArxiv, ConsumerElsevier, \
     ConsumerJournal, ConsumerPubPeer, ConsumerBiorxiv, ConsumerSpringer, \
@@ -122,7 +123,8 @@ def populate_pubpeer():
 #     except Exception as exc:
 #         raise self.retry(exc=exc, countdown=5)
 
-@app.task()
+@app.task(autoretry_for=(Paper.DoesNotExist, ConnectionError),
+          retry_kwargs={'max_retries': 3})
 def consolidate_paper(paper_id, force=False):
     pm = PaperManager()
     paper = Paper.objects.get(id=paper_id)

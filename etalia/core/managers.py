@@ -542,16 +542,16 @@ class PaperManager(object):
         with transaction.atomic():
             # Get or Create authors
             for pos, item_author in enumerate(ea):
-                if Author.objects.filter(
-                        first_name=item_author['first_name'],
-                        last_name=item_author['last_name']).exists():
-                    author = Author.objects.get(
-                        first_name=item_author['first_name'],
-                        last_name=item_author['last_name'])
+                d = {'first_name': item_author['first_name'],
+                     'last_name': item_author['last_name']}
+                form = AuthorForm(d)
+                form.full_clean()
+                first_name = form.cleaned_data['first_name']
+                last_name = form.cleaned_data['last_name']
+
+                if Author.objects.filter(first_name=first_name, last_name=last_name).exists():
+                    author = Author.objects.get(first_name=first_name, last_name=last_name)
                 else:
-                    d = {'first_name': item_author['first_name'],
-                         'last_name': item_author['last_name']}
-                    form = AuthorForm(d)
                     if form.is_valid():
                         author = form.save()
                     else:

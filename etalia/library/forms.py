@@ -97,6 +97,8 @@ class AuthorForm(forms.ModelForm):
         first_name = first_name[:max_length]
         # remove double spacing
         first_name = re.sub(' +', ' ', first_name)
+        # strip
+        first_name = first_name.strip()
         # capitalize
         return first_name.title()
 
@@ -106,6 +108,8 @@ class AuthorForm(forms.ModelForm):
         last_name = last_name[:max_length]
         # remove double spacing
         last_name = re.sub(' +', ' ', last_name)
+        # strip
+        last_name = last_name.strip()
         # capitalize
         return last_name.title()
 

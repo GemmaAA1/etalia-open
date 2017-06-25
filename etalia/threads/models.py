@@ -222,7 +222,7 @@ class PubPeer(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     doi = models.CharField(max_length=64, blank=True, default='',
-                           null=False, unique=True, verbose_name='DOI',
+                           null=False, verbose_name='DOI',
                            db_index=True)
 
     link = models.URLField()

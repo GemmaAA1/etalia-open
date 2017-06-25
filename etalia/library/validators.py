@@ -34,7 +34,7 @@ def validate_author_names(name):
     """Process last name"""
 
     if name:
-        initials = [name[0] for name in name.split(' ')]
+        initials = [name[0] for name in name.strip().split(' ')]
         if any(map(str.islower, initials)):
             msg = u"Name(s) must be capitalized"
             raise ValidationError(msg)

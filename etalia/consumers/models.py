@@ -875,7 +875,7 @@ class ConsumerPubPeer(TimeStampedModel):
         return entries
 
     def populate(self):
-        """Populate DB with PubPeer     comments"""
+        """Populate DB with PubPeer comments"""
         # consume
         entries = self.consume()
 
