@@ -10,6 +10,8 @@ from django.utils.text import slugify
 from etalia.core.api.mixins import One2OneNestedLinkSwitchMixin
 from etalia.core.api.exceptions import MendeleyRedirectLoginErrorSerializer
 from etalia.feeds.models import StreamPapers, TrendPapers
+from etalia.users.models import UserLibPaper
+
 
 from ..models import Paper, Journal, Author, PaperUser
 from ..constants import PAPER_ADDED, PAPER_TRASHED, PAPER_STORE
@@ -166,7 +168,10 @@ class PaperSerializer(PaperEagerLoadingMixin,
 
     def get_is_orcid(self, obj):
         request = self.context['request']
-        return request.user.lib.userlib_paper.get(paper=obj.id).is_orcid
+        try:
+            return request.user.lib.userlib_paper.get(paper=obj.id).is_orcid
+        except UserLibPaper.DoesNotExist:
+            return False
 
     def get_linked_threads_count(self, obj):
         if hasattr(obj, 'threads'):
@@ -302,7 +307,10 @@ class PaperUserSerializer(One2OneNestedLinkSwitchMixin,
         }
 
     def get_is_orcid(self, obj):
-        return obj.user.lib.userlib_paper.get(paper_id=obj.paper.id).is_orcid
+        try:
+            return obj.user.lib.userlib_paper.get(paper_id=obj.paper.id).is_orcid
+        except UserLibPaper.DoesNotExist:
+            return False
 
     def validate_user(self, value):
         """User passed is same as user login"""
