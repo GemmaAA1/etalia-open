@@ -546,8 +546,8 @@ class PaperManager(object):
                      'last_name': item_author['last_name']}
                 form = AuthorForm(d)
                 form.full_clean()
-                first_name = form.cleaned_data['first_name']
-                last_name = form.cleaned_data['last_name']
+                first_name = form.cleaned_data.get('first_name', '')
+                last_name = form.cleaned_data.get('last_name', '')
 
                 if Author.objects.filter(first_name=first_name, last_name=last_name).exists():
                     author = Author.objects.get(first_name=first_name, last_name=last_name)
