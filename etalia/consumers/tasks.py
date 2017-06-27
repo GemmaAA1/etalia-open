@@ -123,7 +123,7 @@ def populate_pubpeer():
 #     except Exception as exc:
 #         raise self.retry(exc=exc, countdown=5)
 
-@app.task(autoretry_for=(Paper.DoesNotExist, ConnectionError),
+@app.task(autoretry_for=(Paper.DoesNotExist, ConnectionError, RuntimeError),
           retry_kwargs={'max_retries': 3})
 def consolidate_paper(paper_id, force=False):
     pm = PaperManager()
