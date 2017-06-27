@@ -545,7 +545,7 @@ class PaperManager(object):
                 d = {'first_name': item_author['first_name'],
                      'last_name': item_author['last_name']}
                 form = AuthorForm(d)
-                form.full_clean()
+                form.is_valid()
                 first_name = form.cleaned_data.get('first_name', '')
                 last_name = form.cleaned_data.get('last_name', '')
 
