@@ -37,7 +37,8 @@ try:
     # specific task name
     task_name ='etalia.nlp.tasks.pe_dispatcher_{0}'.format(pe.name)
 
-    @app.task(base=PaperEngineTask, bind=True, name=task_name, engine_id=pe.id)
+    @app.task(base=PaperEngineTask, bind=True, name=task_name, engine_id=pe.id, autoretry_for=(OSError, ),
+              retry_kwargs={'max_retries': 3})
     def pe_dispatcher(self, *args, **kwargs):
         return self.engine.tasks(*args, **kwargs)
 except PaperEngine.DoesNotExist:
