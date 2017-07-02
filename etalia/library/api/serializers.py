@@ -168,10 +168,13 @@ class PaperSerializer(PaperEagerLoadingMixin,
 
     def get_is_orcid(self, obj):
         request = self.context['request']
-        try:
-            return request.user.lib.userlib_paper.get(paper=obj.id).is_orcid
-        except UserLibPaper.DoesNotExist:
+        if request.user.is_anonymous():
             return False
+        else:
+            try:
+                return request.user.lib.userlib_paper.get(paper=obj.id).is_orcid
+            except UserLibPaper.DoesNotExist:
+                return False
 
     def get_linked_threads_count(self, obj):
         if hasattr(obj, 'threads'):
