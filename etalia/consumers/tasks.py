@@ -114,22 +114,22 @@ def populate_pubpeer():
     ppc.populate()
 
 
-# @app.task(bind=True, rate_limit='1/s')
-# def consolidate_paper(self, paper_id, force=False):
-#     pm = PaperManager()
-#     paper = Paper.objects.get(id=paper_id)
-#     try:
-#         pm.consolidate_paper(paper, force=force)
-#     except Exception as exc:
-#         raise self.retry(exc=exc, countdown=5)
-
-@app.task(autoretry_for=(Paper.DoesNotExist, ConnectionError, RuntimeError),
-          retry_kwargs={'max_retries': 3})
-def consolidate_paper(paper_id, force=False):
+@app.task(bind=True, rate_limit='1/s')
+def consolidate_paper(self, paper_id, force=False):
     pm = PaperManager()
     paper = Paper.objects.get(id=paper_id)
-    paper = pm.consolidate_paper(paper, force=force)
-    return paper
+    try:
+        pm.consolidate_paper(paper, force=force)
+    except (Paper.DoesNotExist, ConnectionError, RuntimeError) as exc:
+        raise self.retry(exc=exc, countdown=5)
+
+# @app.task(autoretry_for=(Paper.DoesNotExist, ConnectionError, RuntimeError),
+#           retry_kwargs={'max_retries': 3})
+# def consolidate_paper(paper_id, force=False):
+#     pm = PaperManager()
+#     paper = Paper.objects.get(id=paper_id)
+#     paper = pm.consolidate_paper(paper, force=force)
+#     return paper
 
 
 @app.task(ignore_result=True)
