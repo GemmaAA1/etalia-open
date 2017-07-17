@@ -284,6 +284,12 @@
                     </tr>
                     <tr>
                         <td>
+                            <p>Hello,</p>
+                            <p>Here is an update of your personalized recommendations.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             {% for paper in papers %}
                                 <div class="card">
                                     <p class="title">
@@ -325,6 +331,15 @@
                             </div>
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            <p>If you have any questions email <a mailto="contact@etalia.org">contact@etalia.org</a> -
+                                we are always here to help. You can also always change your update settings
+                                <a href="{{ root_url }}{% url 'user:settings' %}" target="_blank">here</a> - or unsubscribe anytime.
+                            <p>Greetings</p>
+                            <p>The Etalia Team</p>
+                        </td>
+                    </tr>
                 </table>
             </div>
             <!-- /content -->
@@ -344,9 +359,6 @@
                 <table>
                     <tr>
                         <td align="center">
-                            <p>To stop receiving periodic digest email, edit <a href="{{ root_url }}{% url 'user:settings' %}"
-                                target="_blank">your personal settings </a>
-                            </p>
                             <p>© {% now "Y" %} Etalia, Inc.</p>
                         </td>
                     </tr>
