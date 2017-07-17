@@ -545,11 +545,8 @@ class PaperManager(object):
                 d = {'first_name': item_author['first_name'],
                      'last_name': item_author['last_name']}
                 form = AuthorForm(d)
-                if form.is_valid():
-                    author, _ = Author.objects.get_or_create(**form.cleaned_data)
-                else:
-                    author = None
-
+                form.full_clean()
+                author, _ = Author.objects.get_or_create(**form.cleaned_data)
                 if author:
                     AuthorPaper.objects.get_or_create(
                         paper=paper,
