@@ -116,7 +116,7 @@ def update_user(user_pk):
 
 @app.task(ignore_result=True)
 def send_recommendation_emails_on_wed_11am():
-    """Task that send batch of emails recommdation.
+    """Task that send batch of emails recommendation.
 
     Emails are sent to user on Wednesday 11am (in user timezone). Frequency varies
     depending on user settings.
@@ -134,7 +134,7 @@ def send_recommendation_emails_on_wed_11am():
 
         # Get some date data
         utc = timezone('UTC')   # servers are in UTC
-        nm = next_weekday(datetime.now().date(), 2)  # next wednesday
+        nm = next_weekday(datetime.now().date(), 2)   # next wednesday
 
         for user in us:
             if hasattr(user, 'userperiodicemail') and user.userperiodicemail.last_sent_on:
@@ -142,16 +142,15 @@ def send_recommendation_emails_on_wed_11am():
                 delta_since_last_email = (now - user.userperiodicemail.last_sent_on)
                 user_period = user.settings.email_digest_frequency
 
-                if timedelta(days=user_period) - delta_since_last_email > timedelta(days=5):
-                    break
+                if timedelta(days=user_period) - delta_since_last_email > timedelta(days=3):
+                    continue
 
-            # Do the math for the email to be send on monday 7am
+            # Do the math for the email to be sent on specific day/time
             user_timezone = timezone(user.timezone)
             loc_dt = user_timezone.localize(datetime(nm.year, nm.month, nm.day, 11, 0, 0))
             utc_dt = loc_dt.astimezone(utc)
             # fire task
-            async_send_periodic_email_at_eta.apply_async(args=[user.id, ],
-                                                   eta=utc_dt)
+            async_send_periodic_email_at_eta.apply_async(args=[user.id, ], eta=utc_dt)
 
 
 @app.task(ignore_result=True)

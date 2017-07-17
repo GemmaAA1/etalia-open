@@ -350,6 +350,10 @@ class UserLib(TimeStampedModel):
             ulp.authored = info.get('authored', None)
             ulp.starred = info.get('starred', None)
             ulp.scored = info.get('scored', 0.)
+        if orcid:
+            ulp.date_last_modified = min([paper.date_ep, paper.date_pp, paper.date_fs])
+            ulp.date_created = min([paper.date_ep, paper.date_pp, paper.date_fs])
+            ulp.authored = True
         ulp.paper_provider_id = provider_id
         ulp.is_orcid = orcid
         ulp.save()

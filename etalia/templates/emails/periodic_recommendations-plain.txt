@@ -12,4 +12,5 @@ Etalia Digest, Your Periodic Recommendations.
 
 Find more at https://etalia.org
 To stop receiving periodic digest email, click <{{ root_url }}{% url 'user:settings' %}>
-Etalia
+Greetings,
+The Etalia Team
