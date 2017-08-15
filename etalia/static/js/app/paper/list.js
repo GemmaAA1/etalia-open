@@ -163,8 +163,6 @@ define([
         }, {
             $target: App.$('div[data-list-placeholder]')
         });
-
-        listView.onTabsContextChange();
     };
 
     var detailController = function (modelClass, slug) {

@@ -27,6 +27,8 @@ NB: If you get S3Forbidden errors, likely your docker images clock went off sync
 
 ### Frontend dev ###
 
+Install Bower and Gulp globally by running ```npm install -g bower gulp```.
+
 During development, use ```gulp``` to copy libraries from *nodes_modules/* and *bower_components/* to *static/js/lib/*.
 
 For production, use ```gulp prod``` to build compiled assets. 
