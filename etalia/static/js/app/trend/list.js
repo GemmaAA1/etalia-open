@@ -16,8 +16,7 @@ define([
     };
 
     var listController = function() {
-
-        //console.log('list controller');
+        App.setHeadTitle();
 
         Detail.close();
 
@@ -106,12 +105,12 @@ define([
         }
 
         var modelDetailView;
-        if (modelClass == App.Model.Thread) {
+        if (modelClass === App.Model.Thread) {
             if (!listView) {
                 defaultActiveTab = 'trend:threads';
             }
             modelDetailView = new App.View.Thread.Detail(options);
-        } else if (modelClass == App.Model.Paper) {
+        } else if (modelClass === App.Model.Paper) {
             if (!listView) {
                 defaultActiveTab = 'trend:papers';
             }
@@ -136,6 +135,7 @@ define([
                 redirectToList();
             })
             .done(function() {
+                App.setHeadTitle(model.get('title'));
                 Detail.setModel(detailModel);
             });
 

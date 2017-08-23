@@ -456,6 +456,21 @@ define([
         }
     };
 
+    /*$.fn.isFixed = function() {
+        if (1 !== this.size()) {
+            throw 'Collection has more or less than one element.';
+        }
+        if (this.css('position') === 'fixed') return true;
+        var fixed = false;
+        this.parents().each(function(){
+            if ($(this).css('position') === 'fixed') {
+                fixed = true;
+                return false;
+            }
+        });
+        return fixed;
+    };*/
+
     /**
      * App
      */
@@ -492,6 +507,8 @@ define([
             debug: false,
             api_root: '/api/v1'
         },
+
+        defaultHeadTitle: 'Etalia',
 
         log: function () {
             if (this.config.debug) {
@@ -590,6 +607,12 @@ define([
         require(['app/util/tracking'], function(Tracking) {
             Tracking.init();
         });
+    };
+
+    App.defaultHeadTitle = $('title').text();
+
+    App.setHeadTitle = function(title) {
+        $('title').text(!!title ? title : App.defaultHeadTitle);
     };
 
     App.init = function() {
