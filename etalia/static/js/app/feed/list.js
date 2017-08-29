@@ -16,6 +16,7 @@ define([
     };
 
     var listController = function() {
+        App.setHeadTitle();
 
         Detail.close();
 
@@ -129,12 +130,12 @@ define([
         }
 
         var modelDetailView;
-        if (modelClass == App.Model.Thread) {
+        if (modelClass === App.Model.Thread) {
             if (!listView) {
                 defaultActiveTab = 'feed:threads';
             }
             modelDetailView = new App.View.Thread.Detail(options);
-        } else if (modelClass == App.Model.Paper) {
+        } else if (modelClass === App.Model.Paper) {
             if (!listView) {
                 defaultActiveTab = 'feed:papers';
             }
@@ -159,6 +160,7 @@ define([
                 redirectToList();
             })
             .done(function() {
+                App.setHeadTitle(model.get('title'));
                 Detail.setModel(detailModel);
             });
 

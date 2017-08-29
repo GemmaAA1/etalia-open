@@ -8,8 +8,13 @@ define([
 
         $emptyMessage: null,
 
-        addThumbView: function(view) {
-            this.$el.append(view.render().$el);
+        addThumbView: function(view, prepend) {
+            prepend = prepend || false;
+            if (prepend) {
+                this.$el.prepend(view.render().$el);
+            } else {
+                this.$el.append(view.render().$el);
+            }
             this.pushSubView(view);
         },
 

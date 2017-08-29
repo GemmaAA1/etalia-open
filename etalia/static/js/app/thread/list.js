@@ -16,6 +16,7 @@ define([
     };
 
     var listController = function() {
+        App.setHeadTitle();
 
         Detail.close();
 
@@ -92,8 +93,6 @@ define([
         }, {
             $target: App.$('div[data-list-placeholder]')
         });
-
-        listView.onTabsContextChange();
     };
 
     var detailController = function (modelClass, slug) {
@@ -124,13 +123,18 @@ define([
         }
 
         var modelDetailView;
-        if (modelClass == App.Model.Thread) {
+        if (modelClass === App.Model.Thread) {
             modelDetailView = new App.View.Thread.Detail(options);
-        } else if (modelClass == App.Model.Paper) {
+        } else if (modelClass === App.Model.Paper) {
             modelDetailView = new App.View.Paper.Detail(options);
         } else {
             throw 'Unexpected model class';
         }
+
+        modelDetailView.on('close', function() {
+            router.navigate('my-threads/', true);
+        });
+
         var detailModel = new App.Model.Detail({
             view: modelDetailView
         });
@@ -148,9 +152,9 @@ define([
                 redirectToList();
             })
             .done(function() {
+                App.setHeadTitle(model.get('title'));
                 Detail.setModel(detailModel);
             });
-
     };
 
 

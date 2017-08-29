@@ -392,7 +392,9 @@ define([
             }
             var thumbView = new App.View.Thread.Thumb(options);
 
-            this.listView.addThumbView(thumbView);
+            // TODO prepend if new
+
+            this.listView.addThumbView(thumbView, model.get('published_at') === null);
         },
 
         onCollectionRemove: function (model) {
