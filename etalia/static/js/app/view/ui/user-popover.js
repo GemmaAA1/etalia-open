@@ -65,7 +65,10 @@ define([
                 '</div>'
             }).data('bs.popover');
 
-            this.$el.popover('show');
+            this.$el.popover('show').one('hidden.bs.popover', function() {
+                that.$el.popover('destroy');
+                that.popover = null;
+            });
 
             this.popover.$tip.find('.popover-footer .btn').on('click', function() {
                 that.model.markDone().then(function() {
@@ -91,7 +94,7 @@ define([
 
         _watchPosition: function() {
             var targetPosition = this.$target.offset();
-            if (targetPosition != this.targetPosition) {
+            if (targetPosition !== this.targetPosition) {
                 this.targetPosition = targetPosition;
                 this._updatePosition();
             }
@@ -102,25 +105,10 @@ define([
             this.position.top = this.targetPosition.top + (this.$target.height() / 2) + 12;
             this.position.left = this.targetPosition.left + (this.$target.width() / 2) + 12;
             this.$el.css(this.position);
-        },
 
-        _openPopover: function() {
-            var popover = this.model.get('popover'),
-                options = {
-                    title: data.get('title'),
-                    content: data.get('content'),
-                    html: true
-                };
-
-            var windowSize = {
-                    width: $(window).width(),
-                    height: $(window).height()
-                };
-
-
-            //options.placement;
-
-            this.$el.popover(options);
+            if (this.popover && this.popover.$tip.is(':visible')) {
+                this.popover.$tip.css('top', this.position.top + 25);
+            }
         }
     });
 

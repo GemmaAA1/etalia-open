@@ -1,0 +1,104 @@
+# Docker
+version: '2'
+
+networks:
+  default:
+    external:
+      name: etalia-network
+
+volumes:
+  data:
+    external:
+      name: etalia-data-volume
+
+services:
+  db:
+    image: postgres
+    hostname: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=etalia
+      - POSTGRES_USER=etalia
+      - POSTGRES_PASSWORD=mypass
+    volumes:
+      - data:/var/lib/postgresql/data
+    container_name: etalia_db
+
+  # Redis
+  redis:
+    image: redis:2.8.19
+    hostname: redis
+    container_name: etalia_redis
+
+  # RabbitMQ
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3.6.0
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=mypass
+    ports:
+      - "5672"  # we forward this port because it's useful for debugging
+      - "15672"  # here, we can access rabbitmq management plugin
+    container_name: etalia_rabbit
+
+  # Django web server
+  web:
+    image: etalia/dev-ssh
+    env_file: ../.envs
+    volumes:
+      - ../../.:/code
+      - ~/.pycharm_helpers:/home/myuser/.pycharm_helpers
+    ports:
+      - "8000:8000"
+      - "2223:22"
+    depends_on:
+      - db
+      - rabbit
+      - redis
+      - worker
+    links:
+      - db:db
+      - rabbit:rabbit
+      - redis:redis
+    container_name: etalia_web_ssh
+
+  # Celery worker
+  worker:
+    image: etalia/dev-ssh
+    command: celery worker -A config -Q default,nlp,pe,te,udpate_engines,feed,consumers,altmetric,library,beat,broadcast_pe_tasks,broadcast_te_tasks,test --config config.celery_settings.development -n default@%h --loglevel=INFO
+    env_file: ../.envs
+    volumes:
+      - ../../.:/code
+    ports:
+      - "2224:22"
+    depends_on:
+      - db
+      - rabbit
+      - redis
+    links:
+      - db:db
+      - rabbit:rabbit
+      - redis:redis
+    container_name: etalia_worker
+
+  # flower
+  flower:
+    image: etalia/dev
+    command: celery flower -A config --config config.celery_settings.development --basic_auth=admin:admin
+    env_file: ../.envs
+    volumes:
+      - ../../.:/code
+    ports:
+      - "5555:5555"
+    depends_on:
+      - db
+      - rabbit
+      - redis
+      - worker
+    links:
+      - db:db
+      - rabbit:rabbit
+      - redis:redis
+    container_name: etalia_flower

@@ -39,8 +39,8 @@
                class="detail-neighbors" title="Related papers">
                 <span class="eai eai-suggestions"></span>
             </a>
-            <a href="{{url}}"
-               class="detail-external" title="External link / PDF" target="_blank">
+            <a href="javascript: void(0)" target="_blank"
+               class="detail-external" title="External link / PDF" style="display:none">
                 <span class="eai eai-pdf"></span>
             </a>
         </div>
@@ -94,7 +94,7 @@
             {{/if}}
         </p>
         <p class="authors">
-            {{paper_authors}}
+            {{paper_detail_authors}}
         </p>
         <div class="infos">
             <p class="truncate">

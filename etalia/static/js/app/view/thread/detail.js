@@ -122,7 +122,7 @@ define([
         },
 
         onContentEditClick: function(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
 
             var $contents = this.$('.thread-content, .thread-info').hide();
 
@@ -366,6 +366,10 @@ define([
                     $target: this.$('[data-user-placeholder]')
                 })
             );
+
+            if (this.model.get('content') === null) {
+                this.onContentEditClick();
+            }
 
             if (!this.model.get('published_at')) {
                 return this;

@@ -10,6 +10,9 @@ define([
     App.Model.Paper = App.Backbone.RelationalModel.extend({
         urlRoot: App.config.api_root + path,
 
+        oadoiData: null,
+        oadoiXhr: null,
+
         defaults: {
             id_doi: null,
             id_pmi: null,
@@ -19,7 +22,8 @@ define([
             title: null,
             url: null,
             new: false,
-            linked_threads_count: 0
+            linked_threads_count: 0,
+            pdf_url: null
         },
 
         relations: [
@@ -91,6 +95,72 @@ define([
 
         isInLibrary: function() {
             return this.isAdded() || !this.isTrashed();
+        },
+
+        /**
+         *
+         * @returns jqXHR|false
+         */
+        loadOadoiData: function() {
+            if (null !== this.oadoiXhr) {
+                return this.oadoiXhr;
+            }
+
+            var that = this,
+                doi = String(this.get('id_doi'));
+            if (0 === doi.length) {
+                return false;
+            }
+
+            this.oadoiXhr =
+                App.$.get('https://api.oadoi.org/' + doi)
+                .then(function(data) {
+                    if (1 === data.results.length) {
+                        that.oadoiData = data.results[0];
+                    }
+                });
+
+            return this.oadoiXhr;
+        },
+
+        hasOpenUrls: function() {
+            if (null === this.oadoiXhr) {
+                throw 'Please use loadOadoiData\'s returned promise.';
+            }
+
+            if (null === this.oadoiData) {
+                return false;
+            }
+
+            return this.oadoiData.hasOwnProperty('_open_urls') && 0 < this.oadoiData._open_urls.length;
+        },
+
+        getOpenPdfUrl: function() {
+            if (!this.hasOpenUrls()) {
+                return null;
+            }
+
+            // TODO
+            // 1. PDF lookup.
+            // if not found, last open url ?
+
+            var pdfUrl = null,
+                parser = document.createElement('a');
+
+            App.$.each(this.oadoiData._open_urls, function(index, url) {
+                parser.href = url;
+
+                if (/[\.\/]pdf$/.test(parser.pathname)) {
+                    pdfUrl = url;
+                    return false;
+                }
+            });
+
+            if (!pdfUrl) {
+                pdfUrl = this.oadoiData._open_urls[this.oadoiData._open_urls.length - 1];
+            }
+
+            return pdfUrl;
         }
     });
 
@@ -132,17 +202,29 @@ define([
     /**
      * Handlebars helpers
      */
+    function truncateAuthors(authors) {
+        authors = authors.map(function (author) {
+            return author.get('first_name') + " " + author.get('last_name');
+        });
+
+        if (10 < authors.length) {
+            return authors.slice(0,9).join(', ') + ' [...] ' + authors[authors.length - 1];
+        }
+
+        return authors.join(', ');
+    }
     App.Handlebars.registerHelper('paper_title_authors', function(paper) {
         if (!paper) {
             throw 'Expected paper as first argument';
         }
-        var authors = paper.get('authors').map(function (author) {
-            return author.get('first_name') + " " + author.get('last_name');
-        });
-        var output = paper.get('title') + " (" + authors.splice(0, 4).join(', ') + ")";
+        var output = paper.get('title') + " (" + truncateAuthors(paper.get('authors')) + ")";
         return new App.Handlebars.SafeString(output);
     });
-    App.Handlebars.registerHelper('paper_authors', function() {
+    App.Handlebars.registerHelper('paper_thumb_authors', function() {
+        var authors = this.hasOwnProperty('authors') ? this.authors : this.get('authors');
+        return new App.Handlebars.SafeString(truncateAuthors(authors));
+    });
+    App.Handlebars.registerHelper('paper_detail_authors', function() {
         var authors = this.hasOwnProperty('authors') ? this.authors : this.get('authors');
         authors = authors.map(function (author) {
             return author.get('first_name') + " " + author.get('last_name');

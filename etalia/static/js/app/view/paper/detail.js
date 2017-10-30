@@ -150,6 +150,20 @@ define([
 
             this.trigger('rendered');
 
+            // Async OADOI data
+            this.model.loadOadoiData().then(function() {
+                var pdfUrl = that.model.getOpenPdfUrl();
+                if (null !== pdfUrl) {
+                    that.$el.find('a.detail-external')
+                        .attr('href', pdfUrl)
+                        .show();
+
+                    // We assume that the title is an anchor...
+                    that.$el.find('p.title a')
+                        .attr('href', pdfUrl);
+                }
+            });
+
             return this;
         },
 
